@@ -12,7 +12,10 @@ This ensures my documentation stays current even if I lose context.
 ## Current Status
 Segment 0 is COMPLETE. All 16 files created on GitHub.
 Segment 1 is COMPLETE. All 33 files created on GitHub.
-Currently working on Segment 1.5: Security Primitives.
+Segment 1.5 is COMPLETE. 1 file created on GitHub.
+Segment 2 is COMPLETE. 5 files created on GitHub.
+Segment 13a is COMPLETE. 1 file created on GitHub.
+Currently working on Segment 7: Email System.
 
 ## Project Overview
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
@@ -56,7 +59,15 @@ NEXT FILE: drizzle/schema/sessions.ts
 ---
 ...and so on
 
-## Files Already Created (Segments 0 and 1 - Complete)
+## File Combining Rules
+- Utility functions in `lib/` should be combined into `index.ts` files when possible
+- Next.js routes in `app/` MUST stay separate (file-based routing)
+- Database schema files in `drizzle/schema/` stay separate (Drizzle convention)
+- Shell scripts in `scripts/` stay separate (independently executable)
+- When giving me files, combine related utility functions into one file
+- Tell me the exact file path for each combined file
+
+## Files Already Created (Segments 0, 1, 1.5, 2, 13a - Complete)
 
 ### Segment 0 (16 files):
 - package.json
@@ -111,29 +122,43 @@ NEXT FILE: drizzle/schema/sessions.ts
 - drizzle/migrations/0001_fts5_triggers.sql
 - drizzle/schema/index.ts
 
+### Segment 1.5 (1 file):
+- lib/security/index.ts
+
+### Segment 2 (5 files):
+- lib/auth/index.ts
+- middleware.ts
+- app/admin/(auth)/login/page.tsx
+- app/admin/(auth)/login/actions.ts
+- app/admin/(dashboard)/layout.tsx
+
+### Segment 13a (1 file):
+- lib/logging/index.ts
+
 ## Current Segment
-Segment 1.5: Security Primitives (3 files)
+Segment 7: Email System (5 files)
 
 ## Next File To Create
-lib/security/rate-limit.ts
+lib/email/index.ts
 
 ## Task
-Create security utility files for rate limiting, input validation, and security headers.
+Create email system with Resend integration, queue management, and email templates.
 
 ## Review Criteria
-- Rate limiting works per IP
-- Validation functions comprehensive
-- Headers match SRS Section 8
-- TypeScript types correct
-- No external dependencies beyond what's in package.json
+- Queue works asynchronously
+- Templates render correctly
+- Retry logic functional
+- Suppression respected
+- Webhook for bounce handling
 
 ## Previous Decisions
-- Rate limiting: Login 5 attempts/15min, Forms 3/hour/IP
-- IP-based rate limiting (not account-based)
-- Validation for all user inputs
-- Security headers in next.config.ts already
-- Lucia Auth handles CSRF
-- No additional dependencies needed
+- Resend for transactional email
+- Email queue in SQLite (email_queue table)
+- Templates combined in templates.ts
+- Async processing (no blocking)
+- Suppression list checked before sending
+- Webhook handles bounces/complaints
+- Rate limiting: 2 emails/second
 
 ## Progress Tracker (Current)
 
@@ -141,26 +166,28 @@ Create security utility files for rate limiting, input validation, and security 
 |---------|--------|-------|--------|
 | 0: Project Init | ✅ Complete | 16/16 | Approved |
 | 1: Database | ✅ Complete | 33/33 | Approved |
-| 1.5: Security Primitives | In Progress | 0/3 | Pending |
-| 2: Auth | Not Started | 0/9 | Pending |
-| 13a: Activity Logging | Not Started | 0/2 | Pending |
-| 7: Email | Not Started | 0/9 | Pending |
-| 14: Backup/Deploy | Not Started | 0/11 | Pending |
-| 3: Content | Not Started | 0/26 | Pending |
-| 4: Media | Not Started | 0/9 | Pending |
-| 12: Settings | Not Started | 0/7 | Pending |
-| 5: Clients | Not Started | 0/9 | Pending |
-| 8: Search | Not Started | 0/3 | Pending |
+| 1.5: Security Primitives | ✅ Complete | 1/1 | Approved |
+| 2: Auth | ✅ Complete | 5/5 | Approved |
+| 13a: Activity Logging | ✅ Complete | 1/1 | Approved |
+| 7: Email | In Progress | 0/5 | Pending |
+| 14: Backup/Deploy | Not Started | 0/8 | Pending |
+| 3: Content | Not Started | 0/14 | Pending |
+| 4: Media | Not Started | 0/5 | Pending |
+| 12: Settings | Not Started | 0/3 | Pending |
+| 5: Clients | Not Started | 0/6 | Pending |
+| 8: Search | Not Started | 0/2 | Pending |
 | 10: Public Pages | Not Started | 0/10 | Pending |
 | 11: Homepage | Not Started | 0/10 | Pending |
-| 6: Portal | Not Started | 0/14 | Pending |
-| 9: Admin Dashboard | Not Started | 0/10 | Pending |
-| 15: Security/Testing | Not Started | 0/10 | Pending |
+| 6: Portal | Not Started | 0/9 | Pending |
+| 9: Admin Dashboard | Not Started | 0/8 | Pending |
+| 15: Security/Testing | Not Started | 0/7 | Pending |
 
-## Segment 1.5 Files To Create (In Order)
+## Segment 7 Files To Create (In Order)
 
-1. lib/security/rate-limit.ts
-2. lib/security/validation.ts
-3. lib/security/headers.ts
+1. lib/email/index.ts (Resend + queue combined)
+2. lib/email/templates.ts (All 4 templates combined)
+3. app/api/email/process-queue/route.ts
+4. app/api/email/status/route.ts
+5. app/api/email/webhook/route.ts
 
 Please provide the code file by file using the format above.
