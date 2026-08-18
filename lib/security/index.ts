@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 // ============================================
@@ -16,22 +16,23 @@ interface RateLimitEntry {
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
+export function getClientIp(headers: Headers): string {
+  return (
+    headers.get("cf-connecting-ip") ||
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
 export function rateLimit(
-  req: NextRequest,
+  ip: string,
   options: {
     maxRequests: number;
     windowSeconds: number;
-    identifier?: string;
-    prefix: string; // REQUIRED: Prevents cross-endpoint collision
+    prefix: string;
   }
 ): { success: boolean; remaining: number; resetAt: number } {
-  const ip =
-    options.identifier ||
-    req.headers.get("cf-connecting-ip") ||
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown";
-
   const now = Date.now();
   const windowMs = options.windowSeconds * 1000;
   const key = `${options.prefix}:${ip}`;
@@ -75,17 +76,17 @@ export function rateLimit(
 }
 
 // Pre-configured rate limiters (each with unique prefix)
-export const loginRateLimit = (req: NextRequest) =>
-  rateLimit(req, { maxRequests: 5, windowSeconds: 900, prefix: "login" });
+export const loginRateLimit = (ip: string) =>
+  rateLimit(ip, { maxRequests: 5, windowSeconds: 900, prefix: "login" });
 
-export const formRateLimit = (req: NextRequest) =>
-  rateLimit(req, { maxRequests: 3, windowSeconds: 3600, prefix: "form" });
+export const formRateLimit = (ip: string) =>
+  rateLimit(ip, { maxRequests: 3, windowSeconds: 3600, prefix: "form" });
 
-export const magicLinkRateLimit = (req: NextRequest) =>
-  rateLimit(req, { maxRequests: 5, windowSeconds: 3600, prefix: "magic-link" });
+export const magicLinkRateLimit = (ip: string) =>
+  rateLimit(ip, { maxRequests: 5, windowSeconds: 3600, prefix: "magic-link" });
 
-export const apiRateLimit = (req: NextRequest) =>
-  rateLimit(req, { maxRequests: 100, windowSeconds: 60, prefix: "api" });
+export const apiRateLimit = (ip: string) =>
+  rateLimit(ip, { maxRequests: 100, windowSeconds: 60, prefix: "api" });
 
 // ============================================
 // INPUT VALIDATION (Zod Schemas)
@@ -194,9 +195,6 @@ export function validatePortalMember(input: unknown) {
 // ============================================
 // SECURITY HEADERS
 // ============================================
-// NOTE: These are also configured in next.config.ts.
-// This export serves as a reference for programmatic use if needed.
-// The next.config.ts version is the source of truth for route-level application.
 
 export const securityHeaders: Record<string, string> = {
   "X-Frame-Options": "DENY",
@@ -230,21 +228,6 @@ export function applySecurityHeaders(response: NextResponse): NextResponse {
 // HELPER FUNCTIONS
 // ============================================
 
-export function getClientIp(req: NextRequest): string {
-  return (
-    req.headers.get("cf-connecting-ip") ||
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
-/**
- * Sanitizes plain text input to prevent XSS.
- * WARNING: Do NOT use this on TipTap JSON content or structured data.
- * Only use for plain text fields (e.g., customStatement, notes).
- * React already escapes JSX by default, so plain text is safe.
- */
 export function sanitizeInput(input: string): string {
   return input
     .replace(/&/g, "&amp;")
