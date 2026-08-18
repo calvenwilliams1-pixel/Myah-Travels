@@ -24,3 +24,29 @@ Personal website for Myah, a travel writer and agent. Built with Next.js, self-h
 
 ```bash
 npm install
+
+Configuration
+Copy .env.example to .env
+
+Fill in all required values
+
+Database
+bash
+mkdir data
+npm run db:migrate
+npm run seed
+Development
+bash
+npm run dev
+Production
+bash
+npm run build
+npm run start
+Documentation
+SRS
+
+Code Plan
+
+Todo List
+
+Master Prompt
