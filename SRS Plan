@@ -1054,3 +1054,46 @@ fi
 8. Build portal features
 9. Testing and hardening
 10. Deploy to mini PC
+
+---
+
+## 16. Implementation Notes
+
+### 16.1 File Organization
+
+The codebase uses a combined-file approach for utility functions while maintaining Next.js file-based routing conventions.
+
+| File Type | Approach | Rationale |
+|-----------|----------|-----------|
+| Database schema | One file per table | Drizzle ORM convention |
+| Utility functions | Combined `index.ts` per domain | Reduce file count, easier maintenance |
+| Next.js pages | Separate files | File-based routing requirement |
+| API routes | Separate files | File-based routing requirement |
+| UI components | Separate files | Independent imports |
+| Shell scripts | Separate files | Independently executable |
+| Email templates | Combined `templates.ts` | String functions, related |
+
+### 16.2 Key Implementation Files
+
+| File | Contents |
+|------|----------|
+| `lib/security/index.ts` | Rate limiting, validation, headers |
+| `lib/auth/index.ts` | Lucia setup, TOTP, password, session |
+| `lib/email/index.ts` | Resend integration, queue |
+| `lib/email/templates.ts` | All email templates |
+| `lib/content/index.ts` | Posts, guides, reviews, tags, categories |
+| `lib/media/index.ts` | Upload, optimize, folders, usage |
+| `lib/portal/index.ts` | Magic links, sessions, notices, documents |
+| `lib/clients/index.ts` | Inquiries, merge, anonymize |
+| `lib/settings/index.ts` | Site, navigation, homepage, colors, fonts |
+| `lib/logging/index.ts` | Activity logging, middleware |
+| `lib/jobs/index.ts` | Scheduled tasks, email processor, retention |
+
+### 16.3 Status Reference
+
+Current implementation status is tracked in CODE-PLAN.md and TODO.md.
+
+- Segment 0: ✅ Complete
+- Segment 1: ✅ Complete
+- Segment 1.5: In Progress
+- Segments 2-15: Pending
