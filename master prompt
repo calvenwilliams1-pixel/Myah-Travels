@@ -76,3 +76,441 @@ Set up the initial project configuration files.
 
 ## Previous Decisions
 None yet - this is the first segment.
+
+# Final Consolidated Todo List - With All AI Feedback Incorporated
+
+## Changes Made Based on AI Review
+
+| Change | Source | Rationale |
+|--------|--------|-----------|
+| Added Segment 0: Project Initialization | 365 + Qwen + Gemini | drizzle.config.ts, next.config.ts, lib/db needed before Segment 1 |
+| Moved Auth to Phase 1 | All 4 models | Everything depends on authentication |
+| Moved Security primitives early | Claude + 365 | Rate limiting needed for auth, forms, magic links |
+| Moved Activity Logging after Auth | Claude + Gemini | Logging UI needs auth to sit behind |
+| Split Activity Logging | Claude | Library early, admin UI later |
+| Added FTS5 raw SQL migration | Qwen + Gemini | Drizzle can't generate triggers |
+| Added Resend webhook route | Gemini | Bounce/complaint handling |
+| Added health endpoint | 365 | Deployment script references it |
+| Added seed script | Claude | Testing needs fixture data |
+| Added portal access log file | 365 | SRS requires portal access logging |
+| Added scheduled jobs files | 365 | Publishing, email queue, retention |
+| Added shared UI components | 365 | Prevent duplication |
+| Per-segment testing | Claude + 365 | Catch integration bugs early |
+| Removed Testimonials component | 365 | Not in SRS, dead code |
+
+---
+
+# Myah Travels - Final Development Todo List
+
+## Phase 0: Project Initialization (NEW)
+
+### Segment 0: Project Setup
+- [ ] Create `package.json`
+- [ ] Create `next.config.ts`
+- [ ] Create `tsconfig.json`
+- [ ] Create `tailwind.config.ts` (if using Tailwind)
+- [ ] Create `drizzle.config.ts`
+- [ ] Create `lib/db/index.ts` (database connection with WAL PRAGMAs)
+- [ ] Create `lib/db/migrate.ts` (migration runner)
+- [ ] Create `.env.example`
+- [ ] Create `.gitignore`
+- [ ] Create `README.md`
+- [ ] Create `components/ui/Button.tsx`
+- [ ] Create `components/ui/Input.tsx`
+- [ ] Create `components/ui/Modal.tsx`
+- [ ] Create `components/ui/Card.tsx`
+- [ ] Create `components/ui/Table.tsx`
+- [ ] Create `components/ui/Pagination.tsx`
+- [ ] Create `scripts/seed.ts` (test data)
+- [ ] AI review of Segment 0
+- [ ] Final approval
+
+---
+
+## Phase 1: Foundation (Revised Order)
+
+### Segment 1: Database Schema & Migrations
+- [ ] Create `drizzle/schema/users.ts`
+- [ ] Create `drizzle/schema/sessions.ts`
+- [ ] Create `drizzle/schema/activity-log.ts`
+- [ ] Create `drizzle/schema/categories.ts`
+- [ ] Create `drizzle/schema/tags.ts`
+- [ ] Create `drizzle/schema/posts.ts`
+- [ ] Create `drizzle/schema/guides.ts`
+- [ ] Create `drizzle/schema/reviews.ts`
+- [ ] Create `drizzle/schema/videos.ts`
+- [ ] Create `drizzle/schema/clients.ts`
+- [ ] Create `drizzle/schema/client-attachments.ts`
+- [ ] Create `drizzle/schema/client-merges.ts`
+- [ ] Create `drizzle/schema/portals.ts`
+- [ ] Create `drizzle/schema/portal-members.ts`
+- [ ] Create `drizzle/schema/portal-magic-links.ts`
+- [ ] Create `drizzle/schema/portal-sessions.ts`
+- [ ] Create `drizzle/schema/portal-notices.ts`
+- [ ] Create `drizzle/schema/portal-documents.ts`
+- [ ] Create `drizzle/schema/portal-faqs.ts`
+- [ ] Create `drizzle/schema/email-queue.ts`
+- [ ] Create `drizzle/schema/email-suppressions.ts`
+- [ ] Create `drizzle/schema/media.ts`
+- [ ] Create `drizzle/schema/certifications.ts`
+- [ ] Create `drizzle/schema/settings.ts`
+- [ ] Create `drizzle/schema/pages.ts`
+- [ ] Create `drizzle/schema/redirects.ts`
+- [ ] Create `drizzle/schema/revisions.ts`
+- [ ] Create `drizzle/schema/post-tags.ts`
+- [ ] Create `drizzle/schema/guide-tags.ts`
+- [ ] Create `drizzle/schema/review-tags.ts`
+- [ ] Create `drizzle/schema/related-content.ts`
+- [ ] Create `drizzle/schema/search-index.ts`
+- [ ] Create `drizzle/migrations/0001_fts5_triggers.sql` (raw SQL for triggers)
+- [ ] Create `drizzle/schema/index.ts` (combines all tables)
+- [ ] Test migration runs successfully
+- [ ] AI review of Segment 1
+- [ ] Final approval
+
+### Segment 1.5: Security Primitives (NEW - Moved Early)
+- [ ] Create `lib/security/rate-limit.ts`
+- [ ] Create `lib/security/validation.ts`
+- [ ] Create `lib/security/headers.ts`
+- [ ] Test rate limiting works
+- [ ] AI review of Segment 1.5
+- [ ] Final approval
+
+### Segment 2: Authentication (MOVED UP)
+- [ ] Create `lib/auth/lucia.ts`
+- [ ] Create `lib/auth/totp.ts`
+- [ ] Create `lib/auth/password.ts`
+- [ ] Create `lib/auth/session.ts`
+- [ ] Create `middleware.ts` (root)
+- [ ] Create `app/admin/login/page.tsx`
+- [ ] Create `app/admin/login/actions.ts`
+- [ ] Create `app/admin/layout.tsx` (protected)
+- [ ] Create `app/admin/logout/route.ts`
+- [ ] Test login flow with 2FA
+- [ ] AI review of Segment 2
+- [ ] Final approval
+
+### Segment 13: Activity Logging Library (SPLIT - Library Only)
+- [ ] Create `lib/logging/activity.ts`
+- [ ] Create `lib/logging/middleware.ts`
+- [ ] Test logging works with auth
+- [ ] AI review of Segment 13a
+- [ ] Final approval
+
+### Segment 7: Email System
+- [ ] Create `lib/email/resend.ts`
+- [ ] Create `lib/email/queue.ts`
+- [ ] Create `lib/email/templates/magic-link.ts`
+- [ ] Create `lib/email/templates/inquiry-notification.ts`
+- [ ] Create `lib/email/templates/portal-notice.ts`
+- [ ] Create `lib/email/templates/global-announcement.ts`
+- [ ] Create `app/api/email/process-queue/route.ts`
+- [ ] Create `app/api/email/status/route.ts`
+- [ ] Create `app/api/email/webhook/route.ts` (NEW - bounce handling)
+- [ ] Test email sending
+- [ ] AI review of Segment 7
+- [ ] Final approval
+
+### Segment 14: Backup & Deployment Scripts
+- [ ] Create `scripts/backup.sh`
+- [ ] Create `scripts/restore.sh`
+- [ ] Create `scripts/deploy.sh`
+- [ ] Create `scripts/cleanup-daily.sh`
+- [ ] Create `scripts/cleanup-weekly.sh`
+- [ ] Create `scripts/health-check.sh`
+- [ ] Create `lib/monitoring/health.ts` (NEW)
+- [ ] Create `lib/monitoring/disk-space.ts` (NEW)
+- [ ] Create `lib/monitoring/database.ts` (NEW)
+- [ ] Create `app/api/health/route.ts` (NEW)
+- [ ] Create systemd service file
+- [ ] AI review of Segment 14
+- [ ] Final approval
+
+---
+
+## Phase 2: Core Features
+
+### Segment 3: Content Management
+- [ ] Create `lib/content/posts.ts`
+- [ ] Create `lib/content/guides.ts`
+- [ ] Create `lib/content/reviews.ts`
+- [ ] Create `lib/content/tags.ts`
+- [ ] Create `lib/content/categories.ts`
+- [ ] Create `lib/content/extract-text.ts`
+- [ ] Create `components/editor/TipTapEditor.tsx`
+- [ ] Create `components/editor/Toolbar.tsx`
+- [ ] Create `components/editor/blocks/CalloutBox.tsx`
+- [ ] Create `components/editor/blocks/YouTubeEmbed.tsx`
+- [ ] Create `components/editor/blocks/InstagramCard.tsx`
+- [ ] Create `components/editor/blocks/FileDownload.tsx`
+- [ ] Create `app/admin/posts/page.tsx`
+- [ ] Create `app/admin/posts/new/page.tsx`
+- [ ] Create `app/admin/posts/[id]/page.tsx`
+- [ ] Create `app/admin/posts/actions.ts`
+- [ ] Create `app/admin/guides/page.tsx`
+- [ ] Create `app/admin/guides/new/page.tsx`
+- [ ] Create `app/admin/guides/[id]/page.tsx`
+- [ ] Create `app/admin/guides/actions.ts`
+- [ ] Create `app/admin/reviews/page.tsx`
+- [ ] Create `app/admin/reviews/new/page.tsx`
+- [ ] Create `app/admin/reviews/[id]/page.tsx`
+- [ ] Create `app/admin/reviews/actions.ts`
+- [ ] Create `lib/jobs/scheduled-posts.ts` (NEW)
+- [ ] Test content CRUD
+- [ ] AI review of Segment 3
+- [ ] Final approval
+
+### Segment 4: Media Library
+- [ ] Create `lib/media/upload.ts`
+- [ ] Create `lib/media/optimize.ts`
+- [ ] Create `lib/media/folders.ts`
+- [ ] Create `lib/media/usage.ts` (NEW - check if media used)
+- [ ] Create `lib/media/delete.ts` (NEW - block if used)
+- [ ] Create `lib/media/replace.ts` (NEW - replace file)
+- [ ] Create `app/admin/media/page.tsx`
+- [ ] Create `app/admin/media/actions.ts`
+- [ ] Create `app/api/upload/route.ts`
+- [ ] Test upload, optimize, block deletion
+- [ ] AI review of Segment 4
+- [ ] Final approval
+
+### Segment 12: Settings & Customization
+- [ ] Create `lib/settings/site.ts`
+- [ ] Create `lib/settings/navigation.ts`
+- [ ] Create `lib/settings/homepage.ts`
+- [ ] Create `lib/settings/colors.ts`
+- [ ] Create `lib/settings/fonts.ts`
+- [ ] Create `app/admin/settings/page.tsx`
+- [ ] Create `app/admin/settings/actions.ts`
+- [ ] Test settings save and apply
+- [ ] AI review of Segment 12
+- [ ] Final approval
+
+---
+
+## Phase 3: Business Features
+
+### Segment 5: Client Inquiry System
+- [ ] Create `lib/clients/inquiries.ts`
+- [ ] Create `lib/clients/merge.ts`
+- [ ] Create `lib/clients/anonymize.ts`
+- [ ] Create `app/contact/page.tsx`
+- [ ] Create `app/contact/actions.ts`
+- [ ] Create `app/api/inquiries/route.ts`
+- [ ] Create `app/admin/clients/page.tsx`
+- [ ] Create `app/admin/clients/[id]/page.tsx`
+- [ ] Create `app/admin/clients/actions.ts`
+- [ ] Test form submission, duplicate detection, anonymize
+- [ ] AI review of Segment 5
+- [ ] Final approval
+
+### Segment 8: Search (FTS5)
+- [ ] Create `lib/search/query.ts`
+- [ ] Create `app/api/search/route.ts`
+- [ ] Create `app/search/page.tsx`
+- [ ] Test search relevance
+- [ ] AI review of Segment 8
+- [ ] Final approval
+
+### Segment 10: Public Pages
+- [ ] Create `app/(public)/blog/page.tsx`
+- [ ] Create `app/(public)/blog/[slug]/page.tsx`
+- [ ] Create `app/(public)/guides/page.tsx`
+- [ ] Create `app/(public)/guides/[slug]/page.tsx`
+- [ ] Create `app/(public)/reviews/page.tsx`
+- [ ] Create `app/(public)/reviews/[slug]/page.tsx`
+- [ ] Create `app/(public)/videos/page.tsx`
+- [ ] Create `app/(public)/about/page.tsx`
+- [ ] Create `app/(public)/privacy/page.tsx`
+- [ ] Create `app/(public)/faq/page.tsx`
+- [ ] Test all public pages render
+- [ ] AI review of Segment 10
+- [ ] Final approval
+
+### Segment 11: Homepage & Navigation
+- [ ] Create `components/layout/Header.tsx`
+- [ ] Create `components/layout/Footer.tsx`
+- [ ] Create `components/layout/Navigation.tsx`
+- [ ] Create `components/layout/Certifications.tsx`
+- [ ] Create `components/homepage/HeroSection.tsx`
+- [ ] Create `components/homepage/AboutBlurb.tsx`
+- [ ] Create `components/homepage/FeaturedContent.tsx`
+- [ ] Create `components/homepage/FeaturedVideo.tsx`
+- [ ] Create `components/homepage/CallToAction.tsx`
+- [ ] Create `app/(public)/page.tsx` (homepage)
+- [ ] Test homepage sections
+- [ ] AI review of Segment 11
+- [ ] Final approval
+
+---
+
+## Phase 4: Portal System
+
+### Segment 6: Portal System (Magic Links)
+- [ ] Create `lib/portal/magic-link.ts`
+- [ ] Create `lib/portal/sessions.ts`
+- [ ] Create `lib/portal/notices.ts`
+- [ ] Create `lib/portal/documents.ts`
+- [ ] Create `lib/portal/faqs.ts`
+- [ ] Create `lib/portal/access-log.ts` (NEW)
+- [ ] Create `app/admin/portals/page.tsx`
+- [ ] Create `app/admin/portals/new/page.tsx`
+- [ ] Create `app/admin/portals/[id]/page.tsx`
+- [ ] Create `app/admin/portals/actions.ts`
+- [ ] Create `app/portal/access/[token]/page.tsx`
+- [ ] Create `app/portal/consume/[token]/route.ts`
+- [ ] Create `app/portal/[portalSlug]/page.tsx`
+- [ ] Test magic link flow end-to-end
+- [ ] AI review of Segment 6
+- [ ] Final approval
+
+---
+
+## Phase 5: Integration & Polish
+
+### Segment 9: Admin Dashboard UI
+- [ ] Create `app/admin/page.tsx` (dashboard)
+- [ ] Create `app/admin/components/Sidebar.tsx`
+- [ ] Create `app/admin/components/QuickActions.tsx`
+- [ ] Create `app/admin/components/RecentPosts.tsx`
+- [ ] Create `app/admin/components/ClientInquiries.tsx`
+- [ ] Create `app/admin/components/ActivePortals.tsx`
+- [ ] Create `app/admin/components/RecentActivity.tsx`
+- [ ] Create `app/admin/components/StorageUsage.tsx`
+- [ ] Create `app/admin/activity/page.tsx` (from Segment 13 split)
+- [ ] Create `app/admin/activity/actions.ts`
+- [ ] Test dashboard
+- [ ] AI review of Segment 9
+- [ ] Final approval
+
+### Segment 15: Security Hardening & Testing
+- [ ] Create `lib/security/csrf.ts` (confirm if needed with Lucia)
+- [ ] Create `tests/auth.test.ts`
+- [ ] Create `tests/content.test.ts`
+- [ ] Create `tests/portal.test.ts`
+- [ ] Create `tests/clients.test.ts`
+- [ ] Create `tests/search.test.ts`
+- [ ] Create `tests/integration.test.ts`
+- [ ] Create `lib/jobs/data-retention.ts` (NEW)
+- [ ] Create `lib/jobs/email-processor.ts` (NEW)
+- [ ] Run all tests
+- [ ] Security audit
+- [ ] AI review of Segment 15
+- [ ] Final approval
+
+---
+
+## Deployment & Launch
+
+### Infrastructure Setup
+- [ ] Purchase/acquire mini PC
+- [ ] Install Ubuntu Server LTS
+- [ ] Enable LUKS full-disk encryption
+- [ ] Configure UFW firewall
+- [ ] Set up SSH key authentication
+- [ ] Install Node.js
+- [ ] Install nginx
+- [ ] Install fail2ban
+- [ ] Configure unattended-upgrades
+
+### Cloudflare Setup
+- [ ] Register domain name
+- [ ] Create Cloudflare account
+- [ ] Add domain to Cloudflare
+- [ ] Set up Cloudflare Tunnel
+- [ ] Configure Turnstile
+- [ ] Enable Web Analytics
+
+### Email Setup
+- [ ] Create Resend account
+- [ ] Verify domain
+- [ ] Get API key
+- [ ] Configure webhook for bounce handling
+
+### Deployment
+- [ ] Clone repository to mini PC
+- [ ] Run initial database migration
+- [ ] Configure environment variables
+- [ ] Set up systemd service
+- [ ] Test deployment
+- [ ] Configure backup cron jobs
+- [ ] Test backup/restore
+- [ ] Configure cleanup cron jobs
+- [ ] Configure scheduled jobs
+
+### Final Testing
+- [ ] Test admin login (with 2FA)
+- [ ] Test content creation
+- [ ] Test media upload
+- [ ] Test client form
+- [ ] Test portal magic links
+- [ ] Test email notifications
+- [ ] Test search
+- [ ] Test mobile responsiveness
+- [ ] Test SEO meta tags
+- [ ] Test backup restore
+- [ ] Test rate limiting
+- [ ] Test activity logging
+
+### Launch
+- [ ] Final content review
+- [ ] Performance optimization
+- [ ] Security audit
+- [ ] Go live
+- [ ] Monitor for 48 hours
+- [ ] Post-launch fixes
+
+---
+
+## Updated File Count
+
+| Phase | Segment | Files |
+|-------|---------|-------|
+| 0 | Project Init | 16 |
+| 1 | Database | 34 |
+| 1 | Security Primitives | 3 |
+| 1 | Auth | 9 |
+| 1 | Activity Logging (lib) | 2 |
+| 1 | Email System | 9 |
+| 1 | Backup/Deploy | 11 |
+| 2 | Content Management | 26 |
+| 2 | Media Library | 9 |
+| 2 | Settings | 7 |
+| 3 | Client Inquiry | 9 |
+| 3 | Search | 3 |
+| 3 | Public Pages | 10 |
+| 3 | Homepage | 10 |
+| 4 | Portal System | 14 |
+| 5 | Admin Dashboard | 10 |
+| 5 | Security/Testing | 10 |
+| **Total** | | **192 files** |
+
+---
+
+## Progress Tracker
+
+| Segment | Status | Files | Review |
+|---------|--------|-------|--------|
+| 0: Project Init | Not Started | 0/16 | Pending |
+| 1: Database | Not Started | 0/34 | Pending |
+| 1.5: Security Primitives | Not Started | 0/3 | Pending |
+| 2: Auth | Not Started | 0/9 | Pending |
+| 13a: Activity Logging | Not Started | 0/2 | Pending |
+| 7: Email | Not Started | 0/9 | Pending |
+| 14: Backup/Deploy | Not Started | 0/11 | Pending |
+| 3: Content | Not Started | 0/26 | Pending |
+| 4: Media | Not Started | 0/9 | Pending |
+| 12: Settings | Not Started | 0/7 | Pending |
+| 5: Clients | Not Started | 0/9 | Pending |
+| 8: Search | Not Started | 0/3 | Pending |
+| 10: Public Pages | Not Started | 0/10 | Pending |
+| 11: Homepage | Not Started | 0/10 | Pending |
+| 6: Portal | Not Started | 0/14 | Pending |
+| 9: Admin Dashboard | Not Started | 0/10 | Pending |
+| 15: Security/Testing | Not Started | 0/10 | Pending |
+
+---
+
+**Ready to begin Segment 0: Project Initialization**
+
+Shall I provide the first file?
