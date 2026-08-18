@@ -11,7 +11,8 @@ This ensures my documentation stays current even if I lose context.
 
 ## Current Status
 Segment 0 is COMPLETE. All 16 files created on GitHub.
-Currently working on Segment 1: Database Schema & Migrations.
+Segment 1 is COMPLETE. All 33 files created on GitHub.
+Currently working on Segment 1.5: Security Primitives.
 
 ## Project Overview
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
@@ -55,7 +56,9 @@ NEXT FILE: drizzle/schema/sessions.ts
 ---
 ...and so on
 
-## Files Already Created (Segment 0 - Complete)
+## Files Already Created (Segments 0 and 1 - Complete)
+
+### Segment 0 (16 files):
 - package.json
 - next.config.ts
 - tsconfig.json
@@ -73,43 +76,72 @@ NEXT FILE: drizzle/schema/sessions.ts
 - components/ui/Pagination.tsx
 - scripts/seed.ts
 
+### Segment 1 (33 files):
+- drizzle/schema/users.ts
+- drizzle/schema/sessions.ts
+- drizzle/schema/activity-log.ts
+- drizzle/schema/categories.ts
+- drizzle/schema/tags.ts
+- drizzle/schema/posts.ts
+- drizzle/schema/guides.ts
+- drizzle/schema/reviews.ts
+- drizzle/schema/videos.ts
+- drizzle/schema/clients.ts
+- drizzle/schema/client-attachments.ts
+- drizzle/schema/client-merges.ts
+- drizzle/schema/portals.ts
+- drizzle/schema/portal-members.ts
+- drizzle/schema/portal-magic-links.ts
+- drizzle/schema/portal-sessions.ts
+- drizzle/schema/portal-notices.ts
+- drizzle/schema/portal-documents.ts
+- drizzle/schema/portal-faqs.ts
+- drizzle/schema/email-queue.ts
+- drizzle/schema/email-suppressions.ts
+- drizzle/schema/media.ts
+- drizzle/schema/certifications.ts
+- drizzle/schema/settings.ts
+- drizzle/schema/pages.ts
+- drizzle/schema/redirects.ts
+- drizzle/schema/revisions.ts
+- drizzle/schema/post-tags.ts
+- drizzle/schema/guide-tags.ts
+- drizzle/schema/review-tags.ts
+- drizzle/schema/related-content.ts
+- drizzle/migrations/0001_fts5_triggers.sql
+- drizzle/schema/index.ts
+
 ## Current Segment
-Segment 1: Database Schema & Migrations (34 files)
+Segment 1.5: Security Primitives (3 files)
 
 ## Next File To Create
-drizzle/schema/users.ts
+lib/security/rate-limit.ts
 
 ## Task
-Create all database schema files using Drizzle ORM for SQLite. Each file defines one table. Follow the SRS Section 4 database schema exactly.
+Create security utility files for rate limiting, input validation, and security headers.
 
 ## Review Criteria
-- Schema matches SRS Section 4 exactly
-- All constraints present (CHECK, UNIQUE, FOREIGN KEY)
-- Soft delete fields (deleted_at) on appropriate tables
-- FTS5 triggers in raw SQL migration
-- Indexes created
-- Proper TypeScript types
-- Drizzle ORM best practices
+- Rate limiting works per IP
+- Validation functions comprehensive
+- Headers match SRS Section 8
+- TypeScript types correct
+- No external dependencies beyond what's in package.json
 
 ## Previous Decisions
-- SQLite with WAL mode
-- Drizzle ORM with better-sqlite3
-- Soft deletes on major tables
-- FTS5 search with triggers
-- Activity log table included
-- Email queue table included
-- Portal magic links with revocation
-- Global announcements (not "all-hands")
-- Consent versioning on clients
-- Data retention policy in place
+- Rate limiting: Login 5 attempts/15min, Forms 3/hour/IP
+- IP-based rate limiting (not account-based)
+- Validation for all user inputs
+- Security headers in next.config.ts already
+- Lucia Auth handles CSRF
+- No additional dependencies needed
 
 ## Progress Tracker (Current)
 
 | Segment | Status | Files | Review |
 |---------|--------|-------|--------|
 | 0: Project Init | ✅ Complete | 16/16 | Approved |
-| 1: Database | In Progress | 0/34 | Pending |
-| 1.5: Security Primitives | Not Started | 0/3 | Pending |
+| 1: Database | ✅ Complete | 33/33 | Approved |
+| 1.5: Security Primitives | In Progress | 0/3 | Pending |
 | 2: Auth | Not Started | 0/9 | Pending |
 | 13a: Activity Logging | Not Started | 0/2 | Pending |
 | 7: Email | Not Started | 0/9 | Pending |
@@ -125,41 +157,10 @@ Create all database schema files using Drizzle ORM for SQLite. Each file defines
 | 9: Admin Dashboard | Not Started | 0/10 | Pending |
 | 15: Security/Testing | Not Started | 0/10 | Pending |
 
-## Segment 1 Files To Create (In Order)
+## Segment 1.5 Files To Create (In Order)
 
-1. drizzle/schema/users.ts
-2. drizzle/schema/sessions.ts
-3. drizzle/schema/activity-log.ts
-4. drizzle/schema/categories.ts
-5. drizzle/schema/tags.ts
-6. drizzle/schema/posts.ts
-7. drizzle/schema/guides.ts
-8. drizzle/schema/reviews.ts
-9. drizzle/schema/videos.ts
-10. drizzle/schema/clients.ts
-11. drizzle/schema/client-attachments.ts
-12. drizzle/schema/client-merges.ts
-13. drizzle/schema/portals.ts
-14. drizzle/schema/portal-members.ts
-15. drizzle/schema/portal-magic-links.ts
-16. drizzle/schema/portal-sessions.ts
-17. drizzle/schema/portal-notices.ts
-18. drizzle/schema/portal-documents.ts
-19. drizzle/schema/portal-faqs.ts
-20. drizzle/schema/email-queue.ts
-21. drizzle/schema/email-suppressions.ts
-22. drizzle/schema/media.ts
-23. drizzle/schema/certifications.ts
-24. drizzle/schema/settings.ts
-25. drizzle/schema/pages.ts
-26. drizzle/schema/redirects.ts
-27. drizzle/schema/revisions.ts
-28. drizzle/schema/post-tags.ts
-29. drizzle/schema/guide-tags.ts
-30. drizzle/schema/review-tags.ts
-31. drizzle/schema/related-content.ts
-32. drizzle/schema/search-index.ts
-33. drizzle/migrations/0001_fts5_triggers.sql
-34. drizzle/schema/index.ts
+1. lib/security/rate-limit.ts
+2. lib/security/validation.ts
+3. lib/security/headers.ts
 
 Please provide the code file by file using the format above.
