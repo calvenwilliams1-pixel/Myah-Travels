@@ -4,7 +4,75 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
 - Cloudflare Tunnel for external access
 - SQLite database (WAL mode)
+- Drizzle ORMI am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
+
+## Project Overview
+- Self-hosted Next.js application on a mini PC (Ubuntu Server)
+- Cloudflare Tunnel for external access
+- SQLite database (WAL mode)
 - Drizzle ORM
+- TipTap editor for content
+- Lucia Auth for admin authentication (with TOTP 2FA)
+- Resend for email
+- Single admin user (Myah)
+- Client/group portal system with magic link access
+- PIPEDA compliance required
+
+## Key Architecture Decisions
+- Magic links for portal access (2-step: GET landing page, POST consumes token)
+- Admin uses username + password + TOTP 2FA
+- FTS5 search with database triggers
+- Activity logging for all admin/portal actions
+- Soft deletes with 90-day purge
+- Data retention policy
+- Email queue for asynchronous sending
+- Global announcements (renamed from "all-hands")
+- Backups local only (VACUUM INTO method)
+- LUKS full-disk encryption
+
+## How I Work (GitHub Website)
+I am using the GitHub website (not command line) to create files.
+I create files one at a time using "Add file" → "Create new file".
+When you give me code, you MUST specify:
+1. The exact file path (e.g., drizzle/schema/users.ts)
+2. The complete code for that file
+3. Then say "NEXT FILE" before the next file
+
+Format your response like this:
+---
+FILE: drizzle/schema/users.ts
+[complete code here]
+---
+NEXT FILE: drizzle/schema/sessions.ts
+[complete code here]
+---
+...and so on
+
+## Current Segment
+have not started
+
+## Files Already Created
+[List all files already in the repository]
+
+## SRS Reference
+The complete SRS is available. Key sections:
+- Section 4: Database Schema
+- Section 5: Functional Requirements
+- Section 6: Admin Interface Specs
+- Section 7: Portal Specs
+- Section 8: Security Requirements
+- Section 13: Data Retention Policy
+
+## Task
+[Describe what code needs to be written for this segment]
+
+## Review Criteria
+[List the review criteria for this segment]
+
+## Previous Decisions
+[Any decisions made in previous segments that affect this one]
+
+Please provide the code file by file using the format above.
 - TipTap editor for content
 - Lucia Auth for admin authentication (with TOTP 2FA)
 - Resend for email
