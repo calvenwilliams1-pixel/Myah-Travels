@@ -1,10 +1,16 @@
 I am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
 
-## Project Overview
-- Self-hosted Next.js application on a mini PC (Ubuntu Server)
-- Cloudflare Tunnel for external access
-- SQLite database (WAL mode)
-- Drizzle ORMI am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
+## IMPORTANT: Auto-Update Instructions
+At the end of EVERY response, you MUST provide me with:
+1. The updated "Progress Tracker" section to paste into TODO.md
+2. The updated "Files Already Created" list to paste into MASTER-PROMPT.md
+3. The updated "Next File To Create" line for MASTER-PROMPT.md
+4. A one-line summary of what was just completed
+
+This ensures my documentation stays current even if I lose context.
+
+## Current Status
+[This will be updated as progress is made - see Progress Tracker]
 
 ## Project Overview
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
@@ -48,77 +54,25 @@ NEXT FILE: drizzle/schema/sessions.ts
 ---
 ...and so on
 
-## Current Segment
-have not started
-
 ## Files Already Created
-[List all files already in the repository]
-
-## SRS Reference
-The complete SRS is available. Key sections:
-- Section 4: Database Schema
-- Section 5: Functional Requirements
-- Section 6: Admin Interface Specs
-- Section 7: Portal Specs
-- Section 8: Security Requirements
-- Section 13: Data Retention Policy
-
-## Task
-[Describe what code needs to be written for this segment]
-
-## Review Criteria
-[List the review criteria for this segment]
-
-## Previous Decisions
-[Any decisions made in previous segments that affect this one]
-
-Please provide the code file by file using the format above.
-- TipTap editor for content
-- Lucia Auth for admin authentication (with TOTP 2FA)
-- Resend for email
-- Single admin user (Myah)
-- Client/group portal system with magic link access
-- PIPEDA compliance required
-
-## Key Architecture Decisions
-- Magic links for portal access (2-step: GET landing page, POST consumes token)
-- Admin uses username + password + TOTP 2FA
-- FTS5 search with database triggers
-- Activity logging for all admin/portal actions
-- Soft deletes with 90-day purge
-- Data retention policy (see SRS Section 13)
-- Email queue for asynchronous sending
-- Global announcements (renamed from "all-hands")
-- Backups local only (VACUUM INTO method)
-- LUKS full-disk encryption
+[NONE YET - Segment 0 not started]
 
 ## Current Segment
-[Describe which segment you're working on, e.g., "Segment 3: Content Management"]
+Segment 0: Project Initialization
 
-## SRS Reference
-The complete SRS is available. Key sections:
-- Section 4: Database Schema
-- Section 5: Functional Requirements
-- Section 6: Admin Interface Specs
-- Section 7: Portal Specs
-- Section 8: Security Requirements
-- Section 13: Data Retention Policy
+## Next File To Create
+package.json
 
 ## Task
-[Describe what code needs to be written for this segment]
+Set up the initial project configuration files.
 
 ## Review Criteria
-[List the review criteria for this segment]
+- All config files present
+- TypeScript strict mode
+- Drizzle configured
+- Database connection working
+- Shared UI components created
+- Seed script ready
 
 ## Previous Decisions
-[Any decisions made in previous segments that affect this one]
-
-Please write the code plan for this segment. Include:
-1. File structure
-2. Component breakdown
-3. API endpoints
-4. Database interactions
-5. Edge cases
-6. Testing approach
-
-Write the plan first, then I'll request code implementation after review.
+None yet - this is the first segment.
