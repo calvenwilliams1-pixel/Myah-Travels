@@ -8,6 +8,8 @@ export const portals = sqliteTable(
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     isActive: integer("is_active", { mode: "boolean" }).default(true),
+    departureDate: text("departure_date"),
+    returnDate: text("return_date"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     archivedAt: text("archived_at"),
     deletedAt: text("deleted_at"),
