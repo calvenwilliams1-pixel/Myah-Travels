@@ -71,6 +71,9 @@ Currently working on Segment 11: Homepage & Navigation.
 - revalidate = 3600 used instead of force-dynamic on public pages
 - cache() used for metadata/page deduplication
 - bio_text stored in settings
+- Portal schema updated: added departureDate and returnDate to portals table
+- Magic link expiry logic (Segment 6): returnDate + 3 days, fallback 30 days
+- Portal dates displayed prominently in dashboard (Segment 6)
 
 ## How I Work (GitHub Website)
 I am using the GitHub website (not command line) to create files.
@@ -131,7 +134,7 @@ NEXT FILE: drizzle/schema/sessions.ts
 - drizzle/schema/clients.ts
 - drizzle/schema/client-attachments.ts
 - drizzle/schema/client-merges.ts
-- drizzle/schema/portals.ts
+- drizzle/schema/portals.ts (UPDATED: added departureDate, returnDate)
 - drizzle/schema/portal-members.ts
 - drizzle/schema/portal-magic-links.ts
 - drizzle/schema/portal-sessions.ts
@@ -263,8 +266,8 @@ Create homepage sections and navigation components. Header with nav, footer with
 - Only published content shown
 
 ## Previous Decisions
-- Homepage sections reorderable with up/down buttons
-- Navigation visibility toggles in settings
+- Homepage sections reorderable with up/down buttons (deferred to V2)
+- Navigation visibility toggles in settings (deferred to V2)
 - Certifications in footer
 - Social media links (Instagram, YouTube)
 - Hero section with tagline
