@@ -31,7 +31,9 @@ Segment 1.5 is COMPLETE. 1 file created on GitHub.
 Segment 2 is COMPLETE. 5 files created on GitHub.
 Segment 13a is COMPLETE. 1 file created on GitHub.
 Segment 7 is COMPLETE. 5 files created on GitHub (plus package.json and .env.example updated).
-Currently working on Segment 14: Backup & Deployment Scripts.
+Segment 14 is COMPLETE. 8 files created on GitHub.
+Segment 3 is COMPLETE. 19 files created on GitHub.
+Currently working on Segment 4: Media Library.
 
 ## Project Overview
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
@@ -58,6 +60,9 @@ Currently working on Segment 14: Backup & Deployment Scripts.
 - LUKS full-disk encryption
 - CRON_SECRET for protected API routes
 - Svix webhook verification for Resend
+- Custom TipTap blocks deferred to V2 (using built-in features for now)
+- Autosave deferred to V2 (manual save only for now)
+- Category/Tag UI deferred to later segments
 
 ## How I Work (GitHub Website)
 I am using the GitHub website (not command line) to create files.
@@ -85,7 +90,7 @@ NEXT FILE: drizzle/schema/sessions.ts
 - When giving me files, combine related utility functions into one file
 - Tell me the exact file path for each combined file
 
-## Files Already Created (Segments 0, 1, 1.5, 2, 13a, 7 - Complete)
+## Files Already Created (Segments 0-14, 3 - Complete)
 
 ### Segment 0 (16 files):
 - package.json (UPDATED: added svix)
@@ -141,7 +146,7 @@ NEXT FILE: drizzle/schema/sessions.ts
 - drizzle/schema/index.ts
 
 ### Segment 1.5 (1 file):
-- lib/security/index.ts (UPDATED: rate limiter accepts Headers, getClientIp)
+- lib/security/index.ts
 
 ### Segment 2 (5 files):
 - lib/auth/index.ts
@@ -160,36 +165,64 @@ NEXT FILE: drizzle/schema/sessions.ts
 - app/api/email/status/route.ts
 - app/api/email/webhook/route.ts
 
+### Segment 14 (8 files):
+- scripts/backup.sh
+- scripts/restore.sh
+- scripts/deploy.sh
+- scripts/cleanup-daily.sh
+- scripts/cleanup-weekly.sh
+- scripts/health-check.sh
+- lib/monitoring/index.ts
+- app/api/health/route.ts
+
+### Segment 3 (19 files):
+- lib/content/index.ts
+- components/editor/TipTapEditor.tsx
+- components/editor/Toolbar.tsx
+- components/editor/blocks/CalloutBox.tsx
+- components/editor/blocks/YouTubeEmbed.tsx
+- components/editor/blocks/InstagramCard.tsx
+- components/editor/blocks/FileDownload.tsx
+- app/admin/(dashboard)/posts/page.tsx
+- app/admin/(dashboard)/posts/new/page.tsx
+- app/admin/(dashboard)/posts/[id]/page.tsx
+- app/admin/(dashboard)/posts/actions.ts
+- app/admin/(dashboard)/guides/page.tsx
+- app/admin/(dashboard)/guides/actions.ts
+- app/admin/(dashboard)/guides/new/page.tsx
+- app/admin/(dashboard)/guides/[id]/page.tsx
+- app/admin/(dashboard)/reviews/page.tsx
+- app/admin/(dashboard)/reviews/actions.ts
+- app/admin/(dashboard)/reviews/new/page.tsx
+- app/admin/(dashboard)/reviews/[id]/page.tsx
+
 ## Current Segment
-Segment 14: Backup & Deployment Scripts (8 files)
+Segment 4: Media Library (5 files)
 
 ## Next File To Create
-scripts/backup.sh
+lib/media/index.ts
 
 ## Task
-Create backup, restore, deployment, cleanup, and health check scripts. Plus monitoring utilities and health endpoint.
+Create media library with upload, optimization, folder management, usage tracking, and deletion protection.
 
 ## Review Criteria
-- Scripts executable
-- Backup uses safe method (VACUUM INTO)
-- Restore documented
-- Cleanup matches retention policy
-- Health check functional
-- Monitoring utilities work
+- Upload works reliably
+- Optimization effective (Sharp to WebP)
+- Usage tracking prevents broken images
+- Folders functional
+- Delete blocked if media in use
 
 ## Previous Decisions
-- Backups local only (same disk on mini PC)
-- VACUUM INTO for database backups
-- rsync for media backups
-- Nightly database backup at 2:00 AM
-- Weekly full system backup Sunday 3:00 AM
-- Retention: 30 days daily, 90 days weekly
-- Cleanup: sent emails 30 days, failed 90 days
-- Activity logs: 12 months archive, 24 months delete
-- Soft-deleted records: 90 days purge
-- Magic links: 7 days expire
-- Portal sessions: 30 days expire
-- Health check at /api/health
+- Sharp for server-side image optimization
+- WebP format for optimized images
+- 10MB max image upload
+- 20MB max document upload
+- Allowed: JPG, PNG, WebP, PDF, DOCX, XLSX, TXT
+- Blocked: EXE, JS, BAT, VBS, MSI, SCR
+- Media folders supported
+- Alt text and captions
+- Block deletion if media used in posts/guides/reviews
+- Storage usage indicator
 
 ## Progress Tracker (Current)
 
@@ -201,9 +234,9 @@ Create backup, restore, deployment, cleanup, and health check scripts. Plus moni
 | 2: Auth | ✅ Complete | 5/5 | Approved |
 | 13a: Activity Logging | ✅ Complete | 1/1 | Approved |
 | 7: Email | ✅ Complete | 5/5 | Approved |
-| 14: Backup/Deploy | In Progress | 0/8 | Pending |
-| 3: Content | Not Started | 0/14 | Pending |
-| 4: Media | Not Started | 0/5 | Pending |
+| 14: Backup/Deploy | ✅ Complete | 8/8 | Approved |
+| 3: Content | ✅ Complete | 19/19 | Approved |
+| 4: Media | In Progress | 0/5 | Pending |
 | 12: Settings | Not Started | 0/3 | Pending |
 | 5: Clients | Not Started | 0/6 | Pending |
 | 8: Search | Not Started | 0/2 | Pending |
@@ -213,16 +246,12 @@ Create backup, restore, deployment, cleanup, and health check scripts. Plus moni
 | 9: Admin Dashboard | Not Started | 0/8 | Pending |
 | 15: Security/Testing | Not Started | 0/7 | Pending |
 
-## Segment 14 Files To Create (In Order)
+## Segment 4 Files To Create (In Order)
 
-1. scripts/backup.sh
-2. scripts/restore.sh
-3. scripts/deploy.sh
-4. scripts/cleanup-daily.sh
-5. scripts/cleanup-weekly.sh
-6. scripts/health-check.sh
-7. lib/monitoring/index.ts (health, disk-space, database combined)
-8. app/api/health/route.ts
+1. lib/media/index.ts (upload, optimize, folders, usage, delete, replace combined)
+2. app/admin/(dashboard)/media/page.tsx
+3. app/admin/(dashboard)/media/actions.ts
+4. app/api/upload/route.ts
 
 Please provide the code file by file using the format above.
 ```
