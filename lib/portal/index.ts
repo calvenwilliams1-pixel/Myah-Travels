@@ -169,7 +169,7 @@ export async function isMemberOfPortal(memberId: number, portalId: number): Prom
 // MAGIC LINK MANAGEMENT
 // ============================================
 
-function getMagicLinkExpiry(portal: { returnDate?: string | null }): Date {
+export function getMagicLinkExpiry(portal: { returnDate?: string | null }): Date {
   if (portal.returnDate) {
     const expiry = new Date(portal.returnDate + "T23:59:59");
     expiry.setDate(expiry.getDate() + 3);
