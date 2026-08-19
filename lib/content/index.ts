@@ -14,6 +14,10 @@ import {
 } from "@/drizzle/schema";
 import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
 
+// ============================================
+// SLUG GENERATION
+// ============================================
+
 export function generateSlug(title: string): string {
   return title
     .toLowerCase()
@@ -51,6 +55,10 @@ async function generateUniqueSlug(
   }
 }
 
+// ============================================
+// CATEGORIES
+// ============================================
+
 export async function getCategories() {
   return db
     .select()
@@ -66,6 +74,10 @@ export async function createCategory(name: string, slug?: string) {
     slug: catSlug,
   }).returning();
 }
+
+// ============================================
+// TAGS
+// ============================================
 
 export async function getAllTags() {
   return db.select().from(tags).orderBy(tags.name);
@@ -86,6 +98,10 @@ export async function getOrCreateTag(name: string) {
   const created = await createTag(name);
   return created[0] ?? null;
 }
+
+// ============================================
+// POSTS
+// ============================================
 
 export async function getPosts(options?: {
   status?: string;
@@ -123,7 +139,9 @@ export async function getPostById(id: number) {
 }
 
 export async function getPostBySlug(slug: string) {
-  const result = await db.select().from(posts).where(eq(posts.slug, slug)).limit(1);
+  const result = await db.select().from(posts)
+    .where(and(eq(posts.slug, slug), isNull(posts.deletedAt)))
+    .limit(1);
   return result[0] ?? null;
 }
 
@@ -207,6 +225,14 @@ export async function softDeletePost(id: number) {
     .where(eq(posts.id, id));
 }
 
+export async function hardDeletePost(id: number) {
+  return db.delete(posts).where(eq(posts.id, id));
+}
+
+// ============================================
+// GUIDES
+// ============================================
+
 export async function getGuides(options?: {
   status?: string;
   limit?: number;
@@ -229,6 +255,13 @@ export async function getGuides(options?: {
 
 export async function getGuideById(id: number) {
   const result = await db.select().from(guides).where(eq(guides.id, id)).limit(1);
+  return result[0] ?? null;
+}
+
+export async function getGuideBySlug(slug: string) {
+  const result = await db.select().from(guides)
+    .where(and(eq(guides.slug, slug), isNull(guides.deletedAt)))
+    .limit(1);
   return result[0] ?? null;
 }
 
@@ -309,6 +342,10 @@ export async function softDeleteGuide(id: number) {
     .where(eq(guides.id, id));
 }
 
+// ============================================
+// REVIEWS
+// ============================================
+
 export async function getReviews(options?: {
   status?: string;
   limit?: number;
@@ -331,6 +368,13 @@ export async function getReviews(options?: {
 
 export async function getReviewById(id: number) {
   const result = await db.select().from(reviews).where(eq(reviews.id, id)).limit(1);
+  return result[0] ?? null;
+}
+
+export async function getReviewBySlug(slug: string) {
+  const result = await db.select().from(reviews)
+    .where(and(eq(reviews.slug, slug), isNull(reviews.deletedAt)))
+    .limit(1);
   return result[0] ?? null;
 }
 
@@ -432,6 +476,10 @@ export async function softDeleteReview(id: number) {
     .where(eq(reviews.id, id));
 }
 
+// ============================================
+// TAG ASSOCIATIONS
+// ============================================
+
 export async function setPostTags(postId: number, tagIds: number[]) {
   await db.delete(postTags).where(eq(postTags.postId, postId));
   for (const tagId of tagIds) {
@@ -453,6 +501,10 @@ export async function setReviewTags(reviewId: number, tagIds: number[]) {
   }
 }
 
+// ============================================
+// RELATED CONTENT
+// ============================================
+
 export async function addRelatedContent(
   sourceType: string,
   sourceId: number,
@@ -466,6 +518,10 @@ export async function addRelatedContent(
     targetId,
   }).onConflictDoNothing();
 }
+
+// ============================================
+// REVISION HISTORY
+// ============================================
 
 export async function getRevisions(contentType: string, contentId: number) {
   return db.select().from(revisions).where(
@@ -522,6 +578,10 @@ export async function restoreRevision(revisionId: number) {
   
   return null;
 }
+
+// ============================================
+// TIPTAP TEXT EXTRACTION (for FTS5)
+// ============================================
 
 export function extractTextFromTipTap(json: string): string {
   try {
