@@ -1,3 +1,8 @@
+# Updated MASTER-PROMPT.md - Paste This Into GitHub
+
+---
+
+```
 I am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
 
 ## IMPORTANT: Auto-Update Instructions
@@ -287,3 +292,8 @@ Create public-facing pages for blog listing, blog detail, guides listing, guides
 10. app/(public)/faq/page.tsx
 
 Please provide the code file by file using the format above.
+```
+
+---
+
+**Paste this into your MASTER-PROMPT.md file on GitHub, replacing the old content.**
