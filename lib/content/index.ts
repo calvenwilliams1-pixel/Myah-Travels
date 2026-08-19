@@ -3,6 +3,7 @@ import {
   posts,
   guides,
   reviews,
+  videos,
   tags,
   categories,
   postTags,
@@ -374,6 +375,14 @@ export async function getReviewById(id: number) {
 export async function getReviewBySlug(slug: string) {
   const result = await db.select().from(reviews)
     .where(and(eq(reviews.slug, slug), isNull(reviews.deletedAt)))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+export async function getFeaturedVideo() {
+  const result = await db.select().from(videos)
+    .where(and(isNull(videos.deletedAt), eq(videos.status, "published"), eq(videos.isFeatured, true)))
+    .orderBy(desc(videos.createdAt))
     .limit(1);
   return result[0] ?? null;
 }
