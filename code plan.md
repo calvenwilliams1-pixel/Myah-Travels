@@ -1,4 +1,4 @@
-# Revised CODE-PLAN.md - With File Combining Rules
+# Updated CODE-PLAN.md - Paste This Into GitHub
 
 ---
 
@@ -111,11 +111,11 @@ Phase 0: Project Setup
 
 Phase 1: Foundation
 ├── Segment 1: Database Schema & Migrations ✅ COMPLETE
-├── Segment 1.5: Security Primitives
-├── Segment 2: Authentication
-├── Segment 13a: Activity Logging Library
-├── Segment 7: Email System
-└── Segment 14: Backup & Deployment Scripts
+├── Segment 1.5: Security Primitives ✅ COMPLETE
+├── Segment 2: Authentication ✅ COMPLETE
+├── Segment 13a: Activity Logging Library ✅ COMPLETE
+├── Segment 7: Email System ✅ COMPLETE
+└── Segment 14: Backup & Deployment Scripts ← IN PROGRESS
 
 Phase 2: Core Features
 ├── Segment 3: Content Management
@@ -140,56 +140,47 @@ Phase 5: Integration & Polish
 
 ## Detailed Segment Breakdown (With Combined Files)
 
-### Segment 1.5: Security Primitives (1 file)
+### Segment 0: Project Initialization ✅ COMPLETE (16 files)
 
-**File to create:**
+### Segment 1: Database Schema ✅ COMPLETE (33 files)
+
+### Segment 1.5: Security Primitives ✅ COMPLETE (1 file)
+
+**File created:**
 ```
 lib/security/index.ts
 ```
 
-**Contains:**
-- Rate limiting (IP-based)
-- Input validation utilities
-- Security headers constant
+### Segment 2: Authentication ✅ COMPLETE (5 files)
 
----
-
-### Segment 2: Authentication (5 files)
-
-**Files to create:**
+**Files created:**
 ```
-lib/auth/index.ts              ← Combined: lucia, totp, password, session
-middleware.ts                  ← Root middleware
-app/admin/login/page.tsx       ← Login page
-app/admin/login/actions.ts     ← Login server actions
-app/admin/layout.tsx           ← Protected layout
+lib/auth/index.ts
+middleware.ts
+app/admin/(auth)/login/page.tsx
+app/admin/(auth)/login/actions.ts
+app/admin/(dashboard)/layout.tsx
 ```
 
----
+### Segment 13a: Activity Logging ✅ COMPLETE (1 file)
 
-### Segment 13a: Activity Logging Library (1 file)
-
-**File to create:**
+**File created:**
 ```
-lib/logging/index.ts           ← Combined: activity, middleware
+lib/logging/index.ts
 ```
 
----
+### Segment 7: Email System ✅ COMPLETE (5 files)
 
-### Segment 7: Email System (5 files)
-
-**Files to create:**
+**Files created:**
 ```
-lib/email/index.ts             ← Combined: resend, queue
-lib/email/templates.ts         ← Combined: all 4 templates
+lib/email/index.ts
+lib/email/templates.ts
 app/api/email/process-queue/route.ts
 app/api/email/status/route.ts
 app/api/email/webhook/route.ts
 ```
 
----
-
-### Segment 14: Backup & Deployment (8 files)
+### Segment 14: Backup & Deployment (8 files) ← IN PROGRESS
 
 **Files to create:**
 ```
@@ -199,17 +190,15 @@ scripts/deploy.sh
 scripts/cleanup-daily.sh
 scripts/cleanup-weekly.sh
 scripts/health-check.sh
-lib/monitoring/index.ts        ← Combined: health, disk-space, database
+lib/monitoring/index.ts
 app/api/health/route.ts
 ```
-
----
 
 ### Segment 3: Content Management (14 files)
 
 **Files to create:**
 ```
-lib/content/index.ts           ← Combined: posts, guides, reviews, tags, categories, extract-text
+lib/content/index.ts
 components/editor/TipTapEditor.tsx
 components/editor/Toolbar.tsx
 components/editor/blocks/CalloutBox.tsx
@@ -226,36 +215,30 @@ app/admin/reviews/page.tsx
 app/admin/reviews/[id]/page.tsx
 ```
 
----
-
 ### Segment 4: Media Library (5 files)
 
 **Files to create:**
 ```
-lib/media/index.ts             ← Combined: upload, optimize, folders, usage, delete, replace
+lib/media/index.ts
 app/admin/media/page.tsx
 app/admin/media/actions.ts
 app/api/upload/route.ts
 ```
 
----
-
 ### Segment 12: Settings (3 files)
 
 **Files to create:**
 ```
-lib/settings/index.ts          ← Combined: site, navigation, homepage, colors, fonts
+lib/settings/index.ts
 app/admin/settings/page.tsx
 app/admin/settings/actions.ts
 ```
-
----
 
 ### Segment 5: Client Inquiry (6 files)
 
 **Files to create:**
 ```
-lib/clients/index.ts           ← Combined: inquiries, merge, anonymize
+lib/clients/index.ts
 app/contact/page.tsx
 app/contact/actions.ts
 app/api/inquiries/route.ts
@@ -263,20 +246,16 @@ app/admin/clients/page.tsx
 app/admin/clients/[id]/page.tsx
 ```
 
----
-
 ### Segment 8: Search (2 files)
 
 **Files to create:**
 ```
-lib/search/index.ts            ← Combined: query, extract
+lib/search/index.ts
 app/search/page.tsx
 app/api/search/route.ts
 ```
 
----
-
-### Segment 10: Public Pages (10 files - No Change)
+### Segment 10: Public Pages (10 files)
 
 **Files to create:**
 ```
@@ -292,9 +271,7 @@ app/(public)/privacy/page.tsx
 app/(public)/faq/page.tsx
 ```
 
----
-
-### Segment 11: Homepage & Navigation (10 files - No Change)
+### Segment 11: Homepage & Navigation (10 files)
 
 **Files to create:**
 ```
@@ -310,13 +287,11 @@ components/homepage/CallToAction.tsx
 app/(public)/page.tsx
 ```
 
----
-
 ### Segment 6: Portal System (9 files)
 
 **Files to create:**
 ```
-lib/portal/index.ts            ← Combined: magic-link, sessions, notices, documents, faqs, access-log
+lib/portal/index.ts
 app/admin/portals/page.tsx
 app/admin/portals/new/page.tsx
 app/admin/portals/[id]/page.tsx
@@ -326,29 +301,25 @@ app/portal/consume/[token]/route.ts
 app/portal/[portalSlug]/page.tsx
 ```
 
----
-
 ### Segment 9: Admin Dashboard UI (8 files)
 
 **Files to create:**
 ```
-app/admin/page.tsx
-app/admin/components/Sidebar.tsx
-app/admin/components/QuickActions.tsx
-app/admin/components/RecentPosts.tsx
-app/admin/components/ClientInquiries.tsx
-app/admin/components/ActivePortals.tsx
-app/admin/components/RecentActivity.tsx
-app/admin/components/StorageUsage.tsx
+app/admin/(dashboard)/page.tsx
+app/admin/(dashboard)/components/Sidebar.tsx
+app/admin/(dashboard)/components/QuickActions.tsx
+app/admin/(dashboard)/components/RecentPosts.tsx
+app/admin/(dashboard)/components/ClientInquiries.tsx
+app/admin/(dashboard)/components/ActivePortals.tsx
+app/admin/(dashboard)/components/RecentActivity.tsx
+app/admin/(dashboard)/components/StorageUsage.tsx
 ```
-
----
 
 ### Segment 15: Security & Testing (7 files)
 
 **Files to create:**
 ```
-lib/jobs/index.ts              ← Combined: data-retention, email-processor, scheduled-posts
+lib/jobs/index.ts
 tests/auth.test.ts
 tests/content.test.ts
 tests/portal.test.ts
@@ -366,6 +337,8 @@ myah-travels/
 ├── app/
 │   ├── (public)/
 │   ├── admin/
+│   │   ├── (auth)/
+│   │   └── (dashboard)/
 │   ├── portal/
 │   └── api/
 ├── components/
@@ -392,6 +365,7 @@ myah-travels/
 │   ├── schema/
 │   └── migrations/
 ├── tests/
+├── middleware.ts
 ├── .env.example
 ├── package.json
 └── README.md
@@ -405,11 +379,11 @@ myah-travels/
 |---------|--------|-------|--------|
 | 0: Project Init | ✅ Complete | 16/16 | Approved |
 | 1: Database | ✅ Complete | 33/33 | Approved |
-| 1.5: Security Primitives | Not Started | 0/1 | Pending |
-| 2: Auth | Not Started | 0/5 | Pending |
-| 13a: Activity Logging | Not Started | 0/1 | Pending |
-| 7: Email | Not Started | 0/5 | Pending |
-| 14: Backup/Deploy | Not Started | 0/8 | Pending |
+| 1.5: Security Primitives | ✅ Complete | 1/1 | Approved |
+| 2: Auth | ✅ Complete | 5/5 | Approved |
+| 13a: Activity Logging | ✅ Complete | 1/1 | Approved |
+| 7: Email | ✅ Complete | 5/5 | Approved |
+| 14: Backup/Deploy | In Progress | 0/8 | Pending |
 | 3: Content | Not Started | 0/14 | Pending |
 | 4: Media | Not Started | 0/5 | Pending |
 | 12: Settings | Not Started | 0/3 | Pending |
@@ -425,7 +399,7 @@ myah-travels/
 
 ## Next Step
 
-**Segment 1.5: Security Primitives** (1 file: `lib/security/index.ts`)
+**Segment 14: Backup & Deployment Scripts** (8 files)
 
 ---
 
