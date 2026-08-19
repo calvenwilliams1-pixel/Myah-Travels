@@ -1,19 +1,20 @@
 import { db } from "@/lib/db";
 import { settings, certifications } from "@/drizzle/schema";
 import { eq, isNull } from "drizzle-orm";
+import { cache } from "react";
 
-export async function getSetting(key: string): Promise<string | null> {
-  const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
-  return result[0]?.value ?? null;
-}
-
-export async function getAllSettings(): Promise<Record<string, string>> {
+export const getAllSettings = cache(async (): Promise<Record<string, string>> => {
   const result = await db.select().from(settings);
   const settingsMap: Record<string, string> = {};
   for (const row of result) {
     settingsMap[row.key] = row.value ?? "";
   }
   return settingsMap;
+});
+
+export async function getSetting(key: string): Promise<string | null> {
+  const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+  return result[0]?.value ?? null;
 }
 
 export async function setSetting(key: string, value: string): Promise<void> {
@@ -82,4 +83,6 @@ export const DEFAULT_SETTINGS = {
   footer_text: "",
   logo_path: "",
   bio_text: "Black mom of three and wife to the mushroom king, I've always loved to travel almost as much as I love to create a new world through writing. I'm at this beautiful point in my life where I want to combine my love for both and share that with you all.",
+  instagram_url: "https://instagram.com",
+  youtube_url: "https://youtube.com",
 };
