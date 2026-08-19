@@ -1,8 +1,3 @@
-# Updated MASTER-PROMPT.md - Paste This Into GitHub
-
----
-
-```
 I am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
 
 ## IMPORTANT: Auto-Update Instructions
@@ -33,7 +28,11 @@ Segment 13a is COMPLETE. 1 file created on GitHub.
 Segment 7 is COMPLETE. 5 files created on GitHub (plus package.json and .env.example updated).
 Segment 14 is COMPLETE. 8 files created on GitHub.
 Segment 3 is COMPLETE. 19 files created on GitHub.
-Currently working on Segment 4: Media Library.
+Segment 4 is COMPLETE. 4 files created on GitHub.
+Segment 12 is COMPLETE. 3 files created on GitHub.
+Segment 5 is COMPLETE. 6 files created on GitHub.
+Segment 8 is COMPLETE. 3 files created on GitHub.
+Currently working on Segment 10: Public Pages.
 
 ## Project Overview
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
@@ -63,6 +62,9 @@ Currently working on Segment 4: Media Library.
 - Custom TipTap blocks deferred to V2 (using built-in features for now)
 - Autosave deferred to V2 (manual save only for now)
 - Category/Tag UI deferred to later segments
+- Search URLs use ?id= placeholder until Segment 10 (Public Pages) implements slug routing
+- Confirmation dialogs deferred to Phase 2 (need client component wrappers)
+- file-type package for magic byte verification on uploads
 
 ## How I Work (GitHub Website)
 I am using the GitHub website (not command line) to create files.
@@ -90,10 +92,10 @@ NEXT FILE: drizzle/schema/sessions.ts
 - When giving me files, combine related utility functions into one file
 - Tell me the exact file path for each combined file
 
-## Files Already Created (Segments 0-14, 3 - Complete)
+## Files Already Created (Segments 0-14, 3, 4, 12, 5, 8 - Complete)
 
 ### Segment 0 (16 files):
-- package.json (UPDATED: added svix)
+- package.json (UPDATED: added svix, file-type)
 - next.config.ts
 - tsconfig.json
 - drizzle.config.ts
@@ -196,33 +198,58 @@ NEXT FILE: drizzle/schema/sessions.ts
 - app/admin/(dashboard)/reviews/new/page.tsx
 - app/admin/(dashboard)/reviews/[id]/page.tsx
 
+### Segment 4 (4 files):
+- lib/media/index.ts
+- app/admin/(dashboard)/media/page.tsx
+- app/admin/(dashboard)/media/actions.ts
+- app/api/upload/route.ts
+
+### Segment 12 (3 files):
+- lib/settings/index.ts
+- app/admin/(dashboard)/settings/page.tsx
+- app/admin/(dashboard)/settings/actions.ts
+
+### Segment 5 (6 files):
+- lib/clients/index.ts
+- app/contact/page.tsx
+- app/contact/actions.ts
+- app/admin/(dashboard)/clients/actions.ts
+- app/admin/(dashboard)/clients/page.tsx
+- app/admin/(dashboard)/clients/[id]/page.tsx
+- app/api/clients/export/route.ts
+
+### Segment 8 (3 files):
+- lib/search/index.ts
+- app/search/page.tsx
+- app/api/search/route.ts
+
 ## Current Segment
-Segment 4: Media Library (5 files)
+Segment 10: Public Pages (10 files)
 
 ## Next File To Create
-lib/media/index.ts
+app/(public)/blog/page.tsx
 
 ## Task
-Create media library with upload, optimization, folder management, usage tracking, and deletion protection.
+Create public-facing pages for blog listing, blog detail, guides listing, guides detail, reviews listing, reviews detail, videos hub, about, privacy, and FAQ.
 
 ## Review Criteria
-- Upload works reliably
-- Optimization effective (Sharp to WebP)
-- Usage tracking prevents broken images
-- Folders functional
-- Delete blocked if media in use
+- Pages render correctly
+- SEO meta tags present
+- Structured data correct
+- Responsive design
+- Uses slug-based routing (replaces ?id= placeholder from search)
+- Content loaded from database
+- Only published content visible to public
 
 ## Previous Decisions
-- Sharp for server-side image optimization
-- WebP format for optimized images
-- 10MB max image upload
-- 20MB max document upload
-- Allowed: JPG, PNG, WebP, PDF, DOCX, XLSX, TXT
-- Blocked: EXE, JS, BAT, VBS, MSI, SCR
-- Media folders supported
-- Alt text and captions
-- Block deletion if media used in posts/guides/reviews
-- Storage usage indicator
+- Slug-based routing for public pages
+- Only published content visible (status = "published" and deleted_at IS NULL)
+- TipTap JSON rendered as HTML on public pages
+- SEO meta tags auto-generated from content
+- Structured data (Article, Review, VideoObject)
+- Privacy Policy from pages table
+- FAQ from pages table (hidden by default)
+- About page from settings
 
 ## Progress Tracker (Current)
 
@@ -236,26 +263,27 @@ Create media library with upload, optimization, folder management, usage trackin
 | 7: Email | ✅ Complete | 5/5 | Approved |
 | 14: Backup/Deploy | ✅ Complete | 8/8 | Approved |
 | 3: Content | ✅ Complete | 19/19 | Approved |
-| 4: Media | In Progress | 0/5 | Pending |
-| 12: Settings | Not Started | 0/3 | Pending |
-| 5: Clients | Not Started | 0/6 | Pending |
-| 8: Search | Not Started | 0/2 | Pending |
-| 10: Public Pages | Not Started | 0/10 | Pending |
+| 4: Media | ✅ Complete | 4/4 | Approved |
+| 12: Settings | ✅ Complete | 3/3 | Approved |
+| 5: Clients | ✅ Complete | 7/7 | Approved |
+| 8: Search | ✅ Complete | 3/3 | Approved |
+| 10: Public Pages | In Progress | 0/10 | Pending |
 | 11: Homepage | Not Started | 0/10 | Pending |
 | 6: Portal | Not Started | 0/9 | Pending |
 | 9: Admin Dashboard | Not Started | 0/8 | Pending |
 | 15: Security/Testing | Not Started | 0/7 | Pending |
 
-## Segment 4 Files To Create (In Order)
+## Segment 10 Files To Create (In Order)
 
-1. lib/media/index.ts (upload, optimize, folders, usage, delete, replace combined)
-2. app/admin/(dashboard)/media/page.tsx
-3. app/admin/(dashboard)/media/actions.ts
-4. app/api/upload/route.ts
+1. app/(public)/blog/page.tsx
+2. app/(public)/blog/[slug]/page.tsx
+3. app/(public)/guides/page.tsx
+4. app/(public)/guides/[slug]/page.tsx
+5. app/(public)/reviews/page.tsx
+6. app/(public)/reviews/[slug]/page.tsx
+7. app/(public)/videos/page.tsx
+8. app/(public)/about/page.tsx
+9. app/(public)/privacy/page.tsx
+10. app/(public)/faq/page.tsx
 
 Please provide the code file by file using the format above.
-```
-
----
-
-**Paste this into your MASTER-PROMPT.md file on GitHub, replacing the old content.**
