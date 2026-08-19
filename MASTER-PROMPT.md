@@ -1,8 +1,3 @@
-# Updated MASTER-PROMPT.md - Paste This Into GitHub
-
----
-
-```
 I am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
 
 ## IMPORTANT: Auto-Update Instructions
@@ -35,9 +30,10 @@ Segment 14 is COMPLETE. 8 files created on GitHub.
 Segment 3 is COMPLETE. 19 files created on GitHub.
 Segment 4 is COMPLETE. 4 files created on GitHub.
 Segment 12 is COMPLETE. 3 files created on GitHub.
-Segment 5 is COMPLETE. 6 files created on GitHub.
+Segment 5 is COMPLETE. 7 files created on GitHub.
 Segment 8 is COMPLETE. 3 files created on GitHub.
-Currently working on Segment 10: Public Pages.
+Segment 10 is COMPLETE. 11 files created on GitHub (plus 3 updates).
+Currently working on Segment 11: Homepage & Navigation.
 
 ## Project Overview
 - Self-hosted Next.js application on a mini PC (Ubuntu Server)
@@ -67,9 +63,14 @@ Currently working on Segment 10: Public Pages.
 - Custom TipTap blocks deferred to V2 (using built-in features for now)
 - Autosave deferred to V2 (manual save only for now)
 - Category/Tag UI deferred to later segments
-- Search URLs use ?id= placeholder until Segment 10 (Public Pages) implements slug routing
+- Search URLs use slug routing (Segment 10 complete)
 - Confirmation dialogs deferred to Phase 2 (need client component wrappers)
 - file-type package for magic byte verification on uploads
+- TipTapRenderer is Server Component (no "use client")
+- @tiptap/html added to package.json
+- revalidate = 3600 used instead of force-dynamic on public pages
+- cache() used for metadata/page deduplication
+- bio_text stored in settings
 
 ## How I Work (GitHub Website)
 I am using the GitHub website (not command line) to create files.
@@ -97,10 +98,10 @@ NEXT FILE: drizzle/schema/sessions.ts
 - When giving me files, combine related utility functions into one file
 - Tell me the exact file path for each combined file
 
-## Files Already Created (Segments 0-14, 3, 4, 12, 5, 8 - Complete)
+## Files Already Created (Segments 0-14, 1.5, 2, 13a, 7, 3, 4, 12, 5, 8, 10 - Complete)
 
 ### Segment 0 (16 files):
-- package.json (UPDATED: added svix, file-type)
+- package.json (UPDATED: added svix, file-type, @tiptap/html)
 - next.config.ts
 - tsconfig.json
 - drizzle.config.ts
@@ -183,7 +184,7 @@ NEXT FILE: drizzle/schema/sessions.ts
 - app/api/health/route.ts
 
 ### Segment 3 (19 files):
-- lib/content/index.ts
+- lib/content/index.ts (UPDATED: added getGuideBySlug, getReviewBySlug, fixed getPostBySlug)
 - components/editor/TipTapEditor.tsx
 - components/editor/Toolbar.tsx
 - components/editor/blocks/CalloutBox.tsx
@@ -210,11 +211,11 @@ NEXT FILE: drizzle/schema/sessions.ts
 - app/api/upload/route.ts
 
 ### Segment 12 (3 files):
-- lib/settings/index.ts
+- lib/settings/index.ts (UPDATED: added bio_text)
 - app/admin/(dashboard)/settings/page.tsx
 - app/admin/(dashboard)/settings/actions.ts
 
-### Segment 5 (6 files):
+### Segment 5 (7 files):
 - lib/clients/index.ts
 - app/contact/page.tsx
 - app/contact/actions.ts
@@ -228,33 +229,49 @@ NEXT FILE: drizzle/schema/sessions.ts
 - app/search/page.tsx
 - app/api/search/route.ts
 
+### Segment 10 (11 files):
+- components/editor/TipTapRenderer.tsx
+- app/(public)/blog/page.tsx
+- app/(public)/blog/[slug]/page.tsx
+- app/(public)/guides/page.tsx
+- app/(public)/guides/[slug]/page.tsx
+- app/(public)/reviews/page.tsx
+- app/(public)/reviews/[slug]/page.tsx
+- app/(public)/videos/page.tsx
+- app/(public)/about/page.tsx
+- app/(public)/privacy/page.tsx
+- app/(public)/faq/page.tsx
+
 ## Current Segment
-Segment 10: Public Pages (10 files)
+Segment 11: Homepage & Navigation (10 files)
 
 ## Next File To Create
-app/(public)/blog/page.tsx
+components/layout/Header.tsx
 
 ## Task
-Create public-facing pages for blog listing, blog detail, guides listing, guides detail, reviews listing, reviews detail, videos hub, about, privacy, and FAQ.
+Create homepage sections and navigation components. Header with nav, footer with certifications, hero section, about blurb, featured content, featured video, call to action, and homepage assembly.
 
 ## Review Criteria
-- Pages render correctly
-- SEO meta tags present
-- Structured data correct
-- Responsive design
-- Uses slug-based routing (replaces ?id= placeholder from search)
-- Content loaded from database
-- Only published content visible to public
+- Navigation works
+- Sections render correctly
+- Visibility toggles functional
+- Reordering works (up/down buttons)
+- Certifications display in footer
+- Social media links present
+- Mobile responsive
+- Uses settings for colors/logo
+- Only published content shown
 
 ## Previous Decisions
-- Slug-based routing for public pages
-- Only published content visible (status = "published" and deleted_at IS NULL)
-- TipTap JSON rendered as HTML on public pages
-- SEO meta tags auto-generated from content
-- Structured data (Article, Review, VideoObject)
-- Privacy Policy from pages table
-- FAQ from pages table (hidden by default)
-- About page from settings
+- Homepage sections reorderable with up/down buttons
+- Navigation visibility toggles in settings
+- Certifications in footer
+- Social media links (Instagram, YouTube)
+- Hero section with tagline
+- Featured content from latest published posts
+- Featured video toggle
+- Call to action to contact page
+- Uses settings for site name, tagline, colors
 
 ## Progress Tracker (Current)
 
@@ -272,28 +289,23 @@ Create public-facing pages for blog listing, blog detail, guides listing, guides
 | 12: Settings | ✅ Complete | 3/3 | Approved |
 | 5: Clients | ✅ Complete | 7/7 | Approved |
 | 8: Search | ✅ Complete | 3/3 | Approved |
-| 10: Public Pages | In Progress | 0/10 | Pending |
-| 11: Homepage | Not Started | 0/10 | Pending |
+| 10: Public Pages | ✅ Complete | 11/11 | Approved |
+| 11: Homepage | In Progress | 0/10 | Pending |
 | 6: Portal | Not Started | 0/9 | Pending |
 | 9: Admin Dashboard | Not Started | 0/8 | Pending |
 | 15: Security/Testing | Not Started | 0/7 | Pending |
 
-## Segment 10 Files To Create (In Order)
+## Segment 11 Files To Create (In Order)
 
-1. app/(public)/blog/page.tsx
-2. app/(public)/blog/[slug]/page.tsx
-3. app/(public)/guides/page.tsx
-4. app/(public)/guides/[slug]/page.tsx
-5. app/(public)/reviews/page.tsx
-6. app/(public)/reviews/[slug]/page.tsx
-7. app/(public)/videos/page.tsx
-8. app/(public)/about/page.tsx
-9. app/(public)/privacy/page.tsx
-10. app/(public)/faq/page.tsx
+1. components/layout/Header.tsx
+2. components/layout/Footer.tsx
+3. components/layout/Navigation.tsx
+4. components/layout/Certifications.tsx
+5. components/homepage/HeroSection.tsx
+6. components/homepage/AboutBlurb.tsx
+7. components/homepage/FeaturedContent.tsx
+8. components/homepage/FeaturedVideo.tsx
+9. components/homepage/CallToAction.tsx
+10. app/(public)/page.tsx (homepage assembly)
 
 Please provide the code file by file using the format above.
-```
-
----
-
-**Paste this into your MASTER-PROMPT.md file on GitHub, replacing the old content.**
