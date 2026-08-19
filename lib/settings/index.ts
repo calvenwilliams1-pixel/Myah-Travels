@@ -81,4 +81,5 @@ export const DEFAULT_SETTINGS = {
   admin_email: "myah@example.com",
   footer_text: "",
   logo_path: "",
+  bio_text: "Black mom of three and wife to the mushroom king, I've always loved to travel almost as much as I love to create a new world through writing. I'm at this beautiful point in my life where I want to combine my love for both and share that with you all.",
 };
