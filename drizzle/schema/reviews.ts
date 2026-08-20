@@ -1,5 +1,4 @@
 import { sqliteTable, text, integer, real, index } from "drizzle-orm/sqlite-core";
-import { sql } from "drizzle-orm";
 
 export const reviews = sqliteTable(
   "reviews",
@@ -10,9 +9,7 @@ export const reviews = sqliteTable(
     content: text("content").notNull(),
     excerpt: text("excerpt"),
     featuredImage: text("featured_image"),
-    reviewType: text("review_type")
-      .notNull()
-      .check(sql`review_type IN ('product', 'hotel', 'cruise', 'resort', 'excursion')`),
+    reviewType: text("review_type").notNull(),
     ratingOverall: real("rating_overall"),
     ratingValue: real("rating_value"),
     ratingQuality: real("rating_quality"),
@@ -20,16 +17,13 @@ export const reviews = sqliteTable(
     ratingFamily: real("rating_family"),
     pros: text("pros"),
     cons: text("cons"),
-    wouldRecommend: text("would_recommend")
-      .check(sql`would_recommend IN ('yes', 'no', 'depends')`),
+    wouldRecommend: text("would_recommend"),
     finalVerdict: text("final_verdict"),
-    status: text("status")
-      .default("draft")
-      .check(sql`status IN ('draft', 'published', 'hidden', 'scheduled')`),
+    status: text("status").default("draft"),
     scheduledAt: text("scheduled_at"),
     publishedAt: text("published_at"),
     updatedAt: text("updated_at"),
-    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+    createdAt: text("created_at"),
     deletedAt: text("deleted_at"),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),

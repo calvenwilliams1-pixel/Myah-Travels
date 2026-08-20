@@ -1,5 +1,4 @@
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
-import { sql } from "drizzle-orm";
 
 export const posts = sqliteTable(
   "posts",
@@ -10,13 +9,11 @@ export const posts = sqliteTable(
     content: text("content").notNull(),
     excerpt: text("excerpt"),
     featuredImage: text("featured_image"),
-    status: text("status")
-      .default("draft")
-      .check(sql`status IN ('draft', 'published', 'hidden', 'scheduled')`),
+    status: text("status").default("draft"),
     scheduledAt: text("scheduled_at"),
     publishedAt: text("published_at"),
     updatedAt: text("updated_at"),
-    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+    createdAt: text("created_at"),
     deletedAt: text("deleted_at"),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
