@@ -5,9 +5,10 @@ import Moveable from "react-moveable";
 import { nanoid } from "nanoid";
 import debounce from "lodash.debounce";
 import { CanvasDocument, CanvasElement, ElementType, createEmptyCanvas } from "@/types/canvas";
-import { createElement } from "@/lib/canvas";
+import { createElement, getNextZIndex } from "@/lib/canvas";
 import TextElementView from "./elements/TextElementView";
 import ImageElementView from "./elements/ImageElementView";
+import ElementCatalog from "./ElementCatalog";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -35,10 +36,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [undoStack, setUndoStack] = useState<CanvasDocument[]>([]);
   const [redoStack, setRedoStack] = useState<CanvasDocument[]>([]);
+  const [showCatalog, setShowCatalog] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
   const clipboardRef = useRef<CanvasElement[]>([]);
+  const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
+  const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
 
-  // Stable debounced save
   const onSaveRef = useRef(onSave);
   useEffect(() => {
     onSaveRef.current = onSave;
@@ -52,10 +55,14 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
 
   useEffect(() => {
     debouncedSaveRef.current(canvasDoc);
-    return () => debouncedSaveRef.current.cancel();
+    return () => {
+      // Flush pending save on unmount
+      if (debouncedSaveRef.current) {
+        debouncedSaveRef.current.flush();
+      }
+    };
   }, [canvasDoc]);
 
-  // Undo/Redo (flattened - no nested setState)
   const pushUndo = useCallback((doc: CanvasDocument) => {
     setUndoStack((prev) => {
       const snapshot = JSON.parse(JSON.stringify(doc));
@@ -80,10 +87,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     setRedoStack((r) => r.slice(0, -1));
   }, [canvasDoc, redoStack]);
 
-  // Element operations
   const addElement = useCallback((type: ElementType) => {
     pushUndo(canvasDoc);
     const newElement = createElement(type, canvasDoc.elements.length);
+    // Use getNextZIndex to avoid collisions
+    newElement.zIndex = getNextZIndex(canvasDoc.elements);
     setCanvasDoc((prev) => ({
       ...prev,
       elements: [...prev.elements, newElement],
@@ -101,6 +109,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   }, []);
 
   const deleteSelected = useCallback(() => {
+    if (selectedIds.length === 0) return;
     pushUndo(canvasDoc);
     setCanvasDoc((prev) => ({
       ...prev,
@@ -110,6 +119,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   }, [canvasDoc, selectedIds, pushUndo]);
 
   const duplicateSelected = useCallback(() => {
+    if (selectedIds.length === 0) return;
     pushUndo(canvasDoc);
     const newElements = canvasDoc.elements
       .filter((el) => selectedIds.includes(el.id))
@@ -119,6 +129,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
         name: `${el.name} Copy`,
         x: el.x + 20,
         y: el.y + 20,
+        zIndex: getNextZIndex(canvasDoc.elements),
       }));
     setCanvasDoc((prev) => ({
       ...prev,
@@ -139,7 +150,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     }));
   }, [selectedIds]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -175,6 +185,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           id: nanoid(8),
           x: el.x + 20,
           y: el.y + 20,
+          zIndex: getNextZIndex(canvasDoc.elements),
         }));
         setCanvasDoc((prev) => ({
           ...prev,
@@ -189,7 +200,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
       if (e.key === "Escape") {
         setSelectedIds([]);
       }
-      // Arrow key nudging
       if (e.key === "ArrowUp") {
         e.preventDefault();
         nudgeSelected(0, e.shiftKey ? -10 : -1);
@@ -221,16 +231,25 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
 
   const getGuidelineElements = useCallback(() => {
     if (!canvasRef.current) return [];
+    // Exclude selected elements from guidelines to prevent self-snap
     return canvasDoc.elements
+      .filter((el) => !selectedIds.includes(el.id))
       .map((el) => canvasRef.current?.querySelector(`[data-element-id="${el.id}"]`) as HTMLElement)
       .filter(Boolean);
-  }, [canvasDoc.elements]);
+  }, [canvasDoc.elements, selectedIds]);
 
   return (
     <div className="flex h-screen">
+      {showCatalog && <ElementCatalog onAddElement={addElement} />}
+
       <div className="flex-1 overflow-auto bg-gray-100 p-8">
-        {/* Toolbar */}
         <div className="mb-4 flex gap-3 items-center flex-wrap">
+          <button
+            className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+            onClick={() => setShowCatalog(!showCatalog)}
+          >
+            {showCatalog ? "Hide Catalog" : "Show Catalog"}
+          </button>
           <button
             className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm"
             onClick={() => addElement("text")}
@@ -276,7 +295,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           </span>
         </div>
 
-        {/* Canvas */}
         <div
           ref={canvasRef}
           className="relative mx-auto bg-white shadow-lg"
@@ -323,27 +341,85 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
             ))}
         </div>
 
-        {/* Moveable - drag only for Phase 1 */}
         {selectedIds.length > 0 && (
           <Moveable
             target={getTargetElements()}
             draggable={true}
+            resizable={true}
+            rotatable={true}
             snappable={true}
             elementGuidelines={getGuidelineElements()}
-            onDragStart={() => {
+            bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
+            onDragStart={({ target }) => {
+              const id = target.getAttribute("data-element-id");
+              if (!id) return;
+              const el = canvasDoc.elements.find((e) => e.id === id);
+              if (el) {
+                dragOriginRef.current[id] = { x: el.x, y: el.y };
+              }
               pushUndo(canvasDoc);
             }}
-            onDrag={({ target, transform }) => {
+            onDrag={({ target, beforeTranslate }) => {
               const id = target.getAttribute("data-element-id");
-              if (id) {
+              if (!id) return;
+              const origin = dragOriginRef.current[id];
+              if (!origin) return;
+              updateElement(id, {
+                x: Math.round(origin.x + beforeTranslate[0]),
+                y: Math.round(origin.y + beforeTranslate[1]),
+              });
+            }}
+            onDragGroupStart={({ targets }) => {
+              targets.forEach((target) => {
+                const id = target.getAttribute("data-element-id");
+                if (!id) return;
                 const el = canvasDoc.elements.find((e) => e.id === id);
                 if (el) {
-                  updateElement(id, {
-                    x: Math.round(el.x + transform[0]),
-                    y: Math.round(el.y + transform[1]),
-                  });
+                  dragOriginRef.current[id] = { x: el.x, y: el.y };
                 }
+              });
+              pushUndo(canvasDoc);
+            }}
+            onDragGroup={({ targets, events }) => {
+              events.forEach(({ target, beforeTranslate }) => {
+                const id = target.getAttribute("data-element-id");
+                if (!id) return;
+                const origin = dragOriginRef.current[id];
+                if (!origin) return;
+                updateElement(id, {
+                  x: Math.round(origin.x + beforeTranslate[0]),
+                  y: Math.round(origin.y + beforeTranslate[1]),
+                });
+              });
+            }}
+            onResizeStart={({ target }) => {
+              const id = target.getAttribute("data-element-id");
+              if (!id) return;
+              const el = canvasDoc.elements.find((e) => e.id === id);
+              if (el) {
+                resizeOriginRef.current[id] = { x: el.x, y: el.y, width: el.width, height: el.height };
               }
+              pushUndo(canvasDoc);
+            }}
+            onResize={({ target, width, height, beforeTranslate }) => {
+              const id = target.getAttribute("data-element-id");
+              if (!id) return;
+              const origin = resizeOriginRef.current[id];
+              if (!origin) return;
+              updateElement(id, {
+                width: Math.round(width),
+                height: Math.round(height),
+                x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
+                y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
+              });
+            }}
+            onRotateStart={() => {
+              pushUndo(canvasDoc);
+            }}
+            onRotate={({ target, rotation }) => {
+              const id = target.getAttribute("data-element-id");
+              if (!id) return;
+              updateElement(id, { rotation: Math.round(rotation) });
             }}
           />
         )}
@@ -351,10 +427,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     </div>
   );
 }
-
-// ============================================
-// ELEMENT RENDERER (dispatch)
-// ============================================
 
 function renderElement(
   el: CanvasElement,
