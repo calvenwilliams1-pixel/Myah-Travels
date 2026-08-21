@@ -9,6 +9,8 @@ import { createElement, getNextZIndex } from "@/lib/canvas";
 import TextElementView from "./elements/TextElementView";
 import ImageElementView from "./elements/ImageElementView";
 import ElementCatalog from "./ElementCatalog";
+import PropertiesPanel from "./PropertiesPanel";
+import ShapeElementView from "./elements/ShapeElementView";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -37,6 +39,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   const [undoStack, setUndoStack] = useState<CanvasDocument[]>([]);
   const [redoStack, setRedoStack] = useState<CanvasDocument[]>([]);
   const [showCatalog, setShowCatalog] = useState(true);
+  const [showProperties, setShowProperties] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
   const clipboardRef = useRef<CanvasElement[]>([]);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
@@ -149,6 +152,32 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
       ),
     }));
   }, [selectedIds]);
+
+    const bringForward = useCallback(() => {
+    if (selectedIds.length !== 1) return;
+    pushUndo(canvasDoc);
+    const selected = canvasDoc.elements.find((el) => el.id === selectedIds[0]);
+    if (!selected) return;
+    const maxZ = Math.max(...canvasDoc.elements.map((el) => el.zIndex));
+    if (selected.zIndex >= maxZ) return;
+    const nextZ = selected.zIndex + 1;
+    const other = canvasDoc.elements.find((el) => el.zIndex === nextZ);
+    updateElement(selected.id, { zIndex: nextZ });
+    if (other) updateElement(other.id, { zIndex: selected.zIndex });
+  }, [canvasDoc, selectedIds, pushUndo, updateElement]);
+
+  const sendBackward = useCallback(() => {
+    if (selectedIds.length !== 1) return;
+    pushUndo(canvasDoc);
+    const selected = canvasDoc.elements.find((el) => el.id === selectedIds[0]);
+    if (!selected) return;
+    const minZ = Math.min(...canvasDoc.elements.map((el) => el.zIndex));
+    if (selected.zIndex <= minZ) return;
+    const prevZ = selected.zIndex - 1;
+    const other = canvasDoc.elements.find((el) => el.zIndex === prevZ);
+    updateElement(selected.id, { zIndex: prevZ });
+    if (other) updateElement(other.id, { zIndex: selected.zIndex });
+  }, [canvasDoc, selectedIds, pushUndo, updateElement]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -422,6 +451,18 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
               updateElement(id, { rotation: Math.round(rotation) });
             }}
           />
+         )}
+
+        {/* Properties Panel */}
+        {showProperties && selectedIds.length === 1 && (
+          <PropertiesPanel
+            element={canvasDoc.elements.find((el) => el.id === selectedIds[0])!}
+            onUpdate={updateElement}
+            onDelete={deleteSelected}
+            onDuplicate={duplicateSelected}
+            onBringForward={bringForward}
+            onSendBackward={sendBackward}
+          />
         )}
       </div>
     </div>
@@ -443,8 +484,10 @@ function renderElement(
           onBeginEdit={() => pushUndo(canvasDoc)}
         />
       );
-    case "image":
+       case "image":
       return <ImageElementView element={el} onUpdate={update} />;
+    case "shape":
+      return <ShapeElementView element={el} />;
     default:
       return (
         <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded text-gray-400 text-sm">
