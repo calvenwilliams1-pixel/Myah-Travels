@@ -1,0 +1,255 @@
+# Final Code Plan - Canvas Design System
+
+## Complete Element Types (Final)
+
+```typescript
+type ElementType = 
+  | "text"
+  | "image"
+  | "shape"           // square, circle, triangle, line, diamond, star
+  | "list"            // listType: "bullet" | "numbered"
+  | "checklist"       // Static decorative (guides, reviews)
+  | "portal_checklist" // Interactive (portal only, session-gated)
+  | "proscons"
+  | "button"
+  | "pdf"             // displayMode: "thumbnail" | "download" | "full"
+  | "divider"
+  | "portal_dates"
+  | "portal_notices"
+  | "portal_documents"
+  | "portal_faqs";
+```
+
+---
+
+## Checklist Items (Stable Identity)
+
+```typescript
+// Static checklist (decorative)
+interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;  // Default state shown in editor
+}
+
+// Portal interactive checklist
+interface PortalChecklistItem {
+  id: string;
+  text: string;
+  // Checked state stored SEPARATELY in portal_checklist_states table
+  // Keyed by: portal_id + element_id + item_id + member_id
+}
+```
+
+### New Table for Portal Checklist State
+
+```sql
+CREATE TABLE IF NOT EXISTS portal_checklist_states (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  portal_id INTEGER NOT NULL,
+  element_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  member_id INTEGER NOT NULL,
+  checked INTEGER DEFAULT 0,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(portal_id, element_id, item_id, member_id)
+);
+```
+
+---
+
+## Complete Schema
+
+### `types/canvas.ts`
+
+```typescript
+export interface CanvasDocument {
+  schemaVersion: number;           // = 1
+  templateVersion?: number;
+  createdFromTemplateId?: number;
+  canvas: {
+    width: number;
+    height: number;
+    background: string | null;
+  };
+  elements: CanvasElement[];
+}
+
+export interface CanvasElement {
+  id: string;
+  name: string;                    // Auto-generated: "Text 1", "Image 2"
+  type: ElementType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;                // degrees
+  zIndex: number;
+  locked: boolean;
+  visible: boolean;
+  // Type-specific fields below
+  [key: string]: any;
+}
+
+export type ElementType = 
+  | "text"
+  | "image"
+  | "shape"
+  | "list"
+  | "checklist"
+  | "portal_checklist"
+  | "proscons"
+  | "button"
+  | "pdf"
+  | "divider"
+  | "portal_dates"
+  | "portal_notices"
+  | "portal_documents"
+  | "portal_faqs";
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+```
+
+---
+
+## Complete Dependencies
+
+```json
+{
+  "react-moveable": "^0.56.0",
+  "react-selecto": "^1.26.3",
+  "nanoid": "^5.0.7",
+  "lodash.debounce": "^4.0.8",
+  "react-pdf": "^9.0.0"
+}
+```
+
+---
+
+## Complete File List
+
+### New Files (18)
+
+| # | File | Purpose |
+|---|------|---------|
+| 1 | `drizzle/schema/assets.ts` | Asset registry (replaces raw paths) |
+| 2 | `drizzle/schema/templates.ts` | Template storage with versioning |
+| 3 | `drizzle/schema/portal-checklist-states.ts` | Interactive checklist state |
+| 4 | `types/canvas.ts` | All TypeScript types |
+| 5 | `lib/canvas/index.ts` | Canvas operations + template CRUD |
+| 6 | `components/editor/canvas/CanvasEditor.tsx` | Main editor |
+| 7 | `components/editor/canvas/CanvasToolbar.tsx` | Top toolbar |
+| 8 | `components/editor/canvas/ElementCatalog.tsx` | Left sidebar |
+| 9 | `components/editor/canvas/PropertiesPanel.tsx` | Right sidebar |
+| 10 | `components/editor/canvas/LayersPanel.tsx` | Layer management |
+| 11 | `components/editor/canvas/TextElement.tsx` | Text element |
+| 12 | `components/editor/canvas/ImageElement.tsx` | Image element |
+| 13 | `components/editor/canvas/ShapeElement.tsx` | Shape element |
+| 14 | `components/editor/canvas/SmartBlockElement.tsx` | Lists/checklists/proscons |
+| 15 | `components/editor/canvas/CanvasRenderer.tsx` | Server-side renderer |
+| 16 | `components/editor/canvas/ShortcutCheatSheet.tsx` | Keyboard shortcuts |
+| 17 | `app/api/canvas/templates/route.ts` | Template API |
+| 18 | `app/api/canvas/templates/[id]/route.ts` | Template CRUD |
+
+### Modified Files (8)
+
+| # | File | Change |
+|---|------|---------|
+| 1 | `drizzle/schema/posts.ts` | Add layoutJson, editorType |
+| 2 | `drizzle/schema/guides.ts` | Add layoutJson |
+| 3 | `drizzle/schema/reviews.ts` | Add layoutJson |
+| 4 | `drizzle/schema/portals.ts` | Add layoutJson |
+| 5 | `drizzle/schema/index.ts` | Export new tables |
+| 6 | `scripts/seed.ts` | Add built-in templates |
+| 7 | `app/globals.css` | Mobile scaling CSS |
+| 8 | `package.json` | New dependencies |
+
+---
+
+## Editor Type Assignment (Fixed at Creation)
+
+| Content Type | Editor | editorType Value |
+|--------------|--------|------------------|
+| Blog Post | TipTap | `"tiptap"` |
+| Review | Canvas | `"canvas"` |
+| Guide | Canvas | `"canvas"` |
+| Homepage | Canvas (in settings) | `"canvas"` |
+| Portal Dashboard | Canvas | `"canvas"` |
+
+---
+
+## Renderer Logic
+
+```typescript
+// Blog post rendering
+if (post.editorType === "canvas" && post.layoutJson) {
+  return <CanvasRenderer document={JSON.parse(post.layoutJson)} />;
+} else {
+  return <TipTapRenderer content={post.content} />;
+}
+
+// Review/Guide rendering (always canvas)
+if (review.layoutJson) {
+  return <CanvasRenderer document={JSON.parse(review.layoutJson)} />;
+}
+```
+
+---
+
+## Built-in Templates (Seed Data)
+
+| # | Name | Content Type |
+|---|------|--------------|
+| 1 | Standard Article | post (TipTap - no canvas template needed) |
+| 2 | Product Review Standard | review |
+| 3 | Quick Take Review | review |
+| 4 | Destination Guide | guide |
+| 5 | City Break Guide | guide |
+| 6 | Classic Hero Homepage | homepage |
+| 7 | Magazine Grid Homepage | homepage |
+| 8 | Family Trip Portal | portal |
+| 9 | Group Tour Portal | portal |
+| 10 | Honeymoon Portal | portal |
+
+---
+
+## Development Phases (Final)
+
+| Phase | What | Time |
+|-------|------|------|
+| 1 | Types + schema + lib/canvas + basic CanvasEditor (text + image + drag) | 1 week |
+| 2 | Moveable integration (resize, rotate, snap, guidelines) | 3 days |
+| 3 | Undo/redo + keyboard shortcuts + duplicate | 3 days |
+| 4 | Element catalog (left sidebar) | 3 days |
+| 5 | Shapes + divider | 4 days |
+| 6 | Lists + checklists + pros/cons (smart blocks) | 4 days |
+| 7 | Button + PDF elements | 3 days |
+| 8 | Properties panel (right sidebar) | 4 days |
+| 9 | Layers panel (visibility, lock, rename, z-index) | 3 days |
+| 10 | Templates (save/overwrite/delete/duplicate) | 4 days |
+| 11 | Draft + autosave + schedule | 3 days |
+| 12 | Server-side CanvasRenderer | 4 days |
+| 13 | Mobile scaling | 2 days |
+| 14 | Portal dynamic elements + interactive checklist | 5 days |
+| 15 | Homepage canvas editor | 3 days |
+| 16 | Testing + polish | 5 days |
+| **Total** | | **~8-9 weeks** |
+
+---
+
+## Ready to Build Phase 1
+
+**Phase 1 scope:**
+1. `types/canvas.ts`
+2. `drizzle/schema/assets.ts`
+3. `drizzle/schema/templates.ts`
+4. `drizzle/schema/portal-checklist-states.ts`
+5. `lib/canvas/index.ts`
+6. Basic `CanvasEditor.tsx` (text + image only)
+7. Update schema files with layoutJson
+
+**Shall I provide the Phase 1 code for AI review?**
