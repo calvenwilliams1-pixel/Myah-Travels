@@ -488,6 +488,16 @@ function renderElement(
       return <ImageElementView element={el} onUpdate={update} />;
     case "shape":
       return <ShapeElementView element={el} />;
+      case "list":
+    case "checklist":
+    case "proscons":
+      return (
+        <SmartBlockElementView
+          element={el}
+          onUpdate={update}
+          onBeginEdit={() => pushUndo(canvasDoc)}
+        />
+      );
     default:
       return (
         <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded text-gray-400 text-sm">
