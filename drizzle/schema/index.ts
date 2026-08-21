@@ -29,3 +29,6 @@ export { postTags } from "./post-tags";
 export { guideTags } from "./guide-tags";
 export { reviewTags } from "./review-tags";
 export { relatedContent } from "./related-content";
+export { assets } from "./assets";
+export { templates } from "./templates";
+export { portalChecklistStates } from "./portal-checklist-states";
