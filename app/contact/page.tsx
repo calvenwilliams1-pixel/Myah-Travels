@@ -12,6 +12,20 @@ export default function ContactPage() {
   const [success, setSuccess] = useState(false);
 
   async function handleSubmit(formData: FormData) {
+    const fullName = String(formData.get("fullName") || "").trim();
+    const phone = String(formData.get("phone") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+
+    if (!fullName) {
+      setError("Please enter your name.");
+      return;
+    }
+
+    if (!phone && !email) {
+      setError("Please provide at least one contact method (phone or email).");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
