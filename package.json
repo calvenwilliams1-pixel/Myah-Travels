@@ -37,6 +37,11 @@
     "qrcode": "^1.5.4",
     "bcryptjs": "^2.4.3",
     "date-fns": "^3.6.0",
+    "react-moveable": "^0.56.0",
+    "react-selecto": "^1.26.3",
+    "nanoid": "^5.0.7",
+    "lodash.debounce": "^4.0.8",
+    "react-pdf": "^9.0.0",
     "svix": "^1.24.0",
     "file-type": "^19.0.0",
     "@tiptap/html": "^2.5.4"
