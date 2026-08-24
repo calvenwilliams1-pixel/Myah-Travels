@@ -7,7 +7,6 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Toolbar from "./Toolbar";
-import { CanvasBlockNode } from "./CanvasBlockNode";
 
 interface TipTapEditorProps {
   initialContent?: string;
@@ -37,9 +36,8 @@ export default function TipTapEditor({
   contentType = "post",
 }: TipTapEditorProps) {
   const editor = useEditor({
-    extensions: [
+      extensions: [
       StarterKit,
-      CanvasBlockNode,
       Image.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
