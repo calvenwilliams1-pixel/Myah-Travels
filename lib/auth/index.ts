@@ -2,7 +2,7 @@ import { Lucia } from "lucia";
 import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
 import { db } from "@/lib/db";
 import { users, sessions, activityLog } from "@/drizzle/schema";
-import { hash, verify } from "bcryptjs";
+import { hash, compare } from "bcryptjs";
 import { authenticator } from "otplib";
 import { cookies } from "next/headers";
 import { cache } from "react";
@@ -44,7 +44,7 @@ export async function verifyPassword(
   password: string,
   passwordHash: string
 ): Promise<boolean> {
-  return verify(password, passwordHash);
+  return compare(password, passwordHash);
 }
 
 export function generateTotpSecret(): string {
