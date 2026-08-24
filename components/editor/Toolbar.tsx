@@ -2,12 +2,14 @@
 
 import React from "react";
 import type { Editor } from "@tiptap/react";
+import InsertCanvasBlockButton from "./InsertCanvasBlockButton";
 
 interface ToolbarProps {
   editor: Editor;
+  contentType?: string;
 }
 
-export default function Toolbar({ editor }: ToolbarProps) {
+export default function Toolbar({ editor, contentType = "post" }: ToolbarProps) {
   if (!editor) return null;
 
   const ToolbarButton = ({
@@ -99,6 +101,26 @@ export default function Toolbar({ editor }: ToolbarProps) {
       >
         Redo
       </ToolbarButton>
+
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      <InsertCanvasBlockButton
+        contentType={contentType}
+        onInsert={(templateId, templateName, canvasJson) => {
+          editor
+            .chain()
+            .focus()
+            .insertContent({
+              type: "canvasBlock",
+              attrs: {
+                templateId,
+                templateName,
+                canvasJson,
+              },
+            })
+            .run();
+        }}
+      />
     </div>
   );
 }
