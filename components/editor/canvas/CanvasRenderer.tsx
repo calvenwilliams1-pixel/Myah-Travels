@@ -1,8 +1,10 @@
 import React from "react";
-import { CanvasDocument } from "@/types/canvas";
+import { CanvasDocument, PortalRuntimeData } from "@/types/canvas";
+import PortalElementRenderer from "@/components/canvas/PortalElementRenderer";
 
 interface CanvasRendererProps {
   document: CanvasDocument;
+  portalData?: PortalRuntimeData;
 }
 
 function sanitizeUrl(url: string | undefined): string {
@@ -21,7 +23,7 @@ function sanitizeUrl(url: string | undefined): string {
   return "#";
 }
 
-export default function CanvasRenderer({ document }: CanvasRendererProps) {
+export default function CanvasRenderer({ document, portalData }: CanvasRendererProps) {
   const sortedElements = [...document.elements]
     .filter((el) => el.visible !== false)
     .sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0));
@@ -391,6 +393,19 @@ export default function CanvasRenderer({ document }: CanvasRendererProps) {
                 </a>
               );
             }
+
+            case "portal_dates":
+            case "portal_notices":
+            case "portal_documents":
+            case "portal_faqs":
+              return (
+                <div key={el.id} style={baseStyle}>
+                  <PortalElementRenderer
+                    element={el}
+                    portalData={portalData || {}}
+                  />
+                </div>
+              );
 
             default:
               return null;
