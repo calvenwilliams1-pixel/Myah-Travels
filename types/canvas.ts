@@ -32,6 +32,10 @@ export interface CanvasElement {
   zIndex: number;
   locked: boolean;
   visible: boolean;
+  portalDatesData?: PortalDatesData;
+  portalNoticesData?: PortalNoticesData;
+  portalDocumentsData?: PortalDocumentsData;
+  portalFaqsData?: PortalFaqsData;
   groupId?: string;
   [key: string]: any;
 }
@@ -46,6 +50,10 @@ export type ElementType =
   | "proscons"
   | "button"
   | "pdf"
+  | "portal_dates"
+  | "portal_notices"
+  | "portal_documents"
+  | "portal_faqs"
   | "divider"
   | "portal_dates"
   | "portal_notices"
@@ -88,4 +96,53 @@ export function createEmptyCanvas(
     theme: { ...DEFAULT_THEME },
     elements: [],
   };
+}
+
+export interface PortalDatesData {
+  showDeparture: boolean;
+  showReturn: boolean;
+  showCountdown: boolean;
+  label: string;
+}
+
+export interface PortalNoticesData {
+  maxItems: number;
+  showPinnedOnly: boolean;
+  showGlobalAnnouncements: boolean;
+  title: string;
+}
+
+export interface PortalDocumentsData {
+  maxItems: number;
+  showFileType: boolean;
+  title: string;
+}
+
+export interface PortalFaqsData {
+  maxItems: number;
+  title: string;
+}
+
+export interface PortalRuntimeData {
+  departureDate?: string;
+  returnDate?: string;
+  notices?: Array<{
+    id: number;
+    title: string;
+    content: string;
+    isPinned: boolean;
+    isGlobalAnnouncement: boolean;
+    createdAt: string;
+  }>;
+  documents?: Array<{
+    id: number;
+    title: string;
+    fileType: string;
+    fileUrl: string;
+  }>;
+  faqs?: Array<{
+    id: number;
+    question: string;
+    answer: string;
+  }>;
 }
