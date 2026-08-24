@@ -7,12 +7,14 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Toolbar from "./Toolbar";
+import { CanvasBlockNode } from "./CanvasBlockNode";
 
 interface TipTapEditorProps {
   initialContent?: string;
   onChange?: (html: string, json: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  contentType?: string;
 }
 
 function safeParseContent(content: string): any {
@@ -32,10 +34,12 @@ export default function TipTapEditor({
   onChange,
   placeholder = "Start writing...",
   readOnly = false,
+  contentType = "post",
 }: TipTapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
+      CanvasBlockNode,
       Image.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
@@ -71,7 +75,12 @@ export default function TipTapEditor({
 
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
-      {!readOnly && <Toolbar editor={editor} />}
+      {!readOnly && (
+        <Toolbar
+          editor={editor}
+          contentType={contentType}
+        />
+      )}
       <EditorContent editor={editor} />
     </div>
   );
