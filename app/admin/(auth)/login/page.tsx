@@ -19,15 +19,15 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-    const result = await loginAction(username, password);
+  const result = await loginAction(username, password);
 
-    if (result.error) {
+    if (result && result.error) {
       setError(result.error);
       setIsLoading(false);
       return;
     }
 
-    if (result.requiresTotp) {
+     if (result && result.requiresTotp) {
       setStep("totp");
       setIsLoading(false);
       return;
@@ -41,9 +41,9 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-    const result = await verifyTotpAction(username, totpCode);
+   const result = await verifyTotpAction(username, totpCode);
 
-    if (result.error) {
+    if (result && result.error) {
       setError(result.error);
       setIsLoading(false);
       return;
