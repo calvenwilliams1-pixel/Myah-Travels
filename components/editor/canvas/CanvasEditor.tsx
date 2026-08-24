@@ -321,11 +321,16 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
       .filter(Boolean);
   }, [selectedIds, canvasDoc.elements]);
 
-  const getGuidelineElements = useCallback(() => {
+   const getGuidelineElements = useCallback(() => {
     if (!canvasRef.current) return [];
-    // Exclude selected elements from guidelines to prevent self-snap
+    // Exclude selected, hidden, and locked elements from guidelines
     return canvasDoc.elements
-      .filter((el) => !selectedIds.includes(el.id))
+      .filter(
+        (el) =>
+          el.visible !== false &&
+          !el.locked &&
+          !selectedIds.includes(el.id)
+      )
       .map((el) => canvasRef.current?.querySelector(`[data-element-id="${el.id}"]`) as HTMLElement)
       .filter(Boolean);
   }, [canvasDoc.elements, selectedIds]);
@@ -336,11 +341,17 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
 
       <div className="flex-1 overflow-auto bg-gray-100 p-8">
         <div className="mb-4 flex gap-3 items-center flex-wrap">
-          <button
+                  <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
             onClick={() => setShowCatalog(!showCatalog)}
           >
             {showCatalog ? "Hide Catalog" : "Show Catalog"}
+          </button>
+          <button
+            className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+            onClick={() => setShowProperties(!showProperties)}
+          >
+            {showProperties ? "Hide Properties" : "Show Properties"}
           </button>
           <button
             className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm"
@@ -439,9 +450,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
             ))}
         </div>
 
-                {getTargetElements().length > 0 && (
+                {(() => {
+          const moveableTargets = getTargetElements();
+          return moveableTargets.length > 0 ? (
           <Moveable
-            target={getTargetElements()}
+            target={moveableTargets}
             draggable={true}
             resizable={true}
             rotatable={true}
@@ -520,7 +533,8 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
               updateElement(id, { rotation: Math.round(rotation) });
             }}
           />
-         )}
+          ) : null;
+        })()}
 
         {/* Layers Panel */}
         {showLayers && (
