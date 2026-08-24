@@ -4,6 +4,7 @@ import { getPosts } from "@/lib/content";
 import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
 import { Card } from "@/components/ui/Card";
+import FeedAdminControls from "@/components/admin/FeedAdminControls";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,17 @@ export default async function PostsPage() {
               header: "Created",
               accessor: (post: any) =>
                 new Date(post.createdAt).toLocaleDateString(),
+            },
+            {
+              header: "Feed",
+              accessor: (post: any) => (
+                <FeedAdminControls
+                  postId={post.id}
+                  isPinned={post.isPinned || false}
+                  isHighlighted={post.isHighlighted || false}
+                  apiPath={`/api/admin/posts/${post.id}/toggle`}
+                />
+              ),
             },
           ]}
           data={posts}
