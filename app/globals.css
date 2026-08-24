@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Canvas renderer - overflow handled by wrapper div */
+.canvas-wrapper {
+  transform-origin: top left;
+}
