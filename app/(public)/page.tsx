@@ -1,6 +1,9 @@
 import React from "react";
-import CanvasHomepage from "@/components/homepage/CanvasHomepage";
+import FeedPage from "@/components/feed/FeedPage";
+import { getFeedItems, getCategories } from "@/lib/feed";
 import { getAllSettings } from "@/lib/settings";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getAllSettings();
@@ -10,6 +13,9 @@ export async function generateMetadata() {
   };
 }
 
-export default function HomePage() {
-  return <CanvasHomepage />;
+export default async function HomePage() {
+  const items = await getFeedItems("all", "newest", "all", 50, 0);
+  const categories = await getCategories();
+
+  return <FeedPage initialItems={items} categories={categories} />;
 }
