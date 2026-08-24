@@ -22,6 +22,9 @@ export const guides = sqliteTable(
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     isVisible: integer("is_visible", { mode: "boolean" }).default(true),
+    isPinned: integer("is_pinned", { mode: "boolean" }).default(false),
+    isHighlighted: integer("is_highlighted", { mode: "boolean" }).default(false),
+    pinnedAt: text("pinned_at"),
   },
   (table) => ({
     idxGuidesStatus: index("idx_guides_status").on(table.status),
