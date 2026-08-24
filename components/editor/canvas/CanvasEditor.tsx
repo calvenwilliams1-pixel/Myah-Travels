@@ -15,7 +15,10 @@ import ShapeElementView from "./elements/ShapeElementView";
 import SmartBlockElementView from "./elements/SmartBlockElementView";
 import ButtonElementView from "./elements/ButtonElementView";
 import PdfElementView from "./elements/PdfElementView";
-import TemplateManager from "./TemplateManager";
+import PortalDatesElementView from "./elements/PortalDatesElementView";
+import PortalNoticesElementView from "./elements/PortalNoticesElementView";
+import PortalDocumentsElementView from "./elements/PortalDocumentsElementView";
+import PortalFaqsElementView from "./elements/PortalFaqsElementView";import TemplateManager from "./TemplateManager";
 import SaveTemplateModal from "./SaveTemplateModal";
 import PublishControls from "./PublishControls";
 
@@ -742,6 +745,14 @@ onApply={(template) => {
       );
     case "pdf":
       return <PdfElementView element={el} />;
+    case "portal_dates":
+      return <PortalDatesElementView element={el} />;
+    case "portal_notices":
+      return <PortalNoticesElementView element={el} />;
+    case "portal_documents":
+      return <PortalDocumentsElementView element={el} />;
+    case "portal_faqs":
+      return <PortalFaqsElementView element={el} />;
     default:
       return (
         <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded text-gray-400 text-sm">
