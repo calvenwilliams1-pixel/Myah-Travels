@@ -48,6 +48,17 @@ export default async function GuidesPage() {
               accessor: (guide: any) =>
                 new Date(guide.createdAt).toLocaleDateString(),
             },
+            {
+              header: "Feed",
+              accessor: (guide: any) => (
+                <FeedAdminControls
+                  postId={guide.id}
+                  isPinned={guide.isPinned || false}
+                  isHighlighted={guide.isHighlighted || false}
+                  apiPath={`/api/admin/guides/${guide.id}/toggle`}
+                />
+              ),
+            },
           ]}
           data={guides}
           keyExtractor={(guide) => guide.id}
