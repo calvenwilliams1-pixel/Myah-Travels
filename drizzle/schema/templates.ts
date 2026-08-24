@@ -9,6 +9,7 @@ export const templates = sqliteTable("templates", {
   version: integer("version").default(1),
   createdFromTemplateId: integer("created_from_template_id"),
   thumbnailAssetId: integer("thumbnail_asset_id"),
+  userId: integer("user_id"),
   isBuiltIn: integer("is_built_in", { mode: "boolean" }).default(false),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at"),
