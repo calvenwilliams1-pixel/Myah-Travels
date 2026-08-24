@@ -1,9 +1,5 @@
 import React from "react";
-import HeroSection from "@/components/homepage/HeroSection";
-import AboutBlurb from "@/components/homepage/AboutBlurb";
-import FeaturedContent from "@/components/homepage/FeaturedContent";
-import FeaturedVideo from "@/components/homepage/FeaturedVideo";
-import CallToAction from "@/components/homepage/CallToAction";
+import CanvasHomepage from "@/components/homepage/CanvasHomepage";
 import { getAllSettings } from "@/lib/settings";
 
 export async function generateMetadata() {
@@ -15,13 +11,5 @@ export async function generateMetadata() {
 }
 
 export default function HomePage() {
-  return (
-    <div>
-      <HeroSection />
-      <AboutBlurb />
-      <FeaturedContent />
-      <FeaturedVideo />
-      <CallToAction />
-    </div>
-  );
+  return <CanvasHomepage />;
 }
