@@ -45,6 +45,14 @@ export default function FeedCard({
       ? `/guides/${slug}`
       : `/reviews/${slug}`;
 
+  const displayDate = publishedAt
+    ? new Date(publishedAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
   return (
     <article
       className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-shadow hover:shadow-md ${
@@ -53,7 +61,7 @@ export default function FeedCard({
     >
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
         {isPinned && (
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
             📌 Pinned
           </span>
         )}
@@ -68,13 +76,9 @@ export default function FeedCard({
         {category && (
           <span className="text-xs text-gray-500">{category}</span>
         )}
-        <span className="text-xs text-gray-400 ml-auto">
-          {new Date(publishedAt).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </span>
+        {displayDate && (
+          <span className="text-xs text-gray-400 ml-auto">{displayDate}</span>
+        )}
       </div>
 
       {featuredImage && (
