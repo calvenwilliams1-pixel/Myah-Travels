@@ -81,12 +81,9 @@ async function seed() {
     })
     .onConflictDoNothing();
 
-  // ============================================
-  // BUILT-IN CANVAS TEMPLATES
-  // ============================================
+  console.log("Core seed complete. Seeding built-in templates...");
 
   const builtInTemplates = [
-    // POST TEMPLATES
     {
       name: "Standard Blog Post",
       slug: "post-standard-blog",
@@ -134,8 +131,6 @@ async function seed() {
         ],
       }),
     },
-
-    // GUIDE TEMPLATES
     {
       name: "Destination Guide Standard",
       slug: "guide-destination-standard",
@@ -185,8 +180,6 @@ async function seed() {
         ],
       }),
     },
-
-    // REVIEW TEMPLATES
     {
       name: "Product Review Standard",
       slug: "review-product-standard",
@@ -236,8 +229,6 @@ async function seed() {
         ],
       }),
     },
-
-    // HOMEPAGE TEMPLATES
     {
       name: "Hero Welcome",
       slug: "homepage-hero-welcome",
