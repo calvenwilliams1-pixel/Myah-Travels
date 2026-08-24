@@ -4,6 +4,7 @@ import { getReviews } from "@/lib/content";
 import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
 import { Card } from "@/components/ui/Card";
+import FeedAdminControls from "@/components/admin/FeedAdminControls";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,17 @@ export default async function ReviewsPage() {
                 }`}>
                   {review.status}
                 </span>
+              ),
+            },
+            {
+              header: "Feed",
+              accessor: (review: any) => (
+                <FeedAdminControls
+                  postId={review.id}
+                  isPinned={review.isPinned || false}
+                  isHighlighted={review.isHighlighted || false}
+                  apiPath={`/api/admin/reviews/${review.id}/toggle`}
+                />
               ),
             },
           ]}
