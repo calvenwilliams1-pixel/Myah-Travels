@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { templates } from "@/drizzle/schema";
-import { eq, and, isNull, desc, sql } from "drizzle-orm";
+import { eq, and, isNull, desc, sql, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { CanvasDocument, CanvasElement, ElementType } from "@/types/canvas";
 
@@ -151,37 +151,65 @@ export function createElement(
 }
 
 // ============================================
-// TEMPLATE OPERATIONS
+// TEMPLATE OPERATIONS (with ownership scoping)
 // ============================================
 
-export async function getAllTemplates(contentType: string) {
+export async function getAllTemplates(contentType: string, userId?: number) {
+  const conditions = [
+    eq(templates.contentType, contentType),
+    isNull(templates.deletedAt),
+  ];
+
+  conditions.push(
+    or(
+      eq(templates.isBuiltIn, true),
+      userId ? eq(templates.userId, userId) : sql`1 = 0`
+    )
+  );
+
   return db.select().from(templates)
-    .where(and(eq(templates.contentType, contentType), isNull(templates.deletedAt)))
+    .where(and(...conditions))
     .orderBy(desc(templates.createdAt));
 }
 
-export async function getTemplateById(id: number) {
-  const result = await db.select().from(templates).where(eq(templates.id, id)).limit(1);
-  return result[0] ?? null;
+export async function getTemplateById(id: number, userId?: number) {
+  const result = await db.select().from(templates)
+    .where(and(eq(templates.id, id), isNull(templates.deletedAt)))
+    .limit(1);
+  const template = result[0];
+  if (!template) return null;
+  if (template.isBuiltIn) return template;
+  if (userId && template.userId === userId) return template;
+  return null;
 }
 
 export async function saveTemplate(data: {
   name: string;
   contentType: string;
   layoutData: string;
+  userId: number;
 }) {
   return db.insert(templates).values({
     name: data.name,
     contentType: data.contentType,
     layoutData: data.layoutData,
     isBuiltIn: false,
+    userId: data.userId,
   }).returning();
 }
 
 export async function updateTemplate(
   id: number,
+  userId: number,
   data: Partial<{ name: string; layoutData: string }>
 ) {
+  const template = await db.select().from(templates)
+    .where(and(eq(templates.id, id), isNull(templates.deletedAt)))
+    .limit(1);
+  if (template.length === 0) return null;
+  if (template[0].isBuiltIn) return null;
+  if (template[0].userId !== userId) return null;
+
   return db.update(templates)
     .set({
       ...data,
@@ -192,21 +220,35 @@ export async function updateTemplate(
     .returning();
 }
 
-export async function deleteTemplate(id: number) {
-  return db.update(templates)
+export async function deleteTemplate(id: number, userId: number) {
+  const template = await db.select().from(templates)
+    .where(and(eq(templates.id, id), isNull(templates.deletedAt)))
+    .limit(1);
+  if (template.length === 0) return { error: "Not found" };
+  if (template[0].isBuiltIn) return { error: "Cannot delete built-in template" };
+  if (template[0].userId !== userId) return { error: "Not authorized" };
+
+  await db.update(templates)
     .set({ deletedAt: new Date().toISOString() })
     .where(eq(templates.id, id));
+  return { success: true };
 }
 
-export async function duplicateTemplate(id: number, newName?: string) {
-  const original = await getTemplateById(id);
-  if (!original) return null;
+export async function duplicateTemplate(id: number, userId: number, newName?: string) {
+  const template = await db.select().from(templates)
+    .where(and(eq(templates.id, id), isNull(templates.deletedAt)))
+    .limit(1);
+  if (template.length === 0) return null;
+
+  const original = template[0];
+  if (!original.isBuiltIn && original.userId !== userId) return null;
 
   return db.insert(templates).values({
-    name: newName || `${original.name} (Copy)`,
+    name: newName || `${original.name} Copy`,
     contentType: original.contentType,
     layoutData: original.layoutData,
     isBuiltIn: false,
+    userId: userId,
     createdFromTemplateId: original.id,
   }).returning();
 }
