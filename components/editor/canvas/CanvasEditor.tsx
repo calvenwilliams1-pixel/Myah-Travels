@@ -17,11 +17,15 @@ import ButtonElementView from "./elements/ButtonElementView";
 import PdfElementView from "./elements/PdfElementView";
 import TemplateManager from "./TemplateManager";
 import SaveTemplateModal from "./SaveTemplateModal";
+import PublishControls from "./PublishControls";
 
 interface CanvasEditorProps {
   initialDocument?: string;
   contentType: string;
   onSave: (documentJson: string) => Promise<void>;
+  initialStatus?: "draft" | "published" | "scheduled";
+  initialScheduledAt?: string;
+  onStatusChange?: (status: "draft" | "published" | "scheduled", scheduledAt?: string) => void;
 }
 
 const MAX_HISTORY = 50;
@@ -37,7 +41,7 @@ function generateCopyName(name: string, existingNames: string[]): string {
   return candidate;
 }
 
-export default function CanvasEditor({ initialDocument, contentType, onSave }: CanvasEditorProps) {
+export default function CanvasEditor({ initialDocument, contentType, onSave, initialStatus = "draft", initialScheduledAt, onStatusChange }: CanvasEditorProps) {
   const [canvasDoc, setCanvasDoc] = useState<CanvasDocument>(() => {
     if (initialDocument) {
       try {
@@ -61,7 +65,9 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   const [showTemplates, setShowTemplates] = useState<"browse" | "manage" | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
-  const [showUndoToast, setShowUndoToast] = useState(false); 
+  const [showUndoToast, setShowUndoToast] = useState(false);
+  const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
+  const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt); 
   const canvasRef = useRef<HTMLDivElement>(null);
   const clipboardRef = useRef<CanvasElement[]>([]);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
@@ -463,7 +469,18 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           >
             💾 Save Template
           </button>
-           <span className="text-xs text-gray-500 ml-auto">
+                     <PublishControls
+            status={publishStatus}
+            scheduledAt={scheduledAt}
+            onStatusChange={(status, newScheduledAt) => {
+              setPublishStatus(status);
+              setScheduledAt(newScheduledAt);
+              if (onStatusChange) {
+                onStatusChange(status, newScheduledAt);
+              }
+            }}
+          />
+          <span className="text-xs text-gray-500 ml-auto">
             {canvasDoc.elements.length} elements
             {selectedIds.length > 0 ? ` · ${selectedIds.length} selected` : ""}
             {` · ${saveStatus === "saving" ? "Saving..." : "Saved"}`}
