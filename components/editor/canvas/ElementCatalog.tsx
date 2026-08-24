@@ -37,9 +37,18 @@ const CATALOG_SECTIONS: {
       { type: "proscons", label: "Pros/Cons", icon: "±" },
     ],
   },
-  {
+   {
     title: "Actions",
     items: [{ type: "button", label: "Button", icon: "🔘" }],
+  },
+  {
+    title: "Portal",
+    items: [
+      { type: "portal_dates", label: "Portal Dates", icon: "📅" },
+      { type: "portal_notices", label: "Portal Notices", icon: "📢" },
+      { type: "portal_documents", label: "Portal Documents", icon: "📁" },
+      { type: "portal_faqs", label: "Portal FAQs", icon: "❓" },
+    ],
   },
 ];
 
