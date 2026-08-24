@@ -47,7 +47,7 @@ export default async function SettingsPage() {
 
         <Card>
           <h3 className="font-semibold mb-4">Colors</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
               label="Primary Color"
               name="primary_color"
@@ -66,6 +66,43 @@ export default async function SettingsPage() {
               type="color"
               defaultValue={settings.accent_color || "#6b9ac4"}
             />
+            <Input
+              label="Background Color"
+              name="background_color"
+              type="color"
+              defaultValue={settings.background_color || "#ffffff"}
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="font-semibold mb-4">Background Image</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Background Image Path (upload via Media Library first)"
+              name="background_image"
+              defaultValue={settings.background_image || ""}
+              placeholder="/uploads/general/background.webp"
+            />
+            <label className="block text-sm font-medium text-gray-700">
+              Background Opacity
+              <input
+                type="range"
+                name="background_opacity"
+                min="0"
+                max="1"
+                step="0.01"
+                defaultValue={settings.background_opacity || "1"}
+                className="mt-1 w-full"
+                aria-label="Background opacity"
+                aria-valuemin={0}
+                aria-valuemax={1}
+                aria-valuenow={parseFloat(settings.background_opacity || "1")}
+              />
+              <span className="text-xs text-gray-500">
+                {Math.round(parseFloat(settings.background_opacity || "1") * 100)}% opacity
+              </span>
+            </label>
           </div>
         </Card>
 
