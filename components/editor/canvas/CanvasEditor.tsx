@@ -11,6 +11,8 @@ import ImageElementView from "./elements/ImageElementView";
 import ElementCatalog from "./ElementCatalog";
 import PropertiesPanel from "./PropertiesPanel";
 import ShapeElementView from "./elements/ShapeElementView";
+import ButtonElementView from "./elements/ButtonElementView";
+import PdfElementView from "./elements/PdfElementView";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -488,7 +490,7 @@ function renderElement(
       return <ImageElementView element={el} onUpdate={update} />;
     case "shape":
       return <ShapeElementView element={el} />;
-      case "list":
+    case "list":
     case "checklist":
     case "proscons":
       return (
@@ -497,6 +499,17 @@ function renderElement(
           onUpdate={update}
           onBeginEdit={() => pushUndo(canvasDoc)}
         />
+        );
+     case "button":
+      return (
+        <ButtonElementView
+          element={el}
+          onUpdate={update}
+          onBeginEdit={() => pushUndo(canvasDoc)}
+        />
+      );
+    case "pdf":
+      return <PdfElementView element={el} />;
       );
     default:
       return (
