@@ -6,11 +6,10 @@ import { usePathname } from "next/navigation";
 
 export const NAV_ITEMS = [
   { href: "/", label: "Home" },
-  { href: "/blog", label: "Blog" },
-  { href: "/guides", label: "Guides" },
-  { href: "/reviews", label: "Reviews" },
   { href: "/videos", label: "Videos" },
   { href: "/about", label: "About" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/privacy", label: "Privacy" },
   { href: "/contact", label: "Contact" },
 ];
 
