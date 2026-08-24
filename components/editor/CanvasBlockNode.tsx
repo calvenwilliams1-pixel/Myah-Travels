@@ -1,6 +1,11 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import CanvasBlockComponent from "./CanvasBlockComponent";
+import dynamic from "next/dynamic";
+
+const CanvasBlockComponent = dynamic(() => import("./CanvasBlockComponent"), {
+  ssr: false,
+  loading: () => <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">Loading canvas...</div>,
+});
 
 export const CanvasBlockNode = Node.create({
   name: "canvasBlock",
