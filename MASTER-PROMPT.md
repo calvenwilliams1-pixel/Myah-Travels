@@ -15,8 +15,9 @@ Currently in TESTING phase using GitHub Codespaces.
 Site loads with Tailwind styling working.
 
 ## Canvas Design System Status
-Phases 1-5 COMPLETE (implementation done, files on GitHub).
-Phase 6 (Layers Panel) is NEXT.
+Phases 1-6 COMPLETE (implementation done, files on GitHub).
+Phase 6.1 Polish applied (hidden/locked don't snap, properties toggle, cached moveable targets).
+Phase 7 (Template System UI) is NEXT.
 
 ### Phases Completed:
 - Phase 1: types/canvas.ts, drizzle schemas (assets, templates, portal-checklist-states), lib/canvas/index.ts, TextElementView, ImageElementView, basic CanvasEditor
@@ -24,8 +25,10 @@ Phase 6 (Layers Panel) is NEXT.
 - Phase 3: PropertiesPanel.tsx, ShapeElementView.tsx, CanvasEditor updated with zIndex functions
 - Phase 4: SmartBlockElementView.tsx (lists, checklists, pros/cons), CanvasEditor updated
 - Phase 5: ButtonElementView.tsx, PdfElementView.tsx, CanvasEditor updated with button/pdf cases
+- Phase 6: LayersPanel.tsx (visibility, lock, rename, icons, zIndex sort), CanvasEditor updated
+- Phase 6.1: Polish (hidden/locked excluded from snap, properties toggle, cached targets)
 
-### Canvas Files Created So Far:
+### Canvas Files Created:
 - types/canvas.ts
 - drizzle/schema/assets.ts
 - drizzle/schema/templates.ts
@@ -34,6 +37,7 @@ Phase 6 (Layers Panel) is NEXT.
 - components/editor/canvas/CanvasEditor.tsx
 - components/editor/canvas/ElementCatalog.tsx
 - components/editor/canvas/PropertiesPanel.tsx
+- components/editor/canvas/LayersPanel.tsx
 - components/editor/canvas/elements/TextElementView.tsx
 - components/editor/canvas/elements/ImageElementView.tsx
 - components/editor/canvas/elements/ShapeElementView.tsx
@@ -52,8 +56,7 @@ Phase 6 (Layers Panel) is NEXT.
 - PDF (thumbnail/download/full) ✅
 
 ### Remaining Canvas Phases:
-- Phase 6: Layers Panel
-- Phase 7: Template system UI
+- Phase 7: Template system UI (picker, save, manage)
 - Phase 8: Draft + Schedule UI
 - Phase 9: Server-side CanvasRenderer
 - Phase 10: Mobile scaling
@@ -65,7 +68,7 @@ Phase 6 (Layers Panel) is NEXT.
 - Phase 16: Integration testing
 
 ## Testing Session Notes (Completed)
-- Removed .check() from drizzle/schema/posts.ts, guides.ts, reviews.ts
+- Removed .check() from schema files
 - Renamed next.config.ts → next.config.mjs
 - Created app/layout.tsx, app/globals.css
 - Created tailwind.config.js, postcss.config.js
@@ -73,10 +76,10 @@ Phase 6 (Layers Panel) is NEXT.
 - All public pages load correctly
 
 ## Known Issues To Fix
-1. Contact form: "dont call me" accepted as phone (needs validation)
+1. Contact form: "dont call me" accepted as phone
 2. Admin login: untested
 3. FTS5 search: untested
-4. Email: untested (no Resend API key)
+4. Email: untested
 5. Media upload: untested
 6. Portal magic links: untested end-to-end
 7. Tailwind configs not pushed to GitHub
@@ -94,15 +97,17 @@ Phase 6 (Layers Panel) is NEXT.
 
 ## Key Architecture Decisions
 - Magic links: returnDate + 3 days expiry
-- editorType fixed at creation (tiptap for posts, canvas for others)
-- No groupId, no Spacer element
+- editorType fixed at creation
+- No groupId, no Spacer
 - Numbered lists = listType variant
-- PDF uses iframe in editor, react-pdf removed (simplified)
+- PDF uses iframe in editor
 - Assets table replaces raw paths
 - Checklist items have stable IDs
 - Undo/redo capped at 50
-- Debounced autosave (2s) with flush on unmount
-- zIndex via getNextZIndex helper
+- Debounced autosave (2s) with flush
+- zIndex via getNextZIndex + index offset
+- Hidden + locked elements excluded from snapping
+- Legacy documents use `visible !== false` and `locked === true` checks
 
 ## How I Work
 - Using GitHub website to create files one at a time
@@ -110,6 +115,7 @@ Phase 6 (Layers Panel) is NEXT.
 - Files combined where possible
 - Submit code for AI review BEFORE creating on GitHub
 - When chat corrupts code, work directly in Codespaces
+- Only edit on GitHub, not Codespaces (sync with git pull)
 
 ## Progress Tracker
 
@@ -121,13 +127,15 @@ Phase 6 (Layers Panel) is NEXT.
 | Canvas Phase 3 | ✅ Complete | 2 | Approved |
 | Canvas Phase 4 | ✅ Complete | 1 | Approved |
 | Canvas Phase 5 | ✅ Complete | 2 | Approved |
-| Canvas Phase 6 | Not Started | 0/1 | Pending |
-| Canvas Phases 7-16 | Not Started | 0/10 | Pending |
+| Canvas Phase 6 | ✅ Complete | 1 | Approved |
+| Canvas Phase 6.1 | ✅ Complete | 0 | Approved |
+| Canvas Phase 7 | Not Started | 0/3 | Pending |
+| Canvas Phases 8-16 | Not Started | 0/9 | Pending |
 
 ## Next Steps
 1. Push Tailwind configs to GitHub
 2. Fix contact form phone validation
-3. Start Canvas Phase 6 (Layers Panel)
+3. Start Canvas Phase 7 (Template System)
 4. Test admin login
 5. Set up mini PC for deployment
 
