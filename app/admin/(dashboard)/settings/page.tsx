@@ -14,7 +14,15 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Settings</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Settings</h2>
+        <a
+          href="/admin/settings/password"
+          className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
+        >
+          Change Password →
+        </a>
+      </div>
 
       <form action={saveSettingsAction} className="space-y-6">
         <Card>
