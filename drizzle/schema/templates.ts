@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 export const templates = sqliteTable("templates", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
   contentType: text("content_type").notNull(),
   layoutData: text("layout_data").notNull(),
   version: integer("version").default(1),
