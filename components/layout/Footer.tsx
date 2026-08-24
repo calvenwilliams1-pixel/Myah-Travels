@@ -26,13 +26,11 @@ export default async function Footer() {
           <div>
             <h4 className="font-medium text-gray-800 mb-2">Quick Links</h4>
             <ul className="space-y-1 text-sm">
-              <li><Link href="/blog" className="text-gray-600 hover:text-emerald-700">Blog</Link></li>
-              <li><Link href="/guides" className="text-gray-600 hover:text-emerald-700">Guides</Link></li>
-              <li><Link href="/reviews" className="text-gray-600 hover:text-emerald-700">Reviews</Link></li>
               <li><Link href="/videos" className="text-gray-600 hover:text-emerald-700">Videos</Link></li>
               <li><Link href="/about" className="text-gray-600 hover:text-emerald-700">About</Link></li>
               <li><Link href="/faq" className="text-gray-600 hover:text-emerald-700">FAQ</Link></li>
               <li><Link href="/privacy" className="text-gray-600 hover:text-emerald-700">Privacy Policy</Link></li>
+              <li><Link href="/contact" className="text-gray-600 hover:text-emerald-700">Contact</Link></li>
             </ul>
           </div>
 
@@ -69,6 +67,13 @@ export default async function Footer() {
           {settings.footer_text && (
             <p className="text-xs text-gray-400 mt-1">{settings.footer_text}</p>
           )}
+          <Link
+            href="/admin/login"
+            className="inline-block mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Admin login"
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </footer>
