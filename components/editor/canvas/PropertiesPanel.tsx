@@ -272,6 +272,255 @@ export default function PropertiesPanel({
             </div>
           </div>
         )}
+        {/* Portal Dates properties */}
+        {element.type === "portal_dates" && (() => {
+          const data = {
+            label: "Trip Dates",
+            showDeparture: true,
+            showReturn: true,
+            showCountdown: true,
+            ...element.portalDatesData,
+          };
+
+          return (
+            <>
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Label</label>
+                <input
+                  type="text"
+                  value={data.label}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalDatesData: { ...data, label: e.target.value },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={data.showDeparture}
+                    onChange={(e) =>
+                      onUpdate(element.id, {
+                        portalDatesData: { ...data, showDeparture: e.target.checked },
+                      })
+                    }
+                    className="rounded"
+                  />
+                  Show Departure
+                </label>
+
+                <label className="flex items-center gap-2 text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={data.showReturn}
+                    onChange={(e) =>
+                      onUpdate(element.id, {
+                        portalDatesData: { ...data, showReturn: e.target.checked },
+                      })
+                    }
+                    className="rounded"
+                  />
+                  Show Return
+                </label>
+
+                <label className="flex items-center gap-2 text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={data.showCountdown}
+                    onChange={(e) =>
+                      onUpdate(element.id, {
+                        portalDatesData: { ...data, showCountdown: e.target.checked },
+                      })
+                    }
+                    className="rounded"
+                  />
+                  Show Countdown
+                </label>
+              </div>
+            </>
+          );
+        })()}
+
+        {/* Portal Notices properties */}
+        {element.type === "portal_notices" && (() => {
+          const data = {
+            title: "Notices",
+            maxItems: 5,
+            showPinnedOnly: false,
+            showGlobalAnnouncements: true,
+            ...element.portalNoticesData,
+          };
+
+          return (
+            <>
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Title</label>
+                <input
+                  type="text"
+                  value={data.title}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalNoticesData: { ...data, title: e.target.value },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Max Items</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  step={1}
+                  value={data.maxItems}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalNoticesData: { ...data, maxItems: Math.max(1, Number(e.target.value)) },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 text-xs text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={data.showPinnedOnly}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalNoticesData: { ...data, showPinnedOnly: e.target.checked },
+                    })
+                  }
+                  className="rounded"
+                />
+                Show Pinned Only
+              </label>
+
+              <label className="flex items-center gap-2 text-xs text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={data.showGlobalAnnouncements}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalNoticesData: { ...data, showGlobalAnnouncements: e.target.checked },
+                    })
+                  }
+                  className="rounded"
+                />
+                Show Global Announcements
+              </label>
+            </>
+          );
+        })()}
+
+        {/* Portal Documents properties */}
+        {element.type === "portal_documents" && (() => {
+          const data = {
+            title: "Documents",
+            maxItems: 10,
+            showFileType: true,
+            ...element.portalDocumentsData,
+          };
+
+          return (
+            <>
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Title</label>
+                <input
+                  type="text"
+                  value={data.title}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalDocumentsData: { ...data, title: e.target.value },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Max Items</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  step={1}
+                  value={data.maxItems}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalDocumentsData: { ...data, maxItems: Math.max(1, Number(e.target.value)) },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 text-xs text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={data.showFileType}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalDocumentsData: { ...data, showFileType: e.target.checked },
+                    })
+                  }
+                  className="rounded"
+                />
+                Show File Type
+              </label>
+            </>
+          );
+        })()}
+
+        {/* Portal FAQs properties */}
+        {element.type === "portal_faqs" && (() => {
+          const data = {
+            title: "FAQs",
+            maxItems: 10,
+            ...element.portalFaqsData,
+          };
+
+          return (
+            <>
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Title</label>
+                <input
+                  type="text"
+                  value={data.title}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalFaqsData: { ...data, title: e.target.value },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600 block mb-1">Max Items</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  step={1}
+                  value={data.maxItems}
+                  onChange={(e) =>
+                    onUpdate(element.id, {
+                      portalFaqsData: { ...data, maxItems: Math.max(1, Number(e.target.value)) },
+                    })
+                  }
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+              </div>
+            </>
+          );
+        })()}
 
         {/* Opacity */}
         {(element.type === "shape" || element.type === "image") && (
