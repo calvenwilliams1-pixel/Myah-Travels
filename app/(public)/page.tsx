@@ -14,7 +14,7 @@ export async function generateMetadata() {
 }
 
 export default async function HomePage() {
-  const items = await getFeedItems("all", "newest", "all", 50, 0);
+  const items = await getFeedItems("all", "pinned", "all", 50, 0);
   const categories = await getCategories();
 
   return <FeedPage initialItems={items} categories={categories} />;
