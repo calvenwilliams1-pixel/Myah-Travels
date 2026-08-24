@@ -15,6 +15,8 @@ import ShapeElementView from "./elements/ShapeElementView";
 import SmartBlockElementView from "./elements/SmartBlockElementView";
 import ButtonElementView from "./elements/ButtonElementView";
 import PdfElementView from "./elements/PdfElementView";
+import TemplateManager from "./TemplateManager";
+import SaveTemplateModal from "./SaveTemplateModal";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -23,6 +25,17 @@ interface CanvasEditorProps {
 }
 
 const MAX_HISTORY = 50;
+
+function generateCopyName(name: string, existingNames: string[]): string {
+  const base = `${name} Copy`;
+  let candidate = base;
+  let count = 2;
+  while (existingNames.includes(candidate)) {
+    candidate = `${name} Copy ${count}`;
+    count++;
+  }
+  return candidate;
+}
 
 export default function CanvasEditor({ initialDocument, contentType, onSave }: CanvasEditorProps) {
   const [canvasDoc, setCanvasDoc] = useState<CanvasDocument>(() => {
@@ -45,6 +58,10 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   const [showCatalog, setShowCatalog] = useState(true);
   const [showProperties, setShowProperties] = useState(true);
   const [showLayers, setShowLayers] = useState(true);
+  const [showTemplates, setShowTemplates] = useState<"browse" | "manage" | null>(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
+  const [showUndoToast, setShowUndoToast] = useState(false); 
   const canvasRef = useRef<HTMLDivElement>(null);
   const clipboardRef = useRef<CanvasElement[]>([]);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
@@ -61,10 +78,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     }, 2000)
   );
 
-  useEffect(() => {
+    useEffect(() => {
+    setSaveStatus("saving");
     debouncedSaveRef.current(canvasDoc);
+    const timeout = setTimeout(() => setSaveStatus("saved"), 2500);
     return () => {
-      // Flush pending save on unmount
+      clearTimeout(timeout);
       if (debouncedSaveRef.current) {
         debouncedSaveRef.current.flush();
       }
@@ -128,8 +147,10 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
       elements: prev.elements.filter((el) => !deletableIds.includes(el.id)),
     }));
     setSelectedIds([]);
+    setShowUndoToast(true);
+    setTimeout(() => setShowUndoToast(false), 3000);
   }, [canvasDoc, selectedIds, pushUndo]);
-
+  
     const duplicateSelected = useCallback(() => {
     const duplicatableIds = selectedIds.filter((id) => {
       const el = canvasDoc.elements.find((e) => e.id === id);
@@ -139,10 +160,13 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     pushUndo(canvasDoc);
     const newElements = canvasDoc.elements
       .filter((el) => duplicatableIds.includes(el.id))
-          .map((el, index) => ({
+      .map((el, index) => ({
         ...JSON.parse(JSON.stringify(el)),
         id: nanoid(8),
-        name: `${el.name || el.type} Copy`,
+        name: generateCopyName(
+          el.name || el.type,
+          canvasDoc.elements.map((e) => e.name || e.type)
+        ),
         x: el.x + 20,
         y: el.y + 20,
         zIndex: getNextZIndex(canvasDoc.elements) + index,
@@ -231,6 +255,28 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
       ),
     }));
   }, [canvasDoc, pushUndo]);
+
+    const saveAsTemplate = useCallback(async (name: string) => {
+    try {
+      const res = await fetch("/api/canvas/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          contentType,
+          layoutData: JSON.stringify(canvasDoc),
+        }),
+      });
+      if (res.ok) {
+        setShowSaveModal(false);
+        setSaveStatus("saved");
+      } else {
+        setSaveStatus("saved");
+      }
+    } catch (err) {
+      console.error("Save template failed:", err);
+    }
+  }, [canvasDoc, contentType]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -341,7 +387,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
 
       <div className="flex-1 overflow-auto bg-gray-100 p-8">
         <div className="mb-4 flex gap-3 items-center flex-wrap">
-                  <button
+         <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
             onClick={() => setShowCatalog(!showCatalog)}
           >
@@ -393,14 +439,34 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           >
             Duplicate
           </button>
-                    <button
+         <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
             onClick={() => setShowLayers(!showLayers)}
           >
             {showLayers ? "Hide Layers" : "Show Layers"}
           </button>
-          <span className="text-xs text-gray-500 ml-auto">
+                 <button
+            className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+            onClick={() => setShowTemplates("browse")}
+          >
+            📐 Templates
+          </button>
+          <button
+            className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+            onClick={() => setShowTemplates("manage")}
+          >
+            🗂 Manage Templates
+          </button>
+          <button
+            className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+            onClick={() => setShowSaveModal(true)}
+          >
+            💾 Save Template
+          </button>
+           <span className="text-xs text-gray-500 ml-auto">
             {canvasDoc.elements.length} elements
+            {selectedIds.length > 0 ? ` · ${selectedIds.length} selected` : ""}
+            {` · ${saveStatus === "saving" ? "Saving..." : "Saved"}`}
           </span>
         </div>
 
@@ -431,6 +497,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
                   height: el.height,
                   transform: `rotate(${el.rotation}deg)`,
                   zIndex: el.zIndex,
+                  position: "relative",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -446,6 +513,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
                 }}
               >
                 {renderElement(el, updateElement, pushUndo, canvasDoc)}
+                {el.locked === true && (
+                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs z-10">
+                    🔒
+                  </span>
+                )}
               </div>
             ))}
         </div>
@@ -548,7 +620,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           />
         )}
         
-        {/* Properties Panel */}
+               {/* Properties Panel */}
         {showProperties && selectedIds.length === 1 && (
           <PropertiesPanel
             element={canvasDoc.elements.find((el) => el.id === selectedIds[0])!}
@@ -558,6 +630,56 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
             onBringForward={bringForward}
             onSendBackward={sendBackward}
           />
+        )}
+
+        {/* Template Manager */}
+        {showTemplates && (
+          <TemplateManager
+            contentType={contentType}
+            mode={showTemplates}
+            onClose={() => setShowTemplates(null)}
+onApply={(template) => {
+  if (template) {
+    if (
+      canvasDoc.elements.length > 0 &&
+      !confirm("Replace current canvas with this template? (You can undo)")
+    ) {
+      return;
+    }
+                try {
+                  const doc = JSON.parse(template.layoutData);
+                  if (doc.schemaVersion === 1 && Array.isArray(doc.elements)) {
+                    pushUndo(canvasDoc);
+                    setRedoStack([]);
+                    setCanvasDoc(doc);
+                    setSelectedIds([]);
+                  }
+                } catch {
+                  // invalid template
+                }
+              }
+              setShowTemplates(null);
+            }}
+          />
+        )}
+
+         {/* Save Template Modal */}
+        {showSaveModal && (
+          <SaveTemplateModal
+            contentType={contentType}
+            onSave={saveAsTemplate}
+            onClose={() => setShowSaveModal(false)}
+          />
+        )}
+
+        {/* Undo Toast */}
+        {showUndoToast && (
+          <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm shadow-lg z-50">
+            Elements deleted —{" "}
+            <button onClick={undo} className="underline hover:text-emerald-300">
+              Undo
+            </button>
+          </div>
         )}
       </div>
     </div>
