@@ -1,75 +1,67 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import FeedContainer from "./FeedContainer";
 import FeedFilters from "./FeedFilters";
-import { useSearchParams } from "next/navigation";
+import InfiniteFeed from "./InfiniteFeed";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FeedItem } from "./types";
 
 interface FeedPageProps {
-  initialItems: any[];
+  initialItems: FeedItem[];
   categories: string[];
 }
 
 export default function FeedPage({ initialItems, categories }: FeedPageProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [items, setItems] = useState(initialItems);
+
   const [selectedType, setSelectedType] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const type = searchParams.get("type") || "all";
-    const sort = searchParams.get("sort") || "newest";
-    const category = searchParams.get("category") || "all";
-    setSelectedType(type);
-    setSelectedSort(sort);
-    setSelectedCategory(category);
+    setSelectedType(searchParams.get("type") || "all");
+    setSelectedSort(searchParams.get("sort") || "newest");
+    setSelectedCategory(searchParams.get("category") || "all");
   }, [searchParams]);
 
-  useEffect(() => {
-    async function fetchItems() {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        params.set("type", selectedType);
-        params.set("sort", selectedSort);
-        params.set("category", selectedCategory);
-        params.set("limit", "50");
-        params.set("offset", "0");
+  const updateFilters = (updates: { type?: string; sort?: string; category?: string }) => {
+    const newType = updates.type ?? selectedType;
+    const newSort = updates.sort ?? selectedSort;
+    const newCategory = updates.category ?? selectedCategory;
 
-        const res = await fetch(`/api/feed?${params.toString()}`);
-        const data = await res.json();
-        setItems(data.items || []);
-      } catch (err) {
-        console.error("Failed to fetch feed:", err);
-      }
-      setIsLoading(false);
-    }
+    setSelectedType(newType);
+    setSelectedSort(newSort);
+    setSelectedCategory(newCategory);
 
-    fetchItems();
-  }, [selectedType, selectedSort, selectedCategory]);
+    const params = new URLSearchParams();
+    if (newType !== "all") params.set("type", newType);
+    if (newSort !== "newest") params.set("sort", newSort);
+    if (newCategory !== "all") params.set("category", newCategory);
+
+    const queryString = params.toString();
+    router.push(queryString ? `?${queryString}` : "/", { scroll: false });
+  };
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <FeedFilters
         selectedType={selectedType}
-        onTypeChange={setSelectedType}
+        onTypeChange={(type) => updateFilters({ type })}
         selectedSort={selectedSort}
-        onSortChange={setSelectedSort}
+        onSortChange={(sort) => updateFilters({ sort })}
         categories={categories}
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={(category) => updateFilters({ category })}
       />
 
       <div className="mt-6">
-        {isLoading ? (
-          <div className="text-center py-20">
-            <p className="text-gray-400">Loading...</p>
-          </div>
-        ) : (
-          <FeedContainer items={items} />
-        )}
+        <InfiniteFeed
+          initialItems={initialItems}
+          selectedType={selectedType}
+          selectedSort={selectedSort}
+          selectedCategory={selectedCategory}
+        />
       </div>
     </div>
   );
