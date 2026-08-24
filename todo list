@@ -1,12 +1,56 @@
-# Myah Travels - Final Todo List (Testing Phase Focus)
+# Myah Travels - Final Todo List (Canvas Phase 9 Focus)
 
-## All Code Segments Complete ✅
+## All Core Segments Complete ✅
 
-All 17 segments are built. Focus now shifts to **testing, fixing, and deployment**.
+All 17 segments built. Canvas Design System Phases 1-8 complete. Phase 9 in hardening.
 
 ---
 
-## Current Testing Progress
+## Canvas Design System Progress
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1: Foundation | ✅ Complete | 8 files |
+| 2: Moveable Integration | ✅ Complete | 1 file |
+| 3: Properties Panel | ✅ Complete | 2 files |
+| 4: Smart Blocks | ✅ Complete | 1 file |
+| 5: Button + PDF | ✅ Complete | 2 files |
+| 6: Layers Panel | ✅ Complete | 1 file |
+| 6.1: Polish | ✅ Complete | 0 files (canvas edits) |
+| 7: Template System | ✅ Complete | 2 files |
+| 7.1: Template Polish | ✅ Complete | 0 files (canvas edits) |
+| 8: Draft + Schedule UI | ✅ Complete | 2 files |
+| 9: CanvasRenderer | ⚠️ NEEDS HARDENING | 1 file created, review feedback pending |
+| 10: Portal Dynamic Elements | Not Started | 0 files |
+| 11: Homepage Canvas Editor | Not Started | 0 files |
+| 12: Canvas Block in TipTap | Not Started | 0 files |
+| 13: Built-in Templates | Not Started | 0 files |
+| 14: Testing + Polish | Not Started | 0 files |
+
+---
+
+## IMMEDIATE PRIORITY: Phase 9 Hardening
+
+CanvasRenderer.tsx is created but needs these fixes from AI review:
+
+### Critical Fixes (Must Do)
+- [ ] Sanitize button URLs (block `javascript:`, allow `http/https/mailto/tel/#`)
+- [ ] Add `sandbox="allow-scripts allow-same-origin"` to PDF iframe
+- [ ] Add mobile scaling CSS to `app/globals.css` (`.canvas-wrapper` with `transform: scale()`)
+- [ ] Add `overflowWrap: "break-word"` to text elements
+- [ ] Validate arrays before mapping (checklist items, pros, cons)
+- [ ] Wrap canvas in `overflow-auto` container for responsiveness
+
+### Recommended Fixes (Should Do)
+- [ ] Add `loading="lazy"` to images
+- [ ] Add `aria-hidden="true"` to decorative shapes
+- [ ] Add `target="_blank"` + `rel="noopener noreferrer"` for external button links
+- [ ] Change button fallback text from "Click Here" to "Learn More"
+- [ ] Prepopulate schedule picker when rescheduling (Phase 8 polish)
+
+---
+
+## Testing Progress
 
 | What's Been Tested | Status |
 |-------------------|--------|
@@ -14,6 +58,10 @@ All 17 segments are built. Focus now shifts to **testing, fixing, and deployment
 | All public pages load | ✅ Working |
 | Tailwind CSS renders | ✅ Working |
 | Contact form basic validation | ✅ Working |
+| Canvas editor loads | ✅ Working |
+| Canvas element types render | ✅ All 8 types working |
+| Template system UI | ⚠️ Not tested end-to-end |
+| PublishControls UI | ⚠️ Not tested end-to-end |
 | Admin login | ⚠️ Not tested |
 | Content creation | ⚠️ Not tested |
 | Media upload | ⚠️ Not tested |
@@ -23,22 +71,38 @@ All 17 segments are built. Focus now shifts to **testing, fixing, and deployment
 
 ---
 
-## Immediate Fixes Needed
+## Known Bugs to Fix
 
-### Code Fixes
-- [ ] Push Tailwind configs to GitHub (tailwind.config.js, postcss.config.js)
-- [ ] Fix contact form phone validation (reject "dont call me" as phone)
-- [ ] Push contact form validation fix to GitHub
-- [ ] Update MASTER-PROMPT.md with testing status
-
-### Database
-- [ ] Verify all tables created correctly
-- [ ] Verify seed data populated
-- [ ] Verify FTS5 search index triggers work
+| Bug | Priority | Status |
+|-----|----------|--------|
+| Contact form accepts invalid phone ("dont call me") | High | Fix pending |
+| Tailwind configs not on GitHub | High | Fix pending |
+| CanvasRenderer needs hardening | High | In progress (Phase 9 review) |
+| drizzle-kit push fails | High | Workaround: manual SQL |
+| Admin login untested | Medium | Test pending |
+| FTS5 search untested | Medium | Test pending |
+| Email untested | Medium | Test pending (no API key) |
+| Media upload untested | Medium | Test pending |
+| Portal magic links untested E2E | Medium | Test pending |
+| `.check()` removed (no DB constraint) | Low | Acceptable (Zod handles) |
+| Admin mobile nav missing | Low | Deferred to V2 |
+| Magic link tokens not hashed | Low | Deferred to V2 |
 
 ---
 
 ## Testing Checklist
+
+### Canvas System
+- [ ] Test template save/load/delete
+- [ ] Test undo/redo (50 step cap)
+- [ ] Test keyboard shortcuts (Ctrl+Z, Ctrl+D, arrows)
+- [ ] Test snap guidelines
+- [ ] Test locked elements (can't select/move)
+- [ ] Test hidden elements (not in snap, not rendered)
+- [ ] Test z-index ordering
+- [ ] Test PDF display modes (thumbnail/full/download)
+- [ ] Test PublishControls (draft → schedule → publish)
+- [ ] Test CanvasRenderer on mobile
 
 ### 1. Admin Authentication
 - [ ] Login with username: `myah`, password: `changeme`
@@ -56,6 +120,7 @@ All 17 segments are built. Focus now shifts to **testing, fixing, and deployment
 - [ ] Check post appears on public blog page
 - [ ] Test slug generation
 - [ ] Test TipTap editor formatting
+- [ ] Test Canvas editor integration
 - [ ] Create a destination guide
 - [ ] Create a review with ratings
 - [ ] Test soft delete
@@ -109,7 +174,7 @@ All 17 segments are built. Focus now shifts to **testing, fixing, and deployment
 - [ ] Check footer links work
 - [ ] Verify Privacy page
 - [ ] Verify FAQ page
-- [ ] Check 404 page (if exists)
+- [ ] Check 404 page
 
 ### 9. Email System (requires Resend API key)
 - [ ] Configure Resend
@@ -117,20 +182,6 @@ All 17 segments are built. Focus now shifts to **testing, fixing, and deployment
 - [ ] Test magic link email
 - [ ] Test portal notice email
 - [ ] Test webhook handling
-
----
-
-## Known Bugs to Fix
-
-| Bug | Priority | Status |
-|-----|----------|--------|
-| Contact form accepts invalid phone | High | Fix pending |
-| drizzle-kit push fails | High | Workaround: manual SQL |
-| Tailwind configs not on GitHub | High | Fix pending |
-| `.check()` removed (no DB constraint) | Low | Acceptable (Zod handles) |
-| Admin mobile nav missing | Medium | Deferred to V2 |
-| Portal documents not protected | Medium | Deferred to V2 |
-| Magic link tokens not hashed | Low | Deferred to V2 |
 
 ---
 
@@ -185,41 +236,20 @@ All 17 segments are built. Focus now shifts to **testing, fixing, and deployment
 
 ---
 
-## Progress Tracker (Testing Phase)
-
-| Segment | Code Status | Testing Status |
-|---------|-------------|----------------|
-| 0: Project Init | ✅ Complete | ✅ Tested |
-| 1: Database | ✅ Complete | ⚠️ Partially (manual tables) |
-| 1.5: Security | ✅ Complete | ⚠️ Partially (rate limiting) |
-| 2: Auth | ✅ Complete | ⚠️ Not tested |
-| 13a: Logging | ✅ Complete | ⚠️ Not tested |
-| 7: Email | ✅ Complete | ⚠️ Not tested (no API key) |
-| 14: Backup | ✅ Complete | ⚠️ Not tested |
-| 3: Content | ✅ Complete | ⚠️ Not tested |
-| 4: Media | ✅ Complete | ⚠️ Not tested |
-| 12: Settings | ✅ Complete | ⚠️ Not tested |
-| 5: Clients | ✅ Complete | ⚠️ Partially (form validation) |
-| 8: Search | ✅ Complete | ⚠️ Not tested |
-| 10: Public Pages | ✅ Complete | ✅ Tested (all load) |
-| 11: Homepage | ✅ Complete | ✅ Tested (renders) |
-| 6: Portal | ✅ Complete | ⚠️ Not tested |
-| 9: Dashboard | ✅ Complete | ⚠️ Not tested |
-| 15: Testing | ✅ Complete | ⚠️ Basic smoke tests |
-
----
-
 ## Next Actions (In Order)
 
-1. **Push pending files to GitHub**
-2. **Fix contact form phone validation**
-3. **Test admin login**
-4. **Test content creation**
-5. **Test portal system**
-6. **Test media upload**
-7. **Set up mini PC**
-8. **Deploy**
+1. **Apply Phase 9 hardening fixes to CanvasRenderer.tsx**
+2. **Add mobile scaling CSS to globals.css**
+3. **Push all pending files to GitHub**
+4. **Fix contact form phone validation**
+5. **Test admin login**
+6. **Test canvas template system**
+7. **Test content creation with canvas**
+8. **Test portal system**
+9. **Test media upload**
+10. **Set up mini PC**
+11. **Deploy**
 
 ---
 
-**This is your updated TODO.md. Paste it into GitHub replacing the old content.**
+**Last Updated:** Phase 9 hardening in progress
