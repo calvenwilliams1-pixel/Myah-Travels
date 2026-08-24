@@ -39,7 +39,7 @@ export default function LayersPanel({
   };
 
   return (
-    <aside className="w-48 bg-white border-l border-gray-200 overflow-y-auto shrink-0">
+            <aside className="w-64 bg-white border-l border-gray-200 overflow-y-auto shrink-0">
       <div className="p-3">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">Layers</h3>
         <p className="text-xs text-gray-400 mb-3">{elements.length} elements</p>
@@ -48,33 +48,33 @@ export default function LayersPanel({
           {sorted.map((el) => (
             <li
               key={el.id}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs cursor-pointer ${
+               className={`flex items-center gap-1 px-2 py-1 rounded text-xs cursor-pointer ${
                 selectedIds.includes(el.id)
                   ? "bg-emerald-50 text-emerald-800"
                   : "hover:bg-gray-50 text-gray-700"
-              }`}
+              } ${el.visible === false ? "opacity-50" : ""}`}
               onClick={() => onSelect([el.id])}
             >
-              <button
+                           <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleVisibility(el.id);
                 }}
                 className="w-5 text-center text-xs flex-shrink-0"
-                title={el.visible ? "Hide" : "Show"}
+                title={el.visible !== false ? "Hide" : "Show"}
               >
-                {el.visible ? "👁" : "🚫"}
+                {el.visible !== false ? "👁" : "🚫"}
               </button>
 
-              <button
+                           <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleLock(el.id);
                 }}
                 className="w-5 text-center text-xs flex-shrink-0"
-                title={el.locked ? "Unlock" : "Lock"}
+                title={el.locked === true ? "Unlock" : "Lock"}
               >
-                {el.locked ? "🔒" : "🔓"}
+                {el.locked === true ? "🔒" : "🔓"}
               </button>
 
               {renamingId === el.id ? (
@@ -94,13 +94,14 @@ export default function LayersPanel({
                   className="flex-1 px-1 py-0.5 border border-emerald-300 rounded text-xs"
                 />
               ) : (
-                <span
+                               <span
                   className="flex-1 truncate"
                   onDoubleClick={(e) => {
                     e.stopPropagation();
                     startRename(el);
                   }}
                 >
+                  <span className="mr-1">{getTypeIcon(el.type)}</span>
                   {el.name || el.type}
                 </span>
               )}
@@ -114,4 +115,23 @@ export default function LayersPanel({
       </div>
     </aside>
   );
+}
+
+function getTypeIcon(type: string): string {
+  const icons: Record<string, string> = {
+    text: "📝",
+    image: "🖼",
+    shape: "⬜",
+    list: "📋",
+    checklist: "☑️",
+    proscons: "⚖️",
+    button: "🔘",
+    pdf: "📄",
+    divider: "➖",
+    portal_dates: "📅",
+    portal_notices: "📌",
+    portal_documents: "📁",
+    portal_faqs: "❓",
+  };
+  return icons[type] || "📦";
 }
