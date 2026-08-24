@@ -10,7 +10,9 @@ import TextElementView from "./elements/TextElementView";
 import ImageElementView from "./elements/ImageElementView";
 import ElementCatalog from "./ElementCatalog";
 import PropertiesPanel from "./PropertiesPanel";
+import LayersPanel from "./LayersPanel";
 import ShapeElementView from "./elements/ShapeElementView";
+import SmartBlockElementView from "./elements/SmartBlockElementView";
 import ButtonElementView from "./elements/ButtonElementView";
 import PdfElementView from "./elements/PdfElementView";
 
@@ -42,6 +44,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   const [redoStack, setRedoStack] = useState<CanvasDocument[]>([]);
   const [showCatalog, setShowCatalog] = useState(true);
   const [showProperties, setShowProperties] = useState(true);
+  const [showLayers, setShowLayers] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
   const clipboardRef = useRef<CanvasElement[]>([]);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
@@ -114,27 +117,35 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   }, []);
 
   const deleteSelected = useCallback(() => {
-    if (selectedIds.length === 0) return;
+    const deletableIds = selectedIds.filter((id) => {
+      const el = canvasDoc.elements.find((e) => e.id === id);
+      return el && !el.locked;
+    });
+    if (deletableIds.length === 0) return;
     pushUndo(canvasDoc);
     setCanvasDoc((prev) => ({
       ...prev,
-      elements: prev.elements.filter((el) => !selectedIds.includes(el.id)),
+      elements: prev.elements.filter((el) => !deletableIds.includes(el.id)),
     }));
     setSelectedIds([]);
   }, [canvasDoc, selectedIds, pushUndo]);
 
-  const duplicateSelected = useCallback(() => {
-    if (selectedIds.length === 0) return;
+    const duplicateSelected = useCallback(() => {
+    const duplicatableIds = selectedIds.filter((id) => {
+      const el = canvasDoc.elements.find((e) => e.id === id);
+      return el && !el.locked;
+    });
+    if (duplicatableIds.length === 0) return;
     pushUndo(canvasDoc);
     const newElements = canvasDoc.elements
-      .filter((el) => selectedIds.includes(el.id))
-      .map((el) => ({
+      .filter((el) => duplicatableIds.includes(el.id))
+          .map((el, index) => ({
         ...JSON.parse(JSON.stringify(el)),
         id: nanoid(8),
-        name: `${el.name} Copy`,
+        name: `${el.name || el.type} Copy`,
         x: el.x + 20,
         y: el.y + 20,
-        zIndex: getNextZIndex(canvasDoc.elements),
+        zIndex: getNextZIndex(canvasDoc.elements) + index,
       }));
     setCanvasDoc((prev) => ({
       ...prev,
@@ -143,18 +154,17 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     setSelectedIds(newElements.map((el) => el.id));
   }, [canvasDoc, selectedIds, pushUndo]);
 
-  const nudgeSelected = useCallback((dx: number, dy: number) => {
+   const nudgeSelected = useCallback((dx: number, dy: number) => {
     if (selectedIds.length === 0) return;
     setCanvasDoc((prev) => ({
       ...prev,
       elements: prev.elements.map((el) =>
-        selectedIds.includes(el.id)
+        selectedIds.includes(el.id) && !el.locked
           ? { ...el, x: el.x + dx, y: el.y + dy }
           : el
       ),
     }));
   }, [selectedIds]);
-
     const bringForward = useCallback(() => {
     if (selectedIds.length !== 1) return;
     pushUndo(canvasDoc);
@@ -181,6 +191,47 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     if (other) updateElement(other.id, { zIndex: selected.zIndex });
   }, [canvasDoc, selectedIds, pushUndo, updateElement]);
 
+    const toggleVisibility = useCallback((id: string) => {
+    pushUndo(canvasDoc);
+    const el = canvasDoc.elements.find((e) => e.id === id);
+    const newVisible = el ? el.visible === false : true;
+    setCanvasDoc((prev) => ({
+      ...prev,
+      elements: prev.elements.map((item) =>
+        item.id === id ? { ...item, visible: newVisible } : item
+      ),
+    }));
+    // If hiding, remove from selection
+    if (newVisible === false) {
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+    }
+  }, [canvasDoc, pushUndo]);
+   const toggleLock = useCallback((id: string) => {
+    pushUndo(canvasDoc);
+    const el = canvasDoc.elements.find((e) => e.id === id);
+    const newLocked = el ? !(el.locked ?? false) : true;
+    setCanvasDoc((prev) => ({
+      ...prev,
+      elements: prev.elements.map((item) =>
+        item.id === id ? { ...item, locked: newLocked } : item
+      ),
+    }));
+    // If locking, remove from selection
+    if (newLocked) {
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+    }
+  }, [canvasDoc, pushUndo]);
+
+  const renameElement = useCallback((id: string, newName: string) => {
+    pushUndo(canvasDoc);
+    setCanvasDoc((prev) => ({
+      ...prev,
+      elements: prev.elements.map((el) =>
+        el.id === id ? { ...el, name: newName } : el
+      ),
+    }));
+  }, [canvasDoc, pushUndo]);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -202,21 +253,27 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
         e.preventDefault();
         duplicateSelected();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+           if ((e.ctrlKey || e.metaKey) && e.key === "a") {
         e.preventDefault();
-        setSelectedIds(canvasDoc.elements.map((el) => el.id));
+        setSelectedIds(
+          canvasDoc.elements
+            .filter((el) => el.visible !== false && !el.locked)
+            .map((el) => el.id)
+        );
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "c" && selectedIds.length > 0) {
-        clipboardRef.current = canvasDoc.elements.filter((el) => selectedIds.includes(el.id));
+           if ((e.ctrlKey || e.metaKey) && e.key === "c" && selectedIds.length > 0) {
+        clipboardRef.current = canvasDoc.elements.filter(
+          (el) => selectedIds.includes(el.id) && !el.locked
+        );
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "v" && clipboardRef.current.length > 0) {
         pushUndo(canvasDoc);
-        const newElements = clipboardRef.current.map((el) => ({
+          const newElements = clipboardRef.current.map((el, index) => ({
           ...JSON.parse(JSON.stringify(el)),
           id: nanoid(8),
           x: el.x + 20,
           y: el.y + 20,
-          zIndex: getNextZIndex(canvasDoc.elements),
+          zIndex: getNextZIndex(canvasDoc.elements) + index,
         }));
         setCanvasDoc((prev) => ({
           ...prev,
@@ -253,12 +310,16 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
     return () => window.removeEventListener("keydown", handler);
   }, [canvasDoc, selectedIds, undo, redo, deleteSelected, duplicateSelected, pushUndo, nudgeSelected]);
 
-  const getTargetElements = useCallback(() => {
+    const getTargetElements = useCallback(() => {
     if (!canvasRef.current) return [];
     return selectedIds
+      .filter((id) => {
+        const el = canvasDoc.elements.find((e) => e.id === id);
+        return el && !el.locked;
+      })
       .map((id) => canvasRef.current?.querySelector(`[data-element-id="${id}"]`) as HTMLElement)
       .filter(Boolean);
-  }, [selectedIds]);
+  }, [selectedIds, canvasDoc.elements]);
 
   const getGuidelineElements = useCallback(() => {
     if (!canvasRef.current) return [];
@@ -321,6 +382,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           >
             Duplicate
           </button>
+                    <button
+            className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+            onClick={() => setShowLayers(!showLayers)}
+          >
+            {showLayers ? "Hide Layers" : "Show Layers"}
+          </button>
           <span className="text-xs text-gray-500 ml-auto">
             {canvasDoc.elements.length} elements
           </span>
@@ -337,7 +404,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           onClick={() => setSelectedIds([])}
         >
           {canvasDoc.elements
-            .filter((el) => el.visible)
+            .filter((el) => el.visible !== false)
             .sort((a, b) => a.zIndex - b.zIndex)
             .map((el) => (
               <div
@@ -372,7 +439,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
             ))}
         </div>
 
-        {selectedIds.length > 0 && (
+                {getTargetElements().length > 0 && (
           <Moveable
             target={getTargetElements()}
             draggable={true}
@@ -455,6 +522,18 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
           />
          )}
 
+        {/* Layers Panel */}
+        {showLayers && (
+          <LayersPanel
+            elements={canvasDoc.elements}
+            selectedIds={selectedIds}
+            onSelect={setSelectedIds}
+            onToggleVisibility={toggleVisibility}
+            onToggleLock={toggleLock}
+            onRename={renameElement}
+          />
+        )}
+        
         {/* Properties Panel */}
         {showProperties && selectedIds.length === 1 && (
           <PropertiesPanel
