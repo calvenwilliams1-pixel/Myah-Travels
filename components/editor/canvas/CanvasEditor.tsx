@@ -471,7 +471,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave }: C
   );
 }
 
-function renderElement(
+  function renderElement(
   el: CanvasElement,
   update: (id: string, updates: Partial<CanvasElement>) => void,
   pushUndo: (doc: CanvasDocument) => void,
@@ -486,7 +486,7 @@ function renderElement(
           onBeginEdit={() => pushUndo(canvasDoc)}
         />
       );
-       case "image":
+    case "image":
       return <ImageElementView element={el} onUpdate={update} />;
     case "shape":
       return <ShapeElementView element={el} />;
@@ -499,8 +499,8 @@ function renderElement(
           onUpdate={update}
           onBeginEdit={() => pushUndo(canvasDoc)}
         />
-        );
-     case "button":
+      );
+    case "button":
       return (
         <ButtonElementView
           element={el}
@@ -510,7 +510,6 @@ function renderElement(
       );
     case "pdf":
       return <PdfElementView element={el} />;
-      );
     default:
       return (
         <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded text-gray-400 text-sm">
