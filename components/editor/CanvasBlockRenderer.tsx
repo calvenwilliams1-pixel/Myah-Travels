@@ -1,6 +1,6 @@
 import React from "react";
 import CanvasRenderer from "@/components/editor/canvas/CanvasRenderer";
-import { parseCanvasDocument } from "@/lib/canvas";
+import { parseCanvasDocument } from "@/lib/canvas/parse";
 
 interface CanvasBlockRendererProps {
   canvasJson: string;
