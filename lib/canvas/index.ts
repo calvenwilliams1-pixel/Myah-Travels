@@ -128,22 +128,43 @@ export function createElement(
     case "portal_dates":
       return {
         ...base,
-        height: 100,
+        height: 150,
+        portalDatesData: {
+          showDeparture: true,
+          showReturn: true,
+          showCountdown: true,
+          label: "Trip Dates",
+        },
       };
     case "portal_notices":
       return {
         ...base,
         height: 300,
+        portalNoticesData: {
+          maxItems: 5,
+          showPinnedOnly: false,
+          showGlobalAnnouncements: true,
+          title: "Notices",
+        },
       };
     case "portal_documents":
       return {
         ...base,
-        height: 200,
+        height: 250,
+        portalDocumentsData: {
+          maxItems: 10,
+          showFileType: true,
+          title: "Documents",
+        },
       };
     case "portal_faqs":
       return {
         ...base,
         height: 300,
+        portalFaqsData: {
+          maxItems: 10,
+          title: "FAQs",
+        },
       };
     default:
       return base;
