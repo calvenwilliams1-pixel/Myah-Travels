@@ -18,9 +18,11 @@ import PdfElementView from "./elements/PdfElementView";
 import PortalDatesElementView from "./elements/PortalDatesElementView";
 import PortalNoticesElementView from "./elements/PortalNoticesElementView";
 import PortalDocumentsElementView from "./elements/PortalDocumentsElementView";
-import PortalFaqsElementView from "./elements/PortalFaqsElementView";import TemplateManager from "./TemplateManager";
+import PortalFaqsElementView from "./elements/PortalFaqsElementView";
+import TemplateManager from "./TemplateManager";
 import SaveTemplateModal from "./SaveTemplateModal";
 import PublishControls from "./PublishControls";
+import MarqueeSelection from "./MarqueeSelection";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -67,10 +69,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [showLayers, setShowLayers] = useState(true);
   const [showTemplates, setShowTemplates] = useState<"browse" | "manage" | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
-  const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt); 
+  const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
   const canvasRef = useRef<HTMLDivElement>(null);
   const clipboardRef = useRef<CanvasElement[]>([]);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
@@ -82,22 +85,33 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   }, [onSave]);
 
   const debouncedSaveRef = useRef(
-    debounce((doc: CanvasDocument) => {
-      onSaveRef.current(JSON.stringify(doc));
+    debounce(async (doc: CanvasDocument) => {
+      try {
+        await onSaveRef.current(JSON.stringify(doc));
+        setSaveStatus("saved");
+      } catch (err) {
+        console.error("Save failed:", err);
+        setSaveStatus("error");
+      }
     }, 2000)
   );
 
-    useEffect(() => {
+  useEffect(() => {
     setSaveStatus("saving");
     debouncedSaveRef.current(canvasDoc);
-    const timeout = setTimeout(() => setSaveStatus("saved"), 2500);
+  }, [canvasDoc]);
+
+  useEffect(() => {
     return () => {
-      clearTimeout(timeout);
       if (debouncedSaveRef.current) {
         debouncedSaveRef.current.flush();
+        debouncedSaveRef.current.cancel();
+      }
+      if (undoToastTimeoutRef.current) {
+        clearTimeout(undoToastTimeoutRef.current);
       }
     };
-  }, [canvasDoc]);
+  }, []);
 
   const pushUndo = useCallback((doc: CanvasDocument) => {
     setUndoStack((prev) => {
@@ -126,7 +140,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const addElement = useCallback((type: ElementType) => {
     pushUndo(canvasDoc);
     const newElement = createElement(type, canvasDoc.elements.length);
-    // Use getNextZIndex to avoid collisions
     newElement.zIndex = getNextZIndex(canvasDoc.elements);
     setCanvasDoc((prev) => ({
       ...prev,
@@ -144,6 +157,83 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     }));
   }, []);
 
+  const groupSelected = useCallback(() => {
+    if (selectedIds.length < 2) return;
+    pushUndo(canvasDoc);
+    const groupId = nanoid(8);
+    setCanvasDoc((prev) => ({
+      ...prev,
+      elements: prev.elements.map((el) =>
+        selectedIds.includes(el.id) ? { ...el, groupId } : el
+      ),
+    }));
+  }, [canvasDoc, selectedIds, pushUndo]);
+
+  const ungroupSelected = useCallback(() => {
+    const selectedGroupIds = new Set(
+      canvasDoc.elements
+        .filter((el) => selectedIds.includes(el.id) && el.groupId)
+        .map((el) => el.groupId)
+    );
+    if (selectedGroupIds.size === 0) return;
+    pushUndo(canvasDoc);
+    setCanvasDoc((prev) => ({
+      ...prev,
+      elements: prev.elements.map((el) =>
+        el.groupId && selectedGroupIds.has(el.groupId)
+          ? { ...el, groupId: undefined }
+          : el
+      ),
+    }));
+  }, [canvasDoc, selectedIds, pushUndo]);
+
+  const handleElementSelect = useCallback(
+    (el: CanvasElement, shiftKey: boolean) => {
+      if (el.groupId) {
+        const groupMembers = canvasDoc.elements.filter(
+          (e) => e.groupId === el.groupId && e.visible !== false && !e.locked
+        );
+        const groupIds = groupMembers.map((e) => e.id);
+        if (shiftKey) {
+          setSelectedIds((prev) => Array.from(new Set([...prev, ...groupIds])));
+        } else {
+          setSelectedIds(groupIds);
+        }
+        return;
+      }
+
+      if (shiftKey) {
+        setSelectedIds((prev) =>
+          prev.includes(el.id)
+            ? prev.filter((id) => id !== el.id)
+            : [...prev, el.id]
+        );
+      } else {
+        setSelectedIds([el.id]);
+      }
+    },
+    [canvasDoc.elements]
+  );
+
+  const handleMarqueeSelect = useCallback(
+    (rect: { x: number; y: number; width: number; height: number }) => {
+      const ids = canvasDoc.elements
+        .filter((el) => {
+          return (
+            el.x >= rect.x &&
+            el.y >= rect.y &&
+            el.x + el.width <= rect.x + rect.width &&
+            el.y + el.height <= rect.y + rect.height &&
+            el.visible !== false &&
+            !el.locked
+          );
+        })
+        .map((el) => el.id);
+      setSelectedIds(ids);
+    },
+    [canvasDoc.elements]
+  );
+
   const deleteSelected = useCallback(() => {
     const deletableIds = selectedIds.filter((id) => {
       const el = canvasDoc.elements.find((e) => e.id === id);
@@ -157,10 +247,13 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     }));
     setSelectedIds([]);
     setShowUndoToast(true);
-    setTimeout(() => setShowUndoToast(false), 3000);
+    if (undoToastTimeoutRef.current) {
+      clearTimeout(undoToastTimeoutRef.current);
+    }
+    undoToastTimeoutRef.current = setTimeout(() => setShowUndoToast(false), 3000);
   }, [canvasDoc, selectedIds, pushUndo]);
-  
-    const duplicateSelected = useCallback(() => {
+
+  const duplicateSelected = useCallback(() => {
     const duplicatableIds = selectedIds.filter((id) => {
       const el = canvasDoc.elements.find((e) => e.id === id);
       return el && !el.locked;
@@ -172,6 +265,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
       .map((el, index) => ({
         ...JSON.parse(JSON.stringify(el)),
         id: nanoid(8),
+        groupId: undefined,
         name: generateCopyName(
           el.name || el.type,
           canvasDoc.elements.map((e) => e.name || e.type)
@@ -187,8 +281,9 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     setSelectedIds(newElements.map((el) => el.id));
   }, [canvasDoc, selectedIds, pushUndo]);
 
-   const nudgeSelected = useCallback((dx: number, dy: number) => {
+  const nudgeSelected = useCallback((dx: number, dy: number) => {
     if (selectedIds.length === 0) return;
+    pushUndo(canvasDoc);
     setCanvasDoc((prev) => ({
       ...prev,
       elements: prev.elements.map((el) =>
@@ -197,8 +292,9 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           : el
       ),
     }));
-  }, [selectedIds]);
-    const bringForward = useCallback(() => {
+  }, [selectedIds, canvasDoc, pushUndo]);
+
+  const bringForward = useCallback(() => {
     if (selectedIds.length !== 1) return;
     pushUndo(canvasDoc);
     const selected = canvasDoc.elements.find((el) => el.id === selectedIds[0]);
@@ -224,7 +320,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     if (other) updateElement(other.id, { zIndex: selected.zIndex });
   }, [canvasDoc, selectedIds, pushUndo, updateElement]);
 
-    const toggleVisibility = useCallback((id: string) => {
+  const toggleVisibility = useCallback((id: string) => {
     pushUndo(canvasDoc);
     const el = canvasDoc.elements.find((e) => e.id === id);
     const newVisible = el ? el.visible === false : true;
@@ -234,12 +330,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         item.id === id ? { ...item, visible: newVisible } : item
       ),
     }));
-    // If hiding, remove from selection
     if (newVisible === false) {
       setSelectedIds((prev) => prev.filter((x) => x !== id));
     }
   }, [canvasDoc, pushUndo]);
-   const toggleLock = useCallback((id: string) => {
+
+  const toggleLock = useCallback((id: string) => {
     pushUndo(canvasDoc);
     const el = canvasDoc.elements.find((e) => e.id === id);
     const newLocked = el ? !(el.locked ?? false) : true;
@@ -249,7 +345,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         item.id === id ? { ...item, locked: newLocked } : item
       ),
     }));
-    // If locking, remove from selection
     if (newLocked) {
       setSelectedIds((prev) => prev.filter((x) => x !== id));
     }
@@ -265,7 +360,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     }));
   }, [canvasDoc, pushUndo]);
 
-    const saveAsTemplate = useCallback(async (name: string) => {
+  const saveAsTemplate = useCallback(async (name: string) => {
     try {
       const res = await fetch("/api/canvas/templates", {
         method: "POST",
@@ -280,10 +375,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         setShowSaveModal(false);
         setSaveStatus("saved");
       } else {
-        setSaveStatus("saved");
+        setSaveStatus("error");
       }
     } catch (err) {
       console.error("Save template failed:", err);
+      setSaveStatus("error");
     }
   }, [canvasDoc, contentType]);
 
@@ -308,7 +404,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         e.preventDefault();
         duplicateSelected();
       }
-           if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "a") {
         e.preventDefault();
         setSelectedIds(
           canvasDoc.elements
@@ -316,16 +412,17 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             .map((el) => el.id)
         );
       }
-           if ((e.ctrlKey || e.metaKey) && e.key === "c" && selectedIds.length > 0) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c" && selectedIds.length > 0) {
         clipboardRef.current = canvasDoc.elements.filter(
           (el) => selectedIds.includes(el.id) && !el.locked
         );
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "v" && clipboardRef.current.length > 0) {
         pushUndo(canvasDoc);
-          const newElements = clipboardRef.current.map((el, index) => ({
+        const newElements = clipboardRef.current.map((el, index) => ({
           ...JSON.parse(JSON.stringify(el)),
           id: nanoid(8),
+          groupId: undefined,
           x: el.x + 20,
           y: el.y + 20,
           zIndex: getNextZIndex(canvasDoc.elements) + index,
@@ -365,7 +462,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     return () => window.removeEventListener("keydown", handler);
   }, [canvasDoc, selectedIds, undo, redo, deleteSelected, duplicateSelected, pushUndo, nudgeSelected]);
 
-    const getTargetElements = useCallback(() => {
+  const getTargetElements = useCallback(() => {
     if (!canvasRef.current) return [];
     return selectedIds
       .filter((id) => {
@@ -376,9 +473,8 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
       .filter(Boolean);
   }, [selectedIds, canvasDoc.elements]);
 
-   const getGuidelineElements = useCallback(() => {
+  const getGuidelineElements = useCallback(() => {
     if (!canvasRef.current) return [];
-    // Exclude selected, hidden, and locked elements from guidelines
     return canvasDoc.elements
       .filter(
         (el) =>
@@ -396,7 +492,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
 
       <div className="flex-1 overflow-auto bg-gray-100 p-8">
         <div className="mb-4 flex gap-3 items-center flex-wrap">
-         <button
+          <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
             onClick={() => setShowCatalog(!showCatalog)}
           >
@@ -448,13 +544,29 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           >
             Duplicate
           </button>
-         <button
+          {selectedIds.length > 1 && (
+            <button
+              className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+              onClick={groupSelected}
+            >
+              Group
+            </button>
+          )}
+          {selectedIds.some((id) => canvasDoc.elements.find((el) => el.id === id)?.groupId) && (
+            <button
+              className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
+              onClick={ungroupSelected}
+            >
+              Ungroup
+            </button>
+          )}
+          <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
             onClick={() => setShowLayers(!showLayers)}
           >
             {showLayers ? "Hide Layers" : "Show Layers"}
           </button>
-                 <button
+          <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"
             onClick={() => setShowTemplates("browse")}
           >
@@ -472,7 +584,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           >
             💾 Save Template
           </button>
-                     <PublishControls
+          <PublishControls
             status={publishStatus}
             scheduledAt={scheduledAt}
             onStatusChange={(status, newScheduledAt) => {
@@ -486,7 +598,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           <span className="text-xs text-gray-500 ml-auto">
             {canvasDoc.elements.length} elements
             {selectedIds.length > 0 ? ` · ${selectedIds.length} selected` : ""}
-            {` · ${saveStatus === "saving" ? "Saving..." : "Saved"}`}
+            {` · ${saveStatus === "saving" ? "Saving..." : saveStatus === "error" ? "Save failed" : "Saved"}`}
           </span>
         </div>
 
@@ -498,8 +610,17 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             height: canvasDoc.canvas.height,
             background: canvasDoc.canvas.background || "#fff",
           }}
-          onClick={() => setSelectedIds([])}
-        >
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedIds([]);
+            }
+          }}        >
+          <MarqueeSelection
+            onSelect={handleMarqueeSelect}
+            canvasWidth={canvasDoc.canvas.width}
+            canvasHeight={canvasDoc.canvas.height}
+          />
+
           {canvasDoc.elements
             .filter((el) => el.visible !== false)
             .sort((a, b) => a.zIndex - b.zIndex)
@@ -517,19 +638,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   height: el.height,
                   transform: `rotate(${el.rotation}deg)`,
                   zIndex: el.zIndex,
-                  position: "relative",
+                  position: "absolute",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (e.shiftKey) {
-                    setSelectedIds((prev) =>
-                      prev.includes(el.id)
-                        ? prev.filter((id) => id !== el.id)
-                        : [...prev, el.id]
-                    );
-                  } else {
-                    setSelectedIds([el.id]);
-                  }
+                  handleElementSelect(el, e.shiftKey);
                 }}
               >
                 {renderElement(el, updateElement, pushUndo, canvasDoc)}
@@ -542,49 +655,27 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             ))}
         </div>
 
-                {(() => {
+        {(() => {
           const moveableTargets = getTargetElements();
           return moveableTargets.length > 0 ? (
-          <Moveable
-            target={moveableTargets}
-            draggable={true}
-            resizable={true}
-            rotatable={true}
-            snappable={true}
-            elementGuidelines={getGuidelineElements()}
-            bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
-            onDragStart={({ target }) => {
-              const id = target.getAttribute("data-element-id");
-              if (!id) return;
-              const el = canvasDoc.elements.find((e) => e.id === id);
-              if (el) {
-                dragOriginRef.current[id] = { x: el.x, y: el.y };
-              }
-              pushUndo(canvasDoc);
-            }}
-            onDrag={({ target, beforeTranslate }) => {
-              const id = target.getAttribute("data-element-id");
-              if (!id) return;
-              const origin = dragOriginRef.current[id];
-              if (!origin) return;
-              updateElement(id, {
-                x: Math.round(origin.x + beforeTranslate[0]),
-                y: Math.round(origin.y + beforeTranslate[1]),
-              });
-            }}
-            onDragGroupStart={({ targets }) => {
-              targets.forEach((target) => {
+            <Moveable
+              target={moveableTargets}
+              draggable={true}
+              resizable={true}
+              rotatable={true}
+              snappable={true}
+              elementGuidelines={getGuidelineElements()}
+              bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
+              onDragStart={({ target }) => {
                 const id = target.getAttribute("data-element-id");
                 if (!id) return;
                 const el = canvasDoc.elements.find((e) => e.id === id);
                 if (el) {
                   dragOriginRef.current[id] = { x: el.x, y: el.y };
                 }
-              });
-              pushUndo(canvasDoc);
-            }}
-            onDragGroup={({ targets, events }) => {
-              events.forEach(({ target, beforeTranslate }) => {
+                pushUndo(canvasDoc);
+              }}
+              onDrag={({ target, beforeTranslate }) => {
                 const id = target.getAttribute("data-element-id");
                 if (!id) return;
                 const origin = dragOriginRef.current[id];
@@ -593,42 +684,63 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   x: Math.round(origin.x + beforeTranslate[0]),
                   y: Math.round(origin.y + beforeTranslate[1]),
                 });
-              });
-            }}
-            onResizeStart={({ target }) => {
-              const id = target.getAttribute("data-element-id");
-              if (!id) return;
-              const el = canvasDoc.elements.find((e) => e.id === id);
-              if (el) {
-                resizeOriginRef.current[id] = { x: el.x, y: el.y, width: el.width, height: el.height };
-              }
-              pushUndo(canvasDoc);
-            }}
-            onResize={({ target, width, height, beforeTranslate }) => {
-              const id = target.getAttribute("data-element-id");
-              if (!id) return;
-              const origin = resizeOriginRef.current[id];
-              if (!origin) return;
-              updateElement(id, {
-                width: Math.round(width),
-                height: Math.round(height),
-                x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
-                y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
-              });
-            }}
-            onRotateStart={() => {
-              pushUndo(canvasDoc);
-            }}
-            onRotate={({ target, rotation }) => {
-              const id = target.getAttribute("data-element-id");
-              if (!id) return;
-              updateElement(id, { rotation: Math.round(rotation) });
-            }}
-          />
+              }}
+              onDragGroupStart={({ targets }) => {
+                targets.forEach((target) => {
+                  const id = target.getAttribute("data-element-id");
+                  if (!id) return;
+                  const el = canvasDoc.elements.find((e) => e.id === id);
+                  if (el) {
+                    dragOriginRef.current[id] = { x: el.x, y: el.y };
+                  }
+                });
+                pushUndo(canvasDoc);
+              }}
+              onDragGroup={({ targets, events }) => {
+                events.forEach(({ target, beforeTranslate }) => {
+                  const id = target.getAttribute("data-element-id");
+                  if (!id) return;
+                  const origin = dragOriginRef.current[id];
+                  if (!origin) return;
+                  updateElement(id, {
+                    x: Math.round(origin.x + beforeTranslate[0]),
+                    y: Math.round(origin.y + beforeTranslate[1]),
+                  });
+                });
+              }}
+              onResizeStart={({ target }) => {
+                const id = target.getAttribute("data-element-id");
+                if (!id) return;
+                const el = canvasDoc.elements.find((e) => e.id === id);
+                if (el) {
+                  resizeOriginRef.current[id] = { x: el.x, y: el.y, width: el.width, height: el.height };
+                }
+                pushUndo(canvasDoc);
+              }}
+              onResize={({ target, width, height, beforeTranslate }) => {
+                const id = target.getAttribute("data-element-id");
+                if (!id) return;
+                const origin = resizeOriginRef.current[id];
+                if (!origin) return;
+                updateElement(id, {
+                  width: Math.round(width),
+                  height: Math.round(height),
+                  x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
+                  y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
+                });
+              }}
+              onRotateStart={() => {
+                pushUndo(canvasDoc);
+              }}
+              onRotate={({ target, rotation }) => {
+                const id = target.getAttribute("data-element-id");
+                if (!id) return;
+                updateElement(id, { rotation: Math.round(rotation) });
+              }}
+            />
           ) : null;
         })()}
 
-        {/* Layers Panel */}
         {showLayers && (
           <LayersPanel
             elements={canvasDoc.elements}
@@ -639,8 +751,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             onRename={renameElement}
           />
         )}
-        
-               {/* Properties Panel */}
+
         {showProperties && selectedIds.length === 1 && (
           <PropertiesPanel
             element={canvasDoc.elements.find((el) => el.id === selectedIds[0])!}
@@ -652,20 +763,19 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           />
         )}
 
-        {/* Template Manager */}
         {showTemplates && (
           <TemplateManager
             contentType={contentType}
             mode={showTemplates}
             onClose={() => setShowTemplates(null)}
-onApply={(template) => {
-  if (template) {
-    if (
-      canvasDoc.elements.length > 0 &&
-      !confirm("Replace current canvas with this template? (You can undo)")
-    ) {
-      return;
-    }
+            onApply={(template) => {
+              if (template) {
+                if (
+                  canvasDoc.elements.length > 0 &&
+                  !confirm("Replace current canvas with this template? (You can undo)")
+                ) {
+                  return;
+                }
                 try {
                   const doc = JSON.parse(template.layoutData);
                   if (doc.schemaVersion === 1 && Array.isArray(doc.elements)) {
@@ -683,7 +793,6 @@ onApply={(template) => {
           />
         )}
 
-         {/* Save Template Modal */}
         {showSaveModal && (
           <SaveTemplateModal
             contentType={contentType}
@@ -692,7 +801,6 @@ onApply={(template) => {
           />
         )}
 
-        {/* Undo Toast */}
         {showUndoToast && (
           <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm shadow-lg z-50">
             Elements deleted —{" "}
@@ -706,7 +814,7 @@ onApply={(template) => {
   );
 }
 
-  function renderElement(
+function renderElement(
   el: CanvasElement,
   update: (id: string, updates: Partial<CanvasElement>) => void,
   pushUndo: (doc: CanvasDocument) => void,
