@@ -218,6 +218,7 @@ export default function PropertiesPanel({
                 <option value="square">Square</option>
                 <option value="circle">Circle</option>
                 <option value="diamond">Diamond</option>
+                <option value="triangle">Triangle</option>
                 <option value="line">Line</option>
               </select>
             </div>
