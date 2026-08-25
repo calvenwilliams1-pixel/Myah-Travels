@@ -5,7 +5,7 @@ import Moveable from "react-moveable";
 import { nanoid } from "nanoid";
 import debounce from "lodash.debounce";
 import { CanvasDocument, CanvasElement, ElementType, createEmptyCanvas } from "@/types/canvas";
-import { createElement, getNextZIndex } from "@/lib/canvas";
+import { createElement, getNextZIndex } from "@/lib/canvas/create-element";
 import TextElementView from "./elements/TextElementView";
 import ImageElementView from "./elements/ImageElementView";
 import ElementCatalog from "./ElementCatalog";
