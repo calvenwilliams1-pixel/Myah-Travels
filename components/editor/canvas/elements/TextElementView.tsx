@@ -1,11 +1,3 @@
-## File: Replace `components/editor/canvas/elements/TextElementView.tsx`
-
-**Do this one thing:**
-Click the pencil icon on `components/editor/canvas/elements/TextElementView.tsx`
-
-**Replace the entire file with:**
-
-```tsx
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -40,7 +32,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
     editorProps: {
       attributes: {
         class: "w-full h-full outline-none",
-        style: `font-size: ${element.fontSize ?? 16}px; color: ${element.color ?? "#333333"}; font-family: ${element.fontFamily ?? "Inter"}; text-align: ${element.textAlign ?? "left"}; font-weight: ${element.fontWeight ?? "normal"}; white-space: pre-wrap; word-break: break-word;`,
+        style: `font-size: ${element.fontSize ?? 16}px; color: ${element.color ?? "#333333"}; font-family: ${element.fontFamily ?? "Inter"}; text-align: ${element.textAlign ?? "left"}; font-weight: ${element.fontWeight ?? "normal"};`,
       },
     },
     onBlur: ({ editor }) => {
@@ -73,7 +65,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
   if (!editor) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <span className="text-gray-400 text-sm">Loading editor...</span>
+        <span className="text-gray-400 text-sm">Loading...</span>
       </div>
     );
   }
@@ -82,9 +74,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
     <div
       ref={editorRef}
       className="relative w-full h-full cursor-text"
-      style={{
-        opacity: element.opacity ?? 1,
-      }}
+      style={{ opacity: element.opacity ?? 1 }}
       onDoubleClick={() => {
         if (onBeginEdit) onBeginEdit();
         setIsEditing(true);
@@ -98,11 +88,3 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
     </div>
   );
 }
-```
-
-**Then:**
-Click "Commit changes"
-
----
-
-**Commit and submit for AI review.**
