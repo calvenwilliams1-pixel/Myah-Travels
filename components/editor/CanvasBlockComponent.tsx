@@ -7,7 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { parseCanvasDocument, MAX_CANVAS_JSON_LENGTH } from "@/lib/canvas/parse";
 
 const MiniCanvasEditor = dynamic(
-  () => import("./canvas/MiniCanvasEditor"),
+  () => import("./canvas/MiniCanvasEditorFull"),
   {
     ssr: false,
     loading: () => (
