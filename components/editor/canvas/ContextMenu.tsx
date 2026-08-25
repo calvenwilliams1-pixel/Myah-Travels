@@ -52,9 +52,30 @@ export default function ContextMenu({
     };
   }, [onClose]);
 
+  const [clampedPos, setClampedPos] = useState({ x, y });
+
+  useEffect(() => {
+    if (!menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let newX = x;
+    let newY = y;
+
+    if (x + rect.width > viewportWidth - 8) {
+      newX = viewportWidth - rect.width - 8;
+    }
+    if (y + rect.height > viewportHeight - 8) {
+      newY = viewportHeight - rect.height - 8;
+    }
+
+    setClampedPos({ x: newX, y: newY });
+  }, [x, y]);
+
   const menuStyle: React.CSSProperties = {
-    left: x,
-    top: y,
+    left: clampedPos.x,
+    top: clampedPos.y,
   };
 
   const MenuItem = ({
