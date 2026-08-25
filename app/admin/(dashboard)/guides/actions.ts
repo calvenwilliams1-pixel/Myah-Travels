@@ -12,6 +12,7 @@ export async function createGuideAction(data: {
   excerpt?: string;
   quickReference?: string;
   status?: string;
+  mode?: string;
 }) {
   const user = await requireAuth();
 
@@ -33,6 +34,7 @@ export async function createGuideAction(data: {
     excerpt: data.excerpt,
     quickReference: data.quickReference,
     status: data.status,
+    mode: data.mode || "story",
   });
 
   if (!guide) {
