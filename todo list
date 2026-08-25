@@ -1,4 +1,4 @@
-# Myah Travels - Updated TODO.md
+# Myah Travels - Updated TODO.md (Revised)
 
 ## All Core Segments Complete ✅
 
@@ -52,6 +52,13 @@ All 17 segments built. Canvas Phases 1-15 complete. Phase 16 (Dual-Mode Editor) 
 | Mode wiring (posts) | ✅ Code complete |
 | Mode wiring (guides) | ✅ Code complete |
 | Mode wiring (reviews) | ✅ Code complete |
+| Edit pages mode-aware (posts) | ✅ Code complete |
+| Edit pages mode-aware (guides) | ✅ Code complete |
+| Edit pages mode-aware (reviews) | ✅ Code complete |
+| CanvasScaler integration | ✅ Code complete |
+| DOMPurify (rich text) | ✅ Code complete |
+| Image URL sanitization | ✅ Code complete |
+| PDF URL sanitization | ✅ Code complete |
 | P2-1: Per-element undo | ❌ Deferred |
 | P2-2: Mobile touch editing | ❌ Deferred |
 | P2-3: Story canvas full editor | ❌ Deferred |
@@ -79,6 +86,7 @@ All 17 segments built. Canvas Phases 1-15 complete. Phase 16 (Dual-Mode Editor) 
 | Pin/Highlight | ⚠️ Not tested |
 | Theme system | ⚠️ Not tested |
 | Password change | ⚠️ Not tested |
+| DOMPurify sanitization | ⚠️ Not tested |
 
 ---
 
@@ -90,20 +98,57 @@ All 17 segments built. Canvas Phases 1-15 complete. Phase 16 (Dual-Mode Editor) 
 | No mobile touch editing | Medium | P2 deferred |
 | No per-element undo | Low | P2 deferred |
 | `mode` column not in local DB yet | High | Migration pending |
-| CanvasScaler not wired into public renderer | Medium | Code done, not integrated |
+| DOMPurify not installed locally | High | Install pending |
 | URL corruption in AI chat pastes | N/A | Paste-only issue |
 
 ---
 
-## Immediate Next Steps
+## Immediate Next Steps (When Home)
 
-1. **Apply local database migration** (add `mode` column)
-2. **Pull latest to local**
-3. **Test mode selection** (posts, guides, reviews)
-4. **Test canvas editor** (grouping, marquee, rich text)
-5. **Test feed + theme**
-6. **Fix any compile errors**
-7. **Phase 17: Full testing + polish**
+### 1. Pull latest
+```bash
+cd C:\Users\calve\Myah-Travels
+git pull
+```
+
+### 2. Install DOMPurify
+```bash
+npm install dompurify
+```
+
+### 3. Database migration (mode column)
+```bash
+node -e "const Database = require('better-sqlite3'); const db = new Database('data/site.db'); db.exec('ALTER TABLE posts ADD COLUMN mode TEXT DEFAULT ''story''; ALTER TABLE guides ADD COLUMN mode TEXT DEFAULT ''story''; ALTER TABLE reviews ADD COLUMN mode TEXT DEFAULT ''story'';'); console.log('Migration complete'); db.close();"
+```
+
+### 4. Start dev server
+```bash
+npm run dev
+```
+
+### 5. Test checklist
+- [ ] Homepage loads with feed
+- [ ] Admin login (`/admin/login`, `myah` / `changeme`)
+- [ ] Create new post → Mode selector shows
+- [ ] Story mode → TipTap editor loads
+- [ ] Design mode → Canvas editor loads
+- [ ] Rich text in canvas (double-click text element)
+- [ ] Grouping (multi-select + Group button)
+- [ ] Marquee selection (drag on empty canvas)
+- [ ] Right-click context menu
+- [ ] Triangle shape available
+- [ ] Image crop (Edit Image button)
+- [ ] Button new tab toggle
+- [ ] Cross-post copy/paste
+- [ ] Edit existing post respects mode
+- [ ] Feed filters work
+- [ ] Pin/Highlight in admin
+- [ ] Theme colors change site
+- [ ] Password change works
+
+### 6. Fix any compile errors
+
+### 7. Phase 17: Full testing + polish
 
 ---
 
@@ -113,7 +158,6 @@ All 17 segments built. Canvas Phases 1-15 complete. Phase 16 (Dual-Mode Editor) 
 - Node.js v20.20.2
 - Database: `data/site.db`
 - Schema setup: `scripts/setup-local-db.js`
-- Migration pending: `mode` column on posts/guides/reviews
 
 ---
 
@@ -127,4 +171,4 @@ npm run build
 
 ---
 
-**Last Updated:** Phase 16 code-complete, testing pending
+**Last Updated:** Phase 16 fully code-complete. Testing + migration pending on home PC.
