@@ -1,67 +1,33 @@
-# Myah Travels - Updated TODO.md (Revised)
+## Update TODO.md
 
-## All Core Segments Complete ✅
+**Do this one thing:**
+Click the pencil icon on `TODO.md`
 
-All 17 segments built. Canvas Phases 1-15 complete. Phase 16 (Dual-Mode Editor) code-complete.
+**Replace the entire file with:**
 
----
+```markdown
+# Myah Travels - TODO.md
 
-## Canvas Design System Progress
+## Status: All Code Complete ✅
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| 1: Foundation | ✅ Complete | 8 files |
-| 2: Moveable Integration | ✅ Complete | 1 file |
-| 3: Properties Panel | ✅ Complete | 2 files |
-| 4: Smart Blocks | ✅ Complete | 1 file |
-| 5: Button + PDF | ✅ Complete | 2 files |
-| 6: Layers Panel | ✅ Complete | 1 file |
-| 6.1: Polish | ✅ Complete | 0 files |
-| 7: Template System | ✅ Complete | 2 files |
-| 7.1: Template Polish | ✅ Complete | 0 files |
-| 8: Draft + Schedule UI | ✅ Complete | 2 files |
-| 9: CanvasRenderer | ✅ Complete | 1 file (hardened) |
-| 10: Portal Dynamic Elements | ✅ Complete | 5 files |
-| 10.1: Portal PropertiesPanel | ✅ Complete | 1 file |
-| 11: Homepage Canvas Editor | ✅ Complete | 3 files |
-| 12: Canvas Block in TipTap | ✅ Complete | 4 files |
-| 13: Built-in Templates | ✅ Complete | 11 templates |
-| 14: Testing + Polish | ✅ Complete | N/A |
-| 15: Feed + Theme System | ✅ Complete | Multiple |
-| 15a-15n: Pin/Highlight/Admin | ✅ Complete | Multiple |
+Core segments (17), Canvas phases (1-15), Phase 16 (Dual-Mode Editor) all code-complete. Testing pending on home PC.
 
 ---
 
-## Phase 16: Dual-Mode Editor
+## Phase 16 Complete
 
 | Sub-phase | Status |
 |-----------|--------|
-| P0-1: Mode selection UI | ✅ Code complete |
-| P0-2: Canvas responsive scale | ✅ Code complete |
-| P0-3: Editable canvas windows | ✅ Code complete |
-| P0-4: Grouping | ✅ Code complete |
-| P0-5: Marquee selection | ✅ Code complete |
-| P0-6: Hex color picker | ✅ Code complete |
-| P0-7: Image crop | ✅ Code complete |
-| P0-8: Button new tab | ✅ Code complete |
-| P1-1: Rich text in canvas | ✅ Code complete |
-| P1-2: Text formatting toolbar | ✅ Code complete |
-| P1-3: Triangle shape | ✅ Code complete |
-| P1-4: Right-click context menu | ✅ Code complete |
-| P1-5: Cross-post copy/paste | ✅ Code complete |
-| Mode wiring (posts) | ✅ Code complete |
-| Mode wiring (guides) | ✅ Code complete |
-| Mode wiring (reviews) | ✅ Code complete |
-| Edit pages mode-aware (posts) | ✅ Code complete |
-| Edit pages mode-aware (guides) | ✅ Code complete |
-| Edit pages mode-aware (reviews) | ✅ Code complete |
-| CanvasScaler integration | ✅ Code complete |
-| DOMPurify (rich text) | ✅ Code complete |
-| Image URL sanitization | ✅ Code complete |
-| PDF URL sanitization | ✅ Code complete |
-| P2-1: Per-element undo | ❌ Deferred |
-| P2-2: Mobile touch editing | ❌ Deferred |
-| P2-3: Story canvas full editor | ❌ Deferred |
+| P0 (8 items) | ✅ Complete |
+| P1 (5 items) | ✅ Complete |
+| Mode wiring | ✅ Complete |
+| Edit pages mode-aware | ✅ Complete |
+| CanvasScaler integration | ✅ Complete |
+| DOMPurify | ✅ Code done |
+| URL sanitization | ✅ Complete |
+| P2-3: Story canvas full editor | ✅ Complete |
+| P2-1: Per-element undo | Skipped |
+| P2-2: Mobile touch | Deferred |
 
 ---
 
@@ -69,41 +35,14 @@ All 17 segments built. Canvas Phases 1-15 complete. Phase 16 (Dual-Mode Editor) 
 
 | What's Been Tested | Status |
 |-------------------|--------|
-| Dev server starts | ✅ Working |
-| All public pages load | ✅ Working |
-| Tailwind CSS renders | ✅ Working |
-| Feed homepage | ⚠️ Not tested |
-| Admin login | ⚠️ Not tested |
-| Mode selection | ⚠️ Not tested |
-| Story mode editor | ⚠️ Not tested |
-| Design mode editor | ⚠️ Not tested |
-| Rich text in canvas | ⚠️ Not tested |
-| Canvas window in TipTap | ⚠️ Not tested |
-| Grouping | ⚠️ Not tested |
-| Marquee selection | ⚠️ Not tested |
-| Image crop | ⚠️ Not tested |
-| Cross-post copy/paste | ⚠️ Not tested |
-| Pin/Highlight | ⚠️ Not tested |
-| Theme system | ⚠️ Not tested |
-| Password change | ⚠️ Not tested |
-| DOMPurify sanitization | ⚠️ Not tested |
+| Dev server starts | ✅ |
+| Public pages load | ✅ |
+| Tailwind CSS | ✅ |
+| Everything else | ⚠️ Not tested |
 
 ---
 
-## Known Bugs / Issues
-
-| Issue | Priority | Status |
-|-------|----------|--------|
-| `[key: string]: any` in CanvasElement | Low | Accepted tech debt |
-| No mobile touch editing | Medium | P2 deferred |
-| No per-element undo | Low | P2 deferred |
-| `mode` column not in local DB yet | High | Migration pending |
-| DOMPurify not installed locally | High | Install pending |
-| URL corruption in AI chat pastes | N/A | Paste-only issue |
-
----
-
-## Immediate Next Steps (When Home)
+## When Home: Run These
 
 ### 1. Pull latest
 ```bash
@@ -116,7 +55,7 @@ git pull
 npm install dompurify
 ```
 
-### 3. Database migration (mode column)
+### 3. Database migration
 ```bash
 node -e "const Database = require('better-sqlite3'); const db = new Database('data/site.db'); db.exec('ALTER TABLE posts ADD COLUMN mode TEXT DEFAULT ''story''; ALTER TABLE guides ADD COLUMN mode TEXT DEFAULT ''story''; ALTER TABLE reviews ADD COLUMN mode TEXT DEFAULT ''story'';'); console.log('Migration complete'); db.close();"
 ```
@@ -130,34 +69,33 @@ npm run dev
 - [ ] Homepage loads with feed
 - [ ] Admin login (`/admin/login`, `myah` / `changeme`)
 - [ ] Create new post → Mode selector shows
-- [ ] Story mode → TipTap editor loads
-- [ ] Design mode → Canvas editor loads
-- [ ] Rich text in canvas (double-click text element)
-- [ ] Grouping (multi-select + Group button)
-- [ ] Marquee selection (drag on empty canvas)
+- [ ] Story mode → TipTap editor
+- [ ] Design mode → Canvas editor
+- [ ] Rich text in canvas (double-click)
+- [ ] Canvas window in TipTap (full editor)
+- [ ] Grouping
+- [ ] Marquee selection
 - [ ] Right-click context menu
-- [ ] Triangle shape available
-- [ ] Image crop (Edit Image button)
-- [ ] Button new tab toggle
+- [ ] Triangle shape
+- [ ] Image crop
+- [ ] Button new tab
 - [ ] Cross-post copy/paste
 - [ ] Edit existing post respects mode
-- [ ] Feed filters work
-- [ ] Pin/Highlight in admin
-- [ ] Theme colors change site
-- [ ] Password change works
-
-### 6. Fix any compile errors
-
-### 7. Phase 17: Full testing + polish
+- [ ] Feed filters
+- [ ] Pin/Highlight
+- [ ] Theme colors
+- [ ] Password change
 
 ---
 
-## Local Setup
+## Known Issues
 
-- Home PC: `C:\Users\calve\Myah-Travels`
-- Node.js v20.20.2
-- Database: `data/site.db`
-- Schema setup: `scripts/setup-local-db.js`
+| Issue | Priority | Status |
+|-------|----------|--------|
+| `[key: string]: any` | Low | Accepted |
+| Mobile touch | Low | Deferred |
+| DOMPurify not installed | High | Install pending |
+| Mode column missing | High | Migration pending |
 
 ---
 
@@ -168,7 +106,8 @@ npm run dev
 npm run seed
 npm run build
 ```
+```
 
 ---
 
-**Last Updated:** Phase 16 fully code-complete. Testing + migration pending on home PC.
+**Commit this. Then update CODE-PLAN.md.**
