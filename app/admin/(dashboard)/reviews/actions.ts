@@ -20,6 +20,7 @@ export async function createReviewAction(data: {
   wouldRecommend?: string;
   finalVerdict?: string;
   status?: string;
+  mode?: string;
 }) {
   const user = await requireAuth();
 
@@ -44,8 +45,11 @@ export async function createReviewAction(data: {
     return { error: validation.error.errors[0]?.message || "Invalid input" };
   }
 
-  const review = await createReview(data);
-
+  const review = await createReview({
+    ...data,
+    mode: data.mode || "story",
+  });
+  
   if (!review) {
     return { error: "Failed to create review" };
   }
