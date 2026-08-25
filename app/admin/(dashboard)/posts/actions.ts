@@ -11,6 +11,7 @@ export async function createPostAction(data: {
   content: string;
   excerpt?: string;
   status?: string;
+  mode?: string;
 }) {
   const user = await requireAuth();
 
@@ -31,6 +32,7 @@ export async function createPostAction(data: {
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,
+    mode: data.mode || "story",
   });
 
   if (!post) {
