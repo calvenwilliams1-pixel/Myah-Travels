@@ -50,6 +50,7 @@ export function createElement(
       return {
         ...base,
         text: "Double-click to edit",
+        richText: "",
         fontSize: 16,
         color: "#333333",
         fontFamily: "Inter",
