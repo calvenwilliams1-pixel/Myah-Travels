@@ -37,6 +37,11 @@ export interface CanvasElement {
   portalDocumentsData?: PortalDocumentsData;
   portalFaqsData?: PortalFaqsData;
   groupId?: string;
+  cropX?: number;
+  cropY?: number;
+  cropWidth?: number;
+  cropHeight?: number;
+  openInNewTab?: boolean;
   [key: string]: any;
 }
 
@@ -119,6 +124,7 @@ export interface PortalFaqsData {
   title: string;
 }
 
+export type EditorMode = "story" | "design";
 export interface PortalRuntimeData {
   departureDate?: string;
   returnDate?: string;
