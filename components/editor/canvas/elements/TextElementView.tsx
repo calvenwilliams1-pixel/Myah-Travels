@@ -1,9 +1,18 @@
+## File: Replace `components/editor/canvas/elements/TextElementView.tsx`
+
+**Do this one thing:**
+Click the pencil icon on `components/editor/canvas/elements/TextElementView.tsx`
+
+**Replace the entire file with:**
+
+```tsx
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { CanvasElement } from "@/types/canvas";
+import TextFormatToolbar from "./TextFormatToolbar";
 
 interface TextElementViewProps {
   element: CanvasElement;
@@ -52,7 +61,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
     }
   }, [isEditing, editor]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!editor) return;
     const newContent = safeParseContent(element.richText ?? element.text ?? "");
     const currentContent = JSON.stringify(editor.getJSON());
@@ -81,6 +90,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
         setIsEditing(true);
       }}
     >
+      {isEditing && <TextFormatToolbar editor={editor} />}
       <EditorContent editor={editor} />
       {!isEditing && (
         <div className="absolute inset-0" onClick={() => setIsEditing(true)} />
@@ -88,3 +98,11 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
     </div>
   );
 }
+```
+
+**Then:**
+Click "Commit changes"
+
+---
+
+**Commit and submit for AI review.**
