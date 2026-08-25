@@ -1,145 +1,225 @@
+# MASTER-PROMPT.md (Revised - Current State)
+
 I am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
 
-## IMPORTANT: Auto-Update Instructions
-At the end of EVERY response, you MUST provide me with:
-1. The updated "Progress Tracker" section to paste into TODO.md
-2. The updated "Files Already Created" list to paste into MASTER-PROMPT.md
-3. The updated "Next File To Create" line for MASTER-PROMPT.md
-4. A one-line summary of what was just completed
-
-This ensures my documentation stays current even if I lose context.
+---
 
 ## Current Status
-ALL 17 ORIGINAL SEGMENTS ARE CODE-COMPLETE. ~170 files created on GitHub.
-Currently in TESTING phase using GitHub Codespaces.
-Site loads with Tailwind styling working.
 
-## Canvas Design System Status
-Phases 1-6 COMPLETE (implementation done, files on GitHub).
-Phase 6.1 Polish applied (hidden/locked don't snap, properties toggle, cached moveable targets).
-Phase 7 (Template System UI) is NEXT.
+**ALL CORE SEGMENTS AND CANVAS PHASES 1-15 COMPLETE. Phase 16 (Dual-Mode Editor) IN PROGRESS.**
 
-### Phases Completed:
-- Phase 1: types/canvas.ts, drizzle schemas (assets, templates, portal-checklist-states), lib/canvas/index.ts, TextElementView, ImageElementView, basic CanvasEditor
-- Phase 2: ElementCatalog.tsx, CanvasEditor updated with resize/rotate/snap/group-drag
-- Phase 3: PropertiesPanel.tsx, ShapeElementView.tsx, CanvasEditor updated with zIndex functions
-- Phase 4: SmartBlockElementView.tsx (lists, checklists, pros/cons), CanvasEditor updated
-- Phase 5: ButtonElementView.tsx, PdfElementView.tsx, CanvasEditor updated with button/pdf cases
-- Phase 6: LayersPanel.tsx (visibility, lock, rename, icons, zIndex sort), CanvasEditor updated
-- Phase 6.1: Polish (hidden/locked excluded from snap, properties toggle, cached targets)
+~200 files created on GitHub. Local testing setup working on home PC.
 
-### Canvas Files Created:
-- types/canvas.ts
-- drizzle/schema/assets.ts
-- drizzle/schema/templates.ts
-- drizzle/schema/portal-checklist-states.ts
-- lib/canvas/index.ts
-- components/editor/canvas/CanvasEditor.tsx
-- components/editor/canvas/ElementCatalog.tsx
-- components/editor/canvas/PropertiesPanel.tsx
-- components/editor/canvas/LayersPanel.tsx
-- components/editor/canvas/elements/TextElementView.tsx
-- components/editor/canvas/elements/ImageElementView.tsx
-- components/editor/canvas/elements/ShapeElementView.tsx
-- components/editor/canvas/elements/SmartBlockElementView.tsx
-- components/editor/canvas/elements/ButtonElementView.tsx
-- components/editor/canvas/elements/PdfElementView.tsx
-
-### Element Types Working:
-- Text ✅
-- Image ✅
-- Shape (square/circle/diamond/line) ✅
-- Bullet List ✅
-- Checklist (clickable) ✅
-- Pros/Cons ✅
-- Button (double-click to edit) ✅
-- PDF (thumbnail/download/full) ✅
-
-### Remaining Canvas Phases:
-- Phase 7: Template system UI (picker, save, manage)
-- Phase 8: Draft + Schedule UI
-- Phase 9: Server-side CanvasRenderer
-- Phase 10: Mobile scaling
-- Phase 11: Portal dynamic elements
-- Phase 12: Homepage canvas editor
-- Phase 13: Canvas Block in TipTap
-- Phase 14: Built-in templates seed
-- Phase 15: Testing + polish
-- Phase 16: Integration testing
-
-## Testing Session Notes (Completed)
-- Removed .check() from schema files
-- Renamed next.config.ts → next.config.mjs
-- Created app/layout.tsx, app/globals.css
-- Created tailwind.config.js, postcss.config.js
-- Database created manually via better-sqlite3 exec
-- All public pages load correctly
-
-## Known Issues To Fix
-1. Contact form: "dont call me" accepted as phone
-2. Admin login: untested
-3. FTS5 search: untested
-4. Email: untested
-5. Media upload: untested
-6. Portal magic links: untested end-to-end
-7. Tailwind configs not pushed to GitHub
+---
 
 ## Project Overview
-- Self-hosted Next.js application on a mini PC (Ubuntu Server)
+
+- Self-hosted Next.js 14 application on a mini PC (Ubuntu Server)
 - Cloudflare Tunnel for external access
 - SQLite database (WAL mode)
 - Drizzle ORM
-- TipTap (blog posts) + Canvas editor (visual content)
+- Dual-mode editor: TipTap (Story) + Canvas (Design)
 - Lucia Auth (TOTP 2FA)
 - Resend email
 - Client portal with magic links
 - PIPEDA compliance
+- Facebook-style feed homepage
+- Theme system (admin-controlled colors/background)
+
+---
+
+## Completion Status
+
+### Core Segments (17) - ✅ COMPLETE (~170 files)
+
+### Canvas Design System - ✅ Phases 1-15 COMPLETE
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Foundation (types, schemas, element views) | ✅ |
+| 2 | Moveable integration | ✅ |
+| 3 | PropertiesPanel + ShapeElementView | ✅ |
+| 4 | SmartBlockElementView | ✅ |
+| 5 | ButtonElementView + PdfElementView | ✅ |
+| 6 | LayersPanel | ✅ |
+| 6.1 | Polish | ✅ |
+| 7 | Template System | ✅ |
+| 7.1 | Template polish | ✅ |
+| 8 | PublishControls | ✅ |
+| 9 | CanvasRenderer | ✅ |
+| 10 | Portal Dynamic Elements | ✅ |
+| 10.1 | Portal PropertiesPanel | ✅ |
+| 11 | Homepage Canvas Editor | ✅ |
+| 12 | Canvas Block in TipTap | ✅ |
+| 13 | Built-in Templates (11) | ✅ |
+| 14 | Testing + Polish | ✅ |
+| 15 | Feed System + Theme System | ✅ |
+| 15a-15n | Pin/Highlight, admin, password | ✅ |
+
+### Phase 16: Dual-Mode Editor - IN PROGRESS
+
+| Sub-phase | Status |
+|-----------|--------|
+| P0-1: Mode selection UI | ✅ |
+| P0-2: Canvas responsive scale | ✅ |
+| P0-3: Editable canvas windows | ✅ |
+| P0-4: Grouping | ✅ |
+| P0-5: Marquee selection | ✅ |
+| P0-6: Hex color picker | ✅ |
+| P0-7: Image crop | ✅ |
+| P0-8: Button new tab | ✅ |
+| P1-1: Rich text in canvas | ✅ |
+| P1-2: Text formatting toolbar | ✅ |
+| P1-3: Triangle shape | ❌ Pending |
+| P1-4: Right-click context menu | ❌ Pending |
+| P1-5: Cross-post copy/paste | ❌ Pending |
+| P2-1: Per-element undo/redo | ❌ Deferred |
+| P2-2: Mobile touch editing | ❌ Deferred |
+| P2-3: Story mode canvas full editor | ❌ Deferred |
+
+---
 
 ## Key Architecture Decisions
-- Magic links: returnDate + 3 days expiry
-- editorType fixed at creation
-- No groupId, no Spacer
-- Numbered lists = listType variant
-- PDF uses iframe in editor
-- Assets table replaces raw paths
-- Checklist items have stable IDs
-- Undo/redo capped at 50
-- Debounced autosave (2s) with flush
-- zIndex via getNextZIndex + index offset
-- Hidden + locked elements excluded from snapping
-- Legacy documents use `visible !== false` and `locked === true` checks
+
+| Decision | Choice |
+|----------|--------|
+| Position/size | Pixel-based at 800px design width |
+| Responsive | `transform: scale()` CSS |
+| Mode | `story` or `design`, locked at creation |
+| Storage | SQLite with JSON blobs |
+| Undo/redo | Global (capped 50) |
+| Autosave | 2s debounce |
+| Rich text | TipTap JSON in `richText` field |
+| Grouping | `groupId` on elements |
+| Templates | Snapshot at save time |
+| Magic links | 7 days expiry, 2-step flow |
+| Admin auth | Lucia + TOTP + password change |
+
+---
+
+## Files Created (Current Inventory)
+
+### Canvas System
+```
+components/editor/canvas/
+├── CanvasEditor.tsx (grouping, marquee, rich text)
+├── CanvasRenderer.tsx (rich text, all elements)
+├── CanvasScaler.tsx
+├── MarqueeSelection.tsx
+├── MiniCanvasEditor.tsx
+├── ImageCropOverlay.tsx
+├── ElementCatalog.tsx
+├── PropertiesPanel.tsx (ColorPicker, portal props)
+├── LayersPanel.tsx
+├── TemplateManager.tsx
+├── SaveTemplateModal.tsx
+├── PublishControls.tsx
+└── elements/
+    ├── TextElementView.tsx (TipTap rich text)
+    ├── TextFormatToolbar.tsx
+    ├── ImageElementView.tsx (crop)
+    ├── ShapeElementView.tsx
+    ├── SmartBlockElementView.tsx
+    ├── ButtonElementView.tsx
+    ├── PdfElementView.tsx
+    ├── PortalDatesElementView.tsx
+    ├── PortalNoticesElementView.tsx
+    ├── PortalDocumentsElementView.tsx
+    └── PortalFaqsElementView.tsx
+```
+
+### Editor Integration
+```
+components/editor/
+├── TipTapEditor.tsx
+├── TipTapRenderer.tsx
+├── Toolbar.tsx
+├── CanvasBlockNode.tsx
+├── CanvasBlockComponent.tsx
+├── CanvasBlockRenderer.tsx
+├── InsertCanvasBlockButton.tsx
+└── ModeSelectorModal.tsx
+```
+
+### Feed System
+```
+components/feed/
+├── FeedCard.tsx
+├── FeedContainer.tsx
+├── FeedFilters.tsx
+├── FeedPage.tsx
+├── InfiniteFeed.tsx
+└── types.ts
+```
+
+### Theme + Admin
+```
+components/theme/ThemeProvider.tsx
+components/admin/FeedAdminControls.tsx
+components/ui/ColorPicker.tsx
+components/ErrorBoundary.tsx
+```
+
+### Utilities
+```
+lib/canvas/index.ts
+lib/canvas/parse.ts
+lib/feed/index.ts
+lib/theme/index.ts
+types/canvas.ts
+```
+
+---
 
 ## How I Work
+
 - Using GitHub website to create files one at a time
 - Each file gets exact path + complete code
-- Files combined where possible
 - Submit code for AI review BEFORE creating on GitHub
-- When chat corrupts code, work directly in Codespaces
-- Only edit on GitHub, not Codespaces (sync with git pull)
+- When chat corrupts code, work directly in local files
+- Local testing: `npm run dev` on home PC
+- No Codespaces (monetization concerns)
 
-## Progress Tracker
+---
 
-| Segment | Status | Files | Review |
-|---------|--------|-------|--------|
-| All 17 Segments | ✅ Complete | ~170 | Approved |
-| Canvas Phase 1 | ✅ Complete | 8 | Approved |
-| Canvas Phase 2 | ✅ Complete | 1 | Approved |
-| Canvas Phase 3 | ✅ Complete | 2 | Approved |
-| Canvas Phase 4 | ✅ Complete | 1 | Approved |
-| Canvas Phase 5 | ✅ Complete | 2 | Approved |
-| Canvas Phase 6 | ✅ Complete | 1 | Approved |
-| Canvas Phase 6.1 | ✅ Complete | 0 | Approved |
-| Canvas Phase 7 | Not Started | 0/3 | Pending |
-| Canvas Phases 8-16 | Not Started | 0/9 | Pending |
+## Known Issues
+
+| Issue | Priority | Status |
+|-------|----------|--------|
+| `[key: string]: any` in CanvasElement | Low | Accepted tech debt |
+| Per-element undo not built | Low | Deferred |
+| Mobile touch editing | Low | Deferred |
+| Cross-post copy/paste | Medium | P1-5 pending |
+| URL strings corrupted in AI chat | N/A | Paste-only issue |
+
+---
 
 ## Next Steps
-1. Push Tailwind configs to GitHub
-2. Fix contact form phone validation
-3. Start Canvas Phase 7 (Template System)
-4. Test admin login
-5. Set up mini PC for deployment
+
+1. P1-3: Triangle shape
+2. P1-4: Right-click context menu
+3. P1-5: Cross-post copy/paste
+4. Local testing of all P0+P1
+5. Database migration for mode field
+6. Phase 17: Full testing + polish
+
+---
 
 ## Testing Commands
+
+```bash
 npm run dev
 npm run seed
-npm run test
+npm run build
+```
+
+---
+
+## Local Setup
+
+Home PC has:
+- Node.js v20.20.2
+- Git
+- Repo at `C:\Users\calve\Myah-Travels`
+- Database at `data/site.db`
+- Schema at `scripts/setup-local-db.js`
