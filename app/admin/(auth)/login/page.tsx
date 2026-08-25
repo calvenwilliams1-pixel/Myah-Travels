@@ -31,6 +31,11 @@ export default function LoginPage() {
         setStep("totp");
         return;
       }
+
+      if (result && result.success) {
+        window.location.href = "/admin";
+        return;
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError("Login failed. Please try again.");
@@ -49,6 +54,11 @@ export default function LoginPage() {
 
       if (result && result.error) {
         setError(result.error);
+        return;
+      }
+
+      if (result && result.success) {
+        window.location.href = "/admin";
         return;
       }
     } catch (err) {

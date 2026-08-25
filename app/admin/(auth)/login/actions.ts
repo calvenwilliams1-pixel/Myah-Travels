@@ -77,12 +77,14 @@ export async function loginAction(
     "login_success",
     "user",
     foundUser.id,
-    "Login successful",
+    "Login successful with TOTP",
     ip,
     userAgent
   );
 
-  redirect("/admin");
+  return { success: true };
+
+  return { success: true };
 }
 
 export async function verifyTotpAction(
