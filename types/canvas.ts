@@ -37,6 +37,7 @@ export interface CanvasElement {
   portalDocumentsData?: PortalDocumentsData;
   portalFaqsData?: PortalFaqsData;
   groupId?: string;
+  richText?: string;
   cropX?: number;
   cropY?: number;
   cropWidth?: number;
