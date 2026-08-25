@@ -1,202 +1,248 @@
 # Updated CODE-PLAN.md
 
 ```
-# Code Planning Phase - Segmentation Strategy
+# Myah Travels - Code Planning Document (Current)
 
 ## Overview
 
-All 17 original segments are COMPLETE. The Canvas Design System is in progress (Phases 1-6 done, Phase 7 next).
+All 17 original segments COMPLETE. Canvas Design System Phases 1-15 COMPLETE. Phase 16 (Dual-Mode Editor) IN PROGRESS.
+
+---
+
+## Tech Stack
+
+Next.js 14 App Router, TypeScript, SQLite (better-sqlite3), Drizzle ORM, Tailwind CSS, Lucia Auth, TipTap, react-moveable, Resend email
 
 ---
 
 ## File Combining Rules
 
-### Rule 1: Utility Functions Combine
-Related utility functions go in ONE file with an `index.ts` naming convention.
-
-| Domain | Combined File |
-|--------|---------------|
-| Security | lib/security/index.ts |
-| Auth | lib/auth/index.ts |
-| Email | lib/email/index.ts |
-| Email Templates | lib/email/templates.ts |
-| Media | lib/media/index.ts |
-| Settings | lib/settings/index.ts |
-| Monitoring | lib/monitoring/index.ts |
-| Search | lib/search/index.ts |
-| Portal Lib | lib/portal/index.ts |
-| Clients Lib | lib/clients/index.ts |
-| Content Lib | lib/content/index.ts |
-| Logging | lib/logging/index.ts |
-| Jobs | lib/jobs/index.ts |
-| Canvas | lib/canvas/index.ts |
-
-### Rule 2: Next.js Routes Stay Separate
-Files in `app/` stay separate (file-based routing).
-
-### Rule 3: Database Schema Stays Separate
-Files in `drizzle/schema/` stay separate (Drizzle convention).
-
-### Rule 4: Shell Scripts Stay Separate
-Files in `scripts/` stay separate.
-
-### Rule 5: Canvas Element Views Stay Separate
-Each element type has its own view file in `components/editor/canvas/elements/`.
+| Rule | Description |
+|------|-------------|
+| Rule 1 | Utility functions combined in `lib/[domain]/index.ts` |
+| Rule 2 | Next.js routes stay separate (`app/` file-based routing) |
+| Rule 3 | Database schemas stay separate (`drizzle/schema/`) |
+| Rule 4 | Shell scripts stay separate (`scripts/`) |
+| Rule 5 | Canvas element views stay separate (`components/editor/canvas/elements/`) |
 
 ---
 
-## Original 17 Segments (COMPLETE)
+## Completion Status
 
-| Segment | Files | Status |
-|---------|-------|--------|
-| 0: Project Init | 16 | ✅ |
-| 1: Database | 33 | ✅ |
-| 1.5: Security | 1 | ✅ |
-| 2: Auth | 5 | ✅ |
-| 13a: Logging | 1 | ✅ |
-| 7: Email | 5 | ✅ |
-| 14: Backup/Deploy | 8 | ✅ |
-| 3: Content | 19 | ✅ |
-| 4: Media | 4 | ✅ |
-| 12: Settings | 3 | ✅ |
-| 5: Clients | 7 | ✅ |
-| 8: Search | 3 | ✅ |
-| 10: Public Pages | 11 | ✅ |
-| 11: Homepage | 13 | ✅ |
-| 6: Portal | 9 | ✅ |
-| 9: Dashboard | 8 | ✅ |
-| 15: Testing | 7 | ✅ |
+### Original 17 Segments - ✅ COMPLETE (~170 files)
 
----
+All core application functionality built and tested.
 
-## Canvas Design System Phases
+### Canvas Design System - ✅ Phases 1-15 COMPLETE
 
-### Phase 1: Foundation (COMPLETE)
-- types/canvas.ts
-- drizzle/schema/assets.ts
-- drizzle/schema/templates.ts
-- drizzle/schema/portal-checklist-states.ts
-- lib/canvas/index.ts
-- components/editor/canvas/elements/TextElementView.tsx
-- components/editor/canvas/elements/ImageElementView.tsx
-- components/editor/canvas/CanvasEditor.tsx
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Foundation (types, schemas, element views) | ✅ |
+| 2 | Moveable integration (drag/resize/rotate/snap) | ✅ |
+| 3 | PropertiesPanel + ShapeElementView | ✅ |
+| 4 | SmartBlockElementView (lists/checklists/proscons) | ✅ |
+| 5 | ButtonElementView + PdfElementView | ✅ |
+| 6 | LayersPanel (visibility, lock, rename) | ✅ |
+| 6.1 | Polish (snap exclusions, undo toast) | ✅ |
+| 7 | Template System (picker, manager, save) | ✅ |
+| 7.1 | Template polish (save indicator, lock badges) | ✅ |
+| 8 | PublishControls (draft/schedule/publish) | ✅ |
+| 9 | CanvasRenderer (public rendering) | ✅ |
+| 10 | Portal Dynamic Elements | ✅ |
+| 10.1 | Portal PropertiesPanel editing | ✅ |
+| 11 | Homepage Canvas Editor | ✅ |
+| 12 | Canvas Block in TipTap | ✅ |
+| 13 | Built-in Templates (11 seeded) | ✅ |
+| 14 | Testing + Polish | ✅ |
+| 15 | Feed System + Theme System | ✅ |
+| 15a-15n | Pin/Highlight, admin controls, password change | ✅ |
 
-### Phase 2: Moveable Integration (COMPLETE)
-- components/editor/canvas/ElementCatalog.tsx
-- CanvasEditor updated (resize, rotate, snap, group-drag)
+### Phase 16: Dual-Mode Editor - IN PROGRESS
 
-### Phase 3: Properties Panel (COMPLETE)
-- components/editor/canvas/PropertiesPanel.tsx
-- components/editor/canvas/elements/ShapeElementView.tsx
-- CanvasEditor updated (zIndex functions)
-
-### Phase 4: Smart Blocks (COMPLETE)
-- components/editor/canvas/elements/SmartBlockElementView.tsx
-- CanvasEditor updated (list/checklist/proscons cases)
-
-### Phase 5: Button + PDF (COMPLETE)
-- components/editor/canvas/elements/ButtonElementView.tsx
-- components/editor/canvas/elements/PdfElementView.tsx
-- CanvasEditor updated (button/pdf cases)
-
-### Phase 6: Layers Panel (COMPLETE)
-- components/editor/canvas/LayersPanel.tsx
-- CanvasEditor updated (visibility, lock, rename, selection)
-
-### Phase 6.1: Polish (COMPLETE)
-- Hidden + locked excluded from snap guidelines
-- Properties toggle button
-- Cached Moveable targets
-- Legacy document compatibility (visible !== false, locked === true)
-
-### Phase 7: Template System UI (NEXT)
-- Template picker modal (choose starting template)
-- Save as template button
-- Template manager (list, delete, duplicate)
-- API routes for template CRUD
-
-### Phase 8: Draft + Schedule UI (PENDING)
-- Draft badge/indicator
-- Schedule date/time picker
-- Publish button with options
-
-### Phase 9: Server-side CanvasRenderer (PENDING)
-- Public rendering of CanvasDocument JSON
-- Mobile scaling CSS
-
-### Phase 10: Portal Dynamic Elements (PENDING)
-- Portal dates element
-- Portal notices element
-- Portal documents element
-- Portal FAQs element
-- Interactive portal checklists
-
-### Phase 11: Homepage Canvas Editor (PENDING)
-- Apply CanvasEditor to homepage
-- Template system for homepage
-
-### Phase 12: Canvas Block in TipTap (PENDING)
-- Embed canvas-designed sections in blog posts
-
-### Phase 13: Built-in Templates (PENDING)
-- Seed 10+ starter templates
-- Template thumbnails
-
-### Phase 14: Testing + Polish (PENDING)
-- End-to-end canvas testing
-- Performance testing
-- Mobile testing
+| Sub-phase | Description | Status |
+|-----------|-------------|--------|
+| P0 | Blocking features | ✅ COMPLETE |
+| P0-1 | Mode selection UI (story/design) | ✅ |
+| P0-2 | Canvas responsive scale | ✅ |
+| P0-3 | Editable canvas windows in TipTap | ✅ |
+| P0-4 | Grouping (groupId wired up) | ✅ |
+| P0-5 | Marquee selection | ✅ |
+| P0-6 | Full hex color picker | ✅ |
+| P0-7 | Image crop/reposition | ✅ |
+| P0-8 | Button "open in new tab" toggle | ✅ |
+| P1 | Should ship soon | PARTIAL |
+| P1-1 | Rich text in canvas text elements | ✅ |
+| P1-2 | Text formatting toolbar | ✅ |
+| P1-3 | Triangle shape | ❌ PENDING |
+| P1-4 | Right-click context menu | ❌ PENDING |
+| P1-5 | Cross-post copy/paste | ❌ PENDING |
+| P2 | Deferred | NOT STARTED |
+| P2-1 | Per-element undo/redo | ❌ |
+| P2-2 | Mobile touch editing | ❌ |
+| P2-3 | Story mode canvas full editor | ❌ |
 
 ---
 
-## Canvas File Inventory
+## Current File Inventory
+
+### Canvas System Files
 
 ```
 components/editor/canvas/
 ├── CanvasEditor.tsx
+├── CanvasRenderer.tsx
+├── CanvasScaler.tsx
+├── MarqueeSelection.tsx
+├── MiniCanvasEditor.tsx
+├── ImageCropOverlay.tsx
 ├── ElementCatalog.tsx
 ├── PropertiesPanel.tsx
 ├── LayersPanel.tsx
+├── TemplateManager.tsx
+├── SaveTemplateModal.tsx
+├── PublishControls.tsx
+├── ContextMenu.tsx (P1-4)
 └── elements/
-    ├── TextElementView.tsx
-    ├── ImageElementView.tsx
+    ├── TextElementView.tsx (rich text)
+    ├── TextFormatToolbar.tsx
+    ├── ImageElementView.tsx (crop)
     ├── ShapeElementView.tsx
     ├── SmartBlockElementView.tsx
     ├── ButtonElementView.tsx
-    └── PdfElementView.tsx
+    ├── PdfElementView.tsx
+    ├── PortalDatesElementView.tsx
+    ├── PortalNoticesElementView.tsx
+    ├── PortalDocumentsElementView.tsx
+    └── PortalFaqsElementView.tsx
+
+components/editor/
+├── TipTapEditor.tsx
+├── TipTapRenderer.tsx
+├── Toolbar.tsx
+├── CanvasBlockNode.tsx
+├── CanvasBlockComponent.tsx
+├── CanvasBlockRenderer.tsx
+├── InsertCanvasBlockButton.tsx
+└── ModeSelectorModal.tsx
+
+components/feed/
+├── FeedCard.tsx
+├── FeedContainer.tsx
+├── FeedFilters.tsx
+├── FeedPage.tsx
+├── InfiniteFeed.tsx
+├── types.ts
+
+components/theme/
+├── ThemeProvider.tsx
+
+components/admin/
+├── FeedAdminControls.tsx
+
+components/ui/
+├── ColorPicker.tsx
+
+components/
+├── ErrorBoundary.tsx
+
+lib/
+├── canvas/
+│   ├── index.ts
+│   └── parse.ts
+├── feed/
+│   └── index.ts
+└── theme/
+    └── index.ts
 
 types/
 └── canvas.ts
 
-lib/
-└── canvas/
-    └── index.ts
-
 drizzle/schema/
+├── posts.ts (mode field)
+├── guides.ts (mode field)
+├── reviews.ts (mode field)
+├── templates.ts (slug field)
 ├── assets.ts
-├── templates.ts
-└── portal-checklist-states.ts
+├── portal-checklist-states.ts
+└── (all original schemas)
 ```
 
 ---
 
-## Progress Tracker
+## Key Architecture Decisions
 
-| Phase | Status | Files |
-|-------|--------|-------|
-| Original 17 Segments | ✅ Complete | ~170 |
-| Canvas Phase 1 | ✅ Complete | 8 |
-| Canvas Phase 2 | ✅ Complete | 1 |
-| Canvas Phase 3 | ✅ Complete | 2 |
-| Canvas Phase 4 | ✅ Complete | 1 |
-| Canvas Phase 5 | ✅ Complete | 2 |
-| Canvas Phase 6 | ✅ Complete | 1 |
-| Canvas Phase 6.1 | ✅ Complete | 0 |
-| Canvas Phase 7 | Not Started | 0/3 |
-| Canvas Phases 8-14 | Not Started | 0/7 |
+| Decision | Choice |
+|----------|--------|
+| Position/size | Pixel-based at fixed design width (800px) |
+| Responsive | `transform: scale()` on canvas container |
+| Mode | `story` or `design`, locked at creation |
+| Storage | SQLite with JSON blobs for canvas content |
+| Undo/redo | Global (capped 50), not per-element |
+| Autosave | 2s debounce |
+| Rich text | TipTap JSON stored in `richText` field |
+| Grouping | `groupId` on elements (no separate group object) |
+| Templates | Snapshot at save time, fully independent |
+| Copy/paste | Within same editor (cross-post in P1-5) |
 
 ---
 
-## Next Step
+## Recent Changes (Phase 15-16)
 
-Phase 7: Template System UI
+### Phase 15: Feed System + Theme
+- Facebook-style feed on homepage
+- Pin/highlight posts
+- Endless scroll
+- Theme system (colors, background image, transparency)
+- Password change with brute force protection
+
+### Phase 16 P0: Dual-Mode Editor
+- Mode selection modal (Story vs Design)
+- Canvas responsive scaling
+- Editable canvas windows in TipTap
+- Grouping + ungrouping
+- Marquee selection
+- Full hex color picker
+- Image crop/reposition
+- Button open-in-new-tab
+
+### Phase 16 P1 (Partial):
+- Rich text (TipTap) in canvas text elements
+- Text formatting toolbar in canvas
+
+---
+
+## Known Issues
+
+| Issue | Priority | Status |
+|-------|----------|--------|
+| URL strings corrupted in AI chat pastes | N/A | Paste-only issue |
+| `[key: string]: any` in CanvasElement | Low | Accepted technical debt |
+| Per-element undo not implemented | Low | Deferred to P2 |
+| Mobile touch editing not implemented | Low | Deferred to P2 |
+| Cross-post copy/paste | Medium | P1-5 pending |
+
+---
+
+## Next Steps (In Order)
+
+1. P1-3: Triangle shape
+2. P1-4: Right-click context menu
+3. P1-5: Cross-post copy/paste
+4. Local testing of all P0 + P1 features
+5. Database migration for mode field
+6. Phase 17: Testing + Polish
+
+---
+
+## Testing Commands
+
+```bash
+npm run dev
+npm run seed
+npm run build
+```
+```
+
+---
+
+**This is the current state. Save this as CODE-PLAN.md.**
