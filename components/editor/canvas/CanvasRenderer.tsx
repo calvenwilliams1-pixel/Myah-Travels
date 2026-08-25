@@ -45,7 +45,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
             top: el.y,
             width: el.width,
             height: el.height,
-            transform: `rotate(${el.rotation || 0}deg)`,
+            transform: `rotate(${el.rotation ?? 0}deg)`,
             zIndex: el.zIndex,
           };
 
@@ -56,18 +56,19 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   key={el.id}
                   style={{
                     ...baseStyle,
-                    fontSize: el.fontSize || 16,
-                    color: el.color || "#333333",
-                    fontFamily: el.fontFamily || "Inter",
-                    textAlign: el.textAlign || "left",
-                    fontWeight: el.fontWeight || "normal",
+                    fontSize: el.fontSize ?? 16,
+                    color: el.color ?? "#333333",
+                    fontFamily: el.fontFamily ?? "Inter",
+                    textAlign: el.textAlign ?? "left",
+                    fontWeight: el.fontWeight ?? "normal",
                     whiteSpace: "pre-wrap",
                     overflowWrap: "break-word",
                     wordBreak: "break-word",
                     overflow: "hidden",
+                    opacity: el.opacity ?? 1,
                   }}
                 >
-                  {el.text || ""}
+                  {el.text ?? ""}
                 </div>
               );
 
@@ -81,8 +82,9 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   loading="lazy"
                   style={{
                     ...baseStyle,
-                    objectFit: el.objectFit || "cover",
-                    borderRadius: el.borderRadius || 0,
+                    objectFit: el.objectFit ?? "cover",
+                    borderRadius: el.borderRadius ?? 0,
+                    opacity: el.opacity ?? 1,
                   }}
                 />
               );
@@ -94,19 +96,26 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   aria-hidden="true"
                   style={{
                     ...baseStyle,
-                    backgroundColor: el.fillColor || "#e8b84b",
-                    border: `${el.borderWidth || 0}px solid ${el.borderColor || "transparent"}`,
+                    backgroundColor: el.fillColor ?? "#e8b84b",
+                    border: `${el.borderWidth ?? 0}px solid ${el.borderColor ?? "transparent"}`,
                     borderRadius:
                       el.shapeType === "circle"
                         ? "50%"
                         : el.shapeType === "square"
-                        ? el.borderRadius || 0
-                        : el.borderRadius || 0,
+                        ? el.borderRadius ?? 0
+                        : 0,
                     opacity: el.opacity ?? 1,
+                    clipPath:
+                      el.shapeType === "diamond"
+                        ? "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)"
+                        : undefined,
+                    height:
+                      el.shapeType === "line"
+                        ? el.borderWidth ?? 2
+                        : el.height,
                   }}
                 />
               );
-
             case "divider":
               return (
                 <div
@@ -114,39 +123,42 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   aria-hidden="true"
                   style={{
                     ...baseStyle,
-                    height: el.thickness || 2,
-                    backgroundColor: el.color || "#cccccc",
+                    height: el.thickness ?? 2,
+                    backgroundColor: el.color ?? "#cccccc",
                   }}
                 />
               );
 
             case "button": {
               const safeLink = sanitizeUrl(el.link);
+              const normalizedLink = safeLink.toLowerCase();
               const isExternal =
-                safeLink.startsWith("http://") ||
-                safeLink.startsWith("https://");
+                normalizedLink.startsWith("http://") ||
+                normalizedLink.startsWith("https://");
+              const shouldOpenNewTab = el.openInNewTab ?? isExternal;
               return (
                 <a
                   key={el.id}
                   href={safeLink}
-                  target={isExternal ? "_blank" : undefined}
-                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  target={shouldOpenNewTab ? "_blank" : undefined}
+                  rel={shouldOpenNewTab ? "noopener noreferrer" : undefined}
                   aria-label={el.text || "Learn More"}
                   style={{
                     ...baseStyle,
-                    backgroundColor: el.backgroundColor || "#4a7c59",
-                    color: el.textColor || "#ffffff",
-                    borderRadius: el.borderRadius || 8,
-                    fontSize: el.fontSize || 16,
-                    fontWeight: el.fontWeight || "normal",
+                    backgroundColor: el.backgroundColor ?? "#4a7c59",
+                    color: el.textColor ?? "#ffffff",
+                    borderRadius: el.borderRadius ?? 8,
+                    fontSize: el.fontSize ?? 16,
+                    fontWeight: el.fontWeight ?? "normal",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     textDecoration: "none",
                     overflow: "hidden",
+                    opacity: el.opacity ?? 1,
                   }}
                 >
-                  {el.text || "Learn More"}
+                  {el.text ?? "Learn More"}
                 </a>
               );
             }
@@ -154,7 +166,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
             case "list": {
               const items = Array.isArray(el.items) ? (el.items as string[]) : [];
               const listStyle =
-                el.listType === "numbered" ? "decimal" : (el.bulletStyle || "disc");
+                el.listType === "numbered" ? "decimal" : (el.bulletStyle ?? "disc");           
               return (
                 <ul
                   key={el.id}
@@ -170,7 +182,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                       key={i}
                       style={{
                         fontSize: el.fontSize || 16,
-                        color: el.color || "#333333",
+                        color: el.color ?? "#333333",
                         overflowWrap: "break-word",
                         wordBreak: "break-word",
                       }}
@@ -202,7 +214,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                           display: "flex",
                           alignItems: "center",
                           gap: 8,
-                          fontSize: el.fontSize || 16,
+                          fontSize: el.fontSize ?? 16,
                           color: el.color || "#333333",
                         }}
                       >
