@@ -24,6 +24,7 @@ import SaveTemplateModal from "./SaveTemplateModal";
 import PublishControls from "./PublishControls";
 import MarqueeSelection from "./MarqueeSelection";
 import ContextMenu from "./ContextMenu";
+import { saveToClipboard, loadFromClipboard } from "@/lib/canvas/clipboard";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -77,7 +78,6 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
   const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const clipboardRef = useRef<CanvasElement[]>([]);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
 
@@ -415,13 +415,16 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         );
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && selectedIds.length > 0) {
-        clipboardRef.current = canvasDoc.elements.filter(
+        const elementsToCopy = canvasDoc.elements.filter(
           (el) => selectedIds.includes(el.id) && !el.locked
         );
+        saveToClipboard(elementsToCopy);
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "v" && clipboardRef.current.length > 0) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+        const clipboardElements = loadFromClipboard();
+        if (clipboardElements.length === 0) return;
         pushUndo(canvasDoc);
-        const newElements = clipboardRef.current.map((el, index) => ({
+        const newElements = clipboardElements.map((el, index) => ({
           ...JSON.parse(JSON.stringify(el)),
           id: nanoid(8),
           groupId: undefined,
