@@ -3,6 +3,8 @@ import { CanvasDocument, PortalRuntimeData } from "@/types/canvas";
 import PortalElementRenderer from "@/components/canvas/PortalElementRenderer";
 import { generateHTML } from "@tiptap/html";
 import StarterKit from "@tiptap/starter-kit";
+import CanvasScaler from "./CanvasScaler";
+import DOMPurify from "dompurify";
 
 interface CanvasRendererProps {
   document: CanvasDocument;
@@ -32,7 +34,10 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
     .sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0));
 
   return (
-    <div className="overflow-auto">
+    <CanvasScaler
+      designWidth={document.canvas.width}
+      designHeight={document.canvas.height}
+    >
       <div
         className="canvas-wrapper relative"
         style={{
@@ -61,10 +66,11 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   const richDoc = JSON.parse(el.richText);
                   if (richDoc.type === "doc" && Array.isArray(richDoc.content)) {
                     const html = generateHTML(richDoc, [StarterKit]);
+                    const safeHtml = DOMPurify.sanitize(html);
                     textContent = (
                       <div
                         className="rich-text-content"
-                        dangerouslySetInnerHTML={{ __html: html }}
+                        dangerouslySetInnerHTML={{ __html: safeHtml }}
                       />
                     );
                   }
@@ -94,12 +100,20 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                 </div>
               );
             }
-            case "image":
-              if (!el.src && !el.assetId) return null;
+            case "image": {
+              const imageSrc =
+                el.src && sanitizeUrl(el.src) !== "#"
+                  ? el.src
+                  : el.assetId
+                  ? `/api/assets/${el.assetId}`
+                  : undefined;
+
+              if (!imageSrc) return null;
+
               return (
                 <img
                   key={el.id}
-                  src={el.src ?? `/api/assets/${el.assetId}`}
+                  src={imageSrc}
                   alt={el.altText ?? ""}
                   loading="lazy"
                   style={{
@@ -110,7 +124,8 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   }}
                 />
               );
-
+            }
+              
             case "shape":
               return (
                 <div
@@ -352,9 +367,14 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
             }
 
             case "pdf": {
-              if (!el.src && !el.assetId) return null;
-              const fileUrl = el.src ?? `/api/assets/${el.assetId}`;
+              const fileUrl =
+                el.src && sanitizeUrl(el.src) !== "#"
+                  ? el.src
+                  : el.assetId
+                  ? `/api/assets/${el.assetId}`
+                  : null;
 
+              if (!fileUrl) return null;
               if (el.displayMode === "download") {
                 return (
                   <a
@@ -449,6 +469,6 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
           }
         })}
       </div>
-    </div>
+    </CanvasScaler>
   );
 }
