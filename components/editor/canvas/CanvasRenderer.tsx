@@ -130,6 +130,8 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                     clipPath:
                       el.shapeType === "diamond"
                         ? "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)"
+                        : el.shapeType === "triangle"
+                        ? "polygon(50% 0%, 0% 100%, 100% 100%)"
                         : undefined,
                     height:
                       el.shapeType === "line"
