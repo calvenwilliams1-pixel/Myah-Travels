@@ -25,6 +25,7 @@ export const guides = sqliteTable(
     isPinned: integer("is_pinned", { mode: "boolean" }).default(false),
     isHighlighted: integer("is_highlighted", { mode: "boolean" }).default(false),
     pinnedAt: text("pinned_at"),
+    mode: text("mode", { enum: ["story", "design"] }).default("story"),
   },
   (table) => ({
     idxGuidesStatus: index("idx_guides_status").on(table.status),
