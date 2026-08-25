@@ -152,6 +152,7 @@ export async function createPost(data: {
   content: string;
   excerpt?: string;
   status?: string;
+  mode?: string;
   featuredImage?: string;
   seoTitle?: string;
   seoDescription?: string;
@@ -165,6 +166,7 @@ export async function createPost(data: {
     content: data.content,
     excerpt: data.excerpt ?? null,
     status: data.status || "draft",
+    mode: data.mode || "story",
     featuredImage: data.featuredImage ?? null,
     seoTitle: data.seoTitle ?? null,
     seoDescription: data.seoDescription ?? null,
