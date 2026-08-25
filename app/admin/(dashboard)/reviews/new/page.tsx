@@ -3,13 +3,19 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import TipTapEditor from "@/components/editor/TipTapEditor";
+import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
+import ModeSelectorModal from "@/components/editor/ModeSelectorModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { createReviewAction } from "../actions";
+import { EditorMode } from "@/types/canvas";
+
+type ReviewStatus = "draft" | "published" | "hidden";
 
 export default function NewReviewPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<EditorMode | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [reviewType, setReviewType] = useState("product");
@@ -17,7 +23,7 @@ export default function NewReviewPage() {
   const [wouldRecommend, setWouldRecommend] = useState("");
   const [pros, setPros] = useState("");
   const [cons, setCons] = useState("");
-  const [status, setStatus] = useState("draft");
+  const [status, setStatus] = useState<ReviewStatus>("draft");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,35 +33,48 @@ export default function NewReviewPage() {
       return;
     }
 
-    setIsSaving(true);
-    setError(null);
+    try {
+      setIsSaving(true);
+      setError(null);
 
-    const result = await createReviewAction({
-      title,
-      content,
-      reviewType,
-      ratingOverall,
-      wouldRecommend,
-      pros,
-      cons,
-      status,
-    });
+      const result = await createReviewAction({
+        title,
+        content,
+        reviewType,
+        ratingOverall,
+        wouldRecommend,
+        pros,
+        cons,
+        status,
+        mode: mode || "story",
+      });
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.reviewId) {
+        router.push(`/admin/reviews/${result.reviewId}`);
+      }
+    } catch (err) {
+      console.error("Failed to save review:", err);
+      setError("Failed to save review. Please try again.");
+    } finally {
       setIsSaving(false);
-      return;
     }
+  }
 
-    if (result.reviewId) {
-      router.push(`/admin/reviews/${result.reviewId}`);
-    }
+  if (!mode) {
+    return <ModeSelectorModal onSelect={setMode} />;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">New Review</h2>
+        <h2 className="text-2xl font-semibold">
+          New Review ({mode === "story" ? "📝 Story" : "🎨 Design"})
+        </h2>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={handleSave} isLoading={isSaving}>
@@ -143,7 +162,18 @@ export default function NewReviewPage() {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Content
         </label>
-        <TipTapEditor onChange={(html, json) => setContent(json)} />
+
+        {mode === "story" ? (
+          <TipTapEditor
+            onChange={(_html, json) => setContent(JSON.stringify(json))}
+            contentType="review"
+          />
+        ) : (
+          <CanvasEditor
+            contentType="review"
+            onSave={async (docJson) => setContent(JSON.stringify(docJson))}
+          />
+        )}
       </Card>
 
       <Card>
@@ -152,7 +182,12 @@ export default function NewReviewPage() {
         </label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "draft" || value === "published" || value === "hidden") {
+              setStatus(value);
+            }
+          }}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
         >
           <option value="draft">Draft</option>
