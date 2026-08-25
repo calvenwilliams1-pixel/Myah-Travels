@@ -1,4 +1,12 @@
-# MASTER-PROMPT.md (Revised - Current State)
+## Update MASTER-PROMPT.md
+
+**Do this one thing:**
+Click the pencil icon on `MASTER-PROMPT.md`
+
+**Replace the entire file with:**
+
+```markdown
+# Myah Travels - MASTER-PROMPT.md
 
 I am building a website called "Myah Travels" for a travel writer/agent. Here is the complete context:
 
@@ -6,9 +14,9 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 
 ## Current Status
 
-**ALL CORE SEGMENTS AND CANVAS PHASES 1-15 COMPLETE. Phase 16 (Dual-Mode Editor) IN PROGRESS.**
+**ALL CORE SEGMENTS AND CANVAS PHASES 1-16 COMPLETE. Testing pending on home PC.**
 
-~200 files created on GitHub. Local testing setup working on home PC.
+~210 files created on GitHub. Local testing setup ready.
 
 ---
 
@@ -34,29 +42,7 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 
 ### Canvas Design System - ✅ Phases 1-15 COMPLETE
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Foundation (types, schemas, element views) | ✅ |
-| 2 | Moveable integration | ✅ |
-| 3 | PropertiesPanel + ShapeElementView | ✅ |
-| 4 | SmartBlockElementView | ✅ |
-| 5 | ButtonElementView + PdfElementView | ✅ |
-| 6 | LayersPanel | ✅ |
-| 6.1 | Polish | ✅ |
-| 7 | Template System | ✅ |
-| 7.1 | Template polish | ✅ |
-| 8 | PublishControls | ✅ |
-| 9 | CanvasRenderer | ✅ |
-| 10 | Portal Dynamic Elements | ✅ |
-| 10.1 | Portal PropertiesPanel | ✅ |
-| 11 | Homepage Canvas Editor | ✅ |
-| 12 | Canvas Block in TipTap | ✅ |
-| 13 | Built-in Templates (11) | ✅ |
-| 14 | Testing + Polish | ✅ |
-| 15 | Feed System + Theme System | ✅ |
-| 15a-15n | Pin/Highlight, admin, password | ✅ |
-
-### Phase 16: Dual-Mode Editor - IN PROGRESS
+### Phase 16: Dual-Mode Editor - ✅ COMPLETE
 
 | Sub-phase | Status |
 |-----------|--------|
@@ -70,12 +56,17 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 | P0-8: Button new tab | ✅ |
 | P1-1: Rich text in canvas | ✅ |
 | P1-2: Text formatting toolbar | ✅ |
-| P1-3: Triangle shape | ❌ Pending |
-| P1-4: Right-click context menu | ❌ Pending |
-| P1-5: Cross-post copy/paste | ❌ Pending |
-| P2-1: Per-element undo/redo | ❌ Deferred |
-| P2-2: Mobile touch editing | ❌ Deferred |
-| P2-3: Story mode canvas full editor | ❌ Deferred |
+| P1-3: Triangle shape | ✅ |
+| P1-4: Right-click context menu | ✅ |
+| P1-5: Cross-post copy/paste | ✅ |
+| Mode wiring (posts/guides/reviews) | ✅ |
+| Edit pages mode-aware | ✅ |
+| CanvasScaler integration | ✅ |
+| DOMPurify | ✅ |
+| Image/PDF URL sanitization | ✅ |
+| P2-3: Story canvas full editor | ✅ |
+| P2-1: Per-element undo | Skipped (global works) |
+| P2-2: Mobile touch editing | Deferred |
 
 ---
 
@@ -84,7 +75,7 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 | Decision | Choice |
 |----------|--------|
 | Position/size | Pixel-based at 800px design width |
-| Responsive | `transform: scale()` CSS |
+| Responsive | `transform: scale()` via CanvasScaler |
 | Mode | `story` or `design`, locked at creation |
 | Storage | SQLite with JSON blobs |
 | Undo/redo | Global (capped 50) |
@@ -92,8 +83,7 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 | Rich text | TipTap JSON in `richText` field |
 | Grouping | `groupId` on elements |
 | Templates | Snapshot at save time |
-| Magic links | 7 days expiry, 2-step flow |
-| Admin auth | Lucia + TOTP + password change |
+| Clipboard | localStorage for cross-post |
 
 ---
 
@@ -102,23 +92,25 @@ I am building a website called "Myah Travels" for a travel writer/agent. Here is
 ### Canvas System
 ```
 components/editor/canvas/
-├── CanvasEditor.tsx (grouping, marquee, rich text)
-├── CanvasRenderer.tsx (rich text, all elements)
+├── CanvasEditor.tsx
+├── CanvasRenderer.tsx
 ├── CanvasScaler.tsx
 ├── MarqueeSelection.tsx
 ├── MiniCanvasEditor.tsx
+├── MiniCanvasEditorFull.tsx
 ├── ImageCropOverlay.tsx
 ├── ElementCatalog.tsx
-├── PropertiesPanel.tsx (ColorPicker, portal props)
+├── PropertiesPanel.tsx
 ├── LayersPanel.tsx
 ├── TemplateManager.tsx
 ├── SaveTemplateModal.tsx
 ├── PublishControls.tsx
+├── ContextMenu.tsx
 └── elements/
-    ├── TextElementView.tsx (TipTap rich text)
+    ├── TextElementView.tsx (rich text)
     ├── TextFormatToolbar.tsx
     ├── ImageElementView.tsx (crop)
-    ├── ShapeElementView.tsx
+    ├── ShapeElementView.tsx (triangle)
     ├── SmartBlockElementView.tsx
     ├── ButtonElementView.tsx
     ├── PdfElementView.tsx
@@ -152,7 +144,7 @@ components/feed/
 └── types.ts
 ```
 
-### Theme + Admin
+### Theme + Admin + UI
 ```
 components/theme/ThemeProvider.tsx
 components/admin/FeedAdminControls.tsx
@@ -164,6 +156,7 @@ components/ErrorBoundary.tsx
 ```
 lib/canvas/index.ts
 lib/canvas/parse.ts
+lib/canvas/clipboard.ts
 lib/feed/index.ts
 lib/theme/index.ts
 types/canvas.ts
@@ -176,7 +169,7 @@ types/canvas.ts
 - Using GitHub website to create files one at a time
 - Each file gets exact path + complete code
 - Submit code for AI review BEFORE creating on GitHub
-- When chat corrupts code, work directly in local files
+- When chat corrupts code, verify on GitHub
 - Local testing: `npm run dev` on home PC
 - No Codespaces (monetization concerns)
 
@@ -186,22 +179,20 @@ types/canvas.ts
 
 | Issue | Priority | Status |
 |-------|----------|--------|
-| `[key: string]: any` in CanvasElement | Low | Accepted tech debt |
-| Per-element undo not built | Low | Deferred |
+| `[key: string]: any` in CanvasElement | Low | Accepted |
 | Mobile touch editing | Low | Deferred |
-| Cross-post copy/paste | Medium | P1-5 pending |
-| URL strings corrupted in AI chat | N/A | Paste-only issue |
+| DOMPurify not installed locally | High | Install pending |
+| `mode` column not in local DB | High | Migration pending |
 
 ---
 
-## Next Steps
+## Next Steps (When Home)
 
-1. P1-3: Triangle shape
-2. P1-4: Right-click context menu
-3. P1-5: Cross-post copy/paste
-4. Local testing of all P0+P1
-5. Database migration for mode field
-6. Phase 17: Full testing + polish
+1. `git pull`
+2. `npm install dompurify`
+3. Database migration (mode column)
+4. `npm run dev`
+5. Full test checklist
 
 ---
 
@@ -217,9 +208,12 @@ npm run build
 
 ## Local Setup
 
-Home PC has:
+- Home PC: `C:\Users\calve\Myah-Travels`
 - Node.js v20.20.2
-- Git
-- Repo at `C:\Users\calve\Myah-Travels`
-- Database at `data/site.db`
-- Schema at `scripts/setup-local-db.js`
+- Database: `data/site.db`
+- Schema: `scripts/setup-local-db.js`
+```
+
+---
+
+**Commit this. Then update TODO.md and CODE-PLAN.md the same way.**
