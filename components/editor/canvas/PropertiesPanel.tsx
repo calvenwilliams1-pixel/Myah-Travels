@@ -23,8 +23,7 @@ const FONT_SIZE_OPTIONS = [
 ];
 
 type TextAlign = "left" | "center" | "right";
-type ShapeType = "square" | "circle" | "diamond" | "line";
-
+type ShapeType = "square" | "circle" | "diamond" | "triangle" | "line";
 function clampNumber(value: number, min: number, max?: number): number {
   if (isNaN(value)) return min;
   const clamped = Math.max(min, value);
