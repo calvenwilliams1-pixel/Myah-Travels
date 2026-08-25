@@ -3,18 +3,24 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import TipTapEditor from "@/components/editor/TipTapEditor";
+import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
+import ModeSelectorModal from "@/components/editor/ModeSelectorModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { createGuideAction } from "../actions";
+import { EditorMode } from "@/types/canvas";
+
+type GuideStatus = "draft" | "published" | "hidden";
 
 export default function NewGuidePage() {
   const router = useRouter();
+  const [mode, setMode] = useState<EditorMode | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [quickReference, setQuickReference] = useState("");
-  const [status, setStatus] = useState("draft");
+  const [status, setStatus] = useState<GuideStatus>("draft");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,32 +30,45 @@ export default function NewGuidePage() {
       return;
     }
 
-    setIsSaving(true);
-    setError(null);
+    try {
+      setIsSaving(true);
+      setError(null);
 
-    const result = await createGuideAction({
-      title,
-      content,
-      excerpt,
-      quickReference,
-      status,
-    });
+      const result = await createGuideAction({
+        title,
+        content,
+        excerpt,
+        quickReference,
+        status,
+        mode: mode || "story",
+      });
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.guideId) {
+        router.push(`/admin/guides/${result.guideId}`);
+      }
+    } catch (err) {
+      console.error("Failed to save guide:", err);
+      setError("Failed to save guide. Please try again.");
+    } finally {
       setIsSaving(false);
-      return;
     }
+  }
 
-    if (result.guideId) {
-      router.push(`/admin/guides/${result.guideId}`);
-    }
+  if (!mode) {
+    return <ModeSelectorModal onSelect={setMode} />;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">New Guide</h2>
+        <h2 className="text-2xl font-semibold">
+          New Guide ({mode === "story" ? "📝 Story" : "🎨 Design"})
+        </h2>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={handleSave} isLoading={isSaving}>
@@ -94,7 +113,18 @@ export default function NewGuidePage() {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Content
         </label>
-        <TipTapEditor onChange={(html, json) => setContent(json)} />
+
+        {mode === "story" ? (
+          <TipTapEditor
+            onChange={(_html, json) => setContent(JSON.stringify(json))}
+            contentType="guide"
+          />
+        ) : (
+          <CanvasEditor
+            contentType="guide"
+            onSave={async (docJson) => setContent(JSON.stringify(docJson))}
+          />
+        )}
       </Card>
 
       <Card>
@@ -103,7 +133,12 @@ export default function NewGuidePage() {
         </label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "draft" || value === "published" || value === "hidden") {
+              setStatus(value);
+            }
+          }}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
         >
           <option value="draft">Draft</option>
