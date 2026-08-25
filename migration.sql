@@ -1,0 +1,3 @@
+ALTER TABLE posts ADD COLUMN mode TEXT DEFAULT 'story';
+ALTER TABLE guides ADD COLUMN mode TEXT DEFAULT 'story';
+ALTER TABLE reviews ADD COLUMN mode TEXT DEFAULT 'story';

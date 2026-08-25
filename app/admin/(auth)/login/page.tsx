@@ -19,21 +19,24 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-  const result = await loginAction(username, password);
+    try {
+      const result = await loginAction(username, password);
 
-    if (result && result.error) {
-      setError(result.error);
+      if (result && result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result && result.requiresTotp) {
+        setStep("totp");
+        return;
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Login failed. Please try again.");
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-     if (result && result.requiresTotp) {
-      setStep("totp");
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
   }
 
   async function handleTotpSubmit(e: React.FormEvent) {
@@ -41,15 +44,19 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-   const result = await verifyTotpAction(username, totpCode);
+    try {
+      const result = await verifyTotpAction(username, totpCode);
 
-    if (result && result.error) {
-      setError(result.error);
+      if (result && result.error) {
+        setError(result.error);
+        return;
+      }
+    } catch (err) {
+      console.error("TOTP error:", err);
+      setError("Verification failed. Please try again.");
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setIsLoading(false);
   }
 
   return (
