@@ -276,6 +276,7 @@ export async function createGuide(data: {
   headerImage?: string;
   quickReference?: string;
   status?: string;
+  mode?: string;
 }) {
   const baseSlug = data.slug || generateSlug(data.title);
   const guideSlug = await generateUniqueSlug(baseSlug, "guide");
@@ -288,6 +289,7 @@ export async function createGuide(data: {
     headerImage: data.headerImage ?? null,
     quickReference: data.quickReference ?? null,
     status: data.status || "draft",
+    mode: data.mode || "story",
   }).returning();
   
   return result[0];
@@ -404,6 +406,7 @@ export async function createReview(data: {
   wouldRecommend?: string;
   finalVerdict?: string;
   status?: string;
+  mode?: string;
 }) {
   const baseSlug = data.slug || generateSlug(data.title);
   const reviewSlug = await generateUniqueSlug(baseSlug, "review");
@@ -423,6 +426,7 @@ export async function createReview(data: {
     wouldRecommend: data.wouldRecommend ?? null,
     finalVerdict: data.finalVerdict ?? null,
     status: data.status || "draft",
+    mode: data.mode || "story",
   }).returning();
   
   return result[0];
