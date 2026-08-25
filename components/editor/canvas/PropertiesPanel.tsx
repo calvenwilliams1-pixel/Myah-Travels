@@ -13,23 +13,6 @@ interface PropertiesPanelProps {
   onSendBackward: () => void;
 }
 
-const FONT_OPTIONS = ["Inter", "Open Sans", "Roboto", "Lato", "Source Sans Pro"];
-const FONT_SIZE_OPTIONS = [
-  { label: "Small", value: 14 },
-  { label: "Body", value: 16 },
-  { label: "Heading", value: 24 },
-  { label: "Title", value: 36 },
-  { label: "Hero", value: 48 },
-];
-
-type TextAlign = "left" | "center" | "right";
-type ShapeType = "square" | "circle" | "diamond" | "triangle" | "line";
-function clampNumber(value: number, min: number, max?: number): number {
-  if (isNaN(value)) return min;
-  const clamped = Math.max(min, value);
-  return max !== undefined ? Math.min(max, clamped) : clamped;
-}
-
 export default function PropertiesPanel({
   element,
   onUpdate,
@@ -40,55 +23,44 @@ export default function PropertiesPanel({
 }: PropertiesPanelProps) {
   const displayName = element.name || element.type;
 
-  type NumericField = "x" | "y" | "width" | "height";
-
-  const handleNumberUpdate = (field: NumericField, value: string, min = 0, max?: number) => {
-    const num = Number(value);
-    const clamped = clampNumber(num, min, max);
-    onUpdate(element.id, { [field]: clamped });
-  };
-
   return (
     <aside className="w-64 bg-white border-l border-gray-200 overflow-y-auto shrink-0">
       <div className="p-4 space-y-5">
-        {/* Header */}
         <div>
           <h3 className="text-sm font-semibold text-gray-700">{displayName}</h3>
           <p className="text-xs text-gray-500 capitalize">{element.type}</p>
         </div>
 
-        {/* Lock / Visibility toggles */}
         <div className="flex gap-2">
           <button
             onClick={() => onUpdate(element.id, { locked: !(element.locked ?? false) })}
             className={`flex-1 px-2 py-1.5 rounded text-xs border ${
               element.locked
                 ? "bg-amber-50 border-amber-300 text-amber-800"
-                : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                : "bg-gray-50 border-gray-200 text-gray-600"
             }`}
           >
-            {element.locked ? "🔒 Locked" : "🔓 Unlocked"}
+            {element.locked ? "Locked" : "Unlocked"}
           </button>
           <button
             onClick={() => onUpdate(element.id, { visible: element.visible === false })}
             className={`flex-1 px-2 py-1.5 rounded text-xs border ${
               element.visible === false
                 ? "bg-red-50 border-red-200 text-red-700"
-                : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                : "bg-gray-50 border-gray-200 text-gray-600"
             }`}
           >
-            {element.visible === false ? "🚫 Hidden" : "👁 Visible"}
+            {element.visible === false ? "Hidden" : "Visible"}
           </button>
         </div>
 
-        {/* Position & Size */}
         <div className="grid grid-cols-2 gap-2">
           <label className="text-xs text-gray-600">
             X
             <input
               type="number"
               value={Math.round(element.x)}
-              onChange={(e) => handleNumberUpdate("x", e.target.value, 0)}
+              onChange={(e) => onUpdate(element.id, { x: Number(e.target.value) })}
               className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-sm"
             />
           </label>
@@ -97,7 +69,7 @@ export default function PropertiesPanel({
             <input
               type="number"
               value={Math.round(element.y)}
-              onChange={(e) => handleNumberUpdate("y", e.target.value, 0)}
+              onChange={(e) => onUpdate(element.id, { y: Number(e.target.value) })}
               className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-sm"
             />
           </label>
@@ -106,7 +78,7 @@ export default function PropertiesPanel({
             <input
               type="number"
               value={Math.round(element.width)}
-              onChange={(e) => handleNumberUpdate("width", e.target.value, 1)}
+              onChange={(e) => onUpdate(element.id, { width: Math.max(1, Number(e.target.value)) })}
               className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-sm"
             />
           </label>
@@ -115,15 +87,14 @@ export default function PropertiesPanel({
             <input
               type="number"
               value={Math.round(element.height)}
-              onChange={(e) => handleNumberUpdate("height", e.target.value, 1)}
+              onChange={(e) => onUpdate(element.id, { height: Math.max(1, Number(e.target.value)) })}
               className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-sm"
             />
           </label>
         </div>
 
-        {/* Rotation */}
         <label className="text-xs text-gray-600 block">
-          Rotation (degrees)
+          Rotation
           <input
             type="number"
             value={Math.round(element.rotation)}
@@ -131,132 +102,11 @@ export default function PropertiesPanel({
               const num = Number(e.target.value);
               const normalized = isNaN(num) ? 0 : ((num % 360) + 360) % 360;
               onUpdate(element.id, { rotation: normalized });
+            }}
             className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-sm"
           />
         </label>
 
-        {/* Text properties */}
-        {element.type === "text" && (
-          <>
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Font Family</label>
-              <select
-                value={element.fontFamily ?? "Inter"}
-                onChange={(e) => onUpdate(element.id, { fontFamily: e.target.value })}
-                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-              >
-                {FONT_OPTIONS.map((font) => (
-                  <option key={font} value={font}>{font}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Font Size</label>
-              <select
-                value={element.fontSize ?? 16}
-                onChange={(e) => onUpdate(element.id, { fontSize: Number(e.target.value) })}
-                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-              >
-                {FONT_SIZE_OPTIONS.map((size) => (
-                  <option key={size.value} value={size.value}>{size.label} ({size.value}px)</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Alignment</label>
-              <div className="flex gap-1">
-                {(["left", "center", "right"] as TextAlign[]).map((align) => (
-                  <button
-                    key={align}
-                    onClick={() => onUpdate(element.id, { textAlign: align })}
-                    className={`flex-1 px-2 py-1 rounded text-sm border ${
-                      element.textAlign === align
-                        ? "bg-emerald-100 border-emerald-300 text-emerald-800"
-                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {align}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Weight</label>
-              <div className="flex gap-1">
-                {(["normal", "bold"] as const).map((weight) => (
-                  <button
-                    key={weight}
-                    onClick={() => onUpdate(element.id, { fontWeight: weight })}
-                    className={`flex-1 px-2 py-1 rounded text-sm border ${
-                      element.fontWeight === weight
-                        ? "bg-emerald-100 border-emerald-300 text-emerald-800"
-                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {weight === "bold" ? "B" : "Regular"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Shape properties */}
-        {element.type === "shape" && (
-          <>
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Shape Type</label>
-              <select
-                value={element.shapeType ?? "square"}
-                onChange={(e) => onUpdate(element.id, { shapeType: e.target.value as ShapeType })}
-                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-              >
-                <option value="square">Square</option>
-                <option value="circle">Circle</option>
-                <option value="diamond">Diamond</option>
-                <option value="triangle">Triangle</option>
-                <option value="line">Line</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Border Width</label>
-              <input
-                type="range"
-                min={0}
-                max={20}
-                value={element.borderWidth ?? 0}
-                onChange={(e) => onUpdate(element.id, { borderWidth: Number(e.target.value) })}
-                className="w-full"
-              />
-              <span className="text-xs text-gray-500">{element.borderWidth ?? 0}px</span>
-            </div>
-
-            <ColorPicker
-              label="Border Color"
-              value={element.borderColor ?? "#333333"}
-              onChange={(color) => onUpdate(element.id, { borderColor: color })}
-            />
-
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Border Radius</label>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={element.borderRadius ?? 0}
-                onChange={(e) => onUpdate(element.id, { borderRadius: Number(e.target.value) })}
-                className="w-full"
-              />
-              <span className="text-xs text-gray-500">{element.borderRadius ?? 0}px</span>
-            </div>
-          </>
-        )}
-
-        {/* Color pickers */}
         {element.type === "text" && (
           <ColorPicker
             label="Text Color"
@@ -273,326 +123,6 @@ export default function PropertiesPanel({
           />
         )}
 
-        {element.type === "button" && (
-          <>
-            <div>
-              <label className="text-xs text-gray-600 block mb-1">Link URL</label>
-              <input
-                type="text"
-                value={element.link ?? ""}
-                onChange={(e) => onUpdate(element.id, { link: e.target.value })}
-                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                placeholder="https://..."
-              />
-            </div>
-            <ColorPicker
-              label="Background Color"
-              value={element.backgroundColor ?? "#4a7c59"}
-              onChange={(color) => onUpdate(element.id, { backgroundColor: color })}
-            />
-            <ColorPicker
-              label="Text Color"
-              value={element.textColor ?? "#ffffff"}
-              onChange={(color) => onUpdate(element.id, { textColor: color })}
-            />
-            <label className="flex items-center gap-2 text-xs text-gray-600">
-              <input
-                type="checkbox"
-                checked={element.openInNewTab ?? false}
-                onChange={(e) => onUpdate(element.id, { openInNewTab: e.target.checked })}
-                className="rounded"
-              />
-              Open in new tab
-            </label>
-          </>
-        )}
-
-        {/* Opacity */}
-        {(element.type === "shape" || element.type === "image" || element.type === "text" || element.type === "button") && (
-          <div>
-            <label className="text-xs text-gray-600 block mb-1">Opacity</label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={(element.opacity ?? 1) * 100}
-              onChange={(e) => onUpdate(element.id, { opacity: Number(e.target.value) / 100 })}
-              className="w-full"
-            />
-            <span className="text-xs text-gray-500">{Math.round((element.opacity ?? 1) * 100)}%</span>
-          </div>
-        )}
-
-        {/* Portal Dates properties */}
-        {element.type === "portal_dates" && (() => {
-          const data = {
-            label: "Trip Dates",
-            showDeparture: true,
-            showReturn: true,
-            showCountdown: true,
-            ...element.portalDatesData,
-          };
-
-          return (
-            <>
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Label</label>
-                <input
-                  type="text"
-                  value={data.label}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalDatesData: { ...data, label: e.target.value },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-xs text-gray-600">
-                  <input
-                    type="checkbox"
-                    checked={data.showDeparture}
-                    onChange={(e) =>
-                      onUpdate(element.id, {
-                        portalDatesData: { ...data, showDeparture: e.target.checked },
-                      })
-                    }
-                    className="rounded"
-                  />
-                  Show Departure
-                </label>
-
-                <label className="flex items-center gap-2 text-xs text-gray-600">
-                  <input
-                    type="checkbox"
-                    checked={data.showReturn}
-                    onChange={(e) =>
-                      onUpdate(element.id, {
-                        portalDatesData: { ...data, showReturn: e.target.checked },
-                      })
-                    }
-                    className="rounded"
-                  />
-                  Show Return
-                </label>
-
-                <label className="flex items-center gap-2 text-xs text-gray-600">
-                  <input
-                    type="checkbox"
-                    checked={data.showCountdown}
-                    onChange={(e) =>
-                      onUpdate(element.id, {
-                        portalDatesData: { ...data, showCountdown: e.target.checked },
-                      })
-                    }
-                    className="rounded"
-                  />
-                  Show Countdown
-                </label>
-              </div>
-            </>
-          );
-        })()}
-
-        {/* Portal Notices properties */}
-        {element.type === "portal_notices" && (() => {
-          const data = {
-            title: "Notices",
-            maxItems: 5,
-            showPinnedOnly: false,
-            showGlobalAnnouncements: true,
-            ...element.portalNoticesData,
-          };
-
-          return (
-            <>
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Title</label>
-                <input
-                  type="text"
-                  value={data.title}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalNoticesData: { ...data, title: e.target.value },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Max Items</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  step={1}
-                  value={data.maxItems}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalNoticesData: { ...data, maxItems: Math.max(1, Number(e.target.value)) },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-
-              <label className="flex items-center gap-2 text-xs text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={data.showPinnedOnly}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalNoticesData: { ...data, showPinnedOnly: e.target.checked },
-                    })
-                  }
-                  className="rounded"
-                />
-                Show Pinned Only
-              </label>
-
-              <label className="flex items-center gap-2 text-xs text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={data.showGlobalAnnouncements}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalNoticesData: { ...data, showGlobalAnnouncements: e.target.checked },
-                    })
-                  }
-                  className="rounded"
-                />
-                Show Global Announcements
-              </label>
-            </>
-          );
-        })()}
-
-        {/* Portal Documents properties */}
-        {element.type === "portal_documents" && (() => {
-          const data = {
-            title: "Documents",
-            maxItems: 10,
-            showFileType: true,
-            ...element.portalDocumentsData,
-          };
-
-          return (
-            <>
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Title</label>
-                <input
-                  type="text"
-                  value={data.title}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalDocumentsData: { ...data, title: e.target.value },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Max Items</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={50}
-                  step={1}
-                  value={data.maxItems}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalDocumentsData: { ...data, maxItems: Math.max(1, Number(e.target.value)) },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-
-              <label className="flex items-center gap-2 text-xs text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={data.showFileType}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalDocumentsData: { ...data, showFileType: e.target.checked },
-                    })
-                  }
-                  className="rounded"
-                />
-                Show File Type
-              </label>
-            </>
-          );
-        })()}
-
-        {/* Portal FAQs properties */}
-        {element.type === "portal_faqs" && (() => {
-          const data = {
-            title: "FAQs",
-            maxItems: 10,
-            ...element.portalFaqsData,
-          };
-
-          return (
-            <>
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Title</label>
-                <input
-                  type="text"
-                  value={data.title}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalFaqsData: { ...data, title: e.target.value },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">Max Items</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={50}
-                  step={1}
-                  value={data.maxItems}
-                  onChange={(e) =>
-                    onUpdate(element.id, {
-                      portalFaqsData: { ...data, maxItems: Math.max(1, Number(e.target.value)) },
-                    })
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                />
-              </div>
-            </>
-          );
-        })()}
-
-        {/* Layer Order */}
-        <div>
-          <label className="text-xs text-gray-600 block mb-1">Layer Order</label>
-          <div className="flex gap-2">
-            <button
-              onClick={onBringForward}
-              className="flex-1 px-2 py-1 bg-gray-100 rounded text-xs hover:bg-gray-200"
-            >
-              Forward
-            </button>
-            <button
-              onClick={onSendBackward}
-              className="flex-1 px-2 py-1 bg-gray-100 rounded text-xs hover:bg-gray-200"
-            >
-              Backward
-            </button>
-          </div>
-        </div>
-
-        {/* Actions */}
         <div className="flex gap-2 pt-2 border-t border-gray-200">
           <button
             onClick={onDuplicate}
