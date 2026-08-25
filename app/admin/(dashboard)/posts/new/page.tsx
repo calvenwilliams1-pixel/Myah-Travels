@@ -3,17 +3,23 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import TipTapEditor from "@/components/editor/TipTapEditor";
+import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
+import ModeSelectorModal from "@/components/editor/ModeSelectorModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { createPostAction } from "../actions";
+import { EditorMode } from "@/types/canvas";
+
+type PostStatus = "draft" | "published" | "hidden";
 
 export default function NewPostPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<EditorMode | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
-  const [status, setStatus] = useState("draft");
+  const [status, setStatus] = useState<PostStatus>("draft");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,31 +29,44 @@ export default function NewPostPage() {
       return;
     }
 
-    setIsSaving(true);
-    setError(null);
+    try {
+      setIsSaving(true);
+      setError(null);
 
-    const result = await createPostAction({
-      title,
-      content,
-      excerpt,
-      status,
-    });
+      const result = await createPostAction({
+        title,
+        content,
+        excerpt,
+        status,
+        mode: mode || "story",
+      });
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.postId) {
+        router.push(`/admin/posts/${result.postId}`);
+      }
+    } catch (err) {
+      console.error("Failed to save post:", err);
+      setError("Failed to save post. Please try again.");
+    } finally {
       setIsSaving(false);
-      return;
     }
+  }
 
-    if (result.postId) {
-      router.push(`/admin/posts/${result.postId}`);
-    }
+  if (!mode) {
+    return <ModeSelectorModal onSelect={setMode} />;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">New Post</h2>
+        <h2 className="text-2xl font-semibold">
+          New Post ({mode === "story" ? "📝 Story" : "🎨 Design"})
+        </h2>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => router.back()}>
             Cancel
@@ -84,9 +103,18 @@ export default function NewPostPage() {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Content
         </label>
-        <TipTapEditor
-          onChange={(html, json) => setContent(json)}
-        />
+
+        {mode === "story" ? (
+          <TipTapEditor
+            onChange={(_html, json) => setContent(JSON.stringify(json))}
+            contentType="post"
+          />
+        ) : (
+          <CanvasEditor
+            contentType="post"
+            onSave={async (docJson) => setContent(JSON.stringify(docJson))}
+          />
+        )}
       </Card>
 
       <Card>
@@ -94,8 +122,12 @@ export default function NewPostPage() {
           Status
         </label>
         <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          value={status}          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "draft" || value === "published" || value === "hidden") {
+              setStatus(value);
+            }
+          }}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
         >
           <option value="draft">Draft</option>
