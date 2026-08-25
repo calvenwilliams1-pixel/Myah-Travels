@@ -1,25 +1,10 @@
-# Final SRS v3.0 - Complete with All Decisions
-
-## Your Final Decisions Locked In
-
-| # | Decision | Your Choice |
-|---|----------|-------------|
-| 1 | Backup Location | Physical storage on mini PC (SSD/HDD) |
-| 2 | 2FA | Include (TOTP via authenticator app) |
-| 3 | Auth Library | Lucia Auth (if best, keep it) |
-| 4 | Privacy Policy | Dedicated page (not hidden, accessible) |
-| 5 | Data Retention | Accept recommended policy |
-
----
-
-# Software Requirements Specification (SRS)
+# SRS v4.0 - Updated with Dual-Mode Editor
 
 ## Myah Travels Website
 
-**Version:** 3.0 (Final for Implementation)  
-**Date:** August 18, 2026  
-**Status:** Final Draft  
-**Author:** [Your Name]  
+**Version:** 4.0 (Post Canvas + Feed + Dual-Mode Editor)
+**Date:** August 25, 2026
+**Status:** Implementation In Progress
 **Stakeholder:** Myah (Travel Writer & Agent)
 
 ---
@@ -31,64 +16,28 @@
 | 1.0 | Aug 18, 2026 | Initial draft |
 | 2.0 | Aug 18, 2026 | Magic links, activity logging, soft deletes, PIPEDA |
 | 3.0 | Aug 18, 2026 | Blocking fixes, 2FA, retention policy, final decisions |
+| 4.0 | Aug 25, 2026 | Canvas Design System, Feed System, Theme System, Dual-Mode Editor |
 
 ---
 
-## Table of Contents
+## Key Changes Since v3.0
 
-1. [Introduction](#1-introduction)
-2. [System Overview](#2-system-overview)
-3. [Architecture Design](#3-architecture-design)
-4. [Database Schema](#4-database-schema-complete)
-5. [Functional Requirements](#5-functional-requirements)
-6. [Admin Interface Specifications](#6-admin-interface-specifications)
-7. [Client Portal Specifications](#7-client-portal-specifications)
-8. [Security Requirements](#8-security-requirements)
-9. [Backup & Recovery](#9-backup--recovery)
-10. [Deployment Process](#10-deployment-process)
-11. [Non-Functional Requirements](#11-non-functional-requirements)
-12. [Acceptance Criteria](#12-acceptance-criteria)
-13. [Data Retention Policy](#13-data-retention-policy)
-14. [Future Roadmap](#14-future-roadmap)
-15. [Decision Rationale](#15-decision-rationale)
+| # | Change | Status |
+|---|--------|--------|
+| 1 | Canvas Design System (Phases 1-15) | ✅ Complete |
+| 2 | Facebook-style feed homepage | ✅ Complete |
+| 3 | Theme system (colors, background, transparency) | ✅ Complete |
+| 4 | Dual-Mode Editor (Story + Design) | 🔄 In Progress |
+| 5 | Rich text in canvas elements | ✅ Complete |
+| 6 | Pin/Highlight feed posts | ✅ Complete |
+| 7 | Password change with brute force protection | ✅ Complete |
+| 8 | Mode selection (story/design) at post creation | ✅ Complete |
 
 ---
 
-## 1. Introduction
+## Section 2: System Overview (Updated)
 
-### 1.1 Purpose
-
-Complete specification for Myah Travels website—a personal brand, blog, and client onboarding platform.
-
-### 1.2 Scope
-
-- Blog and content management
-- Destination guides
-- Product/service reviews
-- YouTube video integration (manual)
-- Client inquiry form and database
-- Client/group portal (magic link access)
-- Admin dashboard
-- Self-hosted on mini PC
-
-### 1.3 Definitions
-
-| Term | Definition |
-|------|------------|
-| Admin | Single user (Myah) with full system access |
-| Portal Member | Person with magic link access to specific portal |
-| Magic Link | Time-limited URL sent via email for portal access |
-| Global Announcement | Message sent to all portal members (formerly "All-Hands") |
-| Soft Delete | Record marked deleted but retained |
-| Anonymize | Strip PII, keep statistical value |
-| 2FA | Two-Factor Authentication (TOTP) |
-| Activity Log | Audit trail of all actions |
-
----
-
-## 2. System Overview
-
-### 2.1 User Roles
+### 2.1 User Roles (Unchanged)
 
 | Role | Access | Authentication |
 |------|--------|----------------|
@@ -96,1004 +45,194 @@ Complete specification for Myah Travels website—a personal brand, blog, and cl
 | Portal Member | Specific portal only | Magic link → Session cookie |
 | Visitor | Public content | None |
 
-### 2.2 Key Design Decisions
+### 2.2 Key Design Decisions (Updated)
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Portal Auth | Magic links (2-step) | No passwords, individual revocation, email-scanner safe |
-| Admin Auth | Lucia Auth + TOTP | Session security + 2FA for PII protection |
-| Backup | Local storage on mini PC | Physical ownership, no cloud costs |
-| Privacy Policy | Dedicated public page | Legal compliance, always accessible |
-| Search | FTS5 with triggers | Always current, better ranking |
-| Soft Delete | 90-day retention | Prevent data loss, control storage growth |
-| Data Retention | Policy-based purge | PIPEDA compliance, storage management |
+| Content Editor | Dual-Mode (Story + Design) | Myah chooses Word-like or Canva-like per post |
+| Canvas Position | Pixel-based at 800px design width | Simpler than ratios, scaled via CSS transform |
+| Responsive | `transform: scale()` | No data model changes needed |
+| Rich Text | TipTap JSON in canvas elements | Full formatting in both modes |
+| Feed | Facebook-style infinite scroll | Single homepage for all content |
+| Theme | Admin-controlled colors/background | Myah customizes site appearance |
+| Storage | SQLite (unchanged) | Already working, no need for flat files |
 
 ---
 
-## 3. Architecture Design
+## New Section 17: Dual-Mode Editor Specification
 
-### 3.1 Technology Stack (Final)
+### 17.1 Mode Selection
 
-| Component | Technology |
-|-----------|------------|
-| Framework | Next.js (App Router, TypeScript) |
-| Database | SQLite (WAL mode, busy_timeout=5000) |
-| ORM | Drizzle |
-| Auth (Admin) | Lucia Auth + TOTP (2FA) |
-| Auth (Portal) | Magic links + session cookies |
-| Editor | TipTap |
-| Email | Resend (with email queue) |
-| Analytics | Cloudflare Web Analytics |
-| Image Processing | Sharp |
-| Search | SQLite FTS5 with triggers |
-| Spam Protection | Cloudflare Turnstile |
-| Deployment | GitHub + SSH script |
-| OS | Ubuntu Server LTS (LUKS full-disk encryption) |
-| Tunnel | Cloudflare Tunnel |
+- Shown once when creating a post/guide/review
+- Two options: **Story** (long-form writing) or **Design** (visual canvas)
+- Mode is **locked** at creation - no conversion
 
-### 3.2 System Architecture
+### 17.2 Story Mode
 
-```
-[Visitor/Client/Admin Browser]
-     ↓ HTTPS
-[Cloudflare Edge] ← DNS, CDN, Analytics, Turnstile
-     ↓ Encrypted Tunnel
-[Mini PC - Ubuntu Server (LUKS encrypted)]
-     ↓
-[Next.js Application]
-     ├── Public Pages (ISR/SSG)
-     ├── Admin Routes (protected)
-     ├── Portal Routes (magic link)
-     └── API Routes
-     ↓
-[SQLite Database (WAL mode)]
-     ├── Application tables
-     ├── FTS5 search index (with triggers)
-     ├── Sessions (Lucia + Portal)
-     └── Email queue
-     ↓
-[File System]
-     ├── Media uploads
-     ├── Backups (local, same disk)
-     └── Logs
-```
+- TipTap-based rich text editor
+- Continuous flowing text
+- Can embed canvas windows inline
+- Canvas windows are fully editable (not static snapshots)
+- Window resize scales internal content
 
----
+### 17.3 Design Mode
 
-## 4. Database Schema (Complete)
+- Full canvas (Canva-style)
+- Fixed design width (800px), infinite height
+- All elements movable, resizable, rotatable
+- Rich text elements with TipTap formatting inside
+- Snap-to-grid + alignment guides
+- Multi-select (shift-click, marquee drag)
+- Grouping (groupId on elements)
 
-### 4.1 Full SQL
+### 17.4 Shared Element Types
 
-```sql
--- ============================================
--- USERS & AUTHENTICATION
--- ============================================
+| Element | Features |
+|---------|----------|
+| Text | Rich text (TipTap), font, color, size, bold/italic, alignment |
+| Image | Upload/URL, crop/reposition, opacity |
+| Shape | Square, circle, diamond, line, fill, border, radius |
+| Button | Label, URL, open-in-new-tab, styling |
+| Checklist | Visual list with checkboxes (interactive) |
+| PDF | Inline preview + download |
+| Divider | Horizontal line |
+| Portal Dates | Shows departure/return/countdown |
+| Portal Notices | Shows notices with filtering |
+| Portal Documents | Shows documents with download |
+| Portal FAQs | Shows FAQs with expand/collapse |
 
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    totp_secret TEXT, -- Encrypted TOTP secret for 2FA
-    totp_enabled BOOLEAN DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP,
-    deleted_at TIMESTAMP
-);
+### 17.5 Shared Styling
 
--- Lucia Auth sessions
-CREATE TABLE sessions (
-    id TEXT PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
+Every element supports:
+- Fill color (full hex picker)
+- Border width + color
+- Border radius
+- Transparency (opacity)
+- Font (text elements)
+- Text color
+- Text size
+- Bold/italic/alignment
+- Layer controls (forward/backward)
 
--- Portal sessions (after magic link exchange)
-CREATE TABLE portal_sessions (
-    id TEXT PRIMARY KEY,
-    portal_id INTEGER NOT NULL,
-    member_id INTEGER NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (portal_id) REFERENCES portals(id),
-    FOREIGN KEY (member_id) REFERENCES portal_members(id)
-);
+### 17.6 Page Styling
 
--- ============================================
--- ACTIVITY LOG
--- ============================================
+Both modes support:
+- Background color
+- Background image
+- Background transparency
+- Page padding
 
-CREATE TABLE activity_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    action_type TEXT NOT NULL,
-    entity_type TEXT NOT NULL,
-    entity_id INTEGER,
-    details TEXT,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+### 17.7 Templates
 
-CREATE INDEX idx_activity_log_created ON activity_log(created_at);
-CREATE INDEX idx_activity_log_entity ON activity_log(entity_type, entity_id);
-CREATE INDEX idx_activity_log_action ON activity_log(action_type);
+- Save as template captures snapshot of elements
+- Applying template copies elements as editable starting point
+- Templates are independent (editing post doesn't affect template)
+- Stored in template picker/manager UI
 
--- ============================================
--- CONTENT
--- ============================================
+### 17.8 Undo/Redo
 
-CREATE TABLE categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    description TEXT,
-    is_visible BOOLEAN DEFAULT 1,
-    sort_order INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
-);
+- Global undo stack (capped 50)
+- Ctrl+Z / Ctrl+Y
+- Nudge operations create undo points
 
-CREATE TABLE tags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+### 17.9 Keyboard Shortcuts
 
-CREATE TABLE posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    content TEXT NOT NULL, -- TipTap JSON
-    excerpt TEXT,
-    featured_image TEXT,
-    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden', 'scheduled')),
-    scheduled_at TIMESTAMP,
-    published_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    seo_title TEXT,
-    seo_description TEXT,
-    is_visible BOOLEAN DEFAULT 1
-);
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+Z | Undo |
+| Ctrl+Y / Ctrl+Shift+Z | Redo |
+| Ctrl+C / Ctrl+V | Copy/paste |
+| Delete/Backspace | Delete selected |
+| Arrow keys | Nudge (1px or 10px with shift) |
+| Escape | Deselect all |
 
-CREATE TABLE guides (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    content TEXT NOT NULL, -- TipTap JSON
-    excerpt TEXT,
-    featured_image TEXT,
-    header_image TEXT,
-    quick_reference TEXT, -- JSON
-    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden', 'scheduled')),
-    scheduled_at TIMESTAMP,
-    published_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    seo_title TEXT,
-    seo_description TEXT,
-    is_visible BOOLEAN DEFAULT 1
-);
+### 17.10 Autosave
 
-CREATE TABLE reviews (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    content TEXT NOT NULL, -- TipTap JSON
-    excerpt TEXT,
-    featured_image TEXT,
-    review_type TEXT NOT NULL CHECK (review_type IN ('product', 'hotel', 'cruise', 'resort', 'excursion')),
-    rating_overall INTEGER,
-    rating_value INTEGER,
-    rating_quality INTEGER,
-    rating_comfort INTEGER,
-    rating_family INTEGER,
-    pros TEXT,
-    cons TEXT,
-    would_recommend TEXT CHECK (would_recommend IN ('yes', 'no', 'depends')),
-    final_verdict TEXT,
-    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden', 'scheduled')),
-    scheduled_at TIMESTAMP,
-    published_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    seo_title TEXT,
-    seo_description TEXT,
-    is_visible BOOLEAN DEFAULT 1
-);
-
-CREATE TABLE videos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    youtube_url TEXT NOT NULL,
-    youtube_id TEXT UNIQUE NOT NULL,
-    title TEXT,
-    description TEXT,
-    thumbnail_url TEXT,
-    category_id INTEGER,
-    is_featured BOOLEAN DEFAULT 0,
-    status TEXT DEFAULT 'published',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id)
-);
-
--- ============================================
--- TAGGING & RELATIONSHIPS
--- ============================================
-
-CREATE TABLE post_tags (
-    post_id INTEGER NOT NULL,
-    tag_id INTEGER NOT NULL,
-    PRIMARY KEY (post_id, tag_id),
-    FOREIGN KEY (post_id) REFERENCES posts(id),
-    FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
-
-CREATE TABLE guide_tags (
-    guide_id INTEGER NOT NULL,
-    tag_id INTEGER NOT NULL,
-    PRIMARY KEY (guide_id, tag_id),
-    FOREIGN KEY (guide_id) REFERENCES guides(id),
-    FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
-
-CREATE TABLE review_tags (
-    review_id INTEGER NOT NULL,
-    tag_id INTEGER NOT NULL,
-    PRIMARY KEY (review_id, tag_id),
-    FOREIGN KEY (review_id) REFERENCES reviews(id),
-    FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
-
-CREATE TABLE related_content (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_type TEXT NOT NULL,
-    source_id INTEGER NOT NULL,
-    target_type TEXT NOT NULL,
-    target_id INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ============================================
--- CLIENTS & INQUIRIES
--- ============================================
-
-CREATE TABLE clients (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name TEXT NOT NULL,
-    phone TEXT,
-    email TEXT,
-    how_found TEXT,
-    destination TEXT,
-    trip_duration_days INTEGER,
-    departure_month_year TEXT,
-    return_month_year TEXT,
-    best_time_to_contact TEXT,
-    consent_to_contact BOOLEAN DEFAULT 0,
-    consent_given_at TIMESTAMP,
-    consent_ip TEXT,
-    consent_version TEXT, -- e.g., 'privacy-policy-v1'
-    custom_statement TEXT,
-    notes TEXT,
-    status TEXT DEFAULT 'new',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP,
-    deleted_at TIMESTAMP,
-    is_anonymized BOOLEAN DEFAULT 0,
-    anonymized_at TIMESTAMP
-);
-
-CREATE INDEX idx_clients_email ON clients(email) WHERE deleted_at IS NULL;
-CREATE INDEX idx_clients_phone ON clients(phone) WHERE deleted_at IS NULL;
-CREATE INDEX idx_clients_created ON clients(created_at);
-CREATE INDEX idx_clients_departure ON clients(departure_month_year);
-
-CREATE TABLE client_attachments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    client_id INTEGER NOT NULL,
-    file_path TEXT NOT NULL,
-    file_name TEXT,
-    file_type TEXT,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (client_id) REFERENCES clients(id)
-);
-
-CREATE TABLE client_merges (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    primary_client_id INTEGER NOT NULL,
-    merged_client_id INTEGER NOT NULL,
-    merged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (primary_client_id) REFERENCES clients(id),
-    FOREIGN KEY (merged_client_id) REFERENCES clients(id)
-);
-
--- ============================================
--- PORTALS
--- ============================================
-
-CREATE TABLE portals (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    is_active BOOLEAN DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    archived_at TIMESTAMP,
-    deleted_at TIMESTAMP
-);
-
-CREATE TABLE portal_members (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    portal_id INTEGER NOT NULL,
-    email TEXT NOT NULL,
-    name TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (portal_id) REFERENCES portals(id)
-);
-
-CREATE TABLE portal_magic_links (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    portal_id INTEGER NOT NULL,
-    member_id INTEGER NOT NULL,
-    token TEXT UNIQUE NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    used_at TIMESTAMP,
-    revoked_at TIMESTAMP, -- NEW: invalidation support
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (portal_id) REFERENCES portals(id),
-    FOREIGN KEY (member_id) REFERENCES portal_members(id)
-);
-
-CREATE TABLE portal_notices (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    portal_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    is_pinned BOOLEAN DEFAULT 0,
-    is_global_announcement BOOLEAN DEFAULT 0, -- Renamed from all_hands
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (portal_id) REFERENCES portals(id)
-);
-
-CREATE TABLE portal_documents (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    portal_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    file_path TEXT NOT NULL,
-    file_name TEXT,
-    file_type TEXT,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (portal_id) REFERENCES portals(id)
-);
-
-CREATE TABLE portal_faqs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    portal_id INTEGER NOT NULL,
-    question TEXT NOT NULL,
-    answer TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (portal_id) REFERENCES portals(id)
-);
-
--- ============================================
--- EMAIL SYSTEM
--- ============================================
-
-CREATE TABLE email_queue (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    to_email TEXT NOT NULL,
-    subject TEXT NOT NULL,
-    body TEXT NOT NULL,
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
-    attempts INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    sent_at TIMESTAMP
-);
-
-CREATE TABLE email_suppressions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE NOT NULL,
-    suppressed_type TEXT NOT NULL, -- 'global_announcement', 'all_emails'
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ============================================
--- MEDIA & SETTINGS
--- ============================================
-
-CREATE TABLE media (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    file_path TEXT NOT NULL,
-    file_name TEXT,
-    file_type TEXT,
-    file_size INTEGER,
-    folder TEXT,
-    alt_text TEXT,
-    caption TEXT,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
-);
-
-CREATE INDEX idx_media_folder ON media(folder) WHERE deleted_at IS NULL;
-
-CREATE TABLE certifications (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    organization TEXT,
-    year_earned TEXT,
-    image_path TEXT,
-    display_order INTEGER DEFAULT 0,
-    is_visible BOOLEAN DEFAULT 1,
-    deleted_at TIMESTAMP
-);
-
-CREATE TABLE settings (
-    key TEXT PRIMARY KEY,
-    value TEXT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE pages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    content TEXT NOT NULL,
-    is_visible BOOLEAN DEFAULT 1, -- Privacy Policy visible by default
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
-);
-
-CREATE TABLE redirects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    old_slug TEXT UNIQUE NOT NULL,
-    new_slug TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (old_slug != new_slug) -- Prevent loops
-);
-
-CREATE TABLE revisions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content_type TEXT NOT NULL,
-    content_id INTEGER NOT NULL,
-    revision_data TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ============================================
--- SEARCH (FTS5 with Triggers)
--- ============================================
-
-CREATE VIRTUAL TABLE search_index USING fts5(
-    title,
-    content,
-    content_type,
-    content_id,
-    tokenize = 'porter'
-);
-
--- Posts triggers
-CREATE TRIGGER posts_ai AFTER INSERT ON posts BEGIN
-  INSERT INTO search_index (rowid, title, content, content_type, content_id)
-  VALUES (new.id, new.title, new.content, 'post', new.id);
-END;
-
-CREATE TRIGGER posts_au AFTER UPDATE ON posts BEGIN
-  UPDATE search_index SET title = new.title, content = new.content
-  WHERE content_type = 'post' AND content_id = new.id;
-END;
-
-CREATE TRIGGER posts_ad AFTER DELETE ON posts BEGIN
-  DELETE FROM search_index WHERE content_type = 'post' AND content_id = old.id;
-END;
-
--- Guides triggers
-CREATE TRIGGER guides_ai AFTER INSERT ON guides BEGIN
-  INSERT INTO search_index (rowid, title, content, content_type, content_id)
-  VALUES (new.id, new.title, new.content, 'guide', new.id);
-END;
-
-CREATE TRIGGER guides_au AFTER UPDATE ON guides BEGIN
-  UPDATE search_index SET title = new.title, content = new.content
-  WHERE content_type = 'guide' AND content_id = new.id;
-END;
-
-CREATE TRIGGER guides_ad AFTER DELETE ON guides BEGIN
-  DELETE FROM search_index WHERE content_type = 'guide' AND content_id = old.id;
-END;
-
--- Reviews triggers
-CREATE TRIGGER reviews_ai AFTER INSERT ON reviews BEGIN
-  INSERT INTO search_index (rowid, title, content, content_type, content_id)
-  VALUES (new.id, new.title, new.content, 'review', new.id);
-END;
-
-CREATE TRIGGER reviews_au AFTER UPDATE ON reviews BEGIN
-  UPDATE search_index SET title = new.title, content = new.content
-  WHERE content_type = 'review' AND content_id = new.id;
-END;
-
-CREATE TRIGGER reviews_ad AFTER DELETE ON reviews BEGIN
-  DELETE FROM search_index WHERE content_type = 'review' AND content_id = old.id;
-END;
-```
-
-### 4.2 PRAGMA Settings
-
-```sql
-PRAGMA journal_mode = WAL;
-PRAGMA busy_timeout = 5000;
-PRAGMA foreign_keys = ON;
-PRAGMA synchronous = NORMAL;
-```
+- 2s debounce
+- Shows "Saving..." / "Saved" / "Save failed" status
+- Flush on unmount
 
 ---
 
-## 5. Functional Requirements
+## New Section 18: Feed System Specification
 
-*(Same as V2 with the following additions/modifications)*
+### 18.1 Homepage Feed
 
-### 5.12 New: Two-Factor Authentication (Admin)
+- Infinite scroll (IntersectionObserver)
+- Card-based layout
+- Mixed content types (posts, guides, reviews)
+- Pinned posts stay at top
+- Highlighted posts have visual distinction
 
-| ID | Requirement |
-|----|-------------|
-| FR-2FA1 | Admin login requires username + password + TOTP code |
-| FR-2FA2 | TOTP secret configured during initial setup |
-| FR-2FA3 | Backup codes provided (10 one-time use codes) |
-| FR-2FA4 | QR code display for authenticator app setup |
-| FR-2FA5 | Rate limiting on TOTP attempts |
+### 18.2 Filters
 
-### 5.13 New: Global Announcements (Renamed from All-Hands)
+| Filter | Options |
+|--------|---------|
+| Content type | All, Posts, Guides, Reviews |
+| Category | All topics + category chips |
+| Sort | Newest, Oldest, Pinned First |
 
-| ID | Requirement |
-|----|-------------|
-| FR-GA1 | Admin can send Global Announcement to all portal members |
-| FR-GA2 | Members can opt out via email_suppressions table |
-| FR-GA3 | Opt-out is global (across all portals) |
-| FR-GA4 | Portal-specific notices cannot be opted out |
-| FR-GA5 | Emails queued and sent asynchronously |
+### 18.3 Pin/Highlight
 
-### 5.14 New: Magic Link Security
-
-| ID | Requirement |
-|----|-------------|
-| FR-ML1 | Magic link GET endpoint shows landing page (does not consume token) |
-| FR-ML2 | POST endpoint consumes token and sets session |
-| FR-ML3 | Regenerating link revokes all previous unused links |
-| FR-ML4 | Token expiry: 7 days |
-| FR-ML5 | Session expiry: 30 days |
-| FR-ML6 | Rate limiting on token validation (5/hour/IP) |
-| FR-ML7 | Token usage logged with IP and user agent |
+- Admin toggles from post list
+- Pin = stays at top of feed
+- Highlight = visual badge/border
+- Multiple pins allowed (ordered by pinnedAt)
 
 ---
 
-## 6. Admin Interface Specifications
+## New Section 19: Theme System Specification
 
-*(Same as V2 with additions)*
+### 19.1 Colors
 
-### 6.9 Two-Factor Authentication Setup
+- Primary color (hex)
+- Secondary color (hex)
+- Accent color (hex)
+- Background color (hex)
 
-**First Login Flow:**
-1. Enter username + password
-2. System shows QR code
-3. Admin scans with authenticator app
-4. Enters 6-digit code to verify
-5. System saves TOTP secret
-6. System displays 10 backup codes
-7. Admin stores backup codes securely
+### 19.2 Background
 
-**Subsequent Logins:**
-1. Username + password
-2. 6-digit TOTP code
-3. Access granted
+- Background image upload
+- Background transparency slider
+- Background color behind image
 
-**Backup Code Login:**
-- "Use backup code" link
-- Enter one of 10 backup codes
-- Code is single-use, marked as used
+### 19.3 Admin Controls
 
-### 6.10 Email Queue Dashboard
-
-- View pending/sent/failed emails
-- Retry failed emails
-- Delete queued emails
-- See queue status
+- Settings page has color pickers
+- Background image path input
+- Transparency range slider
+- Changes apply immediately (with revalidation)
 
 ---
 
-## 7. Client Portal Specifications
+## Updated Section 14: Future Roadmap
 
-### 7.1 Magic Link Flow (Updated - 2-Step)
-
-**Email received:**
-```
-Subject: Your [Portal Name] Access Link
-
-Click below to access your trip portal:
-[Link: /portal/access/[token]]
-
-This link expires in 7 days.
-```
-
-**Step 1 - GET /portal/access/[token]:**
-- Token validated (not consumed)
-- Landing page displayed:
-  ```
-  "Welcome to [Portal Name]"
-  [Continue to Portal] button
-  ```
-
-**Step 2 - POST /portal/consume/[token]:**
-- Token validated again
-- Token marked as used
-- Portal session created (30 days)
-- Redirect to portal dashboard
-
-**Session Expiry:**
-- Portal shows "Session expired"
-- "Request new access link" button
-- Button emails admin (or auto-sends new link)
-
-### 7.2 Global Announcement Display
-
-- Global announcements shown at top of every portal
-- Marked with "Global Announcement" badge
-- Cannot be dismissed (but members can opt out of email notifications)
-
----
-
-## 8. Security Requirements
-
-### 8.1 Admin Authentication
-
-| Requirement | Specification |
-|-------------|---------------|
-| Password | bcrypt (cost factor 12) |
-| 2FA | TOTP (RFC 6238) |
-| Backup codes | 10 single-use |
-| Session | Lucia Auth, 30 days |
-| Lockout | IP-based rate limiting (10/hour) |
-| TOTP rate limiting | 5 attempts per 15 minutes |
-
-### 8.2 Portal Authentication
-
-| Requirement | Specification |
-|-------------|---------------|
-| Magic link token | 256-bit random, URL-safe base64 |
-| Token expiry | 7 days |
-| Token consumption | Two-step (GET landing, POST consume) |
-| Token revocation | Regeneration invalidates previous |
-| Session | 30 days |
-| Rate limiting | 5 token validations/hour/IP |
-
-### 8.3 Data Protection (PIPEDA)
-
-| Requirement | Implementation |
-|-------------|----------------|
-| Consent logging | timestamp + IP + version |
-| Right to deletion | Anonymize (default) + Hard delete (confirm) |
-| Data minimization | DOB not collected |
-| Privacy policy | Dedicated public page |
-| Activity log | Full audit trail |
-| Retention policy | See Section 13 |
-
-### 8.4 File Upload Validation
-
-| Type | Allowed | Max Size |
-|------|---------|----------|
-| Images | JPG, PNG, WebP | 10MB |
-| Documents | PDF, DOCX, XLSX, TXT | 20MB |
-| Blocked | EXE, JS, BAT, VBS, MSI, SCR | N/A |
-
----
-
-## 9. Backup & Recovery
-
-### 9.1 Backup Location
-
-**Primary:** Local storage on mini PC (same physical disk as production)
-
-**Rationale:** Physical ownership, no cloud costs. Full-disk encryption (LUKS) protects against physical theft.
-
-**Risk Accepted:** Single point of failure. If disk dies, both production and backup lost.
-
-**Mitigation:** 
-- High-quality SSD
-- SMART monitoring for disk health
-- Git content backup (offsite for content only)
-
-### 9.2 Backup Schedule
-
-| Type | Frequency | Method |
-|------|-----------|--------|
-| Database | Nightly 2:00 AM | `VACUUM INTO` |
-| Media | Nightly 2:30 AM | rsync |
-| Full system | Weekly Sunday 3:00 AM | tar |
-| Git content | On publish | git push |
-
-### 9.3 Backup Implementation
-
-```bash
-#!/bin/bash
-# backup.sh - Runs nightly
-
-DATE=$(date +%Y-%m-%d)
-BACKUP_DIR=/backups
-
-# Database backup (safe method)
-sqlite3 /var/www/site/data/site.db "VACUUM INTO '$BACKUP_DIR/db/site-$DATE.db';"
-
-# Media backup
-rsync -av --delete /var/www/site/public/uploads/ $BACKUP_DIR/media/
-
-# Cleanup old backups (30 days)
-find $BACKUP_DIR/db/ -name "*.db" -mtime +30 -delete
-find $BACKUP_DIR/media/ -mtime +30 -delete
-
-# Weekly full system (Sunday only)
-if [ $(date +%u) -eq 7 ]; then
-    tar -czf $BACKUP_DIR/system/system-$DATE.tar.gz \
-        /var/www/site/ \
-        /etc/nginx/ \
-        /etc/systemd/system/
-    find $BACKUP_DIR/system/ -mtime +90 -delete
-fi
-```
-
----
-
-## 10. Deployment Process
-
-*(Same as V2)*
-
----
-
-## 11. Non-Functional Requirements
-
-*(Same as V2 with additions)*
-
-### 11.6 Data Retention Compliance
-
-- All data retention follows Section 13 policy
-- Automated cron jobs purge expired data
-- Activity log records all purges
-- Anonymization preserves statistical data
-
----
-
-## 12. Acceptance Criteria
-
-*(Same as V2 with additions)*
-
-### 12.5 Security Criteria
-
-- [ ] 2FA required for admin login
-- [ ] Backup codes work
-- [ ] Magic link two-step flow prevents scanner consumption
-- [ ] Regenerating magic link invalidates old links
-- [ ] Email queue processes asynchronously
-- [ ] FTS5 search returns relevant results
-- [ ] Soft-deleted records restorable within 90 days
-- [ ] Activity log captures all specified actions
-- [ ] Rate limiting functional
-- [ ] File upload validation blocks malicious types
-
----
-
-## 13. Data Retention Policy
-
-### 13.1 Retention Schedule
-
-| Data Type | Retention Period | After Period |
-|-----------|------------------|--------------|
-| Active clients (contacted/booked) | Indefinite (while active) | Anonymize after 7 years |
-| Inactive leads (no contact) | 2 years | Anonymize |
-| Booked clients (completed travel) | 7 years | Anonymize |
-| Activity logs | 12 months in DB | Archive to file |
-| Archived logs | 24 months total | Delete |
-| Soft-deleted records | 90 days | Hard purge |
-| Portal magic links | 7 days | Delete |
-| Portal sessions | 30 days | Delete |
-| Email queue sent | 30 days | Delete |
-| Email queue failed | 90 days | Delete |
-| Revisions | Indefinite | Keep (small storage) |
-| Media files | Until deleted | Soft delete → 90 days → purge |
-
-### 13.2 Automated Jobs
-
-```bash
-# Daily cron (3:00 AM)
-0 3 * * * /var/www/site/scripts/cleanup-daily.sh
-
-# Weekly cron (Sunday 4:00 AM)
-0 4 * * 0 /var/www/site/scripts/cleanup-weekly.sh
-
-# cleanup-daily.sh
-# - Delete expired magic links (>7 days)
-# - Delete expired portal sessions (>30 days)
-# - Delete sent emails (>30 days)
-# - Purge soft-deleted records (>90 days)
-
-# cleanup-weekly.sh
-# - Archive activity logs (>12 months)
-# - Delete archived logs (>24 months)
-# - Anonymize inactive leads (>2 years no contact)
-```
-
----
-
-## 14. Future Roadmap
-
-### Phase 2 (Post-Launch)
-- Facebook integration
+### Phase 2 (Post-Launch) - Updated
+- ~~Facebook integration~~ (removed - feed system built)
 - Amazon book links
 - Portal member reply capability
-- Advanced analytics
+- Cross-post copy/paste (P1-5)
+- Right-click context menu (P1-4)
+- Triangle shape (P1-3)
+- Mobile touch editing (P2-2)
+- Per-element undo/redo (P2-3)
 
 ### Phase 3 (Long-term)
 - Multiple admin accounts
 - Email newsletter
 - Client document upload to portal
 
-### Not Planned
-- Multi-language
-- Multi-agent
-- Booking engine
-- Payment processing
-- Mobile app
+---
+
+## Updated Next Steps
+
+1. Complete P1 (triangle, context menu, cross-post copy/paste)
+2. Local testing of all P0 + P1 features
+3. Database migration for mode field
+4. Fix any compile errors
+5. User acceptance testing with Myah
+6. Deploy to mini PC
 
 ---
 
-## 15. Decision Rationale
-
-### 15.1 Two-Factor Authentication (New)
-
-**Decision:** Include TOTP 2FA for admin
-
-**Rationale:**
-- Single admin account holds client PII
-- Password alone is vulnerable to reuse/guessing
-- TOTP adds minimal friction (6-digit code from phone)
-- PIPEDA compliance benefits
-- Backup codes prevent lockout
-
-### 15.2 Backup: Local Only (New)
-
-**Decision:** Backups stored on same physical disk
-
-**Rationale:**
-- Zero ongoing costs
-- Physical ownership of all data
-- LUKS full-disk encryption protects against theft
-- Risk accepted: single point of failure
-- Mitigated by SMART monitoring + Git content backup
-
-### 15.3 Privacy Policy: Dedicated Page (Revised)
-
-**Decision:** Privacy policy as dedicated public page
-
-**Rationale:**
-- Legal compliance requires accessibility
-- Always visible in footer
-- Not hidden by default
-- Editable content in admin
-
-### 15.4 Magic Link Two-Step (New)
-
-**Decision:** Two-step magic link flow (GET landing + POST consume)
-
-**Rationale:**
-- Email security scanners (Outlook SafeLinks, Gmail prefetch) automatically follow links
-- If GET consumes token, scanners burn it before client sees email
-- Landing page requires explicit user action
-- Standard pattern for email-based authentication
-
-### 15.5 Global Announcement Rename (Revised)
-
-**Decision:** Rename "All-Hands" to "Global Announcement"
-
-**Rationale:**
-- "All-Hands" is corporate jargon
-- "Global Announcement" is clearer for travel clients
-- Better UX for non-technical users
-
-### 15.6 Email Queue (New)
-
-**Decision:** Asynchronous email queue
-
-**Rationale:**
-- Prevents API timeouts with many recipients
-- Handles Resend rate limits gracefully
-- Retry logic for failed sends
-- Better observability
-
----
-
-## End of Final SRS
-
-**Status:** READY FOR IMPLEMENTATION
-
-**Summary of All Changes from V1 to V3:**
-- Magic link portal auth (2-step)
-- 2FA for admin
-- Activity logging
-- Soft deletes with 90-day purge
-- Data retention policy
-- FTS5 search with triggers
-- Email queue system
-- Global announcement rename
-- Consent versioning
-- Lucia Auth sessions table
-- Portal sessions table
-- Magic link revocation
-- Backup method (VACUUM INTO)
-- LUKS full-disk encryption
-- Privacy policy as public page
-- File upload validation whitelist
-
-**Next Steps:**
-1. Initialize Next.js repository
-2. Set up Drizzle ORM
-3. Run initial database migration
-4. Build admin authentication (Lucia + 2FA)
-5. Build portal magic link system
-6. Build content management
-7. Build client inquiry system
-8. Build portal features
-9. Testing and hardening
-10. Deploy to mini PC
-
----
-
-## 16. Implementation Notes
-
-### 16.1 File Organization
-
-The codebase uses a combined-file approach for utility functions while maintaining Next.js file-based routing conventions.
-
-| File Type | Approach | Rationale |
-|-----------|----------|-----------|
-| Database schema | One file per table | Drizzle ORM convention |
-| Utility functions | Combined `index.ts` per domain | Reduce file count, easier maintenance |
-| Next.js pages | Separate files | File-based routing requirement |
-| API routes | Separate files | File-based routing requirement |
-| UI components | Separate files | Independent imports |
-| Shell scripts | Separate files | Independently executable |
-| Email templates | Combined `templates.ts` | String functions, related |
-
-### 16.2 Key Implementation Files
-
-| File | Contents |
-|------|----------|
-| `lib/security/index.ts` | Rate limiting, validation, headers |
-| `lib/auth/index.ts` | Lucia setup, TOTP, password, session |
-| `lib/email/index.ts` | Resend integration, queue |
-| `lib/email/templates.ts` | All email templates |
-| `lib/content/index.ts` | Posts, guides, reviews, tags, categories |
-| `lib/media/index.ts` | Upload, optimize, folders, usage |
-| `lib/portal/index.ts` | Magic links, sessions, notices, documents |
-| `lib/clients/index.ts` | Inquiries, merge, anonymize |
-| `lib/settings/index.ts` | Site, navigation, homepage, colors, fonts |
-| `lib/logging/index.ts` | Activity logging, middleware |
-| `lib/jobs/index.ts` | Scheduled tasks, email processor, retention |
-
-### 16.3 Status Reference
-
-Current implementation status is tracked in CODE-PLAN.md and TODO.md.
-
-- Segment 0: ✅ Complete
-- Segment 1: ✅ Complete
-- Segment 1.5: In Progress
-- Segments 2-15: Pending
+**Status:** IN PROGRESS - Phase 16 P1 partial complete
