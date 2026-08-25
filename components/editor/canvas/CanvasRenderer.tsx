@@ -1,6 +1,8 @@
 import React from "react";
 import { CanvasDocument, PortalRuntimeData } from "@/types/canvas";
 import PortalElementRenderer from "@/components/canvas/PortalElementRenderer";
+import { generateHTML } from "@tiptap/html";
+import StarterKit from "@tiptap/starter-kit";
 
 interface CanvasRendererProps {
   document: CanvasDocument;
@@ -10,6 +12,7 @@ interface CanvasRendererProps {
 function sanitizeUrl(url: string | undefined): string {
   if (!url) return "#";
   const safe = url.trim().toLowerCase();
+  if (
   if (
     safe.startsWith("http://") ||
     safe.startsWith("https://") ||
@@ -35,7 +38,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
         style={{
           width: document.canvas.width,
           height: document.canvas.height,
-          background: document.canvas.background || "#ffffff",
+          background: document.canvas.background ?? "#ffffff",
         }}
       >
         {sortedElements.map((el) => {
@@ -50,7 +53,26 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
           };
 
           switch (el.type) {
-            case "text":
+            case "text": {
+              let textContent: React.ReactNode = el.text ?? "";
+
+              if (el.richText) {
+                try {
+                  const richDoc = JSON.parse(el.richText);
+                  if (richDoc.type === "doc" && Array.isArray(richDoc.content)) {
+                    const html = generateHTML(richDoc, [StarterKit]);
+                    textContent = (
+                      <div
+                        className="rich-text-content"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                      />
+                    );
+                  }
+                } catch {
+                  // fall through to plain text
+                }
+              }
+
               return (
                 <div
                   key={el.id}
@@ -68,17 +90,17 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                     opacity: el.opacity ?? 1,
                   }}
                 >
-                  {el.text ?? ""}
+                  {textContent}
                 </div>
               );
-
+            }
             case "image":
               if (!el.src && !el.assetId) return null;
               return (
                 <img
                   key={el.id}
-                  src={el.src || `/api/assets/${el.assetId}`}
-                  alt={el.altText || ""}
+                  src={el.src ?? `/api/assets/${el.assetId}`}
+                  alt={el.altText ?? ""}
                   loading="lazy"
                   style={{
                     ...baseStyle,
@@ -133,6 +155,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
               const safeLink = sanitizeUrl(el.link);
               const normalizedLink = safeLink.toLowerCase();
               const isExternal =
+              const isExternal =
                 normalizedLink.startsWith("http://") ||
                 normalizedLink.startsWith("https://");
               const shouldOpenNewTab = el.openInNewTab ?? isExternal;
@@ -142,7 +165,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   href={safeLink}
                   target={shouldOpenNewTab ? "_blank" : undefined}
                   rel={shouldOpenNewTab ? "noopener noreferrer" : undefined}
-                  aria-label={el.text || "Learn More"}
+                  aria-label={el.text ?? "Learn More"}
                   style={{
                     ...baseStyle,
                     backgroundColor: el.backgroundColor ?? "#4a7c59",
@@ -181,7 +204,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                     <li
                       key={i}
                       style={{
-                        fontSize: el.fontSize || 16,
+                        fontSize: el.fontSize ?? 16,
                         color: el.color ?? "#333333",
                         overflowWrap: "break-word",
                         wordBreak: "break-word",
@@ -209,13 +232,13 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   <div className="space-y-1">
                     {checklistItems.map((item, index) => (
                       <div
-                        key={item.id || `${el.id}-${index}`}
+                        key={item.id ?? `${el.id}-${index}`}
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 8,
                           fontSize: el.fontSize ?? 16,
-                          color: el.color || "#333333",
+                          color: el.color ?? "#333333",
                         }}
                       >
                         <span
@@ -283,8 +306,8 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                         <li
                           key={i}
                           style={{
-                            fontSize: el.fontSize || 16,
-                            color: el.color || "#333333",
+                            fontSize: el.fontSize ?? 16,
+                            color: el.color ?? "#333333",
                             overflowWrap: "break-word",
                             wordBreak: "break-word",
                           }}
@@ -311,8 +334,8 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                         <li
                           key={i}
                           style={{
-                            fontSize: el.fontSize || 16,
-                            color: el.color || "#333333",
+                            fontSize: el.fontSize ?? 16,
+                            color: el.color ?? "#333333",
                             overflowWrap: "break-word",
                             wordBreak: "break-word",
                           }}
@@ -328,7 +351,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
 
             case "pdf": {
               if (!el.src && !el.assetId) return null;
-              const fileUrl = el.src || `/api/assets/${el.assetId}`;
+              const fileUrl = el.src ?? `/api/assets/${el.assetId}`;
 
               if (el.displayMode === "download") {
                 return (
@@ -351,7 +374,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   >
                     <span style={{ fontSize: 32 }}>📄</span>
                     <span style={{ fontSize: 14, fontWeight: 500 }}>
-                      {el.fileName || "Download PDF"}
+                      {el.fileName ?? "Download PDF"}
                     </span>
                     <span style={{ fontSize: 12, color: "#4a7c59" }}>
                       Click to Download
@@ -365,7 +388,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                   <iframe
                     key={el.id}
                     src={`${fileUrl}#toolbar=0`}
-                    title={el.fileName || "PDF Viewer"}
+                    title={el.fileName ?? "PDF Viewer"}
                     style={{
                       ...baseStyle,
                       border: "none",
@@ -397,7 +420,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                 >
                   <span style={{ fontSize: 32 }}>📄</span>
                   <span style={{ fontSize: 14, fontWeight: 500 }}>
-                    {el.fileName || "PDF Document"}
+                    {el.fileName ?? "PDF Document"}
                   </span>
                   <span style={{ fontSize: 12, color: "#999" }}>
                     Click to view
@@ -414,7 +437,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                 <div key={el.id} style={baseStyle}>
                   <PortalElementRenderer
                     element={el}
-                    portalData={portalData || {}}
+                    portalData={portalData ?? {}}
                   />
                 </div>
               );
