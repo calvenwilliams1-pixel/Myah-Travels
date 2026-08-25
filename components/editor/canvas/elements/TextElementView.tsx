@@ -26,7 +26,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: safeParseContent(element.richText || element.text || ""),
+    content: safeParseContent(element.richText ?? element.text ?? ""),
     editable: isEditing,
     editorProps: {
       attributes: {
@@ -34,22 +34,32 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
         style: `font-size: ${element.fontSize ?? 16}px; color: ${element.color ?? "#333333"}; font-family: ${element.fontFamily ?? "Inter"}; text-align: ${element.textAlign ?? "left"}; font-weight: ${element.fontWeight ?? "normal"}; white-space: pre-wrap; word-break: break-word;`,
       },
     },
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
+    onBlur: ({ editor }) => {
       const json = JSON.stringify(editor.getJSON());
       onUpdate(element.id, {
         richText: json,
         text: editor.getText(),
       });
+      setIsEditing(false);
     },
   });
 
   useEffect(() => {
-    if (isEditing && editor) {
-      editor.setEditable(true);
+    if (!editor) return;
+    editor.setEditable(isEditing);
+    if (isEditing) {
       editor.commands.focus("end");
     }
   }, [isEditing, editor]);
+
+    useEffect(() => {
+    if (!editor) return;
+    const newContent = safeParseContent(element.richText ?? element.text ?? "");
+    const currentContent = JSON.stringify(editor.getJSON());
+    if (JSON.stringify(newContent) !== currentContent) {
+      editor.commands.setContent(newContent);
+    }
+  }, [editor, element.richText, element.text]);
 
   if (!editor) {
     return (
@@ -62,7 +72,7 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
   return (
     <div
       ref={editorRef}
-      className="w-full h-full cursor-text"
+      className="relative w-full h-full cursor-text"
       style={{
         opacity: element.opacity ?? 1,
       }}
