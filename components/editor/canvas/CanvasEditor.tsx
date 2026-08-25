@@ -23,6 +23,7 @@ import TemplateManager from "./TemplateManager";
 import SaveTemplateModal from "./SaveTemplateModal";
 import PublishControls from "./PublishControls";
 import MarqueeSelection from "./MarqueeSelection";
+import ContextMenu from "./ContextMenu";
 
 interface CanvasEditorProps {
   initialDocument?: string;
@@ -71,6 +72,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
   const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
@@ -644,6 +646,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   e.stopPropagation();
                   handleElementSelect(el, e.shiftKey);
                 }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleElementSelect(el, false);
+                  setContextMenu({ x: e.clientX, y: e.clientY });
+                }}
               >
                 {renderElement(el, updateElement, pushUndo, canvasDoc)}
                 {el.locked === true && (
@@ -800,6 +808,24 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             onClose={() => setShowSaveModal(false)}
           />
         )}
+
+                {/* Context Menu */}
+        {contextMenu && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onClose={() => setContextMenu(null)}
+            onDuplicate={duplicateSelected}
+            onDelete={deleteSelected}
+            onGroup={groupSelected}
+            onUngroup={ungroupSelected}
+            onBringForward={bringForward}
+            onSendBackward={sendBackward}
+            canGroup={selectedIds.length > 1}
+            canUngroup={selectedIds.some((id) => canvasDoc.elements.find((el) => el.id === id)?.groupId)}
+          />
+        )}
+
 
         {showUndoToast && (
           <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm shadow-lg z-50">
