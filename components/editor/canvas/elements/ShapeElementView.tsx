@@ -11,8 +11,8 @@ export default function ShapeElementView({ element }: ShapeElementViewProps) {
   const common: React.CSSProperties = {
     width: "100%",
     height: "100%",
-    backgroundColor: element.fillColor || "#e8b84b",
-    border: `${element.borderWidth || 0}px solid ${element.borderColor || "transparent"}`,
+    backgroundColor: element.fillColor ?? "#e8b84b",
+    border: `${element.borderWidth ?? 0}px solid ${element.borderColor ?? "transparent"}`,
     opacity: element.opacity ?? 1,
   };
 
@@ -35,7 +35,17 @@ export default function ShapeElementView({ element }: ShapeElementViewProps) {
             width: "70%",
             height: "70%",
             margin: "15%",
-            transform: "rotate(45deg)",
+            clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+          }}
+        />
+      );
+
+    case "triangle":
+      return (
+        <div
+          style={{
+            ...common,
+            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
           }}
         />
       );
@@ -45,8 +55,8 @@ export default function ShapeElementView({ element }: ShapeElementViewProps) {
         <div
           style={{
             width: "100%",
-            height: element.thickness || 2,
-            backgroundColor: element.fillColor || "#333",
+            height: element.thickness ?? 2,
+            backgroundColor: element.fillColor ?? "#333",
             opacity: element.opacity ?? 1,
           }}
         />
@@ -57,7 +67,7 @@ export default function ShapeElementView({ element }: ShapeElementViewProps) {
         <div
           style={{
             ...common,
-            borderRadius: element.borderRadius || 0,
+            borderRadius: element.borderRadius ?? 0,
           }}
         />
       );
