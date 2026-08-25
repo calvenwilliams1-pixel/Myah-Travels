@@ -3,7 +3,6 @@
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import {
   verifyPassword,
@@ -22,9 +21,11 @@ async function getRequestContext() {
 }
 
 export async function loginAction(
-  username: string,
-  password: string
-): Promise<{ error?: string; requiresTotp?: boolean }> {
+  formData: FormData
+): Promise<{ error?: string; requiresTotp?: boolean; success?: boolean }> {
+  const username = formData.get("username") as string;
+  const password = formData.get("password") as string;
+
   const { ip, userAgent } = await getRequestContext();
 
   const rateLimitResult = loginRateLimit(ip);
@@ -77,20 +78,20 @@ export async function loginAction(
     "login_success",
     "user",
     foundUser.id,
-    "Login successful with TOTP",
+    "Login successful",
     ip,
     userAgent
   );
 
   return { success: true };
-
-  return { success: true };
 }
 
 export async function verifyTotpAction(
-  username: string,
-  totpCode: string
-): Promise<{ error?: string }> {
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const username = formData.get("username") as string;
+  const totpCode = formData.get("totpCode") as string;
+
   const { ip, userAgent } = await getRequestContext();
 
   const rateLimitResult = loginRateLimit(ip);
@@ -137,5 +138,5 @@ export async function verifyTotpAction(
     userAgent
   );
 
-  redirect("/admin");
+  return { success: true };
 }
