@@ -492,11 +492,9 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     selectedIds.includes(el.id) ? "outline outline-2 outline-emerald-500" : ""
                   }`}
                   style={{
-                    left: el.x,
-                    top: el.y,
                     width: el.width,
                     height: el.height,
-                    transform: `rotate(${el.rotation}deg)`,
+                    transform: `translate(${el.x}px, ${el.y}px) rotate(${el.rotation}deg)`,
                     zIndex: el.zIndex,
                     position: "absolute",
                   }}
