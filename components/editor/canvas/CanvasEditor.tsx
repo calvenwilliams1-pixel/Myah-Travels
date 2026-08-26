@@ -637,9 +637,10 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   selectedIds.includes(el.id) ? "outline outline-2 outline-emerald-500" : ""
                 }`}
                 style={{
+                  left: el.x,
+                  top: el.y,
                   width: el.width,
                   height: el.height,
-                  transform: `translate(${el.x}px, ${el.y}px) rotate(${el.rotation}deg)`,
                   zIndex: el.zIndex,
                   position: "absolute",
                 }}
@@ -654,7 +655,15 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   setContextMenu({ x: e.clientX, y: e.clientY });
                 }}
               >
-                {renderElement(el, updateElement, pushUndo, canvasDoc)}
+                <div
+                  className="w-full h-full"
+                  style={{
+                    transform: `rotate(${el.rotation}deg)`,
+                    transformOrigin: "center center",
+                  }}
+                >
+                  {renderElement(el, updateElement, pushUndo, canvasDoc)}
+                </div>
                 {el.locked === true && (
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs z-10">
                     🔒
