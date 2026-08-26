@@ -683,8 +683,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
               rotatable={true}
               snappable={true}
               elementGuidelines={getGuidelineElements()}
-              bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
-              onDragStart={({ target }) => {
+                           onDragStart={({ target }) => {
                 const id = target.getAttribute("data-element-id");
                 if (!id) return;
                 const el = canvasDoc.elements.find((e) => e.id === id);
@@ -735,18 +734,16 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                 }
                 pushUndo(canvasDoc);
               }}
-              onResize={({ target, width, height, beforeTranslate }) => {
-                const id = target.getAttribute("data-element-id");
-                if (!id) return;
-                const origin = resizeOriginRef.current[id];
-                if (!origin) return;
-                updateElement(id, {
-                  width: Math.round(width),
-                  height: Math.round(height),
-                  x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
-                  y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
-                });
-              }}
+                onResize={({ target, width, height, left, top }) => {
+                  const id = target.getAttribute("data-element-id");
+                  if (!id) return;
+                  updateElement(id, {
+                    width: Math.round(width),
+                    height: Math.round(height),
+                    x: Math.round(left),
+                    y: Math.round(top),
+                  });
+                }}
               onRotateStart={() => {
                 pushUndo(canvasDoc);
               }}

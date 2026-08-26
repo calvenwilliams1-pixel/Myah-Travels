@@ -527,8 +527,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                 rotatable={true}
                 snappable={true}
                 elementGuidelines={getGuidelineElements()}
-                bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
-                onDragStart={({ target }) => {
+                             onDragStart={({ target }) => {
                   const id = target.getAttribute("data-element-id");
                   if (!id || !canvasDoc) return;
                   const el = canvasDoc.elements.find((e) => e.id === id);
@@ -587,16 +586,14 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     isInteractingRef.current = true;
                   }
                 }}
-                onResize={({ target, width, height, beforeTranslate }) => {
+                onResize={({ target, width, height, left, top }) => {
                   const id = target.getAttribute("data-element-id");
                   if (!id) return;
-                  const origin = resizeOriginRef.current[id];
-                  if (!origin) return;
                   updateElement(id, {
                     width: Math.round(width),
                     height: Math.round(height),
-                    x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
-                    y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
+                    x: Math.round(left),
+                    y: Math.round(top),
                   });
                 }}
                 onResizeEnd={() => {
