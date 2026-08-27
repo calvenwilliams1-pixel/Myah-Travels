@@ -104,3 +104,45 @@ The outline offset bug was caused by Moveable being rendered OUTSIDE the canvas 
 npm run dev
 npm run seed
 npm run build
+
+⚠️ TEMPORARY: Auth Disabled For Testing
+Two files were modified to bypass authentication:
+
+middleware.ts - Auth checks disabled (matcher: [])
+
+lib/auth/index.ts - requireAuth() returns first user without session check
+
+How To Revert When Ready For Security
+Step 1: Restore middleware.ts with the REAL version:
+
+tsx
+import { NextRequest, NextResponse } from "next/server";
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  if (!pathname.startsWith("/admin")) {
+    return NextResponse.next();
+  }
+
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
+  const sessionId = req.cookies.get("auth_session")?.value ?? null;
+
+  if (!sessionId) {
+    return NextResponse.redirect(new URL("/admin/login", req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/admin/:path*"],
+};
+Step 2: Restore lib/auth/index.ts with the REAL version.
+
+Step 3: Commit both with message "Restore authentication".
+
+Step 4: Test login flow works again.
