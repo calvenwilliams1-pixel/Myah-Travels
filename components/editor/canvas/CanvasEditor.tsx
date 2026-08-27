@@ -74,10 +74,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [showUndoToast, setShowUndoToast] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
   const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
   const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const moveableRef = useRef<any>(null);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
 
@@ -386,6 +388,16 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   }, [canvasDoc, contentType]);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (moveableRef.current) {
+        moveableRef.current.updateRect();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (
@@ -608,7 +620,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         </div>
 
         <div
-          ref={canvasRef}
+          ref={(node) => { canvasRef.current = node; setContainerEl(node); }}
           className="relative mx-auto bg-white shadow-lg"
           style={{
             width: canvasDoc.canvas.width,
@@ -641,9 +653,10 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   top: el.y,
                   width: el.width,
                   height: el.height,
-                  transform: `rotate(${el.rotation}deg)`,
                   zIndex: el.zIndex,
                   position: "absolute",
+                  transform: `rotate(${el.rotation}deg)`,
+                  transformOrigin: "center center",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -664,20 +677,21 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                 )}
               </div>
             ))}
-        </div>
-
-        {(() => {
+        {containerEl && (() => {
           const moveableTargets = getTargetElements();
           return moveableTargets.length > 0 ? (
             <Moveable
+              key="moveable-ready"
+              ref={moveableRef}
               target={moveableTargets}
+              container={containerEl}
+              rootContainer={containerEl}
               draggable={true}
               resizable={true}
               rotatable={true}
               snappable={true}
               elementGuidelines={getGuidelineElements()}
-              bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
-              onDragStart={({ target }) => {
+                           onDragStart={({ target }) => {
                 const id = target.getAttribute("data-element-id");
                 if (!id) return;
                 const el = canvasDoc.elements.find((e) => e.id === id);
@@ -728,18 +742,12 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                 }
                 pushUndo(canvasDoc);
               }}
-              onResize={({ target, width, height, beforeTranslate }) => {
-                const id = target.getAttribute("data-element-id");
-                if (!id) return;
-                const origin = resizeOriginRef.current[id];
-                if (!origin) return;
-                updateElement(id, {
-                  width: Math.round(width),
-                  height: Math.round(height),
-                  x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
-                  y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
-                });
-              }}
+                onResize={({ target, width, height, drag }) => {
+                  target.style.width = `${width}px`;
+                  target.style.height = `${height}px`;
+                  target.style.left = `${drag.left}px`;
+                  target.style.top = `${drag.top}px`;
+                }}
               onRotateStart={() => {
                 pushUndo(canvasDoc);
               }}
@@ -751,6 +759,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             />
           ) : null;
         })()}
+        </div>
 
         {showLayers && (
           <LayersPanel

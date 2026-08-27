@@ -25,8 +25,9 @@ export default function TextElementView({ element, onUpdate, onBeginEdit }: Text
   const [isEditing, setIsEditing] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
-  const editor = useEditor({
+   const editor = useEditor({
     extensions: [StarterKit],
+    immediatelyRender: false,
     content: safeParseContent(element.richText ?? element.text ?? ""),
     editable: isEditing,
     editorProps: {

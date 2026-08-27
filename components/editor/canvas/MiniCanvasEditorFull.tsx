@@ -25,6 +25,7 @@ interface MiniCanvasEditorFullProps {
 const MAX_HISTORY = 30;
 
 export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanvasEditorFullProps) {
+  const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
   const [canvasDoc, setCanvasDoc] = useState<CanvasDocument | null>(() =>
     parseCanvasDocument(initialJson)
   );
@@ -42,6 +43,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
   const [showProperties, setShowProperties] = useState(true);
   const [showLayers, setShowLayers] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const moveableRef = useRef<any>(null);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
   const isInteractingRef = useRef(false);
@@ -348,6 +350,16 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
   }, [canvasDoc, pushUndo, persistDoc]);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (moveableRef.current) {
+        moveableRef.current.updateRect();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (
@@ -464,7 +476,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
         {/* Canvas area */}
         <div className="flex-1 p-4 bg-gray-100 overflow-auto">
           <div
-            ref={canvasRef}
+            ref={(node) => { canvasRef.current = node; setContainerEl(node); }}
             className="relative bg-white shadow"
             style={{
               width: canvasDoc.canvas.width,
@@ -496,7 +508,6 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     top: el.y,
                     width: el.width,
                     height: el.height,
-                    transform: `rotate(${el.rotation}deg)`,
                     zIndex: el.zIndex,
                     position: "absolute",
                   }}
@@ -505,7 +516,15 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     handleElementSelect(el, e.shiftKey);
                   }}
                 >
-                  {renderElement(el, updateElement, pushUndo, canvasDoc)}
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      transform: `rotate(${el.rotation}deg)`,
+                      transformOrigin: "center center",
+                    }}
+                  >
+                    {renderElement(el, updateElement, pushUndo, canvasDoc)}
+                  </div>
                 </div>
               ))}
           </div>
@@ -514,14 +533,15 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
             const moveableTargets = getTargetElements();
             return moveableTargets.length > 0 ? (
               <Moveable
+                ref={moveableRef}
                 target={moveableTargets}
+                container={containerEl}
                 draggable={true}
                 resizable={true}
                 rotatable={true}
                 snappable={true}
                 elementGuidelines={getGuidelineElements()}
-                bounds={{ left: 0, top: 0, right: canvasDoc.canvas.width, bottom: canvasDoc.canvas.height }}
-                onDragStart={({ target }) => {
+                             onDragStart={({ target }) => {
                   const id = target.getAttribute("data-element-id");
                   if (!id || !canvasDoc) return;
                   const el = canvasDoc.elements.find((e) => e.id === id);
@@ -569,6 +589,9 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                 onDragEnd={() => {
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
+                  if (moveableRef.current) {
+                    moveableRef.current.updateRect();
+                  }
                 }}
                 onResizeStart={({ target }) => {
                   const id = target.getAttribute("data-element-id");
@@ -580,21 +603,26 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     isInteractingRef.current = true;
                   }
                 }}
-                onResize={({ target, width, height, beforeTranslate }) => {
+                onResize={({ target, width, height, drag }) => {
+                  target.style.width = `${width}px`;
+                  target.style.height = `${height}px`;
+                  target.style.left = `${drag.left}px`;
+                  target.style.top = `${drag.top}px`;
+                }}
+                onResizeEnd={({ target }) => {
                   const id = target.getAttribute("data-element-id");
                   if (!id) return;
-                  const origin = resizeOriginRef.current[id];
-                  if (!origin) return;
                   updateElement(id, {
-                    width: Math.round(width),
-                    height: Math.round(height),
-                    x: Math.round(origin.x + (beforeTranslate?.[0] || 0)),
-                    y: Math.round(origin.y + (beforeTranslate?.[1] || 0)),
+                    width: Math.round(target.offsetWidth),
+                    height: Math.round(target.offsetHeight),
+                    x: Math.round(parseFloat(target.style.left)),
+                    y: Math.round(parseFloat(target.style.top)),
                   });
-                }}
-                onResizeEnd={() => {
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
+                  if (moveableRef.current) {
+                    moveableRef.current.updateRect();
+                  }
                 }}
                 onRotateStart={() => {
                   if (canvasDoc && !isInteractingRef.current) {
@@ -642,7 +670,17 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     updateElement(id, { rotation: Math.round(rotation) });
                   });
                 }}
-                                onResizeGroupEnd={() => {
+                                onResizeGroupEnd={({ targets }) => {
+                  targets.forEach((target) => {
+                    const id = target.getAttribute("data-element-id");
+                    if (!id) return;
+                    updateElement(id, {
+                      width: Math.round(target.offsetWidth),
+                      height: Math.round(target.offsetHeight),
+                      x: Math.round(parseFloat(target.style.left)),
+                      y: Math.round(parseFloat(target.style.top)),
+                    });
+                  });
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
                 }}
