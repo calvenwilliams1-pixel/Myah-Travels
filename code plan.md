@@ -1,138 +1,52 @@
-## Update CODE-PLAN.md
-
-**Do this one thing:**
-Click the pencil icon on `CODE-PLAN.md`
-
-**Replace the entire file with:**
-
-```markdown
 # Myah Travels - CODE-PLAN.md (Current)
 
 ## Overview
 
-All 17 original segments COMPLETE. Canvas Design System Phases 1-15 COMPLETE. Phase 16 (Dual-Mode Editor) COMPLETE. Testing pending.
+All 17 original segments COMPLETE. Canvas Phases 1-15 COMPLETE. Phase 16 (Dual-Mode Editor) COMPLETE. Bug fixing in progress.
 
 ---
 
 ## Tech Stack
 
-Next.js 14 App Router, TypeScript, SQLite (better-sqlite3), Drizzle ORM, Tailwind CSS, Lucia Auth, TipTap, react-moveable, DOMPurify
+Next.js 14 App Router, TypeScript, SQLite (better-sqlite3), Drizzle ORM, Tailwind CSS, Lucia Auth, TipTap, react-moveable 0.56.0, DOMPurify
 
 ---
 
-## Completion Status
+## Moveable Fix - Merged
 
-### Original 17 Segments - ✅ COMPLETE
+**Bug:** Moveable outline offset from elements.
 
-### Canvas Design System - ✅ Phases 1-15 COMPLETE
+**Root cause:** Moveable rendered OUTSIDE the canvas div. Moveable's control box uses page coordinates, needs to be inside the positioned container.
 
-### Phase 16: Dual-Mode Editor - ✅ COMPLETE
+**Fix:** Move Moveable JSX inside the canvas container div.
 
-| Priority | Items | Status |
-|----------|-------|--------|
-| P0 | Mode selection, responsive scale, editable canvas, grouping, marquee, color picker, image crop, button new tab | ✅ |
-| P1 | Rich text in canvas, toolbar, triangle, context menu, cross-post copy/paste | ✅ |
-| P2-3 | Story canvas full editor | ✅ |
-| P2-1 | Per-element undo | Skipped |
-| P2-2 | Mobile touch | Deferred |
+**Files:**
+- CanvasEditor.tsx ✅ Fixed
+- MiniCanvasEditorFull.tsx ⏳ Fix ready
 
 ---
 
-## Key Files
+## Remaining Work
 
-### Canvas System
-```
-components/editor/canvas/
-├── CanvasEditor.tsx (grouping, marquee, rich text)
-├── CanvasRenderer.tsx (all elements, DOMPurify)
-├── CanvasScaler.tsx (responsive scale)
-├── MarqueeSelection.tsx
-├── MiniCanvasEditor.tsx (basic)
-├── MiniCanvasEditorFull.tsx (full editing)
-├── ImageCropOverlay.tsx
-├── ElementCatalog.tsx
-├── PropertiesPanel.tsx (ColorPicker, portal props)
-├── LayersPanel.tsx
-├── TemplateManager.tsx
-├── SaveTemplateModal.tsx
-├── PublishControls.tsx
-├── ContextMenu.tsx
-└── elements/ (11 files)
-```
+### High Priority
+1. MiniCanvasEditorFull outline fix (test)
+2. SmartBlock inline editing
+3. Button URL field
+4. Template save freeze
+5. Manage templates empty
+6. Save draft unresponsive
 
-### Editor Integration
-```
-components/editor/
-├── TipTapEditor.tsx
-├── TipTapRenderer.tsx
-├── Toolbar.tsx
-├── CanvasBlockNode.tsx
-├── CanvasBlockComponent.tsx
-├── CanvasBlockRenderer.tsx
-├── InsertCanvasBlockButton.tsx
-└── ModeSelectorModal.tsx
-```
-
-### Feed + Theme
-```
-components/feed/ (6 files)
-components/theme/ThemeProvider.tsx
-components/admin/FeedAdminControls.tsx
-components/ui/ColorPicker.tsx
-components/ErrorBoundary.tsx
-```
-
-### Utilities
-```
-lib/canvas/index.ts
-lib/canvas/parse.ts
-lib/canvas/clipboard.ts
-lib/feed/index.ts
-lib/theme/index.ts
-types/canvas.ts
-```
+### Medium Priority
+7. Colour pickers
+8. Portal properties
+9. Divider styles
+10. Image fill
 
 ---
 
-## Architecture Decisions
+## Testing Setup
 
-| Decision | Choice |
-|----------|--------|
-| Position | Pixel-based at 800px |
-| Responsive | `transform: scale()` |
-| Mode | Locked at creation |
-| Storage | SQLite JSON blobs |
-| Undo/redo | Global (capped 50) |
-| Autosave | 2s debounce |
-| Rich text | TipTap JSON |
-| Grouping | groupId |
-| Clipboard | localStorage |
-
----
-
-## Next Steps
-
-1. Home: git pull
-2. Home: npm install dompurify
-3. Home: database migration
-4. Home: test everything
-5. Phase 17: Fix bugs found in testing
-```
-
----
-
-**Commit this.**
-
----
-
-## All Documentation Updated
-
-| File | Status |
-|------|--------|
-| MASTER-PROMPT.md | ✅ |
-| TODO.md | ✅ |
-| CODE-PLAN.md | ✅ |
-
----
-
-**All code and docs are current. Next: home testing.**
+- Codespaces for testing
+- Auth bypassed (see MASTER-PROMPT)
+- Database recreated via schema.sql + npm run seed
+- .env has dummy Resend key
