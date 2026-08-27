@@ -42,6 +42,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
   const [showProperties, setShowProperties] = useState(true);
   const [showLayers, setShowLayers] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const moveableRef = useRef<any>(null);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
   const isInteractingRef = useRef(false);
@@ -348,6 +349,16 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
   }, [canvasDoc, pushUndo, persistDoc]);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (moveableRef.current) {
+        moveableRef.current.updateRect();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (
@@ -521,6 +532,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
             const moveableTargets = getTargetElements();
             return moveableTargets.length > 0 ? (
               <Moveable
+                ref={moveableRef}
                 target={moveableTargets}
                 draggable={true}
                 resizable={true}

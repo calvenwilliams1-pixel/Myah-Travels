@@ -78,6 +78,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
   const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const moveableRef = useRef<any>(null);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
 
@@ -384,6 +385,16 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
       setSaveStatus("error");
     }
   }, [canvasDoc, contentType]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (moveableRef.current) {
+        moveableRef.current.updateRect();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
