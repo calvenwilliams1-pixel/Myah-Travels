@@ -735,14 +735,10 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                 pushUndo(canvasDoc);
               }}
                 onResize={({ target, width, height, drag }) => {
-                  const id = target.getAttribute("data-element-id");
-                  if (!id) return;
-                  updateElement(id, {
-                    width: Math.round(width),
-                    height: Math.round(height),
-                    x: Math.round(drag.left),
-                    y: Math.round(drag.top),
-                  });
+                  target.style.width = `${width}px`;
+                  target.style.height = `${height}px`;
+                  target.style.left = `${drag.left}px`;
+                  target.style.top = `${drag.top}px`;
                 }}
               onRotateStart={() => {
                 pushUndo(canvasDoc);

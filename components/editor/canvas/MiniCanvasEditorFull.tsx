@@ -587,16 +587,20 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                   }
                 }}
                 onResize={({ target, width, height, drag }) => {
+                  target.style.width = `${width}px`;
+                  target.style.height = `${height}px`;
+                  target.style.left = `${drag.left}px`;
+                  target.style.top = `${drag.top}px`;
+                }}
+                onResizeEnd={({ target }) => {
                   const id = target.getAttribute("data-element-id");
                   if (!id) return;
                   updateElement(id, {
-                    width: Math.round(width),
-                    height: Math.round(height),
-                    x: Math.round(drag.left),
-                    y: Math.round(drag.top),
+                    width: Math.round(target.offsetWidth),
+                    height: Math.round(target.offsetHeight),
+                    x: Math.round(parseFloat(target.style.left)),
+                    y: Math.round(parseFloat(target.style.top)),
                   });
-                }}
-                onResizeEnd={() => {
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
                 }}
@@ -646,7 +650,17 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                     updateElement(id, { rotation: Math.round(rotation) });
                   });
                 }}
-                                onResizeGroupEnd={() => {
+                                onResizeGroupEnd={({ targets }) => {
+                  targets.forEach((target) => {
+                    const id = target.getAttribute("data-element-id");
+                    if (!id) return;
+                    updateElement(id, {
+                      width: Math.round(target.offsetWidth),
+                      height: Math.round(target.offsetHeight),
+                      x: Math.round(parseFloat(target.style.left)),
+                      y: Math.round(parseFloat(target.style.top)),
+                    });
+                  });
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
                 }}
