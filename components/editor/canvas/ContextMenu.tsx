@@ -12,6 +12,7 @@ interface ContextMenuProps {
   onUngroup: () => void;
   onBringForward: () => void;
   onSendBackward: () => void;
+  onShowProperties: () => void;
   canGroup: boolean;
   canUngroup: boolean;
 }
@@ -26,6 +27,7 @@ export default function ContextMenu({
   onUngroup,
   onBringForward,
   onSendBackward,
+  onShowProperties,
   canGroup,
   canUngroup,
 }: ContextMenuProps) {
@@ -108,6 +110,8 @@ export default function ContextMenu({
       className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[180px]"
       style={menuStyle}
     >
+      <MenuItem onClick={onShowProperties}>🎨 Properties...</MenuItem>
+      <div className="border-t border-gray-100 my-1" />
       <MenuItem onClick={onDuplicate}>📋 Duplicate</MenuItem>
       <MenuItem onClick={onBringForward}>⬆ Bring Forward</MenuItem>
       <MenuItem onClick={onSendBackward}>⬇ Send Backward</MenuItem>

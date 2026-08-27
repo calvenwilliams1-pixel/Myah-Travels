@@ -74,6 +74,8 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [showUndoToast, setShowUndoToast] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [propertiesPopup, setPropertiesPopup] = useState<{ x: number; y: number } | null>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
   const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
@@ -218,6 +220,47 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     },
     [canvasDoc.elements]
   );
+
+  const handleShowProperties = useCallback(() => {
+    if (!contextMenu) return;
+    const MARGIN = 8;
+    const POPUP_WIDTH = 280;
+    const POPUP_HEIGHT = 400;
+
+    setPropertiesPopup({
+      x: Math.max(MARGIN, Math.min(contextMenu.x, window.innerWidth - POPUP_WIDTH - MARGIN)),
+      y: Math.max(MARGIN, Math.min(contextMenu.y, window.innerHeight - POPUP_HEIGHT - MARGIN)),
+    });
+    setContextMenu(null);
+  }, [contextMenu]);
+
+  useEffect(() => {
+    if (!propertiesPopup) return;
+
+    if (selectedIds.length !== 1) {
+      setPropertiesPopup(null);
+      return;
+    }
+
+    const selectedElement = canvasDoc.elements.find(
+      (el) => el.id === selectedIds[0]
+    );
+
+    if (!selectedElement) {
+      setPropertiesPopup(null);
+    }
+  }, [propertiesPopup, selectedIds, canvasDoc.elements]);
+
+  useEffect(() => {
+    if (!propertiesPopup) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        setPropertiesPopup(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [propertiesPopup]);
 
   const handleMarqueeSelect = useCallback(
     (rect: { x: number; y: number; width: number; height: number }) => {
@@ -455,7 +498,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         deleteSelected();
       }
       if (e.key === "Escape") {
-        setSelectedIds([]);
+        if (propertiesPopup) {
+          setPropertiesPopup(null);
+        } else {
+          setSelectedIds([]);
+        }
       }
       if (e.key === "ArrowUp") {
         e.preventDefault();
@@ -772,7 +819,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           />
         )}
 
-        {showProperties && selectedIds.length === 1 && (
+        {showProperties && selectedIds.length === 1 && !propertiesPopup && (
           <PropertiesPanel
             element={canvasDoc.elements.find((el) => el.id === selectedIds[0])!}
             onUpdate={updateElement}
@@ -821,7 +868,47 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           />
         )}
 
-                {/* Context Menu */}
+                {/* Properties Popup */}
+        {propertiesPopup && selectedIds.length === 1 && (() => {
+          const selectedElement = canvasDoc.elements.find((el) => el.id === selectedIds[0]);
+          if (!selectedElement) return null;
+
+          return (
+            <div
+              ref={popupRef}
+              className="fixed z-50"
+              style={{
+                left: propertiesPopup.x,
+                top: propertiesPopup.y,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-white border border-gray-200 rounded-lg shadow-xl">
+                <div className="flex justify-between items-center px-3 py-2 border-b border-gray-100">
+                  <span className="text-xs font-semibold text-gray-600">Properties</span>
+                  <button
+                    onClick={() => setPropertiesPopup(null)}
+                    className="text-gray-400 hover:text-gray-600 text-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="max-h-[70vh] overflow-y-auto">
+                  <PropertiesPanel
+                    element={selectedElement}
+                    onUpdate={updateElement}
+                    onDelete={deleteSelected}
+                    onDuplicate={duplicateSelected}
+                    onBringForward={bringForward}
+                    onSendBackward={sendBackward}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Context Menu */}
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -833,6 +920,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             onUngroup={ungroupSelected}
             onBringForward={bringForward}
             onSendBackward={sendBackward}
+            onShowProperties={handleShowProperties}
             canGroup={selectedIds.length > 1}
             canUngroup={selectedIds.some((id) => canvasDoc.elements.find((el) => el.id === id)?.groupId)}
           />

@@ -116,10 +116,50 @@ export default function PropertiesPanel({
         )}
 
         {element.type === "shape" && (
+          <>
+            <ColorPicker
+              label="Fill Color"
+              value={element.fillColor ?? "#e8b84b"}
+              onChange={(color) => onUpdate(element.id, { fillColor: color })}
+            />
+            <ColorPicker
+              label="Border Color"
+              value={element.borderColor ?? "#333333"}
+              onChange={(color) => onUpdate(element.id, { borderColor: color })}
+            />
+          </>
+        )}
+
+        {element.type === "button" && (
+          <>
+            <div>
+              <label className="text-xs text-gray-600 block mb-1">Link URL</label>
+              <input
+                type="text"
+                value={element.link ?? ""}
+                onChange={(e) => onUpdate(element.id, { link: e.target.value })}
+                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                placeholder="https://..."
+              />
+            </div>
+            <ColorPicker
+              label="Background Color"
+              value={element.backgroundColor ?? "#4a7c59"}
+              onChange={(color) => onUpdate(element.id, { backgroundColor: color })}
+            />
+            <ColorPicker
+              label="Text Color"
+              value={element.textColor ?? "#ffffff"}
+              onChange={(color) => onUpdate(element.id, { textColor: color })}
+            />
+          </>
+        )}
+
+        {element.type === "divider" && (
           <ColorPicker
-            label="Fill Color"
-            value={element.fillColor ?? "#e8b84b"}
-            onChange={(color) => onUpdate(element.id, { fillColor: color })}
+            label="Line Color"
+            value={element.color ?? "#cccccc"}
+            onChange={(color) => onUpdate(element.id, { color })}
           />
         )}
 
