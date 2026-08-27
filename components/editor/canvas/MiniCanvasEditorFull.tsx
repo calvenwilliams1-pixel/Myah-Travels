@@ -25,6 +25,7 @@ interface MiniCanvasEditorFullProps {
 const MAX_HISTORY = 30;
 
 export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanvasEditorFullProps) {
+  const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
   const [canvasDoc, setCanvasDoc] = useState<CanvasDocument | null>(() =>
     parseCanvasDocument(initialJson)
   );
@@ -475,7 +476,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
         {/* Canvas area */}
         <div className="flex-1 p-4 bg-gray-100 overflow-auto">
           <div
-            ref={canvasRef}
+            ref={(node) => { canvasRef.current = node; setContainerEl(node); }}
             className="relative bg-white shadow"
             style={{
               width: canvasDoc.canvas.width,
@@ -534,6 +535,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
               <Moveable
                 ref={moveableRef}
                 target={moveableTargets}
+                container={containerEl}
                 draggable={true}
                 resizable={true}
                 rotatable={true}

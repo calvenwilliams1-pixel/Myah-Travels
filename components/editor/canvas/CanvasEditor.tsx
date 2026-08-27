@@ -74,6 +74,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [showUndoToast, setShowUndoToast] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
   const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
   const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
@@ -619,7 +620,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
         </div>
 
         <div
-          ref={canvasRef}
+          ref={(node) => { canvasRef.current = node; setContainerEl(node); }}
           className="relative mx-auto bg-white shadow-lg"
           style={{
             width: canvasDoc.canvas.width,
@@ -682,7 +683,9 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
           const moveableTargets = getTargetElements();
           return moveableTargets.length > 0 ? (
             <Moveable
+              ref={moveableRef}
               target={moveableTargets}
+              container={containerEl}
               draggable={true}
               resizable={true}
               rotatable={true}
