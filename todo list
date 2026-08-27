@@ -1,101 +1,53 @@
-## Update TODO.md
-
-**Do this one thing:**
-Click the pencil icon on `TODO.md`
-
-**Replace the entire file with:**
-
-```markdown
 # Myah Travels - TODO.md
 
-## Status: All Code Complete ✅
+## Status
 
-Core segments (17), Canvas phases (1-15), Phase 16 (Dual-Mode Editor) all code-complete. Testing pending on home PC.
-
----
-
-## Phase 16 Complete
-
-| Sub-phase | Status |
-|-----------|--------|
-| P0 (8 items) | ✅ Complete |
-| P1 (5 items) | ✅ Complete |
-| Mode wiring | ✅ Complete |
-| Edit pages mode-aware | ✅ Complete |
-| CanvasScaler integration | ✅ Complete |
-| DOMPurify | ✅ Code done |
-| URL sanitization | ✅ Complete |
-| P2-3: Story canvas full editor | ✅ Complete |
-| P2-1: Per-element undo | Skipped |
-| P2-2: Mobile touch | Deferred |
+**ALL CODE COMPLETE. Testing + Bug Fixing in progress.**
 
 ---
 
-## Testing Progress
+## Moveable Fix - ✅ COMPLETE (Merged to main)
 
-| What's Been Tested | Status |
-|-------------------|--------|
-| Dev server starts | ✅ |
-| Public pages load | ✅ |
-| Tailwind CSS | ✅ |
-| Everything else | ⚠️ Not tested |
+| Issue | Status |
+|-------|--------|
+| Elements fly around | ✅ Fixed |
+| Resize opposite direction | ✅ Fixed |
+| Resize jittery | ✅ Fixed |
+| Outline misaligned | ✅ Fixed |
+| Outline drifts on zoom/resize | ✅ Fixed |
+| Bounds wall | ✅ Fixed |
+| Rotation | ✅ Fixed |
 
----
-
-## When Home: Run These
-
-### 1. Pull latest
-```bash
-cd C:\Users\calve\Myah-Travels
-git pull
-```
-
-### 2. Install DOMPurify
-```bash
-npm install dompurify
-```
-
-### 3. Database migration
-```bash
-node -e "const Database = require('better-sqlite3'); const db = new Database('data/site.db'); db.exec('ALTER TABLE posts ADD COLUMN mode TEXT DEFAULT ''story''; ALTER TABLE guides ADD COLUMN mode TEXT DEFAULT ''story''; ALTER TABLE reviews ADD COLUMN mode TEXT DEFAULT ''story'';'); console.log('Migration complete'); db.close();"
-```
-
-### 4. Start dev server
-```bash
-npm run dev
-```
-
-### 5. Test checklist
-- [ ] Homepage loads with feed
-- [ ] Admin login (`/admin/login`, `myah` / `changeme`)
-- [ ] Create new post → Mode selector shows
-- [ ] Story mode → TipTap editor
-- [ ] Design mode → Canvas editor
-- [ ] Rich text in canvas (double-click)
-- [ ] Canvas window in TipTap (full editor)
-- [ ] Grouping
-- [ ] Marquee selection
-- [ ] Right-click context menu
-- [ ] Triangle shape
-- [ ] Image crop
-- [ ] Button new tab
-- [ ] Cross-post copy/paste
-- [ ] Edit existing post respects mode
-- [ ] Feed filters
-- [ ] Pin/Highlight
-- [ ] Theme colors
-- [ ] Password change
+**Root cause:** Moveable was rendered OUTSIDE the canvas div. Moved INSIDE.
 
 ---
 
-## Known Issues
+## Remaining Issues
 
-| Issue | Priority | Status |
-|-------|----------|--------|
-| `[key: string]: any` | Low | Accepted |
-| Mobile touch | Low | Deferred |
-| DOMPurify not installed | High | Install pending |
-| Mode column missing | High | Migration pending |
+| # | Issue | Priority |
+|---|-------|----------|
+| 1 | MiniCanvasEditorFull same fix | High (fix ready, untested) |
+| 2 | SmartBlock can't type | High |
+| 3 | Button URL not editable | High |
+| 4 | Template save freezes | High |
+| 5 | Manage templates empty | High |
+| 6 | Save draft unresponsive | High |
+| 7 | Colour pickers missing | Medium |
+| 8 | Portal elements non-functional | Medium |
+| 9 | Divider styles | Medium |
+| 10 | Image fill for shapes | Medium |
+
+---
+
+## When Home / Next Session
+
+1. Pull main
+2. Test MiniCanvasEditorFull (Story mode canvas)
+3. SmartBlock inline editing
+4. Button URL field
+5. Template save diagnostics
+6. Colour pickers
+7. Portal properties
 
 ---
 
@@ -105,9 +57,3 @@ npm run dev
 npm run dev
 npm run seed
 npm run build
-```
-```
-
----
-
-**Commit this. Then update CODE-PLAN.md.**
