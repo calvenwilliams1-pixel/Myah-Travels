@@ -527,12 +527,11 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                   </div>
                 </div>
               ))}
-          </div>
-
           {(() => {
             const moveableTargets = getTargetElements();
             return moveableTargets.length > 0 ? (
               <Moveable
+                key="moveable-ready"
                 ref={moveableRef}
                 target={moveableTargets}
                 container={containerEl}
