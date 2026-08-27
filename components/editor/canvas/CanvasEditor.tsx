@@ -677,15 +677,15 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                 )}
               </div>
             ))}
-        </div>
-
-        {(() => {
+        {containerEl && (() => {
           const moveableTargets = getTargetElements();
           return moveableTargets.length > 0 ? (
             <Moveable
+              key="moveable-ready"
               ref={moveableRef}
               target={moveableTargets}
               container={containerEl}
+              rootContainer={containerEl}
               draggable={true}
               resizable={true}
               rotatable={true}
@@ -759,6 +759,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             />
           ) : null;
         })()}
+        </div>
 
         {showLayers && (
           <LayersPanel
