@@ -654,6 +654,8 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   height: el.height,
                   zIndex: el.zIndex,
                   position: "absolute",
+                  transform: `rotate(${el.rotation}deg)`,
+                  transformOrigin: "center center",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -666,15 +668,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   setContextMenu({ x: e.clientX, y: e.clientY });
                 }}
               >
-                <div
-                  className="w-full h-full"
-                  style={{
-                    transform: `rotate(${el.rotation}deg)`,
-                    transformOrigin: "center center",
-                  }}
-                >
-                  {renderElement(el, updateElement, pushUndo, canvasDoc)}
-                </div>
+                {renderElement(el, updateElement, pushUndo, canvasDoc)}
                 {el.locked === true && (
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs z-10">
                     🔒

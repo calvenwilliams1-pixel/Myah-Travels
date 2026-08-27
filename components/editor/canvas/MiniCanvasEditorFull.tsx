@@ -587,6 +587,9 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                 onDragEnd={() => {
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
+                  if (moveableRef.current) {
+                    moveableRef.current.updateRect();
+                  }
                 }}
                 onResizeStart={({ target }) => {
                   const id = target.getAttribute("data-element-id");
@@ -615,6 +618,9 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                   });
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
+                  if (moveableRef.current) {
+                    moveableRef.current.updateRect();
+                  }
                 }}
                 onRotateStart={() => {
                   if (canvasDoc && !isInteractingRef.current) {
