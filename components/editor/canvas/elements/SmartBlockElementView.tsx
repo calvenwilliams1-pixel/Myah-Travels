@@ -24,7 +24,7 @@ export default function SmartBlockElementView({ element, onUpdate, onBeginEdit }
 
     if (isEditing) {
       return (
-        <div onMouseDown={stopPropagation}>
+        <div onClick={(e) => e.stopPropagation()}>
           <ListEditor
             items={items}
             onSave={(newItems) => {
@@ -39,7 +39,6 @@ export default function SmartBlockElementView({ element, onUpdate, onBeginEdit }
     return (
       <div
         className="w-full h-full cursor-text p-2 overflow-auto"
-        onMouseDown={stopPropagation}
         onDoubleClick={() => {
           if (onBeginEdit) onBeginEdit();
           setIsEditing(true);
@@ -62,7 +61,7 @@ export default function SmartBlockElementView({ element, onUpdate, onBeginEdit }
 
     if (isEditing) {
       return (
-        <div onMouseDown={stopPropagation}>
+        <div onClick={(e) => e.stopPropagation()}>
           <ChecklistEditor
             items={items}
             onSave={(newItems) => {
@@ -115,7 +114,7 @@ export default function SmartBlockElementView({ element, onUpdate, onBeginEdit }
 
     if (isEditing) {
       return (
-        <div onMouseDown={stopPropagation}>
+        <div onClick={(e) => e.stopPropagation()}>
           <ProsConsEditor
             pros={pros}
             cons={cons}

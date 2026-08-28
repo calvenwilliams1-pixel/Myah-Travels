@@ -1029,7 +1029,10 @@ function renderElement(
         <SmartBlockElementView
           element={el}
           onUpdate={update}
-          onBeginEdit={() => pushUndo(canvasDoc)}
+          onBeginEdit={() => {
+            pushUndo(canvasDoc);
+            setSelectedIds([]);
+          }}
         />
       );
     case "button":
