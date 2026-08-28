@@ -43,6 +43,10 @@ export interface CanvasElement {
   cropWidth?: number;
   cropHeight?: number;
   openInNewTab?: boolean;
+  opacity?: number;
+  borderRadius?: number;
+  borderWidth?: number;
+  thickness?: number;
   [key: string]: any;
 }
 

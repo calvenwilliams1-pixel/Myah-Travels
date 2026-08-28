@@ -106,6 +106,71 @@ export default function PropertiesPanel({
             className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-sm"
           />
         </label>
+        <div className="space-y-3 border-t border-gray-100 pt-3 mt-3">
+
+          <div>
+            <label className="text-xs text-gray-600 block mb-1">
+              Opacity: {Math.round((element.opacity ?? 1) * 100)}%
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round((element.opacity ?? 1) * 100)}
+              onChange={(e) => onUpdate(element.id, { opacity: Number(e.target.value) / 100 })}
+              className="w-full"
+            />
+          </div>
+
+          {(element.type === "shape" || element.type === "button" || element.type === "image") && (
+            <div>
+              <label className="text-xs text-gray-600 block mb-1">
+                Corner Radius: {element.borderRadius ?? 0}px
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={element.borderRadius ?? 0}
+                onChange={(e) => onUpdate(element.id, { borderRadius: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+
+          {(element.type === "shape" || element.type === "button") && (
+            <div>
+              <label className="text-xs text-gray-600 block mb-1">
+                Border Width: {element.borderWidth ?? 0}px
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={20}
+                value={element.borderWidth ?? 0}
+                onChange={(e) => onUpdate(element.id, { borderWidth: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+
+          {element.type === "divider" && (
+            <div>
+              <label className="text-xs text-gray-600 block mb-1">
+                Thickness: {element.thickness ?? 2}px
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={20}
+                value={element.thickness ?? 2}
+                onChange={(e) => onUpdate(element.id, { thickness: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+
+        </div>
 
         {element.type === "text" && (
           <ColorPicker
