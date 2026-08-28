@@ -28,12 +28,11 @@ export default function ButtonElementView({ element, onUpdate, onBeginEdit }: Bu
   if (isEditing) {
     return (
       <div
-        className="w-full h-full p-2 bg-white border border-emerald-300 rounded overflow-auto"
-        onMouseDown={(e) => e.stopPropagation()}
+        className="w-full min-h-[200px] p-2 bg-white border border-emerald-300 rounded overflow-visible z-50"
+        onClick={(e) => e.stopPropagation()}
       >
         <label className="text-xs text-gray-600 block mb-1">Button Text</label>
         <input
-          autoFocus
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
@@ -46,11 +45,11 @@ export default function ButtonElementView({ element, onUpdate, onBeginEdit }: Bu
         <input
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          placeholder="https://example.com"
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSave();
             if (e.key === "Escape") handleCancel();
           }}
+          placeholder="https://example.com"
           className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-3"
         />
         <div className="flex gap-2">

@@ -763,7 +763,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   });
                 }}
               >
-                {renderElement(el, updateElement, pushUndo, canvasDoc)}
+                {renderElement(el, updateElement, pushUndo, canvasDoc, setSelectedIds)}
                 {el.locked === true && (
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs z-10">
                     🔒
@@ -1006,7 +1006,8 @@ function renderElement(
   el: CanvasElement,
   update: (id: string, updates: Partial<CanvasElement>) => void,
   pushUndo: (doc: CanvasDocument) => void,
-  canvasDoc: CanvasDocument
+  canvasDoc: CanvasDocument,
+  setSelectedIds: (ids: string[]) => void
 ) {
   switch (el.type) {
     case "text":
@@ -1036,7 +1037,10 @@ function renderElement(
         <ButtonElementView
           element={el}
           onUpdate={update}
-          onBeginEdit={() => pushUndo(canvasDoc)}
+          onBeginEdit={() => {
+            pushUndo(canvasDoc);
+            setSelectedIds([]);
+          }}
         />
       );
     case "pdf":
