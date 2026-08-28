@@ -75,11 +75,13 @@ export default function ButtonElementView({ element, onUpdate, onBeginEdit }: Bu
     <div
       className="w-full h-full flex items-center justify-center"
       style={{
-        backgroundColor: element.backgroundColor || "#4a7c59",
-        color: element.textColor || "#ffffff",
-        borderRadius: element.borderRadius || 8,
-        fontSize: element.fontSize || 16,
-        fontWeight: element.fontWeight || "normal",
+        backgroundColor: element.backgroundColor ?? "#4a7c59",
+        color: element.textColor ?? "#ffffff",
+        borderRadius: element.borderRadius ?? 8,
+        fontSize: element.fontSize ?? 16,
+        fontWeight: element.fontWeight ?? "normal",
+        border: `${element.borderWidth ?? 0}px solid ${element.borderColor ?? "transparent"}`,
+        opacity: element.opacity ?? 1,
       }}
       onDoubleClick={(e) => {
         e.stopPropagation();

@@ -217,6 +217,11 @@ export default function PropertiesPanel({
               value={element.textColor ?? "#ffffff"}
               onChange={(color) => onUpdate(element.id, { textColor: color })}
             />
+            <ColorPicker
+              label="Border Color"
+              value={element.borderColor ?? "#333333"}
+              onChange={(color) => onUpdate(element.id, { borderColor: color })}
+            />
           </>
         )}
 
@@ -228,7 +233,19 @@ export default function PropertiesPanel({
           />
         )}
 
-        <div className="flex gap-2 pt-2 border-t border-gray-200">
+        <div className="flex gap-2 pt-2 border-t border-gray-200 flex-wrap">
+          <button
+            onClick={onBringForward}
+            className="flex-1 px-2 py-1.5 bg-gray-100 rounded text-xs hover:bg-gray-200"
+          >
+            Forward
+          </button>
+          <button
+            onClick={onSendBackward}
+            className="flex-1 px-2 py-1.5 bg-gray-100 rounded text-xs hover:bg-gray-200"
+          >
+            Backward
+          </button>
           <button
             onClick={onDuplicate}
             className="flex-1 px-2 py-1.5 bg-gray-100 rounded text-xs hover:bg-gray-200"

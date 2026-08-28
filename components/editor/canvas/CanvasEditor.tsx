@@ -74,8 +74,14 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [showUndoToast, setShowUndoToast] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [propertiesPopup, setPropertiesPopup] = useState<{ x: number; y: number } | null>(null);
+  const [propertiesPopup, setPropertiesPopup] = useState<{
+    x: number;
+    y: number;
+    locked: boolean;
+  } | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  const [isDraggingPopup, setIsDraggingPopup] = useState(false);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
   const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
   const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
@@ -235,7 +241,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   }, [contextMenu]);
 
   useEffect(() => {
-    if (!propertiesPopup) return;
+    if (!propertiesPopup || propertiesPopup.locked) return;
 
     if (selectedIds.length !== 1) {
       setPropertiesPopup(null);
@@ -252,7 +258,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   }, [propertiesPopup, selectedIds, canvasDoc.elements]);
 
   useEffect(() => {
-    if (!propertiesPopup) return;
+    if (!propertiesPopup || propertiesPopup.locked) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
         setPropertiesPopup(null);
@@ -261,6 +267,42 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [propertiesPopup]);
+
+  const handlePopupDragStart = (e: React.MouseEvent) => {
+    if (!propertiesPopup) return;
+    setIsDraggingPopup(true);
+    dragOffsetRef.current = {
+      x: e.clientX - propertiesPopup.x,
+      y: e.clientY - propertiesPopup.y,
+    };
+  };
+
+  useEffect(() => {
+    if (!isDraggingPopup) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      setPropertiesPopup((prev) =>
+        prev
+          ? {
+              ...prev,
+              x: e.clientX - dragOffsetRef.current.x,
+              y: e.clientY - dragOffsetRef.current.y,
+            }
+          : null
+      );
+    };
+
+    const onMouseUp = () => {
+      setIsDraggingPopup(false);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [isDraggingPopup]);
 
   const handleMarqueeSelect = useCallback(
     (rect: { x: number; y: number; width: number; height: number }) => {
@@ -675,7 +717,8 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
             background: canvasDoc.canvas.background || "#fff",
           }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
+            const target = e.target as HTMLElement;
+            if (!target.closest("[data-element-id]")) {
               setSelectedIds([]);
             }
           }}        >
@@ -713,7 +756,11 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
                   e.preventDefault();
                   e.stopPropagation();
                   handleElementSelect(el, false);
-                  setContextMenu({ x: e.clientX, y: e.clientY });
+                  setPropertiesPopup({
+                    x: Math.max(8, Math.min(e.clientX, window.innerWidth - 290)),
+                    y: Math.max(8, Math.min(e.clientY, window.innerHeight - 420)),
+                    locked: false,
+                  });
                 }}
               >
                 {renderElement(el, updateElement, pushUndo, canvasDoc)}
@@ -884,14 +931,29 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
               onClick={(e) => e.stopPropagation()}
             >
               <div className="bg-white border border-gray-200 rounded-lg shadow-xl">
-                <div className="flex justify-between items-center px-3 py-2 border-b border-gray-100">
+                <div
+                  className={`flex items-center justify-between px-3 py-2 border-b border-gray-100 ${
+                    isDraggingPopup ? "cursor-grabbing" : "cursor-grab"
+                  }`}
+                  onMouseDown={handlePopupDragStart}
+                >
                   <span className="text-xs font-semibold text-gray-600">Properties</span>
-                  <button
-                    onClick={() => setPropertiesPopup(null)}
-                    className="text-gray-400 hover:text-gray-600 text-lg"
-                  >
-                    ×
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={() => setPropertiesPopup(prev => prev ? { ...prev, locked: !prev.locked } : null)}
+                      className={`text-xs ${propertiesPopup.locked ? "text-emerald-600" : "text-gray-400"}`}
+                      title={propertiesPopup.locked ? "Unlock" : "Lock"}
+                    >
+                      📌
+                    </button>
+                    <button
+                      onClick={() => setPropertiesPopup(null)}
+                      className="text-gray-400 hover:text-gray-600 text-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 <div className="max-h-[70vh] overflow-y-auto">
                   <PropertiesPanel

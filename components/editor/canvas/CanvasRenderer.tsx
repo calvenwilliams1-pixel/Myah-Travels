@@ -93,6 +93,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                     overflowWrap: "break-word",
                     wordBreak: "break-word",
                     overflow: "hidden",
+                    border: `${el.borderWidth ?? 0}px solid ${el.borderColor ?? "transparent"}`,
                     opacity: el.opacity ?? 1,
                   }}
                 >
@@ -164,11 +165,13 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                     ...baseStyle,
                     height: el.thickness ?? 2,
                     backgroundColor: el.color ?? "#cccccc",
+                    opacity: el.opacity ?? 1,
                   }}
                 />
               );
 
             case "button": {
+              console.log("BUTTON ELEMENT:", { borderWidth: el.borderWidth, borderColor: el.borderColor, opacity: el.opacity });
               const safeLink = sanitizeUrl(el.link);
               const normalizedLink = safeLink.toLowerCase();
               const isExternal =
@@ -195,6 +198,7 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
                     justifyContent: "center",
                     textDecoration: "none",
                     overflow: "hidden",
+                    border: `${el.borderWidth ?? 0}px solid ${el.borderColor ?? "transparent"}`,
                     opacity: el.opacity ?? 1,
                   }}
                 >
