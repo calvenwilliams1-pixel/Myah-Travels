@@ -7,9 +7,9 @@ import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { getPostAction, updatePostAction } from "../actions";
+import { getPostAction, updatePostAction, getPostTagsAction } from "../actions";
 import TagInput from "@/components/editor/TagInput";
-import { getPostTags } from "@/lib/content";
+
 import { EditorMode } from "@/types/canvas";
 
 type PostStatus = "draft" | "published" | "hidden";
@@ -37,7 +37,7 @@ export default function EditPostPage() {
           setTitle(post.title);
           setContent(post.content);
           setExcerpt(post.excerpt || "");
-          const postTags = await getPostTags(postId);
+          const postTags = await getPostTagsAction(postId);
           setTags(postTags);
           if (post.status === "draft" || post.status === "published" || post.status === "hidden") {
           setStatus(post.status);

@@ -176,22 +176,20 @@ export async function renameTag(tagId: number, newName: string) {
 export async function mergeTags(sourceId: number, targetId: number) {
   if (sourceId === targetId) return { error: "Cannot merge tag into itself" };
   
-  return db.transaction(async (tx) => {
-    const sourceAssociations = await tx.select()
-      .from(postTags)
-      .where(eq(postTags.tagId, sourceId));
-    
-    for (const assoc of sourceAssociations) {
-      await tx.insert(postTags)
-        .values({ postId: assoc.postId, tagId: targetId })
-        .onConflictDoNothing();
-    }
-    
-    await tx.delete(postTags).where(eq(postTags.tagId, sourceId));
-    await tx.delete(tags).where(eq(tags.id, sourceId));
-    
-    return { success: true };
-  });
+  const sourceAssociations = await db.select()
+    .from(postTags)
+    .where(eq(postTags.tagId, sourceId));
+  
+  for (const assoc of sourceAssociations) {
+    await db.insert(postTags)
+      .values({ postId: assoc.postId, tagId: targetId })
+      .onConflictDoNothing();
+  }
+  
+  await db.delete(postTags).where(eq(postTags.tagId, sourceId));
+  await db.delete(tags).where(eq(tags.id, sourceId));
+  
+  return { success: true };
 }
 
 export async function deleteTag(tagId: number) {
@@ -217,19 +215,18 @@ export async function getPostTags(postId: number): Promise<string[]> {
 }
 
 export async function updatePostTags(postId: number, tagNames: string[]) {
-  return db.transaction(async (tx) => {
-    await tx.delete(postTags).where(eq(postTags.postId, postId));
+  // Delete existing tags
+  await db.delete(postTags).where(eq(postTags.postId, postId));
 
-    const now = new Date().toISOString();
+  const now = new Date().toISOString();
 
-    for (const name of tagNames) {
-      const tag = await getOrCreateTag(name, tx);
-      if (tag) {
-        await tx.insert(postTags).values({ postId, tagId: tag.id }).onConflictDoNothing();
-        await tx.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tag.id));
-      }
+  for (const name of tagNames) {
+    const tag = await getOrCreateTag(name);
+    if (tag) {
+      await db.insert(postTags).values({ postId, tagId: tag.id }).onConflictDoNothing();
+      await db.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tag.id));
     }
-  });
+  }
 }
 
 // ============================================
@@ -322,36 +319,34 @@ export async function updatePost(
   }>,
   options?: { skipRevision?: boolean }
 ) {
-  return db.transaction(async (tx) => {
-    const current = await tx.select().from(posts).where(eq(posts.id, id)).limit(1);
-    
-    if (current.length === 0) return null;
-    
-    if (!options?.skipRevision) {
-      await tx.insert(revisions).values({
-        contentType: "post",
-        contentId: id,
-        revisionData: JSON.stringify(current[0]),
-      });
-    }
-    
-    if (data.slug && current[0].slug !== data.slug) {
-      await tx.insert(redirects).values({
-        oldSlug: current[0].slug,
-        newSlug: data.slug,
-      }).onConflictDoNothing();
-    }
-    
-    const result = await tx.update(posts)
-      .set({
-        ...data,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(posts.id, id))
-      .returning();
-    
-    return result[0];
-  });
+  const current = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  
+  if (current.length === 0) return null;
+  
+  if (!options?.skipRevision) {
+    await db.insert(revisions).values({
+      contentType: "post",
+      contentId: id,
+      revisionData: JSON.stringify(current[0]),
+    });
+  }
+  
+  if (data.slug && current[0].slug !== data.slug) {
+    await db.insert(redirects).values({
+      oldSlug: current[0].slug,
+      newSlug: data.slug,
+    }).onConflictDoNothing();
+  }
+  
+  const result = await db.update(posts)
+    .set({
+      ...data,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(posts.id, id))
+    .returning();
+  
+  return result[0];
 }
 
 export async function softDeletePost(id: number) {
@@ -441,36 +436,34 @@ export async function updateGuide(
   }>,
   options?: { skipRevision?: boolean }
 ) {
-  return db.transaction(async (tx) => {
-    const current = await tx.select().from(guides).where(eq(guides.id, id)).limit(1);
-    
-    if (current.length === 0) return null;
-    
-    if (!options?.skipRevision) {
-      await tx.insert(revisions).values({
-        contentType: "guide",
-        contentId: id,
-        revisionData: JSON.stringify(current[0]),
-      });
-    }
-    
-    if (data.slug && current[0].slug !== data.slug) {
-      await tx.insert(redirects).values({
-        oldSlug: current[0].slug,
-        newSlug: data.slug,
-      }).onConflictDoNothing();
-    }
-    
-    const result = await tx.update(guides)
-      .set({
-        ...data,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(guides.id, id))
-      .returning();
-    
-    return result[0];
-  });
+  const current = await db.select().from(guides).where(eq(guides.id, id)).limit(1);
+  
+  if (current.length === 0) return null;
+  
+  if (!options?.skipRevision) {
+    await db.insert(revisions).values({
+      contentType: "guide",
+      contentId: id,
+      revisionData: JSON.stringify(current[0]),
+    });
+  }
+  
+  if (data.slug && current[0].slug !== data.slug) {
+    await db.insert(redirects).values({
+      oldSlug: current[0].slug,
+      newSlug: data.slug,
+    }).onConflictDoNothing();
+  }
+  
+  const result = await db.update(guides)
+    .set({
+      ...data,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(guides.id, id))
+    .returning();
+  
+  return result[0];
 }
 
 export async function softDeleteGuide(id: number) {
@@ -585,36 +578,34 @@ export async function updateReview(
   }>,
   options?: { skipRevision?: boolean }
 ) {
-  return db.transaction(async (tx) => {
-    const current = await tx.select().from(reviews).where(eq(reviews.id, id)).limit(1);
-    
-    if (current.length === 0) return null;
-    
-    if (!options?.skipRevision) {
-      await tx.insert(revisions).values({
-        contentType: "review",
-        contentId: id,
-        revisionData: JSON.stringify(current[0]),
-      });
-    }
-    
-    if (data.slug && current[0].slug !== data.slug) {
-      await tx.insert(redirects).values({
-        oldSlug: current[0].slug,
-        newSlug: data.slug,
-      }).onConflictDoNothing();
-    }
-    
-    const result = await tx.update(reviews)
-      .set({
-        ...data,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(reviews.id, id))
-      .returning();
-    
-    return result[0];
-  });
+  const current = await db.select().from(reviews).where(eq(reviews.id, id)).limit(1);
+  
+  if (current.length === 0) return null;
+  
+  if (!options?.skipRevision) {
+    await db.insert(revisions).values({
+      contentType: "review",
+      contentId: id,
+      revisionData: JSON.stringify(current[0]),
+    });
+  }
+  
+  if (data.slug && current[0].slug !== data.slug) {
+    await db.insert(redirects).values({
+      oldSlug: current[0].slug,
+      newSlug: data.slug,
+    }).onConflictDoNothing();
+  }
+  
+  const result = await db.update(reviews)
+    .set({
+      ...data,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(reviews.id, id))
+    .returning();
+  
+  return result[0];
 }
 
 export async function softDeleteReview(id: number) {

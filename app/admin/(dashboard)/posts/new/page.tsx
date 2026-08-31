@@ -21,50 +21,40 @@ export default function NewPostPage() {
   const [error, setError] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
 
-  async function handleSave() {
+  async function handleSave(formData: FormData) {
     if (!title.trim()) {
       setError("Title is required");
       return;
     }
 
-    try {
-      setIsSaving(true);
-      setError(null);
+    formData.append("content", content);
+    formData.append("tagNames", JSON.stringify(tags));
 
-      const result = await createPostAction({
-        title,
-        content,
-        excerpt,
-        status,
-        mode: "story",
-        tagNames: tags,
-      });
+    setIsSaving(true);
+    setError(null);
 
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
+    const result = await createPostAction(formData);
 
-      if (result.postId) {
-        router.push(`/admin/posts/${result.postId}`);
-      }
-    } catch (err) {
-      console.error("Failed to save post:", err);
-      setError("Failed to save post. Please try again.");
-    } finally {
+    if (result.error) {
+      setError(result.error);
       setIsSaving(false);
+      return;
+    }
+
+    if (result.postId) {
+      router.push(`/admin/posts/${result.postId}`);
     }
   }
 
   return (
-    <div className="space-y-6">
+    <form action={handleSave} className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">New Post</h2>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleSave} isLoading={isSaving}>
+          <Button type="submit" isLoading={isSaving}>
             {status === "published" ? "Publish" : "Save Draft"}
           </Button>
         </div>
@@ -133,6 +123,6 @@ export default function NewPostPage() {
           <option value="hidden">Hidden</option>
         </select>
       </Card>
-    </div>
+    </form>
   );
 }

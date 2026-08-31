@@ -2,18 +2,20 @@
 
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
-import { createPost, updatePost, getPostById, softDeletePost, updatePostTags } from "@/lib/content";
+import { createPost, updatePost, getPostById, softDeletePost, updatePostTags, getPostTags } from "@/lib/content";
 import { validatePost } from "@/lib/security";
 import { logActivity } from "@/lib/logging";
 
-export async function createPostAction(data: {
-  title: string;
-  content: string;
-  excerpt?: string;
-  status?: string;
-  mode?: string;
-  tagNames?: string[];
-}) {
+export async function createPostAction(formData: FormData) {
+  const data = {
+    title: String(formData.get("title") || ""),
+    content: String(formData.get("content") || ""),
+    excerpt: String(formData.get("excerpt") || ""),
+    status: String(formData.get("status") || "draft"),
+    mode: "story",
+    tagNames: JSON.parse(String(formData.get("tagNames") || "[]")),
+  };
+
   const user = await requireAuth();
 
   const validation = validatePost({
@@ -109,6 +111,11 @@ export async function updatePostAction(
 export async function getPostAction(id: number) {
   await requireAuth();
   return getPostById(id);
+}
+
+export async function getPostTagsAction(postId: number) {
+  await requireAuth();
+  return getPostTags(postId);
 }
 
 export async function deletePostAction(id: number) {

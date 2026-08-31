@@ -39,8 +39,7 @@ export function Table<T>({ columns, data, keyExtractor, onRowClick, emptyMessage
           {data.map((row) => (
             <tr
               key={keyExtractor(row)}
-              onClick={() => onRowClick?.(row)}
-              className={`border-b border-gray-100 ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
+              className="border-b border-gray-100"
             >
               {columns.map((col, i) => (
                 <td key={i} className={`py-3 px-4 ${col.className || ""}`}>
