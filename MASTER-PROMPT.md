@@ -1,3 +1,16 @@
+Yes. Let's update MASTER-PROMPT with the new direction.
+
+---
+
+## File: Replace `MASTER-PROMPT.md` on GitHub
+
+**On GitHub (main branch):**
+1. Go to `MASTER-PROMPT.md`
+2. Click pencil icon
+3. Delete ALL content
+4. Paste:
+
+```markdown
 # Myah Travels - MASTER-PROMPT.md
 
 I am building a website called "Myah Travels" for a travel writer/agent.
@@ -6,9 +19,9 @@ I am building a website called "Myah Travels" for a travel writer/agent.
 
 ## Current Status
 
-**ALL CORE SEGMENTS AND CANVAS PHASES 1-16 COMPLETE. Testing + Bug Fixing in progress.**
+**Core code complete. Bug fixing + UX improvements in progress.**
 
-Moveable fix merged to main. Remaining bugs being worked through.
+Recently fixed: Moveable outline, button editing, SmartBlock editing, properties popup, opacity/border sliders.
 
 ---
 
@@ -26,48 +39,61 @@ Moveable fix merged to main. Remaining bugs being worked through.
 
 ---
 
-## Completion Status
+## NEW DIRECTION (After Myah's Feedback)
 
-### Core Segments (17) - ✅ COMPLETE
+| Priority | Area | Why |
+|----------|------|-----|
+| 1 | Story mode post creation | Core business - writing |
+| 2 | Portal system | Client value |
+| 3 | Design mode | Low - Canva replacement later |
 
-### Canvas Phases 1-15 - ✅ COMPLETE
+### Story Mode
+- Remove mode selector (Story = default)
+- Add block elements (image, shape, divider) to TipTap
+- Fix or replace MiniCanvasEditorFull
+- Keep it simple for writing
 
-### Phase 16: Dual-Mode Editor - ✅ COMPLETE
+### Portal System
+- Magic links
+- Member access
+- Notices + documents
+- Client trip planning
 
-| Priority | Status |
-|----------|--------|
-| P0 (8 items) | ✅ |
-| P1 (5 items) | ✅ |
-| P2-3: Story canvas full editor | ✅ |
-| P2-1: Per-element undo | Skipped |
-| P2-2: Mobile touch | Deferred |
-
----
-
-## Moveable Fix - ✅ MERGED
-
-The outline offset bug was caused by Moveable being rendered OUTSIDE the canvas div. Fix: Moveable must be INSIDE the canvas container div.
-
-**Affected files:**
-- `components/editor/canvas/CanvasEditor.tsx` - ✅ Fixed
-- `components/editor/canvas/MiniCanvasEditorFull.tsx` - ⏳ Fix ready, untested
+### Design Mode (Deferred)
+- Keep as separate Canva-like tool
+- Flesh out later
 
 ---
 
-## Remaining Bugs
+## Recently Fixed (Working)
+
+| Fix | Status |
+|-----|--------|
+| Moveable outline offset | ✅ |
+| Button border/opacity | ✅ |
+| Button edit form focus | ✅ |
+| Button URL editing | ✅ |
+| SmartBlock editing | ✅ |
+| Properties popup (right-click) | ✅ |
+| Popup drag + lock | ✅ |
+| Opacity/corner/border sliders | ✅ |
+| Divider thickness/colour | ✅ |
+
+---
+
+## Known Issues
 
 | # | Issue | Priority |
 |---|-------|----------|
-| 1 | MiniCanvasEditorFull same outline fix | High |
-| 2 | SmartBlock can't type (list/checklist/proscons) | High |
-| 3 | Button URL not editable | High |
-| 4 | Template save freezes | High |
-| 5 | Manage templates empty | High |
-| 6 | Save draft unresponsive | High |
-| 7 | Colour pickers missing for many elements | Medium |
-| 8 | Portal elements non-functional in Design mode | Medium |
-| 9 | Divider styles (dotted/dashed/double) | Medium |
-| 10 | Image fill for shapes/buttons | Medium |
+| 1 | SmartBlock selection/move | High |
+| 2 | SmartBlock content doesn't fill | High |
+| 3 | Template save freezes | High |
+| 4 | Manage templates empty | High |
+| 5 | Save draft unresponsive | High |
+| 6 | Marquee doesn't select SmartBlocks | Medium |
+| 7 | Portal elements non-functional | Medium |
+| 8 | Divider styles | Medium |
+| 9 | Image fill | Medium |
 
 ---
 
@@ -77,7 +103,6 @@ The outline offset bug was caused by Moveable being rendered OUTSIDE the canvas 
 |----------|--------|
 | Position | Pixel-based at 800px |
 | Responsive | transform: scale() |
-| Mode | Locked at creation |
 | Storage | SQLite JSON blobs |
 | Undo/redo | Global (capped 50) |
 | Autosave | 2s debounce |
@@ -93,7 +118,7 @@ The outline offset bug was caused by Moveable being rendered OUTSIDE the canvas 
 - Testing in Codespaces with git pull
 - Submit code for AI review BEFORE creating
 - Each file gets exact path + complete code
-- When testing, use python3 scripts in Codespace for find/replace
+- Use python3 scripts in Codespace for find/replace
 - Always verify changes with grep or diff
 
 ---
@@ -104,45 +129,21 @@ The outline offset bug was caused by Moveable being rendered OUTSIDE the canvas 
 npm run dev
 npm run seed
 npm run build
+```
 
-⚠️ TEMPORARY: Auth Disabled For Testing
-Two files were modified to bypass authentication:
+---
 
-middleware.ts - Auth checks disabled (matcher: [])
+## ⚠️ TEMPORARY: Auth Disabled For Testing
 
-lib/auth/index.ts - requireAuth() returns first user without session check
+Two files modified for testing:
+1. `middleware.ts` - Auth checks disabled
+2. `lib/auth/index.ts` - requireAuth returns first user
 
-How To Revert When Ready For Security
-Step 1: Restore middleware.ts with the REAL version:
+**Revert instructions in TODO.md**
+```
 
-tsx
-import { NextRequest, NextResponse } from "next/server";
+5. Commit: "Update MASTER-PROMPT with new direction"
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+---
 
-  if (!pathname.startsWith("/admin")) {
-    return NextResponse.next();
-  }
-
-  if (pathname === "/admin/login") {
-    return NextResponse.next();
-  }
-
-  const sessionId = req.cookies.get("auth_session")?.value ?? null;
-
-  if (!sessionId) {
-    return NextResponse.redirect(new URL("/admin/login", req.url));
-  }
-
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: ["/admin/:path*"],
-};
-Step 2: Restore lib/auth/index.ts with the REAL version.
-
-Step 3: Commit both with message "Restore authentication".
-
-Step 4: Test login flow works again.
+**Tell me when done.**
