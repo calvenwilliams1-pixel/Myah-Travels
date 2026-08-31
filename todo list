@@ -1,53 +1,87 @@
-# Myah Travels - TODO.md
+# Myah Travels - TODO.md (Updated)
 
 ## Status
 
-**ALL CODE COMPLETE. Testing + Bug Fixing in progress.**
+**Core code complete. Bug fixing + UX improvements in progress.**
 
 ---
 
-## Moveable Fix - ✅ COMPLETE (Merged to main)
+## ✅ Completed Recently
 
-| Issue | Status |
-|-------|--------|
-| Elements fly around | ✅ Fixed |
-| Resize opposite direction | ✅ Fixed |
-| Resize jittery | ✅ Fixed |
-| Outline misaligned | ✅ Fixed |
-| Outline drifts on zoom/resize | ✅ Fixed |
-| Bounds wall | ✅ Fixed |
-| Rotation | ✅ Fixed |
-
-**Root cause:** Moveable was rendered OUTSIDE the canvas div. Moved INSIDE.
+| Fix | Status |
+|-----|--------|
+| Moveable outline offset | ✅ Fixed |
+| Button border + opacity | ✅ Fixed |
+| Button edit form (inputs not focusing) | ✅ Fixed |
+| Button URL editing | ✅ Fixed |
+| SmartBlock inline editing | ✅ Fixed |
+| Properties popup on right-click | ✅ Working |
+| Popup draggable | ✅ Working |
+| Popup lock/pin | ✅ Working |
+| Opacity, border radius, border width sliders | ✅ Added |
+| Divider thickness + colour | ✅ Added |
+| Shape border colour | ✅ Added |
+| Button border colour | ✅ Added |
 
 ---
 
-## Remaining Issues
+## Known Issues (Current)
 
 | # | Issue | Priority |
 |---|-------|----------|
-| 1 | MiniCanvasEditorFull same fix | High (fix ready, untested) |
-| 2 | SmartBlock can't type | High |
-| 3 | Button URL not editable | High |
+| 1 | SmartBlock elements hard to select/move | High |
+| 2 | SmartBlock content doesn't fill container | High |
+| 3 | Marquee doesn't select SmartBlocks | Medium |
 | 4 | Template save freezes | High |
 | 5 | Manage templates empty | High |
 | 6 | Save draft unresponsive | High |
-| 7 | Colour pickers missing | Medium |
-| 8 | Portal elements non-functional | Medium |
-| 9 | Divider styles | Medium |
-| 10 | Image fill for shapes | Medium |
+| 7 | Portal elements non-functional in Design mode | Medium |
+| 8 | Divider styles (dashed/dotted/double) | Medium |
+| 9 | Image fill for shapes/buttons | Medium |
 
 ---
 
-## When Home / Next Session
+## New Direction: Restructured Priorities
+
+After Myah's feedback:
+
+| Priority | Area | Why |
+|----------|------|-----|
+| **1** | Story mode post creation | Core business - writing |
+| **2** | Portal system | Client value |
+| **3** | Design mode (Canva replacement) | Low - save money later |
+
+---
+
+## Story Mode - Next Steps
+
+1. Remove mode selector (Story = default for posts)
+2. Verify TipTap works for basic writing
+3. Add block elements (image, shape, divider)
+4. Fix or replace MiniCanvasEditorFull
+5. Test full post creation flow
+
+## Portal System - After Story Mode
+
+1. Test portal creation
+2. Test magic links
+3. Test portal member access
+4. Test notices + documents
+5. Polish portal UI
+
+## Design Mode (Deferred)
+
+Keep as separate tool. Flesh out later.
+
+---
+
+## When Next Session
 
 1. Pull main
-2. Test MiniCanvasEditorFull (Story mode canvas)
-3. SmartBlock inline editing
-4. Button URL field
-5. Template save diagnostics
-6. Colour pickers
-7. Portal properties
+2. Remove mode selector from post creation
+3. Test TipTap writing flow
+4. Plan block elements implementation
+5. Fix template save/manage issues
 
 ---
 
@@ -57,3 +91,4 @@
 npm run dev
 npm run seed
 npm run build
+```
