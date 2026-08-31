@@ -1,94 +1,92 @@
-# Myah Travels - TODO.md (Updated)
+# Myah Travels - TODO.md
 
 ## Status
 
-**Core code complete. Bug fixing + UX improvements in progress.**
+**Core code complete. Bug fixing + restructuring content system.**
 
 ---
 
-## ✅ Completed Recently
+## New Direction: Unified Content System
 
-| Fix | Status |
-|-----|--------|
-| Moveable outline offset | ✅ Fixed |
-| Button border + opacity | ✅ Fixed |
-| Button edit form (inputs not focusing) | ✅ Fixed |
-| Button URL editing | ✅ Fixed |
-| SmartBlock inline editing | ✅ Fixed |
-| Properties popup on right-click | ✅ Working |
-| Popup draggable | ✅ Working |
-| Popup lock/pin | ✅ Working |
-| Opacity, border radius, border width sliders | ✅ Added |
-| Divider thickness + colour | ✅ Added |
-| Shape border colour | ✅ Added |
-| Button border colour | ✅ Added |
+After Myah's feedback, the content architecture is being restructured:
 
----
+### ONE "New Post" button creates everything
 
-## Known Issues (Current)
+| Field | Purpose |
+|-------|---------|
+| Title | Content title |
+| Type | Post / Guide / Review (dropdown) |
+| Tags | Organic hashtag system (auto-suggest) |
+| Links | YouTube URL, social media URL (optional) |
+| Excerpt | Short summary |
+| Content | TipTap editor |
+| Status | Draft / Published / Hidden |
 
-| # | Issue | Priority |
-|---|-------|----------|
-| 1 | SmartBlock elements hard to select/move | High |
-| 2 | SmartBlock content doesn't fill container | High |
-| 3 | Marquee doesn't select SmartBlocks | Medium |
-| 4 | Template save freezes | High |
-| 5 | Manage templates empty | High |
-| 6 | Save draft unresponsive | High |
-| 7 | Portal elements non-functional in Design mode | Medium |
-| 8 | Divider styles (dashed/dotted/double) | Medium |
-| 9 | Image fill for shapes/buttons | Medium |
+### Tag System (Like Hashtags)
 
----
+- Tags created automatically when Myah types new ones
+- Auto-suggest shows existing tags while typing
+- Prevents spelling duplicates
+- Visitors filter feed by clicking tags
+- Tag list grows organically as she posts
 
-## New Direction: Restructured Priorities
+### Homepage Feed
 
-After Myah's feedback:
+- Endless scroll (already built)
+- Filter buttons replace tabs: All / Posts / Guides / Reviews
+- Tag chips for additional filtering
+- Sort options: Date / Tag / Type
+- Each card shows type + tags + optional link
 
-| Priority | Area | Why |
-|----------|------|-----|
-| **1** | Story mode post creation | Core business - writing |
-| **2** | Portal system | Client value |
-| **3** | Design mode (Canva replacement) | Low - save money later |
+### No More Separate Tabs
+
+- /blog, /guides, /reviews tabs REMOVED
+- Everything on homepage feed
+- Filters handle organisation
 
 ---
 
-## Story Mode - Next Steps
+## Phased Implementation
 
-1. Remove mode selector (Story = default for posts)
-2. Verify TipTap works for basic writing
-3. Add block elements (image, shape, divider)
-4. Fix or replace MiniCanvasEditorFull
-5. Test full post creation flow
+### Phase 1: Unified Post Creation
+- [x] One "New Post" button
+- [ ] Type dropdown in form
+- [ ] Tag input with auto-suggest
+- [x] Remove mode selector (DONE for posts)
 
-## Portal System - After Story Mode
+### Phase 2: Tag System
+- [ ] Auto-create tags on post save
+- [ ] Tag suggestions while typing
+- [ ] Tag filtering on homepage
+- [ ] Tag chips UI
 
-1. Test portal creation
-2. Test magic links
-3. Test portal member access
-4. Test notices + documents
-5. Polish portal UI
+### Phase 3: Link Fields
+- [ ] YouTube URL field
+- [ ] Social media URL field
+- [ ] Display links in feed cards
 
-## Design Mode (Deferred)
-
-Keep as separate tool. Flesh out later.
+### Phase 4: Filter System
+- [ ] Replace tabs with filter buttons
+- [ ] Tag cloud on homepage
+- [ ] Multi-select filters
+- [ ] Sort by tag/type/date
 
 ---
 
-## When Next Session
+## Deferred Items
 
-1. Pull main
-2. Remove mode selector from post creation
-3. Test TipTap writing flow
-4. Plan block elements implementation
-5. Fix template save/manage issues
+| Item | Priority |
+|------|----------|
+| Design mode (Canva replacement) | Low |
+| SmartBlock rework | Low |
+| MiniCanvasEditorFull | Low |
+| Template fixes | Medium |
+| Portal system | After content |
 
 ---
 
 ## Testing Commands
 
-```bash
 npm run dev
 npm run seed
 npm run build
-```
