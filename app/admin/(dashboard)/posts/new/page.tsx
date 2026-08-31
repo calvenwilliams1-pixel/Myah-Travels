@@ -3,25 +3,23 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import TipTapEditor from "@/components/editor/TipTapEditor";
-import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
-import ModeSelectorModal from "@/components/editor/ModeSelectorModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { createPostAction } from "../actions";
-import { EditorMode } from "@/types/canvas";
+import TagInput from "@/components/editor/TagInput";
 
 type PostStatus = "draft" | "published" | "hidden";
 
 export default function NewPostPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<EditorMode | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState<PostStatus>("draft");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
 
   async function handleSave() {
     if (!title.trim()) {
@@ -38,7 +36,8 @@ export default function NewPostPage() {
         content,
         excerpt,
         status,
-        mode: mode || "story",
+        mode: "story",
+        tagNames: tags,
       });
 
       if (result.error) {
@@ -57,21 +56,15 @@ export default function NewPostPage() {
     }
   }
 
-  if (!mode) {
-    return <ModeSelectorModal onSelect={setMode} />;
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">
-          New Post ({mode === "story" ? "📝 Story" : "🎨 Design"})
-        </h2>
+        <h2 className="text-2xl font-semibold">New Post</h2>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button onClick={handleSave} isLoading={isSaving}>
+          <Button type="submit" onClick={handleSave} isLoading={isSaving}>
             {status === "published" ? "Publish" : "Save Draft"}
           </Button>
         </div>
@@ -101,20 +94,24 @@ export default function NewPostPage() {
 
       <Card>
         <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tags
+        </label>
+        <TagInput
+          selectedTags={tags}
+          onAddTag={(tag) => setTags([...tags, tag])}
+          onRemoveTag={(tag) => setTags(tags.filter((t) => t !== tag))}
+        />
+      </Card>
+
+      <Card>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Content
         </label>
 
-        {mode === "story" ? (
-          <TipTapEditor
-            onChange={(_html, json) => setContent(JSON.stringify(json))}
-            contentType="post"
-          />
-        ) : (
-          <CanvasEditor
-            contentType="post"
-            onSave={async (docJson) => setContent(JSON.stringify(docJson))}
-          />
-        )}
+        <TipTapEditor
+          onChange={(_html, json) => setContent(JSON.stringify(json))}
+          contentType="post"
+        />
       </Card>
 
       <Card>
@@ -122,7 +119,8 @@ export default function NewPostPage() {
           Status
         </label>
         <select
-          value={status}          onChange={(e) => {
+          value={status}
+          onChange={(e) => {
             const value = e.target.value;
             if (value === "draft" || value === "published" || value === "hidden") {
               setStatus(value);

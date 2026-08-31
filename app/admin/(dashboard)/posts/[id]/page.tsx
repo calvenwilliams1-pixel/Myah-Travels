@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { getPostAction, updatePostAction } from "../actions";
+import TagInput from "@/components/editor/TagInput";
+import { getPostTags } from "@/lib/content";
 import { EditorMode } from "@/types/canvas";
 
 type PostStatus = "draft" | "published" | "hidden";
@@ -25,6 +27,7 @@ export default function EditPostPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadPost() {
@@ -34,6 +37,8 @@ export default function EditPostPage() {
           setTitle(post.title);
           setContent(post.content);
           setExcerpt(post.excerpt || "");
+          const postTags = await getPostTags(postId);
+          setTags(postTags);
           if (post.status === "draft" || post.status === "published" || post.status === "hidden") {
           setStatus(post.status);
           }
@@ -67,6 +72,7 @@ export default function EditPostPage() {
         content,
         excerpt,
         status,
+        tagNames: tags,
       });
 
       if (result.error) {
@@ -124,6 +130,17 @@ export default function EditPostPage() {
           name="excerpt"
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
+        />
+      </Card>
+
+      <Card>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tags
+        </label>
+        <TagInput
+          selectedTags={tags}
+          onAddTag={(tag) => setTags([...tags, tag])}
+          onRemoveTag={(tag) => setTags(tags.filter((t) => t !== tag))}
         />
       </Card>
 

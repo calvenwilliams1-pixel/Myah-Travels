@@ -37,6 +37,7 @@ export default function TipTapEditor({
   contentType = "post",
 }: TipTapEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
       extensions: [
       StarterKit,
       CanvasBlockNode,

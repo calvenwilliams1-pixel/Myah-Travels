@@ -13,7 +13,7 @@ import {
   revisions,
   redirects,
 } from "@/drizzle/schema";
-import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
+import { eq, and, desc, isNull, isNotNull, sql } from "drizzle-orm";
 
 // ============================================
 // SLUG GENERATION
@@ -80,24 +80,156 @@ export async function createCategory(name: string, slug?: string) {
 // TAGS
 // ============================================
 
+export function normaliseTagName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/^#/, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 export async function getAllTags() {
   return db.select().from(tags).orderBy(tags.name);
 }
 
-export async function createTag(name: string) {
-  const tagSlug = generateSlug(name);
-  return db.insert(tags).values({
-    name,
-    slug: tagSlug,
-  }).onConflictDoNothing().returning();
+export async function getTagBySlug(slug: string) {
+  const result = await db.select().from(tags).where(eq(tags.slug, slug)).limit(1);
+  return result[0] ?? null;
 }
 
-export async function getOrCreateTag(name: string) {
-  const existing = await db.select().from(tags).where(eq(tags.name, name)).limit(1);
-  if (existing.length > 0) return existing[0];
-  
-  const created = await createTag(name);
+export async function getOrCreateTag(name: string, dbOrTx: typeof db = db) {
+  const slug = normaliseTagName(name);
+  if (!slug) return null;
+
+  const existing = await dbOrTx.select().from(tags).where(eq(tags.slug, slug)).limit(1);
+  if (existing.length > 0) {
+    return existing[0];
+  }
+
+  const created = await dbOrTx.insert(tags).values({
+    name: name.trim(),
+    slug,
+  }).returning();
+
   return created[0] ?? null;
+}
+
+export async function getAllTagsWithCounts() {
+  const result = await db.select({
+    id: tags.id,
+    name: tags.name,
+    slug: tags.slug,
+    isFavourite: tags.isFavourite,
+    lastUsedAt: tags.lastUsedAt,
+    usageCount: sql<number>`COUNT(${postTags.postId})`.as("usage_count"),
+  })
+  .from(tags)
+  .leftJoin(postTags, eq(tags.id, postTags.tagId))
+  .groupBy(tags.id, tags.name, tags.slug, tags.isFavourite, tags.lastUsedAt);
+  
+  return result;
+}
+
+export async function getTagSuggestions(query: string) {
+  const slugQuery = normaliseTagName(query);
+  
+  return db.select()
+    .from(tags)
+    .where(sql`lower(${tags.slug}) LIKE ${"%" + slugQuery + "%"}`)
+    .orderBy(desc(tags.isFavourite), desc(tags.lastUsedAt), tags.name)
+    .limit(10);
+}
+
+export async function toggleTagFavourite(tagId: number) {
+  const tag = await db.select().from(tags).where(eq(tags.id, tagId)).limit(1);
+  if (tag.length === 0) return null;
+  
+  const updated = await db.update(tags)
+    .set({ isFavourite: !(tag[0].isFavourite ?? false) })
+    .where(eq(tags.id, tagId))
+    .returning();
+  
+  return updated[0];
+}
+
+export async function renameTag(tagId: number, newName: string) {
+  const newSlug = normaliseTagName(newName);
+  if (!newSlug) return { error: "Invalid tag name" };
+  
+  const existing = await db.select().from(tags)
+    .where(and(eq(tags.slug, newSlug), sql`${tags.id} != ${tagId}`))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    return { error: "Tag with this name already exists", existingTag: existing[0] };
+  }
+  
+  const updated = await db.update(tags)
+    .set({ name: newName.trim(), slug: newSlug })
+    .where(eq(tags.id, tagId))
+    .returning();
+  
+  return { success: true, tag: updated[0] };
+}
+
+export async function mergeTags(sourceId: number, targetId: number) {
+  if (sourceId === targetId) return { error: "Cannot merge tag into itself" };
+  
+  return db.transaction(async (tx) => {
+    const sourceAssociations = await tx.select()
+      .from(postTags)
+      .where(eq(postTags.tagId, sourceId));
+    
+    for (const assoc of sourceAssociations) {
+      await tx.insert(postTags)
+        .values({ postId: assoc.postId, tagId: targetId })
+        .onConflictDoNothing();
+    }
+    
+    await tx.delete(postTags).where(eq(postTags.tagId, sourceId));
+    await tx.delete(tags).where(eq(tags.id, sourceId));
+    
+    return { success: true };
+  });
+}
+
+export async function deleteTag(tagId: number) {
+  const usageCount = await db.select()
+    .from(postTags)
+    .where(eq(postTags.tagId, tagId));
+  
+  if (usageCount.length > 0) {
+    return { error: `Tag is used by ${usageCount.length} posts` };
+  }
+  
+  await db.delete(tags).where(eq(tags.id, tagId));
+  return { success: true };
+}
+
+export async function getPostTags(postId: number): Promise<string[]> {
+  const result = await db.select({ name: tags.name })
+    .from(postTags)
+    .innerJoin(tags, eq(postTags.tagId, tags.id))
+    .where(eq(postTags.postId, postId));
+  
+  return result.map((r) => r.name);
+}
+
+export async function updatePostTags(postId: number, tagNames: string[]) {
+  return db.transaction(async (tx) => {
+    await tx.delete(postTags).where(eq(postTags.postId, postId));
+
+    const now = new Date().toISOString();
+
+    for (const name of tagNames) {
+      const tag = await getOrCreateTag(name, tx);
+      if (tag) {
+        await tx.insert(postTags).values({ postId, tagId: tag.id }).onConflictDoNothing();
+        await tx.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tag.id));
+      }
+    }
+  });
 }
 
 // ============================================

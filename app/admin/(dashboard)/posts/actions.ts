@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
-import { createPost, updatePost, getPostById, softDeletePost } from "@/lib/content";
+import { createPost, updatePost, getPostById, softDeletePost, updatePostTags } from "@/lib/content";
 import { validatePost } from "@/lib/security";
 import { logActivity } from "@/lib/logging";
 
@@ -12,12 +12,13 @@ export async function createPostAction(data: {
   excerpt?: string;
   status?: string;
   mode?: string;
+  tagNames?: string[];
 }) {
   const user = await requireAuth();
 
   const validation = validatePost({
     title: data.title,
-    slug: data.title.toLowerCase().replace(/\s+/g, "-"),
+    slug: data.title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-"),
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,
@@ -39,6 +40,10 @@ export async function createPostAction(data: {
     return { error: "Failed to create post" };
   }
 
+  if (data.tagNames && data.tagNames.length > 0) {
+    await updatePostTags(post.id, data.tagNames);
+  }
+
   await logActivity({
     userId: Number(user.id),
     actionType: "create",
@@ -57,6 +62,7 @@ export async function updatePostAction(
     content: string;
     excerpt?: string;
     status?: string;
+    tagNames?: string[];
   }
 ) {
   const user = await requireAuth();
@@ -83,6 +89,10 @@ export async function updatePostAction(
 
   if (!post) {
     return { error: "Failed to update post" };
+  }
+
+  if (data.tagNames) {
+    await updatePostTags(id, data.tagNames);
   }
 
   await logActivity({
