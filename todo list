@@ -2,58 +2,91 @@
 
 ## Status
 
-**ALL CODE COMPLETE. Testing + Bug Fixing in progress.**
+**Core code complete. Bug fixing + restructuring content system.**
 
 ---
 
-## Moveable Fix - ✅ COMPLETE (Merged to main)
+## New Direction: Unified Content System
 
-| Issue | Status |
-|-------|--------|
-| Elements fly around | ✅ Fixed |
-| Resize opposite direction | ✅ Fixed |
-| Resize jittery | ✅ Fixed |
-| Outline misaligned | ✅ Fixed |
-| Outline drifts on zoom/resize | ✅ Fixed |
-| Bounds wall | ✅ Fixed |
-| Rotation | ✅ Fixed |
+After Myah's feedback, the content architecture is being restructured:
 
-**Root cause:** Moveable was rendered OUTSIDE the canvas div. Moved INSIDE.
+### ONE "New Post" button creates everything
+
+| Field | Purpose |
+|-------|---------|
+| Title | Content title |
+| Type | Post / Guide / Review (dropdown) |
+| Tags | Organic hashtag system (auto-suggest) |
+| Links | YouTube URL, social media URL (optional) |
+| Excerpt | Short summary |
+| Content | TipTap editor |
+| Status | Draft / Published / Hidden |
+
+### Tag System (Like Hashtags)
+
+- Tags created automatically when Myah types new ones
+- Auto-suggest shows existing tags while typing
+- Prevents spelling duplicates
+- Visitors filter feed by clicking tags
+- Tag list grows organically as she posts
+
+### Homepage Feed
+
+- Endless scroll (already built)
+- Filter buttons replace tabs: All / Posts / Guides / Reviews
+- Tag chips for additional filtering
+- Sort options: Date / Tag / Type
+- Each card shows type + tags + optional link
+
+### No More Separate Tabs
+
+- /blog, /guides, /reviews tabs REMOVED
+- Everything on homepage feed
+- Filters handle organisation
 
 ---
 
-## Remaining Issues
+## Phased Implementation
 
-| # | Issue | Priority |
-|---|-------|----------|
-| 1 | MiniCanvasEditorFull same fix | High (fix ready, untested) |
-| 2 | SmartBlock can't type | High |
-| 3 | Button URL not editable | High |
-| 4 | Template save freezes | High |
-| 5 | Manage templates empty | High |
-| 6 | Save draft unresponsive | High |
-| 7 | Colour pickers missing | Medium |
-| 8 | Portal elements non-functional | Medium |
-| 9 | Divider styles | Medium |
-| 10 | Image fill for shapes | Medium |
+### Phase 1: Unified Post Creation
+- [x] One "New Post" button
+- [ ] Type dropdown in form
+- [ ] Tag input with auto-suggest
+- [x] Remove mode selector (DONE for posts)
+
+### Phase 2: Tag System
+- [ ] Auto-create tags on post save
+- [ ] Tag suggestions while typing
+- [ ] Tag filtering on homepage
+- [ ] Tag chips UI
+
+### Phase 3: Link Fields
+- [ ] YouTube URL field
+- [ ] Social media URL field
+- [ ] Display links in feed cards
+
+### Phase 4: Filter System
+- [ ] Replace tabs with filter buttons
+- [ ] Tag cloud on homepage
+- [ ] Multi-select filters
+- [ ] Sort by tag/type/date
 
 ---
 
-## When Home / Next Session
+## Deferred Items
 
-1. Pull main
-2. Test MiniCanvasEditorFull (Story mode canvas)
-3. SmartBlock inline editing
-4. Button URL field
-5. Template save diagnostics
-6. Colour pickers
-7. Portal properties
+| Item | Priority |
+|------|----------|
+| Design mode (Canva replacement) | Low |
+| SmartBlock rework | Low |
+| MiniCanvasEditorFull | Low |
+| Template fixes | Medium |
+| Portal system | After content |
 
 ---
 
 ## Testing Commands
 
-```bash
 npm run dev
 npm run seed
 npm run build
