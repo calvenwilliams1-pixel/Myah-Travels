@@ -1,16 +1,3 @@
-Yes. Let's update MASTER-PROMPT with the new direction.
-
----
-
-## File: Replace `MASTER-PROMPT.md` on GitHub
-
-**On GitHub (main branch):**
-1. Go to `MASTER-PROMPT.md`
-2. Click pencil icon
-3. Delete ALL content
-4. Paste:
-
-```markdown
 # Myah Travels - MASTER-PROMPT.md
 
 I am building a website called "Myah Travels" for a travel writer/agent.
@@ -19,131 +6,86 @@ I am building a website called "Myah Travels" for a travel writer/agent.
 
 ## Current Status
 
-**Core code complete. Bug fixing + UX improvements in progress.**
+**Major Architecture Pivot: Content Blocks System.**
 
-Recently fixed: Moveable outline, button editing, SmartBlock editing, properties popup, opacity/border sliders.
+After Myah's feedback, the project has shifted from Canvas/design tools to a block-based content system.
 
----
-
-## Project Overview
-
-- Self-hosted Next.js 14 application on mini PC (Ubuntu Server)
-- Cloudflare Tunnel
-- SQLite (WAL mode) + Drizzle ORM
-- Dual-mode editor: TipTap (Story) + Canvas (Design)
-- Lucia Auth (TOTP 2FA)
-- Resend email
-- Client portal with magic links
-- Facebook-style feed homepage
-- Theme system
+**Core principle: Developer controls design. Template controls layout. Writer controls content.**
 
 ---
 
-## NEW DIRECTION (After Myah's Feedback)
+## The Pivot
 
-| Priority | Area | Why |
-|----------|------|-----|
-| 1 | Story mode post creation | Core business - writing |
-| 2 | Portal system | Client value |
-| 3 | Design mode | Low - Canva replacement later |
+### Old Direction (Rejected)
+- Canvas editor for writers
+- Drag/resize/rotate elements
+- Properties panels with colours/borders
+- Freeform layout
+- Moveable integration
 
-### Story Mode
-- Remove mode selector (Story = default)
-- Add block elements (image, shape, divider) to TipTap
-- Fix or replace MiniCanvasEditorFull
-- Keep it simple for writing
-
-### Portal System
-- Magic links
-- Member access
-- Notices + documents
-- Client trip planning
-
-### Design Mode (Deferred)
-- Keep as separate Canva-like tool
-- Flesh out later
+### New Direction
+- Block-based content (Title, Body, Hero, Gallery, Quote, etc)
+- Templates define design (Story, Guide, Review, FAQ)
+- Writers fill content blocks
+- No design decisions for writers
+- Vertical block editor (Notion-style)
 
 ---
 
-## Recently Fixed (Working)
+## Architecture
 
-| Fix | Status |
-|-----|--------|
-| Moveable outline offset | ✅ |
-| Button border/opacity | ✅ |
-| Button edit form focus | ✅ |
-| Button URL editing | ✅ |
-| SmartBlock editing | ✅ |
-| Properties popup (right-click) | ✅ |
-| Popup drag + lock | ✅ |
-| Opacity/corner/border sliders | ✅ |
-| Divider thickness/colour | ✅ |
+### Block System
+- `BlockType` = discriminated union of content types
+- `BLOCK_REGISTRY` maps type → editor + renderer
+- One block type = one data model = one editor = one renderer
 
----
+### Template System
+- Templates define which blocks are allowed + order
+- Templates control all visual design
+- Writer picks template, fills blocks
 
-## Known Issues
-
-| # | Issue | Priority |
-|---|-------|----------|
-| 1 | SmartBlock selection/move | High |
-| 2 | SmartBlock content doesn't fill | High |
-| 3 | Template save freezes | High |
-| 4 | Manage templates empty | High |
-| 5 | Save draft unresponsive | High |
-| 6 | Marquee doesn't select SmartBlocks | Medium |
-| 7 | Portal elements non-functional | Medium |
-| 8 | Divider styles | Medium |
-| 9 | Image fill | Medium |
+### Post Storage
+- Post = templateId + ordered list of block instances
+- Block instance = type + data (content only, NO x/y/width/height)
 
 ---
 
-## Key Architecture Decisions
+## MVP Phases
 
-| Decision | Choice |
-|----------|--------|
-| Position | Pixel-based at 800px |
-| Responsive | transform: scale() |
-| Storage | SQLite JSON blobs |
-| Undo/redo | Global (capped 50) |
-| Autosave | 2s debounce |
-| Rich text | TipTap JSON |
-| Grouping | groupId |
-| Clipboard | localStorage |
+| Phase | What |
+|-------|------|
+| 1 | TypeScript interfaces + BlockRegistry + 3 blocks |
+| 2 | Vertical block editor + template selector |
+| 3 | 3 starter templates + PostRenderer |
+| 4 | Portal blocks + manual migration |
 
 ---
 
-## How I Work
+## Canvas System
 
-- Editing on GitHub website to avoid paste corruption
-- Testing in Codespaces with git pull
-- Submit code for AI review BEFORE creating
-- Each file gets exact path + complete code
-- Use python3 scripts in Codespace for find/replace
-- Always verify changes with grep or diff
+**FROZEN. Not deleted.**
+
+Keep for potential:
+- Template previews
+- Admin tools
+- Future landing pages
+
+No new Canvas features.
+
+---
+
+## Key Files (Current)
+
+- `types/canvas.ts` - Canvas types (frozen)
+- `lib/content/index.ts` - Content CRUD + tag system
+- `components/editor/TipTapEditor.tsx` - Rich text editor
+- `components/editor/TagInput.tsx` - Tag input with auto-suggest
+- `app/admin/(dashboard)/posts/` - Post management
 
 ---
 
 ## Testing Commands
 
-```bash
 npm run dev
 npm run seed
 npm run build
-```
-
----
-
-## ⚠️ TEMPORARY: Auth Disabled For Testing
-
-Two files modified for testing:
-1. `middleware.ts` - Auth checks disabled
-2. `lib/auth/index.ts` - requireAuth returns first user
-
-**Revert instructions in TODO.md**
-```
-
-5. Commit: "Update MASTER-PROMPT with new direction"
-
----
-
-**Tell me when done.**
