@@ -2,113 +2,73 @@
 
 ## Status
 
-**Major Architecture Pivot: Content Blocks System.**
+**Content Blocks Architecture - Phase 2.5A in progress.**
 
-After Myah's feedback, moving away from Canvas/design tools for writers. New direction:
+## Core Principle
 
-**Developer controls design. Template controls layout. Writer controls content.**
+Developer controls design.
+Template controls layout.
+Writer controls content.
 
----
+## Locked Decisions
 
-## New Architecture: Block-Based Content
+### APPROVED
+- Template System
+- Block Registry
+- Block Editors
+- Block Renderers
+- Live Preview (split screen)
+- Theme Styles
+- Structured Content
 
-### Blocks (Content Types)
+### REJECTED
+- CanvasElement for writers
+- Moveable for writers
+- Drag-anywhere layout
+- Shape editors
+- Border controls
+- Property panels
+- General-purpose design tools
+
+## Phase 2.5A (Current)
+- [ ] TemplateStyle (expanded)
+- [ ] Renderer Registry (editor + renderer per block)
+- [ ] TitleRenderer
+- [ ] BodyRenderer
+- [ ] CalloutRenderer
+- [ ] PostRenderer (registry-driven)
+- [ ] TemplatePreview (split screen)
+- [ ] No `as any` casts
+
+## Phase 2.5B (Before Production)
+- [ ] Auto Save (debounced)
+- [ ] Undo / Redo
+- [ ] Publish Validation
+- [ ] Block Reordering
+- [ ] Error Boundaries
+- [ ] Responsive Preview (desktop/tablet/mobile)
+
+## Phase 2.5C (Future)
+- [ ] Template Migration
+- [ ] Inline Editing
+- [ ] Theme Management
+- [ ] Image System
+- [ ] Additional Blocks
+
+## MVP Blocks
 - Title
-- Body (rich text)
-- Hero Image
-- Gallery
-- Quick Facts
-- Quote
-- Pros & Cons
-- Verdict
-- Callout (Travel Tip)
-- YouTube Embed
-- FAQ (portal)
-- Documents (portal)
-- Notices (portal)
+- Body
+- Callout
 
-### Templates (Design)
-- Story (title, hero, body, quote, gallery)
-- Travel Guide (title, hero, quick facts, body, gallery)
-- Review (title, hero, pros & cons, body, verdict)
-- FAQ (title, accordion)
-
-### Writer Experience
-- Pick template → Fill content blocks → Preview → Publish
-- NO dragging, NO resizing, NO colour pickers, NO design decisions
-- Just writing
-
----
-
-## MVP Phases
-
-### Phase 1: Foundation
-- [ ] BlockType + BlockData TypeScript interfaces
-- [ ] BLOCK_REGISTRY architecture
-- [ ] 3 core blocks: Title, Body, Callout
-
-### Phase 2: Writer Editor
-- [ ] Vertical block editor (Notion-style)
-- [ ] Add/remove/reorder blocks
-- [ ] Template selector on post creation
-
-### Phase 3: Templates + Rendering
-- [ ] 3 starter templates (Story, Guide, Review)
-- [ ] PostRenderer that applies template styling
-- [ ] Same content renders differently per template
-
-### Phase 4: Portal + Polish
-- [ ] FAQ template
-- [ ] Portal blocks
-- [ ] Freeze Canvas (NOT delete)
-- [ ] Manual migration of existing posts
-
----
-
-## Canvas System: FREEZE
-
-Don't delete. Keep for potential:
-- Template previews
-- Admin tools
-- Future landing page builder
-
-But NO new features for Canvas. It's frozen.
-
----
-
-## Existing Posts Migration
-
-1. Freeze old system
-2. Build new in parallel
-3. Manually migrate top 20-50 posts
-4. Deprecate old editor
-
----
-
-## Portal Content
-
-Portal content becomes Templates:
-- FAQ Template = title + accordion blocks
-- Notice Template = title + callout blocks
-- Documents = file list blocks
-
-Same system, different templates.
-
----
-
-## What We're NOT Building (MVP)
-
-- Template Builder/Designer
-- Visual Editor
-- Theme Editor
-- Custom Layout Editor
-- Colour pickers for writers
-- Drag/resize anywhere
-
----
+## Renderer Requirements
+- No `as any` - use discriminated unions
+- Registry-driven (no giant switch)
+- TemplateStyle contains ALL design
+- Renderers contain ONLY structure
+- Error boundaries per block
+- Semantic HTML
 
 ## Testing Commands
-
 npm run dev
 npm run seed
 npm run build
