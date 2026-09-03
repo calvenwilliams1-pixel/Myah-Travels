@@ -16,12 +16,20 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Settings</h2>
-        <a
-          href="/admin/settings/password"
-          className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
-        >
-          Change Password →
-        </a>
+        <div className="flex gap-4">
+          <a
+            href="/admin/settings/tags"
+            className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
+          >
+            Manage Tags →
+          </a>
+          <a
+            href="/admin/settings/password"
+            className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
+          >
+            Change Password →
+          </a>
+        </div>
       </div>
 
       <form action={saveSettingsAction} className="space-y-6">

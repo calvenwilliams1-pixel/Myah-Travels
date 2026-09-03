@@ -48,17 +48,6 @@ export default async function TagsPage() {
                 <td className="px-4 py-2">
                   <form
                     action={mergeTagsAction}
-                    onSubmit={(e) => {
-                      const targetId = (e.currentTarget.elements.namedItem("targetId") as HTMLSelectElement)?.value;
-                      if (!targetId) {
-                        e.preventDefault();
-                        alert("Please select a tag to merge into.");
-                        return;
-                      }
-                      if (!confirm(`Merge "#${tag.name}" into the selected tag? This will delete "#${tag.name}".`)) {
-                        e.preventDefault();
-                      }
-                    }}
                     className="flex gap-1"
                   >
                     <input type="hidden" name="sourceId" value={tag.id} />
