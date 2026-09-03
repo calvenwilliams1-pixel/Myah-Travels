@@ -2,86 +2,108 @@
 
 ## Status
 
-**Core code complete. Bug fixing + restructuring content system.**
+**Major Architecture Pivot: Content Blocks System.**
+
+After Myah's feedback, moving away from Canvas/design tools for writers. New direction:
+
+**Developer controls design. Template controls layout. Writer controls content.**
 
 ---
 
-## New Direction: Unified Content System
+## New Architecture: Block-Based Content
 
-After Myah's feedback, the content architecture is being restructured:
+### Blocks (Content Types)
+- Title
+- Body (rich text)
+- Hero Image
+- Gallery
+- Quick Facts
+- Quote
+- Pros & Cons
+- Verdict
+- Callout (Travel Tip)
+- YouTube Embed
+- FAQ (portal)
+- Documents (portal)
+- Notices (portal)
 
-### ONE "New Post" button creates everything
+### Templates (Design)
+- Story (title, hero, body, quote, gallery)
+- Travel Guide (title, hero, quick facts, body, gallery)
+- Review (title, hero, pros & cons, body, verdict)
+- FAQ (title, accordion)
 
-| Field | Purpose |
-|-------|---------|
-| Title | Content title |
-| Type | Post / Guide / Review (dropdown) |
-| Tags | Organic hashtag system (auto-suggest) |
-| Links | YouTube URL, social media URL (optional) |
-| Excerpt | Short summary |
-| Content | TipTap editor |
-| Status | Draft / Published / Hidden |
-
-### Tag System (Like Hashtags)
-
-- Tags created automatically when Myah types new ones
-- Auto-suggest shows existing tags while typing
-- Prevents spelling duplicates
-- Visitors filter feed by clicking tags
-- Tag list grows organically as she posts
-
-### Homepage Feed
-
-- Endless scroll (already built)
-- Filter buttons replace tabs: All / Posts / Guides / Reviews
-- Tag chips for additional filtering
-- Sort options: Date / Tag / Type
-- Each card shows type + tags + optional link
-
-### No More Separate Tabs
-
-- /blog, /guides, /reviews tabs REMOVED
-- Everything on homepage feed
-- Filters handle organisation
+### Writer Experience
+- Pick template → Fill content blocks → Preview → Publish
+- NO dragging, NO resizing, NO colour pickers, NO design decisions
+- Just writing
 
 ---
 
-## Phased Implementation
+## MVP Phases
 
-### Phase 1: Unified Post Creation
-- [x] One "New Post" button
-- [ ] Type dropdown in form
-- [ ] Tag input with auto-suggest
-- [x] Remove mode selector (DONE for posts)
+### Phase 1: Foundation
+- [ ] BlockType + BlockData TypeScript interfaces
+- [ ] BLOCK_REGISTRY architecture
+- [ ] 3 core blocks: Title, Body, Callout
 
-### Phase 2: Tag System
-- [ ] Auto-create tags on post save
-- [ ] Tag suggestions while typing
-- [ ] Tag filtering on homepage
-- [ ] Tag chips UI
+### Phase 2: Writer Editor
+- [ ] Vertical block editor (Notion-style)
+- [ ] Add/remove/reorder blocks
+- [ ] Template selector on post creation
 
-### Phase 3: Link Fields
-- [ ] YouTube URL field
-- [ ] Social media URL field
-- [ ] Display links in feed cards
+### Phase 3: Templates + Rendering
+- [ ] 3 starter templates (Story, Guide, Review)
+- [ ] PostRenderer that applies template styling
+- [ ] Same content renders differently per template
 
-### Phase 4: Filter System
-- [ ] Replace tabs with filter buttons
-- [ ] Tag cloud on homepage
-- [ ] Multi-select filters
-- [ ] Sort by tag/type/date
+### Phase 4: Portal + Polish
+- [ ] FAQ template
+- [ ] Portal blocks
+- [ ] Freeze Canvas (NOT delete)
+- [ ] Manual migration of existing posts
 
 ---
 
-## Deferred Items
+## Canvas System: FREEZE
 
-| Item | Priority |
-|------|----------|
-| Design mode (Canva replacement) | Low |
-| SmartBlock rework | Low |
-| MiniCanvasEditorFull | Low |
-| Template fixes | Medium |
-| Portal system | After content |
+Don't delete. Keep for potential:
+- Template previews
+- Admin tools
+- Future landing page builder
+
+But NO new features for Canvas. It's frozen.
+
+---
+
+## Existing Posts Migration
+
+1. Freeze old system
+2. Build new in parallel
+3. Manually migrate top 20-50 posts
+4. Deprecate old editor
+
+---
+
+## Portal Content
+
+Portal content becomes Templates:
+- FAQ Template = title + accordion blocks
+- Notice Template = title + callout blocks
+- Documents = file list blocks
+
+Same system, different templates.
+
+---
+
+## What We're NOT Building (MVP)
+
+- Template Builder/Designer
+- Visual Editor
+- Theme Editor
+- Custom Layout Editor
+- Colour pickers for writers
+- Drag/resize anywhere
 
 ---
 
