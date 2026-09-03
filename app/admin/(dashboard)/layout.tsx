@@ -37,12 +37,7 @@ export default async function DashboardLayout({
               <Link href="/admin/posts" className="text-sm text-gray-600 hover:text-emerald-700">
                 Posts
               </Link>
-              <Link href="/admin/guides" className="text-sm text-gray-600 hover:text-emerald-700">
-                Guides
-              </Link>
-              <Link href="/admin/reviews" className="text-sm text-gray-600 hover:text-emerald-700">
-                Reviews
-              </Link>
+
               <Link href="/admin/media" className="text-sm text-gray-600 hover:text-emerald-700">
                 Media
               </Link>

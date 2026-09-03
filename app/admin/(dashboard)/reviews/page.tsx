@@ -15,9 +15,7 @@ export default async function ReviewsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Reviews</h2>
-        <Link href="/admin/reviews/new">
-          <Button>+ New Review</Button>
-        </Link>
+
       </div>
 
       <Card padding="none">

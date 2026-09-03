@@ -3,8 +3,7 @@ import Link from "next/link";
 
 const actions = [
   { href: "/admin/posts/new", label: "+ New Post", color: "bg-emerald-700 hover:bg-emerald-800" },
-  { href: "/admin/guides/new", label: "+ New Guide", color: "bg-emerald-700 hover:bg-emerald-800" },
-  { href: "/admin/reviews/new", label: "+ New Review", color: "bg-emerald-700 hover:bg-emerald-800" },
+
   { href: "/admin/portals/new", label: "+ New Portal", color: "bg-emerald-800 hover:bg-emerald-900" },
 ];
 
