@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createPost, updatePost, getPostById, softDeletePost, updatePostTags, getPostTags } from "@/lib/content";
+import { db } from "@/lib/db";
+import { posts } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
 import { validatePost } from "@/lib/security";
 import { logActivity } from "@/lib/logging";
 
@@ -116,6 +119,13 @@ export async function getPostAction(id: number) {
 export async function getPostTagsAction(postId: number) {
   await requireAuth();
   return getPostTags(postId);
+}
+
+export async function restorePostAction(id: number) {
+  await requireAuth();
+  const db = await import("@/lib/db");
+  await db.db.update(posts).set({ deletedAt: null }).where(eq(posts.id, id));
+  redirect("/admin/posts");
 }
 
 export async function deletePostAction(id: number) {
