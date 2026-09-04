@@ -172,10 +172,18 @@ export default function TemplateCreator({
       </div>
 
       <div className="lg:col-span-2 space-y-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-          <h2 className="font-semibold text-sm">
-            {selectedId ? "Edit Template" : "New Template"}
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg">
+            {selectedId ? "Edit Template" : "Create Template"}
           </h2>
+          <button
+            onClick={handleNewTemplate}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700"
+          >
+            + New Template
+          </button>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
 
           <div className="grid grid-cols-2 gap-3">
             <div>

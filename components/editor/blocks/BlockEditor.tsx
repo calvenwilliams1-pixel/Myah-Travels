@@ -252,14 +252,16 @@ export default function BlockEditor({
                 <button
                   onClick={() => handleMoveBlock(block.id, "up")}
                   disabled={index === 0}
-                  className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  aria-label="Move block up"
+                  className="text-base text-gray-400 hover:text-gray-600 disabled:opacity-30 px-2 py-1"
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => handleMoveBlock(block.id, "down")}
                   disabled={index === blocks.length - 1}
-                  className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  aria-label="Move block down"
+                  className="text-base text-gray-400 hover:text-gray-600 disabled:opacity-30 px-2 py-1"
                 >
                   ↓
                 </button>
@@ -308,6 +310,7 @@ export default function BlockEditor({
                     }
                   }}
                   disabled={!canAdd}
+                  title={canAdd ? undefined : "Already at max count or required block already added"}
                   className={`w-full text-left px-3 py-2 text-sm rounded flex items-center gap-2 ${
                     canAdd ? "hover:bg-emerald-50" : "opacity-40 cursor-not-allowed"
                   }`}
@@ -324,10 +327,12 @@ export default function BlockEditor({
       </div>
 
       {/* Preview column */}
-      <TemplatePreview
-        blocks={blocks}
-        template={getTemplateById(templateId)!}
-      />
+      <div className="lg:sticky lg:top-4">
+        <TemplatePreview
+          blocks={blocks}
+          template={getTemplateById(templateId)!}
+        />
+      </div>
     </div>
   );
 }
