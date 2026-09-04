@@ -15,7 +15,7 @@ export default async function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-semibold text-emerald-800 mb-2">
+            <h3 className="font-semibold text-[var(--color-primary)] mb-2">
               {settings.site_name || "MyCalTravels"}
             </h3>
             <p className="text-sm text-gray-600">
@@ -26,11 +26,11 @@ export default async function Footer() {
           <div>
             <h4 className="font-medium text-gray-800 mb-2">Quick Links</h4>
             <ul className="space-y-1 text-sm">
-              <li><Link href="/videos" className="text-gray-600 hover:text-emerald-700">Videos</Link></li>
-              <li><Link href="/about" className="text-gray-600 hover:text-emerald-700">About</Link></li>
-              <li><Link href="/faq" className="text-gray-600 hover:text-emerald-700">FAQ</Link></li>
-              <li><Link href="/privacy" className="text-gray-600 hover:text-emerald-700">Privacy Policy</Link></li>
-              <li><Link href="/contact" className="text-gray-600 hover:text-emerald-700">Contact</Link></li>
+              <li><Link href="/videos" className="text-gray-600 hover:text-[var(--color-primary)]">Videos</Link></li>
+              <li><Link href="/about" className="text-gray-600 hover:text-[var(--color-primary)]">About</Link></li>
+              <li><Link href="/faq" className="text-gray-600 hover:text-[var(--color-primary)]">FAQ</Link></li>
+              <li><Link href="/privacy" className="text-gray-600 hover:text-[var(--color-primary)]">Privacy Policy</Link></li>
+              <li><Link href="/contact" className="text-gray-600 hover:text-[var(--color-primary)]">Contact</Link></li>
             </ul>
           </div>
 

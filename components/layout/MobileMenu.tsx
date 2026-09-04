@@ -54,7 +54,7 @@ export default function MobileMenu() {
                   onClick={() => setIsOpen(false)}
                   className={`block px-3 py-2 rounded-lg text-base font-medium transition-colors ${
                     isActive
-                      ? "bg-emerald-50 text-emerald-700"
+                      ? "bg-[color:var(--color-primary)]/10 text-[var(--color-primary)]"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >

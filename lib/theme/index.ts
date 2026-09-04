@@ -59,3 +59,12 @@ export function hexToRgba(hex: string, alpha: number): string {
 export function validateHexColor(value: string): boolean {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
 }
+
+
+export function darkenHex(hex: string, factor: number): string {
+  const clean = hex.replace('#', '');
+  const r = Math.round(parseInt(clean.substring(0, 2), 16) * factor);
+  const g = Math.round(parseInt(clean.substring(2, 4), 16) * factor);
+  const b = Math.round(parseInt(clean.substring(4, 6), 16) * factor);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}

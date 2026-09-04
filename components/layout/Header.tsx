@@ -20,7 +20,7 @@ export default function Header({ siteName = "MyCalTravels", logoPath }: HeaderPr
               className="h-10 w-auto object-contain"
             />
           ) : (
-            <span className="text-xl font-semibold text-emerald-800">
+            <span className="text-xl font-semibold text-[var(--color-primary)]">
               {siteName}
             </span>
           )}

@@ -28,8 +28,8 @@ export default function Navigation() {
             href={item.href}
             className={`text-sm font-medium transition-colors ${
               isActive
-                ? "text-emerald-700 font-semibold"
-                : "text-gray-600 hover:text-emerald-700"
+                ? "text-[var(--color-primary)] font-semibold"
+                : "text-gray-600 hover:text-[var(--color-primary)]"
             }`}
           >
             {item.label}
