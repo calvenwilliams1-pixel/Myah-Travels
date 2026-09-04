@@ -47,7 +47,7 @@ export default function TemplateCreator({
         setName(template.name);
         setDescription(template.description);
         setThemeVariant(template.themeVariant || "minimal");
-        setSections(template.sections);
+        setSections(template.sections || []);
       }
     }
   }, [selectedId, templates]);
@@ -230,7 +230,7 @@ export default function TemplateCreator({
             const def = blockDefinitions.find((b) => b.type === blockType);
             if (!def) return null;
 
-            const section = sections.find((s) => s.type === blockType);
+            const section = (sections || []).find((s) => s.type === blockType);
             const currentState = section?.state || "disabled";
 
             return (
