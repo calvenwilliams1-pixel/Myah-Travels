@@ -22,7 +22,7 @@ export default async function FeaturedContent() {
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-2xl font-semibold mb-8">Latest Stories</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {posts.map((post) => {
+          {posts.map((post: any) => {
             const displayDate = post.publishedAt || post.createdAt;
             const formattedDate = displayDate
               ? new Date(displayDate).toLocaleDateString("en-US", {

@@ -248,7 +248,7 @@ export async function getPosts(options?: {
     conditions.push(eq(posts.status, options.status));
   }
   
-  let query = db.select().from(posts);
+  let query: any = db.select().from(posts);
   
   if (conditions.length > 0) {
     query = query.where(and(...conditions));
@@ -281,7 +281,7 @@ export async function createPost(data: {
   content: string;
   excerpt?: string;
   status?: string;
-  mode?: string;
+  mode?: "story" | "design";
   featuredImage?: string;
   seoTitle?: string;
   seoDescription?: string;
@@ -373,7 +373,7 @@ export async function getGuides(options?: {
     conditions.push(eq(guides.status, options.status));
   }
   
-  let query = db.select().from(guides).where(and(...conditions));
+  let query: any = db.select().from(guides).where(and(...conditions));
   query = query.orderBy(desc(guides.createdAt));
   
   if (options?.limit) {
@@ -403,7 +403,7 @@ export async function createGuide(data: {
   headerImage?: string;
   quickReference?: string;
   status?: string;
-  mode?: string;
+  mode?: "story" | "design";
 }) {
   const baseSlug = data.slug || generateSlug(data.title);
   const guideSlug = await generateUniqueSlug(baseSlug, "guide");
@@ -486,7 +486,7 @@ export async function getReviews(options?: {
     conditions.push(eq(reviews.status, options.status));
   }
   
-  let query = db.select().from(reviews).where(and(...conditions));
+  let query: any = db.select().from(reviews).where(and(...conditions));
   query = query.orderBy(desc(reviews.createdAt));
   
   if (options?.limit) {
@@ -531,7 +531,7 @@ export async function createReview(data: {
   wouldRecommend?: string;
   finalVerdict?: string;
   status?: string;
-  mode?: string;
+  mode?: "story" | "design";
 }) {
   const baseSlug = data.slug || generateSlug(data.title);
   const reviewSlug = await generateUniqueSlug(baseSlug, "review");

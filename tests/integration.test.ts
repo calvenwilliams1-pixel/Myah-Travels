@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 
 async function testDatabaseConnection() {
   try {
-    await db.execute(sql`SELECT count(*) as count FROM sqlite_master`);
+    await db.all(sql`SELECT count(*) as count FROM sqlite_master`);
     console.log("✅ Database connection works");
     return true;
   } catch (error) {

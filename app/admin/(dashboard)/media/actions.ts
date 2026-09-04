@@ -14,13 +14,13 @@ export async function uploadMediaAction(formData: FormData) {
   const caption = (formData.get("caption") as string) || "";
 
   if (!file) {
-    return { error: "No file provided" };
+    throw new Error("No file provided");
   }
 
   const result = await saveFile(file, folder);
 
   if (!result.success) {
-    return { error: result.error || "Upload failed" };
+    throw new Error(result.error || "Upload failed");
   }
 
   const record = await addMediaRecord({
@@ -42,7 +42,6 @@ export async function uploadMediaAction(formData: FormData) {
   });
 
   revalidatePath("/admin/media");
-  return { success: true, mediaId: record[0]?.id };
 }
 
 export async function deleteMediaAction(formData: FormData) {
@@ -51,13 +50,13 @@ export async function deleteMediaAction(formData: FormData) {
   const id = Number(formData.get("id"));
 
   if (!id) {
-    return { error: "No media ID provided" };
+    throw new Error("No media ID provided");
   }
 
   const result = await softDeleteMedia(id);
 
   if (!result.success) {
-    return { error: result.error };
+    throw new Error(result.error || "Delete failed");
   }
 
   await logActivity({
@@ -69,7 +68,6 @@ export async function deleteMediaAction(formData: FormData) {
   });
 
   revalidatePath("/admin/media");
-  return { success: true };
 }
 
 export async function updateMediaAction(

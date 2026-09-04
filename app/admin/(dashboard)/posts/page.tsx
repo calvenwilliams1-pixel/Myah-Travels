@@ -55,7 +55,7 @@ export default async function PostsPage({ searchParams }: { searchParams: { filt
             {
               header: "Created",
               accessor: (post: any) =>
-                new Date(post.createdAt).toLocaleDateString(),
+                post.createdAt ? new Date(post.createdAt).toLocaleDateString() : "Not available",
             },
             {
               header: "Feed",

@@ -1,18 +1,6 @@
 import React from "react";
 import FeedCard from "./FeedCard";
-
-interface FeedItem {
-  id: number;
-  type: "post" | "guide" | "review";
-  title: string;
-  excerpt: string;
-  featuredImage?: string | null;
-  slug: string;
-  publishedAt: string;
-  isPinned?: boolean;
-  isHighlighted?: boolean;
-  category?: string;
-}
+import { FeedItem } from "./types";
 
 interface FeedContainerProps {
   items: FeedItem[];
@@ -42,7 +30,7 @@ export default function FeedContainer({ items }: FeedContainerProps) {
           publishedAt={item.publishedAt}
           isPinned={item.isPinned}
           isHighlighted={item.isHighlighted}
-          category={item.category}
+          category={item.category ?? undefined}
         />
       ))}
     </div>

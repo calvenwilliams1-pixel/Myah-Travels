@@ -38,12 +38,12 @@ export async function saveSettingsAction(formData: FormData) {
 
   for (const colorKey of ["primary_color", "secondary_color", "accent_color"]) {
     if (settingsData[colorKey] && !isValidHexColor(settingsData[colorKey])) {
-      return { error: `Invalid color format for ${colorKey}. Use #RRGGBB` };
+      throw new Error(`Invalid color format for ${colorKey}. Use #RRGGBB`);
     }
   }
 
   if (settingsData.admin_email && !isValidEmail(settingsData.admin_email)) {
-    return { error: "Invalid email format for admin email" };
+    throw new Error("Invalid email format for admin email");
   }
 
   await setMultipleSettings(settingsData);
@@ -70,7 +70,7 @@ export async function addCertificationAction(formData: FormData) {
   }
 
   if (yearEarned && !/^\d{4}$/.test(yearEarned)) {
-    return { error: "Year must be 4 digits (e.g., 2026)" };
+    throw new Error("Year must be 4 digits (e.g., 2026)");
   }
 
   await addCertification({

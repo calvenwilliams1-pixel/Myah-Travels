@@ -53,7 +53,7 @@ export default async function PortalsPage() {
             {
               header: "Created",
               accessor: (portal: any) =>
-                new Date(portal.createdAt).toLocaleDateString(),
+                portal.createdAt ? new Date(portal.createdAt).toLocaleDateString() : "Not available",
             },
           ]}
           data={portals}

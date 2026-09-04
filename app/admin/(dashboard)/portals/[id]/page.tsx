@@ -108,7 +108,7 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
               { header: "Title", accessor: (n: any) => n.title },
               { header: "Pinned", accessor: (n: any) => n.isPinned ? "📌" : "—" },
               { header: "Global", accessor: (n: any) => n.isGlobalAnnouncement ? "🌍" : "—" },
-              { header: "Posted", accessor: (n: any) => new Date(n.createdAt).toLocaleDateString() },
+              { header: "Posted", accessor: (n: any) => n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Not available" },
             ]}
             data={notices}
             keyExtractor={(n) => n.id}

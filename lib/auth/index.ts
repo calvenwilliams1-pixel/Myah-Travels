@@ -7,7 +7,7 @@ import { authenticator } from "otplib";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-const adapter = new DrizzleSQLiteAdapter(db, sessions, users);
+const adapter = new DrizzleSQLiteAdapter(db, sessions as any, users as any);
 
 export const lucia = new Lucia(adapter, {
   sessionCookie: {

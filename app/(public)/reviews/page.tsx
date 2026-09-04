@@ -20,7 +20,7 @@ export default async function ReviewsPage() {
 
       {reviews.length > 0 ? (
         <div className="space-y-6">
-          {reviews.map((review) => (
+          {reviews.map((review: any) => (
             <Card key={review.id} padding="md">
               <Link href={`/reviews/${review.slug}`} className="block hover:text-emerald-700">
                 <div className="flex items-center gap-3 mb-2">

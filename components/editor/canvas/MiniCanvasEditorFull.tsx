@@ -595,11 +595,12 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                 onResizeEnd={({ target }) => {
                   const id = target.getAttribute("data-element-id");
                   if (!id) return;
+                  const el = target as HTMLElement;
                   updateElement(id, {
-                    width: Math.round(target.offsetWidth),
-                    height: Math.round(target.offsetHeight),
-                    x: Math.round(parseFloat(target.style.left)),
-                    y: Math.round(parseFloat(target.style.top)),
+                    width: Math.round(el.offsetWidth),
+                    height: Math.round(el.offsetHeight),
+                    x: Math.round(parseFloat(el.style.left)),
+                    y: Math.round(parseFloat(el.style.top)),
                   });
                   isInteractingRef.current = false;
                   debouncedOnChange.current.flush();
@@ -624,7 +625,7 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                   }
                 }}
                 onResizeGroup={({ targets, events }) => {
-                  events.forEach(({ target, width, height, beforeTranslate }) => {
+                  events.forEach(({ target, width, height, beforeTranslate }: any) => {
                     const id = target.getAttribute("data-element-id");
                     if (!id) return;
                     const origin = resizeOriginRef.current[id];
@@ -654,11 +655,12 @@ export default function MiniCanvasEditorFull({ initialJson, onChange }: MiniCanv
                   targets.forEach((target) => {
                     const id = target.getAttribute("data-element-id");
                     if (!id) return;
+                    const el = target as HTMLElement;
                     updateElement(id, {
-                      width: Math.round(target.offsetWidth),
-                      height: Math.round(target.offsetHeight),
-                      x: Math.round(parseFloat(target.style.left)),
-                      y: Math.round(parseFloat(target.style.top)),
+                      width: Math.round(el.offsetWidth),
+                      height: Math.round(el.offsetHeight),
+                      x: Math.round(parseFloat(el.style.left)),
+                      y: Math.round(parseFloat(el.style.top)),
                     });
                   });
                   isInteractingRef.current = false;

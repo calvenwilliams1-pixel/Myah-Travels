@@ -51,6 +51,6 @@ export const CanvasBlockNode = Node.create({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(CanvasBlockComponent);
+    return ReactNodeViewRenderer(CanvasBlockComponent as any);
   },
 });

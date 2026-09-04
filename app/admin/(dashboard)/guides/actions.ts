@@ -34,7 +34,7 @@ export async function createGuideAction(data: {
     excerpt: data.excerpt,
     quickReference: data.quickReference,
     status: data.status,
-    mode: data.mode || "story",
+    mode: (data.mode || "story") as "story" | "design",
   });
 
   if (!guide) {

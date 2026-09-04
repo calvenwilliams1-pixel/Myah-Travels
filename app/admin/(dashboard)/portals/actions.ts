@@ -20,7 +20,7 @@ export async function createPortalAction(formData: FormData) {
   const departureDate = String(formData.get("departureDate") || "");
   const returnDate = String(formData.get("returnDate") || "");
 
-  if (!name) return { error: "Portal name is required" };
+  if (!name) throw new Error("Portal name is required");
 
   const portal = await createPortal({
     name,
@@ -44,7 +44,7 @@ export async function addMemberAction(formData: FormData) {
   const portalId = Number(formData.get("portalId"));
   const email = String(formData.get("email") || "");
 
-  if (!portalId || !email) return { error: "Email required" };
+  if (!portalId || !email) throw new Error("Email required");
 
   await addPortalMember(portalId, email);
 
@@ -102,7 +102,7 @@ export async function addNoticeAction(formData: FormData) {
   const isPinned = formData.get("isPinned") === "on";
   const isGlobalAnnouncement = formData.get("isGlobalAnnouncement") === "on";
 
-  if (!title || !content) return { error: "Title and content required" };
+  if (!title || !content) throw new Error("Title and content required");
 
   await createPortalNotice(portalId, { title, content, isPinned, isGlobalAnnouncement });
 

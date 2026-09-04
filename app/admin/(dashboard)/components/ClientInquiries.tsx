@@ -18,7 +18,7 @@ export default async function ClientInquiries() {
         <p className="text-gray-500 text-sm">No inquiries yet.</p>
       ) : (
         <ul className="space-y-3">
-          {clients.map((client) => (
+          {clients.map((client: any) => (
             <li key={client.id} className="flex items-center justify-between gap-3">
               <Link href={`/admin/clients/${client.id}`} className="text-sm text-gray-700 hover:text-emerald-700 truncate flex-1 min-w-0">
                 {client.fullName}

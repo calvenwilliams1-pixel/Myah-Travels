@@ -6,6 +6,7 @@ export type BlockType =
   | "title"
   | "body"
   | "hero"
+  | "image"
   | "gallery"
   | "quickFacts"
   | "quote"
@@ -23,6 +24,12 @@ export interface BodyData {
 }
 
 export interface HeroData {
+  imageUrl: string;
+  alt: string;
+  caption?: string;
+}
+
+export interface ImageData {
   imageUrl: string;
   alt: string;
   caption?: string;
@@ -60,6 +67,7 @@ export type BlockData =
   | { id: string; type: "title"; data: TitleData }
   | { id: string; type: "body"; data: BodyData }
   | { id: string; type: "hero"; data: HeroData }
+  | { id: string; type: "image"; data: ImageData }
   | { id: string; type: "gallery"; data: GalleryData }
   | { id: string; type: "quickFacts"; data: QuickFactsData }
   | { id: string; type: "quote"; data: QuoteData }
@@ -70,8 +78,74 @@ export type BlockData =
 export interface TemplateSection {
   id: string;
   type: BlockType;
-  required: boolean;
+  label: string;
+  state: "required" | "optional" | "disabled";
   maxCount: number;
+}
+
+export interface TemplateStyle {
+  // Typography
+  fontFamily: string;
+  headingColor: string;
+  headingFontSize: string;
+  headingFontWeight: number;
+  headingMargin: string;
+  bodyColor: string;
+  bodyLineHeight: string;
+
+  // Hero
+  heroHeight: string;
+  heroBorderRadius: string;
+  heroMargin: string;
+
+  // Image
+  imageMaxWidth: string;
+  imageBorderRadius: string;
+  imageMargin: string;
+
+  // Gallery
+  galleryGap: string;
+  galleryImageHeight: string;
+  galleryBorderRadius: string;
+  galleryMargin: string;
+
+  // Quick Facts
+  quickFactsBackground: string;
+  quickFactsBorder: string;
+  quickFactsPadding: string;
+  quickFactsBorderRadius: string;
+  quickFactsMargin: string;
+  quickFactsLabelColor: string;
+  quickFactsValueColor: string;
+
+  // Quote
+  quoteBackground: string;
+  quoteBorderColor: string;
+  quotePadding: string;
+  quoteMargin: string;
+  quoteTextColor: string;
+  quoteAuthorColor: string;
+
+  // Callout
+  calloutBackground: string;
+  calloutBorder: string;
+  calloutTextColor: string;
+
+  // Pros/Cons
+  prosBackground: string;
+  consBackground: string;
+  prosConsPadding: string;
+  prosConsBorderRadius: string;
+  prosConsMargin: string;
+
+  // Verdict
+  verdictBackground: string;
+  verdictTextColor: string;
+  verdictPadding: string;
+  verdictBorderRadius: string;
+  verdictMargin: string;
+  starColor: string;
+  inactiveStarColor: string;
 }
 
 export interface Template {

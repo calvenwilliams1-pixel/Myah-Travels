@@ -66,7 +66,7 @@ export async function changePasswordAction(formData: FormData) {
     return { error: "Password must be at least 8 characters" };
   }
 
-  const userId = parseInt(user.id);
+  const userId = user.id;
   const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
   if (currentUser.length === 0) {

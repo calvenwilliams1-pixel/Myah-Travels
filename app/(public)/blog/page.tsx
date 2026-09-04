@@ -20,7 +20,7 @@ export default async function BlogPage() {
 
       {posts.length > 0 ? (
         <div className="space-y-6">
-          {posts.map((post) => (
+          {posts.map((post: any) => (
             <Card key={post.id} padding="md">
               <Link href={`/blog/${post.slug}`} className="block hover:text-emerald-700">
                 <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
@@ -28,7 +28,7 @@ export default async function BlogPage() {
                   <p className="text-gray-600 text-sm mb-3">{post.excerpt}</p>
                 )}
                 <p className="text-xs text-gray-400">
-                  {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
+                  {(() => { const d = post.publishedAt ?? post.createdAt; return d ? new Date(d).toLocaleDateString() : 'Not available'; })()}
                 </p>
               </Link>
             </Card>

@@ -15,7 +15,6 @@ function sanitizeUrl(url: string | undefined): string {
   if (!url) return "#";
   const safe = url.trim().toLowerCase();
   if (
-  if (
     safe.startsWith("http://") ||
     safe.startsWith("https://") ||
     safe.startsWith("mailto:") ||
@@ -174,7 +173,6 @@ export default function CanvasRenderer({ document, portalData }: CanvasRendererP
               console.log("BUTTON ELEMENT:", { borderWidth: el.borderWidth, borderColor: el.borderColor, opacity: el.opacity });
               const safeLink = sanitizeUrl(el.link);
               const normalizedLink = safeLink.toLowerCase();
-              const isExternal =
               const isExternal =
                 normalizedLink.startsWith("http://") ||
                 normalizedLink.startsWith("https://");

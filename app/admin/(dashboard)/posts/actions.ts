@@ -38,7 +38,7 @@ export async function createPostAction(formData: FormData) {
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,
-    mode: data.mode || "story",
+    mode: (data.mode || "story") as "story" | "design",
   });
 
   if (!post) {

@@ -37,6 +37,8 @@ export default async function ReviewDetailPage({ params }: { params: { slug: str
     ? review.cons.split("\n").map((s) => s.trim()).filter(Boolean)
     : [];
 
+  const dateString = review.publishedAt ?? review.createdAt;
+
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
       <div className="flex items-center gap-3 mb-4">
@@ -49,7 +51,7 @@ export default async function ReviewDetailPage({ params }: { params: { slug: str
       </div>
       
       <p className="text-sm text-gray-500 mb-8">
-        {review.reviewType} · {new Date(review.publishedAt || review.createdAt).toLocaleDateString()}
+        {review.reviewType} · {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}
       </p>
 
       {prosList.length > 0 && (

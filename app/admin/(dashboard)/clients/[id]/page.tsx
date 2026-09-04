@@ -28,7 +28,7 @@ export default async function ClientDetailPage({
         <div>
           <h2 className="text-2xl font-semibold">{client.fullName}</h2>
           <p className="text-sm text-gray-500">
-            Received: {new Date(client.createdAt).toLocaleDateString()}
+            Received: {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : "Not available"}
           </p>
         </div>
         <Link href="/admin/clients">
@@ -95,7 +95,7 @@ export default async function ClientDetailPage({
             Status
             <select
               name="status"
-              defaultValue={client.status}
+              defaultValue={client.status ?? "new"}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg"
             >
               <option value="new">New</option>

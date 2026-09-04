@@ -86,7 +86,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const undoToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [publishStatus, setPublishStatus] = useState<"draft" | "published" | "scheduled">(initialStatus);
   const [scheduledAt, setScheduledAt] = useState<string | undefined>(initialScheduledAt);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
   const moveableRef = useRef<any>(null);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const resizeOriginRef = useRef<Record<string, { x: number; y: number; width: number; height: number }>>({});
@@ -236,6 +236,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     setPropertiesPopup({
       x: Math.max(MARGIN, Math.min(contextMenu.x, window.innerWidth - POPUP_WIDTH - MARGIN)),
       y: Math.max(MARGIN, Math.min(contextMenu.y, window.innerHeight - POPUP_HEIGHT - MARGIN)),
+      locked: false,
     });
     setContextMenu(null);
   }, [contextMenu]);

@@ -14,16 +14,18 @@ export async function getClients(options?: {
   }
   
   if (options?.search) {
-    conditions.push(
-      or(
-        like(clients.fullName, `%${options.search}%`),
-        like(clients.email, `%${options.search}%`),
-        like(clients.destination, `%${options.search}%`)
-      )
+    const searchCondition = or(
+      like(clients.fullName, `%${options.search}%`),
+      like(clients.email, `%${options.search}%`),
+      like(clients.destination, `%${options.search}%`)
     );
+
+    if (searchCondition) {
+      conditions.push(searchCondition);
+    }
   }
   
-  let query = db.select().from(clients).where(and(...conditions)).orderBy(desc(clients.createdAt));
+  let query: any = db.select().from(clients).where(and(...conditions)).orderBy(desc(clients.createdAt));
   
   if (options?.limit) {
     query = query.limit(options.limit);
@@ -213,7 +215,7 @@ export async function exportClientsToCSV(): Promise<string> {
     return `"${str}"`;
   };
   
-  const rows = allClients.map((c) => [
+  const rows = allClients.map((c: any) => [
     c.id,
     c.fullName,
     c.phone,
@@ -226,12 +228,12 @@ export async function exportClientsToCSV(): Promise<string> {
     c.bestTimeToContact,
     c.consentToContact ? "Yes" : "No",
     c.status,
-    new Date(c.createdAt).toLocaleDateString(),
+    c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Not available",
   ]);
   
   const csv = [
     headers.join(","),
-    ...rows.map((row) => row.map(escapeCsv).join(",")),
+    ...rows.map((row: any) => row.map(escapeCsv).join(",")),
   ].join("\n");
   
   return csv;

@@ -47,7 +47,7 @@ export async function createReviewAction(data: {
 
   const review = await createReview({
     ...data,
-    mode: data.mode || "story",
+    mode: (data.mode || "story") as "story" | "design",
   });
   
   if (!review) {

@@ -44,7 +44,7 @@ export default async function GuidesPage() {
             {
               header: "Created",
               accessor: (guide: any) =>
-                new Date(guide.createdAt).toLocaleDateString(),
+                guide.createdAt ? new Date(guide.createdAt).toLocaleDateString() : "Not available",
             },
             {
               header: "Feed",

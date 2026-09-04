@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import TipTapEditor from "@/components/editor/TipTapEditor";
+import BlockEditor from "@/components/editor/blocks/BlockEditor";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -98,9 +98,8 @@ export default function NewPostPage() {
           Content
         </label>
 
-        <TipTapEditor
-          onChange={(_html, json) => setContent(JSON.stringify(json))}
-          contentType="post"
+        <BlockEditor
+          onChange={(blocks, templateId) => setContent(JSON.stringify({ blocks, templateId }))}
         />
       </Card>
 

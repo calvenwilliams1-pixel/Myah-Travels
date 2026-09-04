@@ -79,7 +79,7 @@ export default async function ClientsPage({
             {
               header: "Received",
               accessor: (client: any) =>
-                new Date(client.createdAt).toLocaleDateString(),
+                client.createdAt ? new Date(client.createdAt).toLocaleDateString() : "Not available",
             },
           ]}
           data={clients}

@@ -99,7 +99,7 @@ export default async function PortalDashboardPage({ params }: { params: { portal
               </div>
               <p className="text-gray-700">{notice.content}</p>
               <p className="text-xs text-gray-400 mt-2">
-                {new Date(notice.createdAt).toLocaleDateString()}
+                {notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : "Not available"}
               </p>
             </Card>
           ))

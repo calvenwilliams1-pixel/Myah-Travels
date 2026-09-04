@@ -30,11 +30,14 @@ export default async function GuideDetailPage({ params }: { params: { slug: stri
     notFound();
   }
 
+  const dateString = guide.updatedAt ?? guide.createdAt;
+
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
       <h1 className="text-3xl font-semibold mb-4">{guide.title}</h1>
       <p className="text-sm text-gray-500 mb-8">
-        Last updated: {new Date(guide.updatedAt || guide.createdAt).toLocaleDateString()}
+        Last updated:{" "}
+        {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}
       </p>
       
       {guide.quickReference && (

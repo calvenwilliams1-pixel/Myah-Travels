@@ -11,7 +11,9 @@ export async function updateClientAction(formData: FormData) {
   const status = String(formData.get("status") || "new");
   const notes = String(formData.get("notes") || "");
 
-  if (!id) return { error: "No client ID" };
+  if (!id) {
+    redirect("/admin/clients");
+  }
 
   await updateClient(id, { status, notes });
 

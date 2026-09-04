@@ -182,12 +182,14 @@ export async function getAllTemplates(contentType: string, userId?: number) {
     isNull(templates.deletedAt),
   ];
 
-  conditions.push(
-    or(
-      eq(templates.isBuiltIn, true),
-      userId ? eq(templates.userId, userId) : sql`1 = 0`
-    )
+  const ownershipCondition = or(
+    eq(templates.isBuiltIn, true),
+    userId ? eq(templates.userId, userId) : sql`${0} = 1`
   );
+
+  if (ownershipCondition) {
+    conditions.push(ownershipCondition);
+  }
 
   return db.select().from(templates)
     .where(and(...conditions))
@@ -211,7 +213,7 @@ export async function saveTemplate(data: {
   layoutData: string;
   userId: number;
 }) {
-  return db.insert(templates).values({
+  return db.insert(templates as any).values({
     name: data.name,
     contentType: data.contentType,
     layoutData: data.layoutData,
@@ -265,7 +267,7 @@ export async function duplicateTemplate(id: number, userId: number, newName?: st
   const original = template[0];
   if (!original.isBuiltIn && original.userId !== userId) return null;
 
-  return db.insert(templates).values({
+  return db.insert(templates as any).values({
     name: newName || `${original.name} Copy`,
     contentType: original.contentType,
     layoutData: original.layoutData,

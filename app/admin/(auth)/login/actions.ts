@@ -47,7 +47,14 @@ export async function loginAction(
     .limit(1);
 
   if (user.length === 0) {
-    await logActivity(null, "login_failed", "user", undefined, "User not found", ip, userAgent);
+    await logActivity({
+      userId: null,
+      actionType: "login_failed",
+      entityType: "user",
+      details: "User not found",
+      ipAddress: ip,
+      userAgent,
+    });
     return { error: "Invalid username or password." };
   }
 
@@ -56,15 +63,15 @@ export async function loginAction(
   const passwordValid = await verifyPassword(password, foundUser.passwordHash);
 
   if (!passwordValid) {
-    await logActivity(
-      foundUser.id,
-      "login_failed",
-      "user",
-      foundUser.id,
-      "Invalid password",
-      ip,
-      userAgent
-    );
+    await logActivity({
+      userId: foundUser.id,
+      actionType: "login_failed",
+      entityType: "user",
+      entityId: foundUser.id,
+      details: "Invalid password",
+      ipAddress: ip,
+      userAgent,
+    });
     return { error: "Invalid username or password." };
   }
 
@@ -73,15 +80,15 @@ export async function loginAction(
   }
 
   await createSession(foundUser.id);
-  await logActivity(
-    foundUser.id,
-    "login_success",
-    "user",
-    foundUser.id,
-    "Login successful",
-    ip,
-    userAgent
-  );
+  await logActivity({
+    userId: foundUser.id,
+    actionType: "login_success",
+    entityType: "user",
+    entityId: foundUser.id,
+    details: "Login successful",
+    ipAddress: ip,
+    userAgent,
+  });
 
   return { success: true };
 }
@@ -112,31 +119,34 @@ export async function verifyTotpAction(
   }
 
   const foundUser = user[0];
+  if (!foundUser.totpSecret) {
+    return { error: "Invalid code." };
+  }
   const totpValid = verifyTotp(totpCode, foundUser.totpSecret);
 
   if (!totpValid) {
-    await logActivity(
-      foundUser.id,
-      "totp_failed",
-      "user",
-      foundUser.id,
-      "Invalid TOTP code",
-      ip,
-      userAgent
-    );
+    await logActivity({
+      userId: foundUser.id,
+      actionType: "totp_failed",
+      entityType: "user",
+      entityId: foundUser.id,
+      details: "Invalid TOTP code",
+      ipAddress: ip,
+      userAgent,
+    });
     return { error: "Invalid code." };
   }
 
   await createSession(foundUser.id);
-  await logActivity(
-    foundUser.id,
-    "login_success",
-    "user",
-    foundUser.id,
-    "Login successful with TOTP",
-    ip,
-    userAgent
-  );
+  await logActivity({
+    userId: foundUser.id,
+    actionType: "login_success",
+    entityType: "user",
+    entityId: foundUser.id,
+    details: "Login successful with TOTP",
+    ipAddress: ip,
+    userAgent,
+  });
 
   return { success: true };
 }

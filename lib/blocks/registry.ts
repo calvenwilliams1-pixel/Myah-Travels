@@ -42,6 +42,17 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockDefinition> = {
       data: { imageUrl: "", alt: "" },
     }),
   },
+  image: {
+    type: "image",
+    label: "Image",
+    icon: "🖼️",
+    description: "Single image with caption",
+    getDefaultData: () => ({
+      id: crypto.randomUUID(),
+      type: "image",
+      data: { imageUrl: "", alt: "" },
+    }),
+  },
   gallery: {
     type: "gallery",
     label: "Gallery",

@@ -20,7 +20,7 @@ export default async function GuidesPage() {
 
       {guides.length > 0 ? (
         <div className="space-y-6">
-          {guides.map((guide) => (
+          {guides.map((guide: any) => (
             <Card key={guide.id} padding="md">
               <Link href={`/guides/${guide.slug}`} className="block hover:text-emerald-700">
                 <h2 className="text-xl font-semibold mb-2">{guide.title}</h2>
@@ -28,7 +28,7 @@ export default async function GuidesPage() {
                   <p className="text-gray-600 text-sm mb-3">{guide.excerpt}</p>
                 )}
                 <p className="text-xs text-gray-400">
-                  Updated: {new Date(guide.updatedAt || guide.createdAt).toLocaleDateString()}
+                  Updated: {(() => { const d = guide.updatedAt ?? guide.createdAt; return d ? new Date(d).toLocaleDateString() : 'Not available'; })()}
                 </p>
               </Link>
             </Card>
