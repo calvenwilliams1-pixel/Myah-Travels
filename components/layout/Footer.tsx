@@ -16,7 +16,7 @@ export default async function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="font-semibold text-emerald-800 mb-2">
-              {settings.site_name || "Myah Travels"}
+              {settings.site_name || "MyCalTravels"}
             </h3>
             <p className="text-sm text-gray-600">
               {settings.tagline || "Travel can be big or small and I'm here to write it all"}
@@ -62,7 +62,7 @@ export default async function Footer() {
 
         <div className="mt-8 pt-4 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            © {year} {settings.site_name || "Myah Travels"}. All rights reserved.
+            © {year} {settings.site_name || "MyCalTravels"}. All rights reserved.
           </p>
           {settings.footer_text && (
             <p className="text-xs text-gray-400 mt-1">{settings.footer_text}</p>

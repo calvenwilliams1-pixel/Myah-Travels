@@ -2,7 +2,7 @@ import React from "react";
 import "./globals.css";
 
 export const metadata = {
-  title: "Myah Travels",
+  title: "MyCalTravels",
   description: "Travel can be big or small and I'm here to write it all",
 };
 

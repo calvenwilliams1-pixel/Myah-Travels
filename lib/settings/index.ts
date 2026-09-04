@@ -73,7 +73,7 @@ export async function deleteCertification(id: number) {
 }
 
 export const DEFAULT_SETTINGS = {
-  site_name: "Myah Travels",
+  site_name: "MyCalTravels",
   tagline: "Travel can be big or small and I'm here to write it all",
   primary_color: "#4a7c59",
   secondary_color: "#e8b84b",

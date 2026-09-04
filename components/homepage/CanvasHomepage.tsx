@@ -10,7 +10,7 @@ export default async function CanvasHomepage() {
     return (
       <div className="max-w-4xl mx-auto py-20 text-center">
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-          Welcome to Myah Travels
+          Welcome to MyCalTravels
         </h2>
         <p className="text-gray-500">
           Homepage content coming soon.

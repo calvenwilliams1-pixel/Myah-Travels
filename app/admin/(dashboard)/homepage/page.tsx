@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Homepage Editor | Myah Travels Admin",
+  title: "Homepage Editor | MyCalTravels Admin",
 };
 
 export default async function HomepageEditorPage() {

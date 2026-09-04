@@ -9,7 +9,7 @@ import StorageUsage from "./components/StorageUsage";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Dashboard | Myah Travels Admin",
+  title: "Dashboard | MyCalTravels Admin",
 };
 
 export default function DashboardPage() {

@@ -7,7 +7,7 @@ import TipTapRenderer from "@/components/editor/TipTapRenderer";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "FAQ | Myah Travels",
+  title: "FAQ | MyCalTravels",
   description: "Frequently asked questions.",
 };
 

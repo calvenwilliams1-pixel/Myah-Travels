@@ -48,7 +48,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-semibold text-center mb-6">
-          Myah Travels Admin
+          MyCalTravels Admin
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">

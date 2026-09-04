@@ -45,7 +45,7 @@ export function generateTotpSecret(): string {
   return authenticator.generateSecret();
 }
 
-export function generateTotpUri(secret: string, username: string, issuer = "Myah Travels"): string {
+export function generateTotpUri(secret: string, username: string, issuer = "MyCalTravels"): string {
   return authenticator.keyuri(username, issuer, secret);
 }
 

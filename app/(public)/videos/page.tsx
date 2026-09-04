@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Videos | Myah Travels",
+  title: "Videos | MyCalTravels",
   description: "Travel videos from Myah.",
 };
 

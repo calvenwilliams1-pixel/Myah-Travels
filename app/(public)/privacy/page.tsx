@@ -7,8 +7,8 @@ import TipTapRenderer from "@/components/editor/TipTapRenderer";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Privacy Policy | Myah Travels",
-  description: "Privacy policy for Myah Travels.",
+  title: "Privacy Policy | MyCalTravels",
+  description: "Privacy policy for MyCalTravels.",
 };
 
 export default async function PrivacyPage() {

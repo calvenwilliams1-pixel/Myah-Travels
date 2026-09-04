@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata() {
   const settings = await getAllSettings();
   return {
-    title: settings.site_name || "Myah Travels",
+    title: settings.site_name || "MyCalTravels",
     description: settings.tagline || "Travel can be big or small and I'm here to write it all",
   };
 }

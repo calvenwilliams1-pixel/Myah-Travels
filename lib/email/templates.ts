@@ -1,5 +1,5 @@
 const BRAND_COLOR = "#4a7c59";
-const SITE_NAME = "Myah Travels";
+const SITE_NAME = "MyCalTravels";
 const SITE_URL = process.env.SITE_URL || "https://myahtravels.com";
 
 function escapeHtml(input: string): string {

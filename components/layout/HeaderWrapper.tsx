@@ -6,7 +6,7 @@ export default async function HeaderWrapper() {
   const settings = await getAllSettings();
   return (
     <Header
-      siteName={settings.site_name || "Myah Travels"}
+      siteName={settings.site_name || "MyCalTravels"}
       logoPath={settings.logo_path}
     />
   );

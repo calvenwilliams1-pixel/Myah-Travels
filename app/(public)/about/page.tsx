@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "About | Myah Travels",
+  title: "About | MyCalTravels",
   description: "Learn more about Myah, travel writer and agent.",
 };
 

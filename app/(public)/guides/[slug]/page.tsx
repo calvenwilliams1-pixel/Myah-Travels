@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
   
   return {
-    title: guide.seoTitle || `${guide.title} | Myah Travels`,
+    title: guide.seoTitle || `${guide.title} | MyCalTravels`,
     description: guide.seoDescription || guide.excerpt || guide.title,
   };
 }

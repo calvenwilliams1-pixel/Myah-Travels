@@ -6,7 +6,7 @@ import { eq, and, or, lte, asc, inArray } from "drizzle-orm";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const EMAIL_FROM =
-  process.env.EMAIL_FROM || "Myah Travels <notifications@myahtravels.com>";
+  process.env.EMAIL_FROM || "MyCalTravels <notifications@myahtravels.com>";
 
 const MAX_ATTEMPTS = 3;
 const RATE_LIMIT_MS = 500;

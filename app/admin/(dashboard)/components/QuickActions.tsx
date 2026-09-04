@@ -5,6 +5,7 @@ const actions = [
   { href: "/admin/posts/new", label: "+ New Post", color: "bg-emerald-700 hover:bg-emerald-800" },
 
   { href: "/admin/portals/new", label: "+ New Portal", color: "bg-emerald-800 hover:bg-emerald-900" },
+  { href: "/admin/templates", label: "+ Template Manager", color: "bg-blue-700 hover:bg-blue-800" },
 ];
 
 export default function QuickActions() {

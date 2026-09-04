@@ -56,7 +56,7 @@ async function seed() {
   }
 
   const defaultSettings = [
-    { key: "site_name", value: "Myah Travels" },
+    { key: "site_name", value: "MyCalTravels" },
     { key: "tagline", value: "Travel can be big or small and I'm here to write it all" },
     { key: "primary_color", value: "#4a7c59" },
     { key: "secondary_color", value: "#e8b84b" },
@@ -240,7 +240,7 @@ async function seed() {
         theme: { primaryColor: "#4a7c59", secondaryColor: "#e8b84b", headingFont: "Inter", bodyFont: "Inter" },
         elements: [
           { id: "seed-hero-1", name: "Hero Background", type: "shape", x: 0, y: 0, width: 800, height: 500, rotation: 0, zIndex: 1, locked: false, visible: true, shapeType: "square", fillColor: "#4a7c59", borderRadius: 0, opacity: 1 },
-          { id: "seed-hero-2", name: "Welcome Text", type: "text", x: 100, y: 150, width: 600, height: 100, rotation: 0, zIndex: 2, locked: false, visible: true, text: "Welcome to Myah Travels", fontSize: 48, color: "#ffffff", fontFamily: "Inter", textAlign: "center", fontWeight: "bold" },
+          { id: "seed-hero-2", name: "Welcome Text", type: "text", x: 100, y: 150, width: 600, height: 100, rotation: 0, zIndex: 2, locked: false, visible: true, text: "Welcome to MyCalTravels", fontSize: 48, color: "#ffffff", fontFamily: "Inter", textAlign: "center", fontWeight: "bold" },
           { id: "seed-hero-3", name: "Tagline", type: "text", x: 100, y: 270, width: 600, height: 60, rotation: 0, zIndex: 3, locked: false, visible: true, text: "Travel can be big or small and I'm here to write it all", fontSize: 20, color: "#ffffff", fontFamily: "Inter", textAlign: "center", fontWeight: "normal" },
           { id: "seed-hero-4", name: "CTA Button", type: "button", x: 300, y: 360, width: 200, height: 50, rotation: 0, zIndex: 4, locked: false, visible: true, text: "Start Exploring", link: "/blog", backgroundColor: "#e8b84b", textColor: "#333333", borderRadius: 25 },
         ],
