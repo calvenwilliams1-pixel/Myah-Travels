@@ -49,7 +49,7 @@ export default function TipTapEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-emerald-700 underline",
+          class: "text-primary underline",
         },
       }),
       Placeholder.configure({

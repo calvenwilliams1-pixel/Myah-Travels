@@ -29,7 +29,7 @@ export default function Toolbar({ editor, contentType = "post" }: ToolbarProps) 
       disabled={disabled}
       className={`px-2 py-1 rounded text-sm font-medium transition-colors ${
         active
-          ? "bg-emerald-100 text-emerald-800"
+          ? "bg-primary/10 text-primary"
           : "text-gray-600 hover:bg-gray-100"
       } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
     >

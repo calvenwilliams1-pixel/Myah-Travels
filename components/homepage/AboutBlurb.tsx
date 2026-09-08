@@ -21,7 +21,7 @@ export default async function AboutBlurb() {
         <Card padding="lg">
           <h2 className="text-2xl font-semibold mb-4">Welcome</h2>
           <p className="text-gray-700 leading-relaxed mb-6">{bio}</p>
-          <Link href="/about" className="text-emerald-700 font-medium hover:underline">
+          <Link href="/about" className="text-primary font-medium hover:underline">
             Learn more about me →
           </Link>
         </Card>

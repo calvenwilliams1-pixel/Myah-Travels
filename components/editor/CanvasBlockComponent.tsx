@@ -63,8 +63,8 @@ export default function CanvasBlockComponent({ node, updateAttributes }: CanvasB
 
   return (
     <NodeViewWrapper className="canvas-block-wrapper">
-      <div className="border-2 border-emerald-200 rounded-lg overflow-hidden">
-        <div className="bg-emerald-50 px-3 py-1 text-xs text-emerald-700">
+      <div className="border-2 border-primary/20 rounded-lg overflow-hidden">
+        <div className="bg-primary/10 px-3 py-1 text-xs text-primary">
           🎨 {displayTitle}
         </div>
         <ErrorBoundary>

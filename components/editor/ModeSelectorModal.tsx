@@ -21,28 +21,28 @@ export default function ModeSelectorModal({ onSelect }: ModeSelectorModalProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => onSelect("story")}
-            className="border-2 border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-xl p-6 text-center transition-all"
+            className="border-2 border-gray-200 hover:border-primary hover:bg-primary/10 rounded-xl p-6 text-center transition-all"
           >
             <span className="text-4xl block mb-3">📝</span>
             <span className="text-lg font-semibold block">Story</span>
             <span className="text-xs text-gray-500 mt-2 block">
               Long-form writing with embedded visual elements
             </span>
-            <span className="inline-block mt-4 px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-medium">
+            <span className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium">
               Create Story
             </span>
           </button>
 
           <button
             onClick={() => onSelect("design")}
-            className="border-2 border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-xl p-6 text-center transition-all"
+            className="border-2 border-gray-200 hover:border-primary hover:bg-primary/10 rounded-xl p-6 text-center transition-all"
           >
             <span className="text-4xl block mb-3">🎨</span>
             <span className="text-lg font-semibold block">Design</span>
             <span className="text-xs text-gray-500 mt-2 block">
               Free-form visual layout with movable elements
             </span>
-            <span className="inline-block mt-4 px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-medium">
+            <span className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium">
               Create Design
             </span>
           </button>

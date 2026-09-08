@@ -22,7 +22,7 @@ export default function TemplatePreview({ blocks, template }: TemplatePreviewPro
               key={section.id}
               className={`text-xs px-2 py-1 rounded ${
                 section.state === "required"
-                  ? "bg-emerald-100 text-emerald-800"
+                  ? "bg-primary/10 text-primary"
                   : "bg-gray-100 text-gray-600"
               }`}
             >

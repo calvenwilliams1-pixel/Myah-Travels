@@ -34,7 +34,7 @@ export default async function FeaturedContent() {
 
             return (
               <Card key={post.id} padding="md">
-                <Link href={`/blog/${post.slug}`} className="block hover:text-emerald-700">
+                <Link href={`/blog/${post.slug}`} className="block hover:text-primary">
                   <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>
                   {post.excerpt && (
                     <p className="text-sm text-gray-600 mb-3 line-clamp-3">{post.excerpt}</p>
@@ -48,7 +48,7 @@ export default async function FeaturedContent() {
           })}
         </div>
         <div className="text-center mt-8">
-          <Link href="/blog" className="text-emerald-700 font-medium hover:underline">
+          <Link href="/blog" className="text-primary font-medium hover:underline">
             View all posts →
           </Link>
         </div>
