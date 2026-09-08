@@ -6,7 +6,20 @@ module.exports = {
     "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: "rgb(var(--color-primary-rgb) / <alpha-value>)",
+        "primary-dark": "rgb(var(--color-primary-dark-rgb) / <alpha-value>)",
+        secondary: "rgb(var(--color-secondary-rgb) / <alpha-value>)",
+        "secondary-dark": "rgb(var(--color-secondary-dark-rgb) / <alpha-value>)",
+        accent: "rgb(var(--color-accent-rgb) / <alpha-value>)",
+        "accent-dark": "rgb(var(--color-accent-dark-rgb) / <alpha-value>)",
+        success: "#16a34a",
+        warning: "#d97706",
+        danger: "#dc2626",
+        info: "#2563eb",
+      },
+    },
   },
   plugins: [],
 };

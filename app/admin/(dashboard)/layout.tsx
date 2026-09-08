@@ -2,6 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, destroySession } from "@/lib/auth";
+import ThemeProvider from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 
 export default async function DashboardLayout({
@@ -22,7 +23,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ThemeProvider>
+      <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="flex items-center justify-between px-6 py-4">
           <h1 className="text-xl font-semibold">MyCalTravels Admin</h1>
@@ -68,6 +70,7 @@ export default async function DashboardLayout({
         </div>
       </header>
       <main className="px-6 py-6">{children}</main>
-    </div>
+      </div>
+    </ThemeProvider>
   );
 }
