@@ -30,7 +30,7 @@ export default async function VideosPage() {
                 href={video.youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block hover:text-emerald-700"
+                className="block hover:text-primary"
               >
                 {video.thumbnailUrl && (
                   <Image

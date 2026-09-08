@@ -124,7 +124,7 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
             <ul className="space-y-2">
               {documents.map((doc) => (
                 <li key={doc.id}>
-                  <a href={`/uploads/${doc.filePath}`} className="text-emerald-700 hover:underline">
+                  <a href={`/uploads/${doc.filePath}`} className="text-primary hover:underline">
                     📄 {doc.title}
                   </a>
                 </li>

@@ -11,7 +11,7 @@ export default async function ActivePortals() {
     <Card>
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">Active Portals</h3>
-        <Link href="/admin/portals" className="text-sm text-emerald-700 hover:underline">
+        <Link href="/admin/portals" className="text-sm text-primary hover:underline">
           View all
         </Link>
       </div>
@@ -21,7 +21,7 @@ export default async function ActivePortals() {
         <ul className="space-y-3">
           {activePortals.map((portal) => (
             <li key={portal.id}>
-              <Link href={`/admin/portals/${portal.id}`} className="text-sm text-gray-700 hover:text-emerald-700 block">
+              <Link href={`/admin/portals/${portal.id}`} className="text-sm text-gray-700 hover:text-primary block">
                 <span className="font-medium">{portal.name}</span>
                 {portal.returnDate && (
                   <span className="text-xs text-gray-500 block">

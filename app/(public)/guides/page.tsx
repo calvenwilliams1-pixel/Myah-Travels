@@ -22,7 +22,7 @@ export default async function GuidesPage() {
         <div className="space-y-6">
           {guides.map((guide: any) => (
             <Card key={guide.id} padding="md">
-              <Link href={`/guides/${guide.slug}`} className="block hover:text-emerald-700">
+              <Link href={`/guides/${guide.slug}`} className="block hover:text-primary">
                 <h2 className="text-xl font-semibold mb-2">{guide.title}</h2>
                 {guide.excerpt && (
                   <p className="text-gray-600 text-sm mb-3">{guide.excerpt}</p>

@@ -24,7 +24,7 @@ export default async function GuidesPage() {
             {
               header: "Title",
               accessor: (guide: any) => (
-                <Link href={`/admin/guides/${guide.id}`} className="font-medium hover:text-emerald-700">
+                <Link href={`/admin/guides/${guide.id}`} className="font-medium hover:text-primary">
                   {guide.title}
                 </Link>
               ),
@@ -33,7 +33,7 @@ export default async function GuidesPage() {
               header: "Status",
               accessor: (guide: any) => (
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  guide.status === "published" ? "bg-emerald-100 text-emerald-800" :
+                  guide.status === "published" ? "bg-success/10 text-success" :
                   guide.status === "draft" ? "bg-gray-100 text-gray-600" :
                   "bg-amber-100 text-amber-800"
                 }`}>

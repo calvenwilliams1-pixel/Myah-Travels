@@ -19,25 +19,25 @@ export default function NewPortalPage() {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
-              <label className="block text-sm font-semibold text-emerald-800 mb-2">
+            <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+              <label className="block text-sm font-semibold text-primary mb-2">
                 DEPARTURE DATE
               </label>
               <input
                 type="date"
                 name="departureDate"
-                className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-lg font-medium"
+                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-lg font-medium"
               />
             </div>
 
-            <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
-              <label className="block text-sm font-semibold text-emerald-800 mb-2">
+            <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+              <label className="block text-sm font-semibold text-primary mb-2">
                 RETURN DATE
               </label>
               <input
                 type="date"
                 name="returnDate"
-                className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-lg font-medium"
+                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-lg font-medium"
               />
             </div>
           </div>

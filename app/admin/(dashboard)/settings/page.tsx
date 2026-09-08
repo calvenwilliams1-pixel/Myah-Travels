@@ -19,13 +19,13 @@ export default async function SettingsPage() {
         <div className="flex gap-4">
           <a
             href="/admin/settings/tags"
-            className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
+            className="text-sm text-primary hover:text-primary-dark font-medium"
           >
             Manage Tags →
           </a>
           <a
             href="/admin/settings/password"
-            className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
+            className="text-sm text-primary hover:text-primary-dark font-medium"
           >
             Change Password →
           </a>

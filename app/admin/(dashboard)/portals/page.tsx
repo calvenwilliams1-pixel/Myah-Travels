@@ -27,7 +27,7 @@ export default async function PortalsPage() {
             {
               header: "Name",
               accessor: (portal: any) => (
-                <Link href={`/admin/portals/${portal.id}`} className="font-medium hover:text-emerald-700">
+                <Link href={`/admin/portals/${portal.id}`} className="font-medium hover:text-primary">
                   {portal.name}
                 </Link>
               ),
@@ -44,7 +44,7 @@ export default async function PortalsPage() {
               header: "Status",
               accessor: (portal: any) => (
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  portal.isActive ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"
+                  portal.isActive ? "bg-success/10 text-success" : "bg-gray-100 text-gray-600"
                 }`}>
                   {portal.isActive ? "Active" : "Archived"}
                 </span>

@@ -33,7 +33,7 @@ export default async function TagsPage() {
                 <td className="px-4 py-2">
                   <form action={toggleTagFavouriteAction}>
                     <input type="hidden" name="tagId" value={tag.id} />
-                    <button className={tag.isFavourite ? "text-emerald-600" : "text-gray-400"}>
+                    <button className={tag.isFavourite ? "text-primary" : "text-gray-400"}>
                       ★
                     </button>
                   </form>
@@ -42,7 +42,7 @@ export default async function TagsPage() {
                   <form action={renameTagAction} className="flex gap-1">
                     <input type="hidden" name="tagId" value={tag.id} />
                     <input type="text" name="newName" placeholder="Rename" className="px-2 py-1 border rounded text-xs" />
-                    <button className="text-xs text-emerald-700">Save</button>
+                    <button className="text-xs text-primary">Save</button>
                   </form>
                 </td>
                 <td className="px-4 py-2">

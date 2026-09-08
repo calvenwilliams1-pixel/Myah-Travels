@@ -24,7 +24,7 @@ export default async function ReviewsPage() {
             {
               header: "Title",
               accessor: (review: any) => (
-                <Link href={`/admin/reviews/${review.id}`} className="font-medium hover:text-emerald-700">
+                <Link href={`/admin/reviews/${review.id}`} className="font-medium hover:text-primary">
                   {review.title}
                 </Link>
               ),
@@ -42,7 +42,7 @@ export default async function ReviewsPage() {
               header: "Status",
               accessor: (review: any) => (
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  review.status === "published" ? "bg-emerald-100 text-emerald-800" :
+                  review.status === "published" ? "bg-success/10 text-success" :
                   review.status === "draft" ? "bg-gray-100 text-gray-600" :
                   "bg-amber-100 text-amber-800"
                 }`}>

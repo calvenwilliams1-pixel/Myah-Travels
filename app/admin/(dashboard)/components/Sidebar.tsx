@@ -33,7 +33,7 @@ export default function Sidebar() {
               aria-current={isActive ? "page" : undefined}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-emerald-50 text-emerald-700"
+                  ? "bg-primary/10 text-primary"
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >

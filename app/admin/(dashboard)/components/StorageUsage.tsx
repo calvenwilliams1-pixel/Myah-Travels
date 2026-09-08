@@ -17,7 +17,7 @@ export default async function StorageUsage() {
   return (
     <Card>
       <h3 className="font-semibold mb-2">Storage</h3>
-      <p className="text-2xl font-bold text-emerald-800">{formatSize(usage.totalSize)}</p>
+      <p className="text-2xl font-bold text-info">{formatSize(usage.totalSize)}</p>
       <p className="text-sm text-gray-500">{usage.totalFiles} files</p>
     </Card>
   );

@@ -22,7 +22,7 @@ export default async function BlogPage() {
         <div className="space-y-6">
           {posts.map((post: any) => (
             <Card key={post.id} padding="md">
-              <Link href={`/blog/${post.slug}`} className="block hover:text-emerald-700">
+              <Link href={`/blog/${post.slug}`} className="block hover:text-primary">
                 <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
                 {post.excerpt && (
                   <p className="text-gray-600 text-sm mb-3">{post.excerpt}</p>

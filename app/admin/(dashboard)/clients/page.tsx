@@ -39,7 +39,7 @@ export default async function ClientsPage({
           defaultValue={searchParams?.search || ""}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
         />
-        <button type="submit" className="px-4 py-2 bg-emerald-700 text-white rounded-lg">
+        <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg">
           Search
         </button>
       </form>
@@ -50,7 +50,7 @@ export default async function ClientsPage({
             {
               header: "Name",
               accessor: (client: any) => (
-                <Link href={`/admin/clients/${client.id}`} className="font-medium hover:text-emerald-700">
+                <Link href={`/admin/clients/${client.id}`} className="font-medium hover:text-primary">
                   {client.fullName}
                 </Link>
               ),
@@ -69,7 +69,7 @@ export default async function ClientsPage({
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   client.status === "new" ? "bg-blue-100 text-blue-800" :
                   client.status === "contacted" ? "bg-amber-100 text-amber-800" :
-                  client.status === "booked" ? "bg-emerald-100 text-emerald-800" :
+                  client.status === "booked" ? "bg-success/10 text-success" :
                   "bg-gray-100 text-gray-600"
                 }`}>
                   {client.status}

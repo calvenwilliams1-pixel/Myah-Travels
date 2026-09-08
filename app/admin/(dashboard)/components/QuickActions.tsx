@@ -2,9 +2,9 @@ import React from "react";
 import Link from "next/link";
 
 const actions = [
-  { href: "/admin/posts/new", label: "+ New Post", color: "bg-emerald-700 hover:bg-emerald-800" },
+  { href: "/admin/posts/new", label: "+ New Post", color: "bg-primary hover:bg-primary-dark" },
 
-  { href: "/admin/portals/new", label: "+ New Portal", color: "bg-emerald-800 hover:bg-emerald-900" },
+  { href: "/admin/portals/new", label: "+ New Portal", color: "bg-primary-dark hover:bg-primary" },
   { href: "/admin/templates", label: "+ Template Manager", color: "bg-blue-700 hover:bg-blue-800" },
 ];
 

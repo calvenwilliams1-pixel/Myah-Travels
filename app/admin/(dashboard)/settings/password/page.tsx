@@ -37,7 +37,7 @@ export default function PasswordPage() {
         <div
           className={`mb-4 p-3 rounded-lg text-sm ${
             message.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+              ? "bg-success/10 text-success border border-success/20"
               : "bg-red-50 text-red-700 border border-red-200"
           }`}
           role="alert"

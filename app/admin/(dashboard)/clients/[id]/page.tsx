@@ -77,7 +77,7 @@ export default async function ClientDetailPage({
           <ul className="space-y-2">
             {attachments.map((att) => (
               <li key={att.id}>
-                <a href={`/uploads/${att.filePath}`} className="text-emerald-700 hover:underline">
+                <a href={`/uploads/${att.filePath}`} className="text-primary hover:underline">
                   📄 {att.fileName}
                 </a>
               </li>

@@ -30,29 +30,29 @@ export default async function DashboardLayout({
           <h1 className="text-xl font-semibold">MyCalTravels Admin</h1>
           <div className="flex items-center gap-6">
              <nav className="flex items-center gap-4 flex-wrap">
-              <Link href="/admin" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin" className="text-sm text-gray-600 hover:text-primary">
                 Dashboard
               </Link>
-              <Link href="/admin/homepage" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/homepage" className="text-sm text-gray-600 hover:text-primary">
                 Homepage
               </Link>
-              <Link href="/admin/posts" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/posts" className="text-sm text-gray-600 hover:text-primary">
                 Posts
               </Link>
-              <Link href="/admin/templates" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/templates" className="text-sm text-gray-600 hover:text-primary">
                 Templates
               </Link>
 
-              <Link href="/admin/media" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/media" className="text-sm text-gray-600 hover:text-primary">
                 Media
               </Link>
-              <Link href="/admin/clients" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/clients" className="text-sm text-gray-600 hover:text-primary">
                 Clients
               </Link>
-              <Link href="/admin/portals" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/portals" className="text-sm text-gray-600 hover:text-primary">
                 Portals
               </Link>
-              <Link href="/admin/settings" className="text-sm text-gray-600 hover:text-emerald-700">
+              <Link href="/admin/settings" className="text-sm text-gray-600 hover:text-primary">
                 Settings
               </Link>
             </nav>

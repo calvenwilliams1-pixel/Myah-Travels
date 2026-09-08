@@ -19,7 +19,7 @@ export default async function PostsPage({ searchParams }: { searchParams: { filt
         <h2 className="text-2xl font-semibold">Blog Posts</h2>
         <div className="flex gap-3 items-center">
           <div className="flex gap-1">
-            <Link href="/admin/posts?filter=active" className={`px-3 py-1 rounded text-xs ${filter === "active" ? "bg-emerald-700 text-white" : "bg-gray-100"}`}>Active</Link>
+            <Link href="/admin/posts?filter=active" className={`px-3 py-1 rounded text-xs ${filter === "active" ? "bg-primary text-white" : "bg-gray-100"}`}>Active</Link>
             <Link href="/admin/posts?filter=deleted" className={`px-3 py-1 rounded text-xs ${filter === "deleted" ? "bg-red-600 text-white" : "bg-gray-100"}`}>Deleted</Link>
           </div>
           <Link href="/admin/posts/new">
@@ -34,7 +34,7 @@ export default async function PostsPage({ searchParams }: { searchParams: { filt
             {
               header: "Title",
               accessor: (post: any) => (
-                <Link href={`/admin/posts/${post.id}`} className="font-medium hover:text-emerald-700">
+                <Link href={`/admin/posts/${post.id}`} className="font-medium hover:text-primary">
                   {post.title}
                 </Link>
               ),
@@ -43,7 +43,7 @@ export default async function PostsPage({ searchParams }: { searchParams: { filt
               header: "Status",
               accessor: (post: any) => (
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  post.status === "published" ? "bg-emerald-100 text-emerald-800" :
+                  post.status === "published" ? "bg-success/10 text-success" :
                   post.status === "draft" ? "bg-gray-100 text-gray-600" :
                   post.status === "scheduled" ? "bg-blue-100 text-blue-800" :
                   "bg-amber-100 text-amber-800"
@@ -73,7 +73,7 @@ export default async function PostsPage({ searchParams }: { searchParams: { filt
               accessor: (post: any) => (
                 post.deletedAt ? (
                   <form action={restorePostAction.bind(null, post.id)}>
-                    <button type="submit" className="text-xs text-emerald-600 hover:text-emerald-800">Restore</button>
+                    <button type="submit" className="text-xs text-primary hover:text-primary-dark">Restore</button>
                   </form>
                 ) : (
                   <form action={deletePostAction.bind(null, post.id)}>
