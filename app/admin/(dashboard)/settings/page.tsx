@@ -63,7 +63,46 @@ export default async function SettingsPage() {
 
         <Card>
           <h3 className="font-semibold mb-4">Colors</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          
+          {/* Curated Palettes */}
+          <div className="mb-6">
+            <p className="text-sm text-gray-600 mb-3">Recommended palettes:</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[
+                { name: "Coastal", primary: "#0077B6", accent: "#FFB703" },
+                { name: "Desert", primary: "#8B5E3C", accent: "#FF7043" },
+                { name: "Alpine", primary: "#1B4332", accent: "#4CAF50" },
+                { name: "Editorial", primary: "#1D3557", accent: "#E63946" },
+                { name: "Tropical", primary: "#00897B", accent: "#FF6F61" },
+                { name: "Minimal", primary: "#374151", accent: "#2563EB" },
+              ].map((palette) => (
+                <button
+                  key={palette.name}
+                  type="button"
+                  onClick={() => {
+                    const form = document.querySelector("form");
+                    const primaryInput = form?.querySelector('input[name="primary_color"]') as HTMLInputElement;
+                    const accentInput = form?.querySelector('input[name="accent_color"]') as HTMLInputElement;
+                    if (primaryInput) primaryInput.value = palette.primary;
+                    if (accentInput) accentInput.value = palette.accent;
+                  }}
+                  className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-primary transition-colors"
+                >
+                  <span
+                    className="w-8 h-8 rounded-full"
+                    style={{ backgroundColor: palette.primary }}
+                  />
+                  <span
+                    className="w-8 h-8 rounded-full"
+                    style={{ backgroundColor: palette.accent }}
+                  />
+                  <span className="text-sm font-medium">{palette.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Primary Color"
               name="primary_color"
