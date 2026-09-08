@@ -63,5 +63,13 @@
     "tailwindcss": "^3.4.6",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3"
+  },
+  "allowScripts": {
+    "better-sqlite3@11.10.0": true,
+    "sharp@0.33.5": true,
+    "esbuild@0.18.20": true,
+    "esbuild@0.19.12": true,
+    "esbuild@0.28.2": true,
+    "canvas@3.2.3": true
   }
 }
