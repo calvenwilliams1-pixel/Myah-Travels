@@ -43,7 +43,7 @@ export default function FeedFilters({
             onClick={() => onTypeChange(type.value)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedType === type.value
-                ? "bg-emerald-700 text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >

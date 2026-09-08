@@ -73,12 +73,12 @@ export default function TagInput({
         {selectedTags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs"
+            className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
           >
             #{tag}
             <button
               onClick={() => onRemoveTag(tag)}
-              className="text-emerald-600 hover:text-emerald-800"
+              className="text-primary hover:text-primary-dark"
             >
               ×
             </button>
@@ -131,7 +131,7 @@ export default function TagInput({
                 key={tag}
                 onClick={() => handleAddTag(tag)}
                 className={`w-full text-left px-3 py-2 text-sm ${
-                  i === highlightIndex ? "bg-emerald-100" : "hover:bg-emerald-50"
+                  i === highlightIndex ? "bg-primary/10" : "hover:bg-primary/10"
                 }`}
               >
                 #{tag}
@@ -139,7 +139,7 @@ export default function TagInput({
             ))}
             <button
               onClick={() => handleAddTag(input)}
-              className="w-full text-left px-3 py-2 text-sm text-emerald-700 border-t border-gray-100"
+              className="w-full text-left px-3 py-2 text-sm text-primary border-t border-gray-100"
             >
               Create new tag: #{input}
             </button>

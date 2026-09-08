@@ -34,7 +34,7 @@ export default function FeedCard({
 
   const typeColors = {
     post: "bg-blue-100 text-blue-700",
-    guide: "bg-emerald-100 text-emerald-700",
+    guide: "bg-primary/10 text-primary",
     review: "bg-amber-100 text-amber-700",
   };
 
@@ -56,7 +56,7 @@ export default function FeedCard({
   return (
     <article
       className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-shadow hover:shadow-md ${
-        isHighlighted ? "border-emerald-400 ring-2 ring-emerald-200" : "border-gray-200"
+        isHighlighted ? "border-primary ring-2 ring-primary/20" : "border-gray-200"
       }`}
     >
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
@@ -66,7 +66,7 @@ export default function FeedCard({
           </span>
         )}
         {isHighlighted && (
-          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
             ⭐ Featured
           </span>
         )}
@@ -94,7 +94,7 @@ export default function FeedCard({
 
       <div className="p-4">
         <Link href={href}>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2 hover:text-emerald-700 transition-colors">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
             {title}
           </h2>
         </Link>

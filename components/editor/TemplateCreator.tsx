@@ -153,7 +153,7 @@ export default function TemplateCreator({
                 onClick={() => setSelectedId(t.id)}
                 className={`w-full text-left px-3 py-2 rounded text-sm ${
                   selectedId === t.id
-                    ? "bg-emerald-50 border border-emerald-300"
+                    ? "bg-primary/10 border border-primary/30"
                     : "hover:bg-gray-50 border border-transparent"
                 }`}
               >
@@ -164,7 +164,7 @@ export default function TemplateCreator({
           </div>
           <button
             onClick={handleNewTemplate}
-            className="w-full mt-3 px-3 py-2 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700"
+            className="w-full mt-3 px-3 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark"
           >
             + New Template
           </button>
@@ -178,7 +178,7 @@ export default function TemplateCreator({
           </h2>
           <button
             onClick={handleNewTemplate}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700"
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark"
           >
             + New Template
           </button>
@@ -292,7 +292,7 @@ export default function TemplateCreator({
           <button
             onClick={handleSave}
             disabled={isSaving || !name.trim()}
-            className="px-4 py-2 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save Template"}
           </button>

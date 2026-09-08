@@ -82,7 +82,7 @@ export default function FeedAdminControls({
           isLoading ? "opacity-50 cursor-not-allowed" : ""
         } ${
           highlighted
-            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+            ? "bg-primary/10 text-primary border border-primary/30"
             : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"
         }`}
         title={highlighted ? "Remove highlight" : "Highlight in feed"}

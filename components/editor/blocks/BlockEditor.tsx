@@ -291,7 +291,7 @@ export default function BlockEditor({
       <div className="relative">
         <button
           onClick={() => setShowAddMenu(!showAddMenu)}
-          className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-emerald-500 hover:text-emerald-700"
+          className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-primary hover:text-primary"
         >
           + Add Block
         </button>
@@ -312,7 +312,7 @@ export default function BlockEditor({
                   disabled={!canAdd}
                   title={canAdd ? undefined : "Already at max count or required block already added"}
                   className={`w-full text-left px-3 py-2 text-sm rounded flex items-center gap-2 ${
-                    canAdd ? "hover:bg-emerald-50" : "opacity-40 cursor-not-allowed"
+                    canAdd ? "hover:bg-primary/10" : "opacity-40 cursor-not-allowed"
                   }`}
                 >
                   <span>{block.icon}</span>

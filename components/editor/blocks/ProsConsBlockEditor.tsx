@@ -26,7 +26,7 @@ export default function ProsConsBlockEditor({ data, onChange }: ProsConsBlockEdi
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <p className="text-xs font-semibold text-emerald-700 mb-2">PROS</p>
+        <p className="text-xs font-semibold text-success mb-2">PROS</p>
         {data.pros.map((pro, i) => (
           <div key={i} className="flex gap-1 mb-1">
             <input

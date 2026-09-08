@@ -14,7 +14,7 @@ export default function CalloutBox({
   const styles = {
     info: "bg-blue-50 border-blue-200 text-blue-800",
     warning: "bg-amber-50 border-amber-200 text-amber-800",
-    tip: "bg-emerald-50 border-emerald-200 text-emerald-800",
+    tip: "bg-success/10 border-success/20 text-success",
   };
 
   const icons = {
