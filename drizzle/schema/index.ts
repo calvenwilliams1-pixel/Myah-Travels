@@ -32,3 +32,6 @@ export { relatedContent } from "./related-content";
 export { assets } from "./assets";
 export { templates } from "./templates";
 export { portalChecklistStates } from "./portal-checklist-states";
+
+export * from "./content-library";
+export * from "./portal-items";
