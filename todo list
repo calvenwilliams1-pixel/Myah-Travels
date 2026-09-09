@@ -1,25 +1,29 @@
-# Myah Travels - TODO.md
+# MyCalTravels - TODO.md (Revised)
 
 ## Status
 
-**Content Blocks Architecture - Phase 2.5A in progress.**
+**Block System + Template Creator + Theme System COMPLETE. Production hardening in progress.**
 
 ## Core Principle
 
 Developer controls design.
 Template controls layout.
 Writer controls content.
+Settings control brand.
+
+---
 
 ## Locked Decisions
 
 ### APPROVED
-- Template System
-- Block Registry
-- Block Editors
-- Block Renderers
-- Live Preview (split screen)
-- Theme Styles
-- Structured Content
+- Template System (structural only - no design tools)
+- Block Registry (10 blocks)
+- Block Editors + Renderers (switch-based)
+- Live Preview (sticky split screen)
+- Semantic theme tokens (primary, secondary, accent, success, warning, danger, info)
+- Curated colour palettes (6 pre-validated)
+- Fixed white background (professional standard)
+- Status colours fixed (never themeable)
 
 ### REJECTED
 - CanvasElement for writers
@@ -29,46 +33,115 @@ Writer controls content.
 - Border controls
 - Property panels
 - General-purpose design tools
+- Full colour customisation (4 pickers)
+- Free-form background colour picker
+- Brand-aware dark mode
 
-## Phase 2.5A (Current)
-- [ ] TemplateStyle (expanded)
-- [ ] Renderer Registry (editor + renderer per block)
-- [ ] TitleRenderer
-- [ ] BodyRenderer
-- [ ] CalloutRenderer
-- [ ] PostRenderer (registry-driven)
-- [ ] TemplatePreview (split screen)
-- [ ] No `as any` casts
+---
 
-## Phase 2.5B (Before Production)
-- [ ] Auto Save (debounced)
-- [ ] Undo / Redo
-- [ ] Publish Validation
-- [ ] Block Reordering
-- [ ] Error Boundaries
+## Phase 1: Foundation ✅ COMPLETE
+- [x] BlockType discriminated union (10 blocks)
+- [x] BLOCK_REGISTRY
+- [x] TemplateSection (label + state: required/optional/disabled)
+- [x] TemplateStyle (full styling for all block types)
+- [x] RGB CSS variables for opacity support
+- [x] Semantic Tailwind tokens
+- [x] ThemeProvider wraps public + admin
+
+## Phase 2: Content Blocks ✅ COMPLETE
+- [x] Title, Body, Callout, Hero, Image, Gallery, QuickFacts, Quote, ProsCons, Verdict
+- [x] All 10 block editors
+- [x] All 10 block renderers
+- [x] PostRenderer (switch-based, 10 cases)
+- [x] BlockEditor (add/remove/move/reorder)
+- [x] TemplatePreview (sticky on desktop)
+- [x] Zero type errors
+- [x] Production build passes
+
+## Phase 3: Template Creator ✅ COMPLETE
+- [x] TemplateCreator UI (structural only)
+- [x] Template store (DB persistence)
+- [x] Admin route `/admin/templates`
+- [x] Templates nav link
+- [x] QuickAction button
+- [x] 3 starter templates (Story, Travel Guide, Review)
+
+## Phase 4: Theme System ✅ COMPLETE
+- [x] Remove secondary + background pickers
+- [x] Secondary auto-derived from primary
+- [x] 6 curated palettes (Coastal, Desert, Alpine, Editorial, Tropical, Minimal)
+- [x] PalettePicker client component
+- [x] All 225 hardcoded colours migrated (except frozen Canvas)
+- [x] Status badges use success token
+- [x] Rename to MyCalTravels
+
+---
+
+## Phase 5: Before Production (Current)
+
+### High Priority
+- [ ] Preview popup (modal → floating → fullscreen)
+- [ ] Target surface token conversion (~20-30 `bg-gray-50/100` → theme-derived)
+- [ ] Delete Canvas system (39 emerald remain)
+- [ ] Fix better-sqlite3 crash on mini PC deployment
+
+### Medium Priority
+- [ ] Auto Save (debounced, 2s)
+- [ ] Undo / Redo (global stack, capped 50)
+- [ ] Publish Validation (required blocks filled)
+- [ ] Error Boundaries per block
 - [ ] Responsive Preview (desktop/tablet/mobile)
 
-## Phase 2.5C (Future)
-- [ ] Template Migration
+### Low Priority
+- [ ] Dark mode (reader preference only, fixed neutral palette)
+- [ ] Template versioning
+- [ ] Additional block types (20+ block threshold before registry refactor)
+- [ ] Reading time / word count
+
+---
+
+## Phase 6: Future
+- [ ] Template Migration (Canvas → Block)
 - [ ] Inline Editing
-- [ ] Theme Management
-- [ ] Image System
-- [ ] Additional Blocks
+- [ ] Image upload integration with Hero/Gallery editors
+- [ ] Client portal reply capability
 
-## MVP Blocks
-- Title
-- Body
-- Callout
+---
 
-## Renderer Requirements
-- No `as any` - use discriminated unions
-- Registry-driven (no giant switch)
-- TemplateStyle contains ALL design
-- Renderers contain ONLY structure
-- Error boundaries per block
-- Semantic HTML
+## Architecture Decisions (Locked)
+
+### Block System
+- 10 blocks: Title, Body, Callout, Hero, Image, Gallery, QuickFacts, Quote, ProsCons, Verdict
+- Switch-based rendering (refactor to registry only if 20+ blocks)
+- Discriminated unions for type safety
+- Renderers receive `{ data, style }` - TemplateStyle has ALL design
+
+### Theme System
+- Primary + Accent = user-picked (only 2 pickers)
+- Secondary = derived from primary (subtle surfaces)
+- Background = fixed white
+- Status colours = fixed (success/warning/danger/info)
+- 6 curated palettes pre-validated
+
+### Template System
+- Structural only (name, description, theme, blocks, required/optional/disabled, maxCount)
+- Live templates (edit → all posts update)
+- `version: 1` in layoutData for future versioning
+
+---
+
+## Known Issues
+1. better-sqlite3 crash in Codespace (environment-specific)
+2. Canvas system frozen (39 emerald remain)
+3. `schema.sql` outdated (use Drizzle schema + seed)
+
+---
 
 ## Testing Commands
-npm run dev
-npm run seed
-npm run build
+
+```bash
+npm run dev        # Dev server
+npm run seed       # Recreate + seed database
+npm run build      # Production build
+npm start          # Production server
+```
