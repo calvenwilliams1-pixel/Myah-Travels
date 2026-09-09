@@ -54,6 +54,10 @@ export async function createPortal(data: {
   name: string;
   departureDate?: string;
   returnDate?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImage?: string;
+  heroPreset?: string;
 }) {
   const baseSlug = data.name
     .toLowerCase()
@@ -69,6 +73,10 @@ export async function createPortal(data: {
     slug,
     departureDate: data.departureDate ?? null,
     returnDate: data.returnDate ?? null,
+    heroTitle: data.heroTitle ?? null,
+    heroSubtitle: data.heroSubtitle ?? null,
+    heroImage: data.heroImage ?? null,
+    heroPreset: data.heroPreset ?? "minimal",
     isActive: true,
   }).returning();
 }
@@ -79,6 +87,10 @@ export async function updatePortal(
     name: string;
     departureDate: string;
     returnDate: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    heroImage: string;
+    heroPreset: string;
     isActive: boolean;
     archivedAt: string;
   }>
