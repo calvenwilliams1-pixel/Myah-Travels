@@ -96,21 +96,30 @@ export default function AddContentModal({ onClose, onSaved }: AddContentModalPro
           />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
             <div className="flex gap-3">
-              {["pdf", "image", "text"].map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setType(t)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    type === t ? "bg-primary text-white" : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {t.toUpperCase()}
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={() => { setType("pdf"); setFile(null); }}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium ${
+                  type !== "text" ? "bg-primary text-white" : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                📄 Upload File
+              </button>
+              <button
+                type="button"
+                onClick={() => { setType("text"); setFile(null); }}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium ${
+                  type === "text" ? "bg-primary text-white" : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                ✏️ Text Note
+              </button>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {type === "text" ? "Write a notice or message" : "PDF or image - type detected automatically"}
+            </p>
           </div>
 
           <div>
@@ -135,8 +144,16 @@ export default function AddContentModal({ onClose, onSaved }: AddContentModalPro
               </label>
               <input
                 type="file"
-                accept={type === "pdf" ? ".pdf" : "image/*"}
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                accept=".pdf,image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) {
+                    setFile(f);
+                    // Auto-detect type from extension
+                    if (f.type.startsWith("image/")) setType("image");
+                    else if (f.type === "application/pdf") setType("pdf");
+                  }
+                }}
                 className="w-full"
               />
             </div>

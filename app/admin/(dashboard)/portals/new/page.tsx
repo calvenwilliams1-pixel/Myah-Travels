@@ -26,7 +26,7 @@ export default function NewPortalPage() {
               <input
                 type="date"
                 name="departureDate"
-                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-lg font-medium"
+                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-base cursor-pointer"
               />
             </div>
 
@@ -37,7 +37,7 @@ export default function NewPortalPage() {
               <input
                 type="date"
                 name="returnDate"
-                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-lg font-medium"
+                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-base cursor-pointer"
               />
             </div>
           </div>
