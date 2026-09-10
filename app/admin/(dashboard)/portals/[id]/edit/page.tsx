@@ -4,10 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import HeroEditor from "@/components/admin/portals/HeroEditor";
 import PortalItemsList from "@/components/admin/portals/PortalItemsList";
 import AttachLibraryModal from "@/components/admin/portals/AttachLibraryModal";
 import PortalSpecificItemModal from "@/components/admin/portals/PortalSpecificItemModal";
+import { updatePortalAction } from "../../actions";
 
 interface PortalItem {
   id: number;
@@ -22,6 +24,9 @@ export default function PortalEditPage() {
   const params = useParams();
   const portalId = Number(params.id);
 
+  const [name, setName] = useState("");
+  const [departureDate, setDepartureDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroImage, setHeroImage] = useState("");
@@ -31,6 +36,24 @@ export default function PortalEditPage() {
   const [showSpecificModal, setShowSpecificModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  async function fetchPortal() {
+    const res = await fetch(`/api/portal/${portalId}`);
+    if (!res.ok) {
+      setIsLoading(false);
+      return;
+    }
+    const data = await res.json();
+    if (data.portal) {
+      setName(data.portal.name || "");
+      setDepartureDate(data.portal.departureDate || "");
+      setReturnDate(data.portal.returnDate || "");
+      setHeroTitle(data.portal.heroTitle || "");
+      setHeroSubtitle(data.portal.heroSubtitle || "");
+      setHeroImage(data.portal.heroImage || "");
+      setHeroPreset(data.portal.heroPreset || "minimal");
+    }
+  }
+
   async function fetchItems() {
     const res = await fetch(`/api/portal/${portalId}/items`);
     const data = await res.json();
@@ -39,6 +62,7 @@ export default function PortalEditPage() {
   }
 
   useEffect(() => {
+    fetchPortal();
     fetchItems();
   }, [portalId]);
 
@@ -63,15 +87,57 @@ export default function PortalEditPage() {
         </div>
       </div>
 
-      <Card>
-        <HeroEditor
-          heroTitle={heroTitle}
-          heroSubtitle={heroSubtitle}
-          heroImage={heroImage}
-          heroPreset={heroPreset}
-          onChange={handleHeroChange}
-        />
-      </Card>
+      <form action={updatePortalAction}>
+        <input type="hidden" name="portalId" value={portalId} />
+        <input type="hidden" name="heroTitle" value={heroTitle} />
+        <input type="hidden" name="heroSubtitle" value={heroSubtitle} />
+        <input type="hidden" name="heroImage" value={heroImage} />
+        <input type="hidden" name="heroPreset" value={heroPreset} />
+
+        <Card>
+          <h3 className="font-semibold mb-4">Portal Info</h3>
+          <div className="space-y-4">
+            <Input
+              label="Portal Name *"
+              name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Smith Family Disney Trip"
+              required
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Departure Date"
+                name="departureDate"
+                type="date"
+                value={departureDate}
+                onChange={(e) => setDepartureDate(e.target.value)}
+              />
+              <Input
+                label="Return Date"
+                name="returnDate"
+                type="date"
+                value={returnDate}
+                onChange={(e) => setReturnDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="mt-6">
+          <HeroEditor
+            heroTitle={heroTitle}
+            heroSubtitle={heroSubtitle}
+            heroImage={heroImage}
+            heroPreset={heroPreset}
+            onChange={handleHeroChange}
+          />
+        </Card>
+
+        <div className="mt-6 flex justify-end">
+          <Button type="submit">Save Changes</Button>
+        </div>
+      </form>
 
       <Card>
         <h3 className="font-semibold mb-4">Content on Wall ({items.length})</h3>

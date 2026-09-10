@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import {
   createPortal,
+  updatePortal,
   archivePortal,
   softDeletePortal,
   addPortalMember,
@@ -115,6 +116,43 @@ export async function addNoticeAction(formData: FormData) {
   });
 
   redirect(`/admin/portals/${portalId}`);
+}
+
+export async function updatePortalAction(formData: FormData) {
+  const user = await requireAuth();
+
+  const portalId = Number(formData.get("portalId"));
+  if (!portalId) throw new Error("Portal ID required");
+
+  const name = String(formData.get("name") || "").trim();
+  if (!name) throw new Error("Portal name is required");
+
+  const departureDate = String(formData.get("departureDate") || "");
+  const returnDate = String(formData.get("returnDate") || "");
+  const heroTitle = String(formData.get("heroTitle") || "");
+  const heroSubtitle = String(formData.get("heroSubtitle") || "");
+  const heroImage = String(formData.get("heroImage") || "");
+  const heroPreset = String(formData.get("heroPreset") || "minimal");
+
+  await updatePortal(portalId, {
+    name,
+    departureDate: departureDate || undefined,
+    returnDate: returnDate || undefined,
+    heroTitle: heroTitle || undefined,
+    heroSubtitle: heroSubtitle || undefined,
+    heroImage: heroImage || undefined,
+    heroPreset,
+  });
+
+  await logActivity({
+    userId: Number(user.id),
+    actionType: "update",
+    entityType: "portal",
+    entityId: portalId,
+    details: `Updated portal info: ${name}`,
+  });
+
+  redirect(`/admin/portals/${portalId}/edit`);
 }
 
 export async function archivePortalAction(formData: FormData) {

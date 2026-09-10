@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { getPortalById, getPortalMembers, getPortalNotices, getPortalDocuments, getPortalFaqs } from "@/lib/portal";
 import { requireAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
@@ -32,6 +33,9 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
           </p>
         </div>
         <div className="flex gap-3">
+          <Link href={`/admin/portals/${portal.id}/edit`}>
+            <Button>Edit Wall</Button>
+          </Link>
           <form action={archivePortalAction}>
             <input type="hidden" name="portalId" value={portal.id} />
             <Button variant="ghost" type="submit">Archive</Button>
