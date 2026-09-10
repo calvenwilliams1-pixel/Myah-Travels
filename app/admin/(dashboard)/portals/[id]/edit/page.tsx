@@ -80,11 +80,9 @@ export default function PortalEditPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Edit Portal</h2>
         <div className="flex gap-3">
-          {slug && (
-            <a href={`/portal/${slug}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost">View Wall ↗</Button>
-            </a>
-          )}
+          <a href={`/admin/portals/${portalId}/preview`} target="_blank" rel="noopener noreferrer">
+            <Button variant="ghost">Preview Wall ↗</Button>
+          </a>
           <Button variant="secondary" onClick={() => setShowAttachModal(true)}>
             + Attach from Library
           </Button>
