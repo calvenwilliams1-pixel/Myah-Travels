@@ -24,6 +24,7 @@ export default function PortalEditPage() {
   const params = useParams();
   const portalId = Number(params.id);
 
+  const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
@@ -44,6 +45,7 @@ export default function PortalEditPage() {
     }
     const data = await res.json();
     if (data.portal) {
+      setSlug(data.portal.slug || "");
       setName(data.portal.name || "");
       setDepartureDate(data.portal.departureDate || "");
       setReturnDate(data.portal.returnDate || "");
@@ -78,6 +80,11 @@ export default function PortalEditPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Edit Portal</h2>
         <div className="flex gap-3">
+          {slug && (
+            <a href={`/portal/${slug}`} target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost">View Wall ↗</Button>
+            </a>
+          )}
           <Button variant="secondary" onClick={() => setShowAttachModal(true)}>
             + Attach from Library
           </Button>
