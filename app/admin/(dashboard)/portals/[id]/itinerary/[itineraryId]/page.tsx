@@ -141,7 +141,7 @@ export default function ItineraryEditorPage() {
         </div>
         <div className="flex gap-3">
           <a
-            href={`/portal/${itinerary.portalId}/itinerary/${itinerary.id}`}
+            href={`/admin/portals/${portalId}/itinerary/${itineraryId}/preview`}
             target="_blank"
             rel="noopener noreferrer"
           >

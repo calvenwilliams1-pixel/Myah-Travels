@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 2)
+# MyCalTravels — TODO.md (Revision 3)
 
 ## Status
 
-**Portal System V1 COMPLETE (Content Library + Wall + Preview). Phase 4 planning approved. Starting Phase 4.1.**
+**Portal System V1 + V2 COMPLETE. Quick Wins + Itinerary Builder + Admin Notepad all shipped. Ready for testing + Phase 7 planning.**
 
 ## Core Principle
 
@@ -28,10 +28,12 @@ System controls hierarchy.
 - **Content Library** (create once, reuse everywhere)
 - **Portal Wall** (travel information wall, client-facing)
 - **Admin Preview** (bypass magic link for admin)
-- **Hero Banner** with named presets only (no colour pickers)
+- **Hero Banner** with 8 named presets (no colour pickers)
 - **Itinerary as portal_items** (unified pipeline, no merge)
 - **Flights = Travel segments** (no separate table)
 - **Notepad is admin-only** (never rendered to clients)
+- **Print stylesheet for itinerary export** (no PDF pipeline)
+- **Empty days render placeholder** (never blank)
 
 ### REJECTED
 - CanvasElement for writers
@@ -51,6 +53,8 @@ System controls hierarchy.
 - **People table in V1** (trigger-based upgrade)
 - **Notepad cross-portal sharing** (strictly scoped)
 - **Merging data sources on the wall** (single pipeline)
+- **Notices feature** (removed — redundant with Alert category)
+- **TagInput post-tag backend coupling** (UI pattern only)
 
 ---
 
@@ -90,67 +94,102 @@ System controls hierarchy.
 - [x] `portal_items` table (library + portal-specific)
 - [x] Portal Wall rendering (pdf/image/text)
 - [x] Hero Banner (title, subtitle, image, 3 presets)
-- [x] Admin Preview route (`/admin/portals/[id]/preview`)
+- [x] Admin Preview route
 - [x] PortalWall extracted as pure rendering component
-- [x] Hero image upload (replaced URL input)
+- [x] Hero image upload
 - [x] Preview Wall button on edit page
-- [x] `scripts/setup-db.js` (reproducible DB creation)
+- [x] `scripts/setup-db.js`
 - [x] `schema.sql` supports migration chain
 
+## Phase 6.1: Quick Wins ✅ COMPLETE
+- [x] Hero preset expansion (3 → 8)
+- [x] Content tile icons (category → emoji)
+- [x] Notices removal (UI + action)
+- [x] Portal member name collection
+
+## Phase 6.2: Itinerary Builder V1 ✅ COMPLETE
+- [x] Schema: itineraries, sections, days, segments, stays
+- [x] `portal_items.itinerary_id` + `source_type='itinerary'`
+- [x] Migration 0003 with portal_items rebuild
+- [x] Backend repository (`lib/itineraries`)
+- [x] Validation (Zod + travel datetime ordering + overlap detection)
+- [x] 11 API routes
+- [x] Admin itinerary editor (list + editor pages)
+- [x] Client itinerary view (time-grouped, type-coloured)
+- [x] Travel cards for flights
+- [x] Stay banner ("where you're sleeping tonight")
+- [x] Empty-day placeholder
+- [x] Print stylesheet
+- [x] Wall integration via unified pipeline
+- [x] Preview itinerary from admin
+
+## Phase 6.3: Admin Notepad ✅ COMPLETE
+- [x] Migration 0004: `notepad_entries`
+- [x] Backend repository + search + distinct tags
+- [x] API routes (list, search, create, update, delete)
+- [x] Admin UI (list, add, search, autocomplete)
+- [x] Data guardrail banner
+- [x] TagInput UI pattern (no post-tag backend coupling)
+- [x] Navigation buttons on portal detail page
+
 ---
 
-## Phase 6: Portal V2 (Current Focus)
+## Phase 7: Testing + Polish (Current Focus)
 
-### 6.1 Quick Wins
-- [ ] Hero preset expansion (3 → 8: desert, alpine, tropical, editorial, sunset)
-- [ ] Content tile icons (category → emoji, fixed enum)
-- [ ] Notices removal (UI + action only)
-- [ ] Portal member name collection (optional field)
+### 7.1 Full Test Pass (Local PC)
+- [ ] Content Library: add PDF/Image/Text, filter, delete
+- [ ] Portal Editor: hero presets, attach items, reorder, preview
+- [ ] Wall: magic link flow, hero, icons, itinerary tile
+- [ ] Itinerary Builder: create → section → day → segment
+- [ ] Travel segment flight fields
+- [ ] Client itinerary view (time grouping, colours, stays)
+- [ ] Empty day placeholder
+- [ ] Print / Save PDF
+- [ ] Notepad: add, tag, search
+- [ ] Regressions: settings, login, homepage feed
+- [ ] Fix any bugs found
 
-### 6.2 Itinerary Builder V1
-- [ ] Database schema (itineraries, sections, days, segments, stays)
-- [ ] **`portal_items` extended with `itinerary_id` + `source_type='itinerary'`**
-- [ ] Backend repository (`lib/itineraries`)
-- [ ] Validation layer (travel segment datetime ordering, soft warnings)
-- [ ] API routes (~10 routes)
-- [ ] Admin itinerary editor
-- [ ] Client itinerary view (time-grouped, type-coloured)
-- [ ] Stay banner ("where you're sleeping tonight")
-- [ ] Empty-day placeholder
-- [ ] Print stylesheet (browser-native PDF)
-- [ ] **Wall integration via unified `portal_items` pipeline**
+### 7.2 Loose Ends (Before Phase 8)
+- [ ] Attach itinerary UI on admin editor page (currently only on list page)
+- [ ] Admin preview of itinerary (currently requires portal_session)
+- [ ] Verify travel segment `datetime-local` ↔ ISO string handling
+- [ ] Verify PDF export includes proper timestamp
 
-### 6.3 Admin Notepad
-- [ ] `notepad_entries` table
-- [ ] Backend repository + search
-- [ ] API routes
-- [ ] Admin UI (list, add, search, autocomplete)
-- [ ] **TagInput reuse guardrail** (UI pattern only, no post-tag backend coupling)
-
----
-
-## Phase 7: Future / Deferred
-
-### V2 Features (post-Portal V2)
-- [ ] Options segments (A/B alternatives on free days)
-- [ ] Cruise mode (port schedule tables)
-- [ ] Overlapping stays
-- [ ] Group splits
-- [ ] People table (triggered by naming inconsistency)
-- [ ] Template Migration (Canvas → Block)
-- [ ] Inline Editing
-- [ ] Client portal reply capability
-
-### Production Hardening
+### 7.3 Production Hardening
 - [ ] Fix better-sqlite3 crash on mini PC deployment
 - [ ] Delete Canvas system (39 emerald remain)
 - [ ] Preview popup (modal → floating → fullscreen)
 - [ ] Target surface token conversion (~20-30 `bg-gray-50/100`)
 - [ ] Auto Save (debounced, 2s)
 - [ ] Undo / Redo (global stack, capped 50)
-- [ ] Publish Validation
+- [ ] Publish Validation (required blocks filled)
 - [ ] Error Boundaries per block
-- [ ] Responsive Preview
+- [ ] Responsive Preview (desktop/tablet/mobile)
+
+---
+
+## Phase 8: Future / Deferred
+
+### Itinerary V2
+- [ ] Options segments (A/B alternatives on free days)
+- [ ] Cruise mode (port schedule tables)
+- [ ] Overlapping stays
+- [ ] Group splits
+- [ ] Attendees on segments (deferred indefinitely — lives in Notepad)
+
+### People & Tagging V2
+- [ ] People table (triggered by naming inconsistency)
+- [ ] Per-person itinerary lookup
+- [ ] PII isolation (separate from post-tags)
+
+### Portal Enhancements
+- [ ] Client portal reply capability
+- [ ] Global announcements (send email to all portal members)
+- [ ] Client-facing docs acknowledgment
+
+### Content Migration
+- [ ] Template Migration (Canvas → Block)
+- [ ] Inline Editing (blocks)
 
 ### Low Priority
 - [ ] Dark mode (reader preference only)
@@ -169,38 +208,43 @@ System controls hierarchy.
 - Renderers receive `{ data, style }`
 
 ### Theme System
-- Primary + Accent = user-picked (2 pickers only)
+- Primary + Accent = user-picked (2 pickers)
 - Secondary = derived from primary
 - Background = fixed white
 - Status colours = fixed
 - 6 curated palettes
+- 8 hero presets
 
 ### Content Library
 - `content_library` table
 - Categories = filtering only (never rendering)
 - Referenced by `portal_items`, never copied
+- Type: `pdf` | `image` | `text`
 
 ### Portal Wall
 - Single pipeline via `portal_items`
 - `source_type`: `library` | `portal_specific` | `itinerary`
 - Rendering by `type`: pdf | image | text | itinerary
 - Wall queries one table + resolves references
+- Hero: image takes precedence over preset
 
 ### Itinerary
 - Separate content type, NOT Portal Blocks
 - Chronology-driven (not prominence-driven)
-- Travel segments carry flight data
+- Travel segments carry flight data (no separate table)
 - Stays belong to one section (no cross-section)
 - Sequential stays only
 - Time-derived ordering (no manual reorder)
-- Empty days render intentionally
+- Empty days render placeholder
 - Print stylesheet export (no PDF pipeline)
+- Attached via `portal_items.source_type='itinerary'`
 
 ### Notepad
 - Admin-only, never rendered to clients
 - Comma-separated tags (V1), People table (V2 trigger)
 - Logistics notes only (no diagnostic detail)
 - TagInput UI pattern only, no post-tag backend coupling
+- Search by content or tag
 
 ### Templates
 - Structural only
@@ -248,8 +292,8 @@ System controls hierarchy.
 ## Testing Commands
 
 ```bash
-# Local setup (first time)
-node scripts/setup-db.js   # Create DB from schema + migrations
+# Local first-time setup
+node scripts/setup-db.js   # Create DB (schema + migrations + missing columns)
 npm run seed               # Seed data
 
 # Daily
@@ -263,25 +307,37 @@ npm start                  # Production server
 ## Current Session State
 
 **Last completed:**
-- Admin preview feature (extracted PortalWall, added preview route with banner)
-- HeroEditor: image upload (replaced URL input)
-- View Wall button → Preview Wall button
-- `scripts/setup-db.js` added to repo
+- Phase 6.1: Quick Wins (hero presets, icons, notices removed, member names)
+- Phase 6.2: Itinerary Builder V1 (full stack)
+- Phase 6.3: Admin Notepad (full stack)
 
-**Last commit:** `08c835f` — pushed to GitHub
+**Recent commits:**
+- `08c835f` — Admin preview feature
+- `f329aa1` — Phase 6.2.5 itinerary editor
+- `f0f1ce4` — Phase 6.2 complete
+- (pending) — Phase 6.3 notepad commit
 
-**Next action:** Begin Phase 6.1 (Quick Wins)
+**Next action:** Pull locally, run full test pass, fix bugs, then Phase 7.3 production hardening.
 
 ---
 
-## Phase 6.1 Session Plan
+## Phase 7.1 Test Session Plan
 
-1. Hero preset expansion (3 → 8) — 15 min
-2. Content tile icons — 30 min
-3. Notices removal — 15 min
-4. Portal member name collection — 20 min
-5. Commit + push
-6. Pull locally, test on localhost
-7. Report findings
+**Local PC testing:**
+1. `git pull origin main`
+2. `npm run dev`
+3. Test each feature from the checklist above
+4. Log bugs found
+5. Report findings
 
-**Estimated session time:** ~1.5 hours
+**Estimated session time:** ~1-2 hours for thorough pass
+
+---
+
+## What's Left After Testing
+
+1. **Loose ends** (3 items in 7.2) — small fixes
+2. **Production hardening** (7.3) — Canvas deletion, deployment fixes
+3. **Phase 8 features** — all deferred items
+
+**Nothing urgent blocks launch after Phase 7.1 testing passes.**

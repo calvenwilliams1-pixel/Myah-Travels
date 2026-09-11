@@ -54,6 +54,7 @@ interface Itinerary {
 interface ItineraryViewProps {
   itinerary: Itinerary;
   portalSlug: string;
+  mode?: "client" | "admin-preview";
 }
 
 const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string; label: string }> = {
@@ -63,9 +64,21 @@ const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string;
   free_day: { bg: "bg-gray-50", border: "border-gray-200", icon: "🌴", label: "Free Day" },
 };
 
-export default function ItineraryView({ itinerary, portalSlug }: ItineraryViewProps) {
+export default function ItineraryView({ itinerary, portalSlug, mode = "client" }: ItineraryViewProps) {
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
+      {mode === "admin-preview" && (
+        <div className="bg-gray-900 text-white px-6 py-3 flex items-center justify-between print:hidden">
+          <span className="text-sm font-medium">Admin Preview — this is what your client sees.</span>
+          <a
+            href={`/admin/portals`}
+            className="text-sm text-gray-300 hover:text-white"
+          >
+            ← Back to Admin
+          </a>
+        </div>
+      )}
+
       {/* Print header — hidden on screen */}
       <div className="hidden print:block px-6 py-4 border-b border-gray-200">
         <p className="text-xs text-gray-500">
