@@ -32,6 +32,12 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
           </p>
         </div>
         <div className="flex gap-3">
+          <Link href={`/admin/portals/${portal.id}/itinerary`}>
+            <Button variant="secondary">Itinerary</Button>
+          </Link>
+          <Link href={`/admin/portals/${portal.id}/notepad`}>
+            <Button variant="secondary">Notepad</Button>
+          </Link>
           <Link href={`/admin/portals/${portal.id}/edit`}>
             <Button>Edit Wall</Button>
           </Link>
