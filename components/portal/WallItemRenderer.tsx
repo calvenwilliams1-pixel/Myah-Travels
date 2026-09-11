@@ -13,13 +13,37 @@ interface WallItemProps {
   };
 }
 
+const CATEGORY_ICONS: Record<string, string> = {
+  guide: "📘",
+  checklist: "☑️",
+  faq: "❓",
+  alert: "⚠️",
+  document: "📄",
+  other: "📌",
+};
+
+const TYPE_ICONS: Record<string, string> = {
+  pdf: "📄",
+  image: "🖼️",
+  text: "📝",
+  itinerary: "📋",
+};
+
+function getIcon(category: string | null, type: string): string {
+  if (category && CATEGORY_ICONS[category]) {
+    return CATEGORY_ICONS[category];
+  }
+  return TYPE_ICONS[type] || "📌";
+}
+
 export default function WallItemRenderer({ item }: WallItemProps) {
-  const { resolvedType, resolvedTitle, resolvedDescription, resolvedFilePath, resolvedTextContent } = item;
+  const { resolvedType, resolvedTitle, resolvedDescription, resolvedCategory, resolvedFilePath, resolvedTextContent } = item;
+  const icon = getIcon(resolvedCategory, resolvedType);
 
   if (resolvedType === "pdf") {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-        <div className="text-4xl mb-3">📄</div>
+        <div className="text-4xl mb-3">{icon}</div>
         <h3 className="font-semibold">{resolvedTitle}</h3>
         {resolvedDescription && (
           <p className="text-sm text-gray-600 mt-1">{resolvedDescription}</p>
@@ -49,7 +73,10 @@ export default function WallItemRenderer({ item }: WallItemProps) {
           />
         )}
         <div className="p-4">
-          <h3 className="font-semibold">{resolvedTitle}</h3>
+          <h3 className="font-semibold">
+            <span className="mr-2">{icon}</span>
+            {resolvedTitle}
+          </h3>
           {resolvedDescription && (
             <p className="text-sm text-gray-600 mt-1">{resolvedDescription}</p>
           )}
@@ -61,7 +88,10 @@ export default function WallItemRenderer({ item }: WallItemProps) {
   // Text type
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-      <h3 className="font-semibold">{resolvedTitle}</h3>
+      <h3 className="font-semibold">
+        <span className="mr-2">{icon}</span>
+        {resolvedTitle}
+      </h3>
       {resolvedDescription && (
         <p className="text-sm text-gray-600 mt-1">{resolvedDescription}</p>
       )}

@@ -1,12 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { getPortalById, getPortalMembers, getPortalNotices, getPortalDocuments, getPortalFaqs } from "@/lib/portal";
+import { getPortalById, getPortalMembers, getPortalDocuments, getPortalFaqs } from "@/lib/portal";
 import { requireAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
-import { addMemberAction, removeMemberAction, sendMagicLinksAction, addNoticeAction, archivePortalAction, deletePortalAction } from "../actions";
+import { addMemberAction, removeMemberAction, sendMagicLinksAction, archivePortalAction, deletePortalAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,6 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
 
   const portal = await getPortalById(Number(params.id));
   const members = await getPortalMembers(Number(params.id));
-  const notices = await getPortalNotices(Number(params.id));
   const documents = await getPortalDocuments(Number(params.id));
   const faqs = await getPortalFaqs(Number(params.id));
 
@@ -52,6 +51,7 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
         <form action={addMemberAction} className="flex gap-3 mb-4">
           <input type="hidden" name="portalId" value={portal.id} />
           <Input name="email" type="email" placeholder="member@email.com" required />
+          <Input name="name" placeholder="Name (optional)" />
           <Button type="submit" variant="secondary">Add</Button>
         </form>
         <form action={sendMagicLinksAction} className="mb-4">
@@ -80,46 +80,6 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
           />
         )}
       </Card>
-
-      <Card>
-        <h3 className="font-semibold mb-4">Post Notice</h3>
-        <form action={addNoticeAction} className="space-y-4">
-          <input type="hidden" name="portalId" value={portal.id} />
-          <Input name="title" placeholder="Notice title" required />
-          <textarea
-            name="content"
-            rows={3}
-            placeholder="Notice content"
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-          />
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="isPinned" /> Pinned
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="isGlobalAnnouncement" /> Global Announcement
-            </label>
-          </div>
-          <Button type="submit">Post Notice</Button>
-        </form>
-      </Card>
-
-      {notices.length > 0 && (
-        <Card padding="none">
-          <Table
-            columns={[
-              { header: "Title", accessor: (n: any) => n.title },
-              { header: "Pinned", accessor: (n: any) => n.isPinned ? "📌" : "—" },
-              { header: "Global", accessor: (n: any) => n.isGlobalAnnouncement ? "🌍" : "—" },
-              { header: "Posted", accessor: (n: any) => n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Not available" },
-            ]}
-            data={notices}
-            keyExtractor={(n) => n.id}
-            emptyMessage="No notices yet."
-          />
-        </Card>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>

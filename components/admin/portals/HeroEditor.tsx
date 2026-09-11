@@ -12,7 +12,7 @@ interface HeroEditorProps {
   onChange: (field: string, value: string) => void;
 }
 
-const PRESETS = ["minimal", "coastal", "dark"];
+const PRESETS = ["minimal", "coastal", "dark", "desert", "alpine", "tropical", "editorial", "sunset"];
 
 export default function HeroEditor({
   heroTitle,

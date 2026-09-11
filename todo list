@@ -1,8 +1,8 @@
-# MyCalTravels - TODO.md (Revised)
+# MyCalTravels — TODO.md (Revision 2)
 
 ## Status
 
-**Block System + Template Creator + Theme System COMPLETE. Production hardening in progress.**
+**Portal System V1 COMPLETE (Content Library + Wall + Preview). Phase 4 planning approved. Starting Phase 4.1.**
 
 ## Core Principle
 
@@ -10,20 +10,28 @@ Developer controls design.
 Template controls layout.
 Writer controls content.
 Settings control brand.
+System controls hierarchy.
 
 ---
 
 ## Locked Decisions
 
 ### APPROVED
-- Template System (structural only - no design tools)
-- Block Registry (10 blocks)
+- Template System (structural only)
+- Block Registry (10 blocks for posts)
 - Block Editors + Renderers (switch-based)
 - Live Preview (sticky split screen)
 - Semantic theme tokens (primary, secondary, accent, success, warning, danger, info)
 - Curated colour palettes (6 pre-validated)
 - Fixed white background (professional standard)
 - Status colours fixed (never themeable)
+- **Content Library** (create once, reuse everywhere)
+- **Portal Wall** (travel information wall, client-facing)
+- **Admin Preview** (bypass magic link for admin)
+- **Hero Banner** with named presets only (no colour pickers)
+- **Itinerary as portal_items** (unified pipeline, no merge)
+- **Flights = Travel segments** (no separate table)
+- **Notepad is admin-only** (never rendered to clients)
 
 ### REJECTED
 - CanvasElement for writers
@@ -36,112 +44,244 @@ Settings control brand.
 - Full colour customisation (4 pickers)
 - Free-form background colour picker
 - Brand-aware dark mode
+- **Standalone Itinerary data source** (unified via `portal_items`)
+- **Itinerary PDF pipeline** (print stylesheet only)
+- **Options segments in V1** (deferred to V2)
+- **Cruise mode in V1** (deferred to V2)
+- **People table in V1** (trigger-based upgrade)
+- **Notepad cross-portal sharing** (strictly scoped)
+- **Merging data sources on the wall** (single pipeline)
 
 ---
 
-## Phase 1: Foundation ✅ COMPLETE
+## Phase 1: Block Foundation ✅ COMPLETE
 - [x] BlockType discriminated union (10 blocks)
 - [x] BLOCK_REGISTRY
-- [x] TemplateSection (label + state: required/optional/disabled)
-- [x] TemplateStyle (full styling for all block types)
-- [x] RGB CSS variables for opacity support
+- [x] TemplateSection (label + state)
+- [x] TemplateStyle
+- [x] RGB CSS variables
 - [x] Semantic Tailwind tokens
 - [x] ThemeProvider wraps public + admin
 
 ## Phase 2: Content Blocks ✅ COMPLETE
-- [x] Title, Body, Callout, Hero, Image, Gallery, QuickFacts, Quote, ProsCons, Verdict
-- [x] All 10 block editors
-- [x] All 10 block renderers
-- [x] PostRenderer (switch-based, 10 cases)
-- [x] BlockEditor (add/remove/move/reorder)
-- [x] TemplatePreview (sticky on desktop)
-- [x] Zero type errors
-- [x] Production build passes
+- [x] 10 block editors
+- [x] 10 block renderers
+- [x] PostRenderer (switch, 10 cases)
+- [x] BlockEditor
+- [x] TemplatePreview
+- [x] Zero type errors, build passes
 
 ## Phase 3: Template Creator ✅ COMPLETE
-- [x] TemplateCreator UI (structural only)
-- [x] Template store (DB persistence)
+- [x] TemplateCreator UI
+- [x] Template store
 - [x] Admin route `/admin/templates`
-- [x] Templates nav link
-- [x] QuickAction button
-- [x] 3 starter templates (Story, Travel Guide, Review)
+- [x] Nav link + QuickAction
+- [x] 3 starter templates
 
 ## Phase 4: Theme System ✅ COMPLETE
-- [x] Remove secondary + background pickers
-- [x] Secondary auto-derived from primary
-- [x] 6 curated palettes (Coastal, Desert, Alpine, Editorial, Tropical, Minimal)
-- [x] PalettePicker client component
-- [x] All 225 hardcoded colours migrated (except frozen Canvas)
-- [x] Status badges use success token
+- [x] Removed secondary + background pickers
+- [x] Secondary derived from primary
+- [x] 6 curated palettes + PalettePicker
+- [x] All 225 hardcoded colours migrated
 - [x] Rename to MyCalTravels
 
----
-
-## Phase 5: Before Production (Current)
-
-### High Priority
-- [ ] Preview popup (modal → floating → fullscreen)
-- [ ] Target surface token conversion (~20-30 `bg-gray-50/100` → theme-derived)
-- [ ] Delete Canvas system (39 emerald remain)
-- [ ] Fix better-sqlite3 crash on mini PC deployment
-
-### Medium Priority
-- [ ] Auto Save (debounced, 2s)
-- [ ] Undo / Redo (global stack, capped 50)
-- [ ] Publish Validation (required blocks filled)
-- [ ] Error Boundaries per block
-- [ ] Responsive Preview (desktop/tablet/mobile)
-
-### Low Priority
-- [ ] Dark mode (reader preference only, fixed neutral palette)
-- [ ] Template versioning
-- [ ] Additional block types (20+ block threshold before registry refactor)
-- [ ] Reading time / word count
+## Phase 5: Portal V1 ✅ COMPLETE
+- [x] `content_library` table + admin UI
+- [x] `portal_items` table (library + portal-specific)
+- [x] Portal Wall rendering (pdf/image/text)
+- [x] Hero Banner (title, subtitle, image, 3 presets)
+- [x] Admin Preview route (`/admin/portals/[id]/preview`)
+- [x] PortalWall extracted as pure rendering component
+- [x] Hero image upload (replaced URL input)
+- [x] Preview Wall button on edit page
+- [x] `scripts/setup-db.js` (reproducible DB creation)
+- [x] `schema.sql` supports migration chain
 
 ---
 
-## Phase 6: Future
+## Phase 6: Portal V2 (Current Focus)
+
+### 6.1 Quick Wins
+- [ ] Hero preset expansion (3 → 8: desert, alpine, tropical, editorial, sunset)
+- [ ] Content tile icons (category → emoji, fixed enum)
+- [ ] Notices removal (UI + action only)
+- [ ] Portal member name collection (optional field)
+
+### 6.2 Itinerary Builder V1
+- [ ] Database schema (itineraries, sections, days, segments, stays)
+- [ ] **`portal_items` extended with `itinerary_id` + `source_type='itinerary'`**
+- [ ] Backend repository (`lib/itineraries`)
+- [ ] Validation layer (travel segment datetime ordering, soft warnings)
+- [ ] API routes (~10 routes)
+- [ ] Admin itinerary editor
+- [ ] Client itinerary view (time-grouped, type-coloured)
+- [ ] Stay banner ("where you're sleeping tonight")
+- [ ] Empty-day placeholder
+- [ ] Print stylesheet (browser-native PDF)
+- [ ] **Wall integration via unified `portal_items` pipeline**
+
+### 6.3 Admin Notepad
+- [ ] `notepad_entries` table
+- [ ] Backend repository + search
+- [ ] API routes
+- [ ] Admin UI (list, add, search, autocomplete)
+- [ ] **TagInput reuse guardrail** (UI pattern only, no post-tag backend coupling)
+
+---
+
+## Phase 7: Future / Deferred
+
+### V2 Features (post-Portal V2)
+- [ ] Options segments (A/B alternatives on free days)
+- [ ] Cruise mode (port schedule tables)
+- [ ] Overlapping stays
+- [ ] Group splits
+- [ ] People table (triggered by naming inconsistency)
 - [ ] Template Migration (Canvas → Block)
 - [ ] Inline Editing
-- [ ] Image upload integration with Hero/Gallery editors
 - [ ] Client portal reply capability
+
+### Production Hardening
+- [ ] Fix better-sqlite3 crash on mini PC deployment
+- [ ] Delete Canvas system (39 emerald remain)
+- [ ] Preview popup (modal → floating → fullscreen)
+- [ ] Target surface token conversion (~20-30 `bg-gray-50/100`)
+- [ ] Auto Save (debounced, 2s)
+- [ ] Undo / Redo (global stack, capped 50)
+- [ ] Publish Validation
+- [ ] Error Boundaries per block
+- [ ] Responsive Preview
+
+### Low Priority
+- [ ] Dark mode (reader preference only)
+- [ ] Template versioning
+- [ ] Reading time / word count
+- [ ] Additional block types (20+ threshold before registry refactor)
 
 ---
 
 ## Architecture Decisions (Locked)
 
-### Block System
+### Block System (Posts)
 - 10 blocks: Title, Body, Callout, Hero, Image, Gallery, QuickFacts, Quote, ProsCons, Verdict
-- Switch-based rendering (refactor to registry only if 20+ blocks)
-- Discriminated unions for type safety
-- Renderers receive `{ data, style }` - TemplateStyle has ALL design
+- Switch-based rendering
+- Discriminated unions
+- Renderers receive `{ data, style }`
 
 ### Theme System
-- Primary + Accent = user-picked (only 2 pickers)
-- Secondary = derived from primary (subtle surfaces)
+- Primary + Accent = user-picked (2 pickers only)
+- Secondary = derived from primary
 - Background = fixed white
-- Status colours = fixed (success/warning/danger/info)
-- 6 curated palettes pre-validated
+- Status colours = fixed
+- 6 curated palettes
 
-### Template System
-- Structural only (name, description, theme, blocks, required/optional/disabled, maxCount)
+### Content Library
+- `content_library` table
+- Categories = filtering only (never rendering)
+- Referenced by `portal_items`, never copied
+
+### Portal Wall
+- Single pipeline via `portal_items`
+- `source_type`: `library` | `portal_specific` | `itinerary`
+- Rendering by `type`: pdf | image | text | itinerary
+- Wall queries one table + resolves references
+
+### Itinerary
+- Separate content type, NOT Portal Blocks
+- Chronology-driven (not prominence-driven)
+- Travel segments carry flight data
+- Stays belong to one section (no cross-section)
+- Sequential stays only
+- Time-derived ordering (no manual reorder)
+- Empty days render intentionally
+- Print stylesheet export (no PDF pipeline)
+
+### Notepad
+- Admin-only, never rendered to clients
+- Comma-separated tags (V1), People table (V2 trigger)
+- Logistics notes only (no diagnostic detail)
+- TagInput UI pattern only, no post-tag backend coupling
+
+### Templates
+- Structural only
 - Live templates (edit → all posts update)
-- `version: 1` in layoutData for future versioning
+- `version: 1` in layoutData
+
+---
+
+## Guardrails (Do Not Violate)
+
+| Guardrail | Applies To |
+|-----------|-----------|
+| No raw colour pickers | Hero presets are named options |
+| No per-segment styling | Itinerary colours derive from type + theme |
+| No free icon picker | Content tile icons are fixed enum |
+| No manual reordering | Itinerary segments ordered by time |
+| No CMS-style versioning | Live edits, snapshot exports |
+| Notepad never leaks to client | Admin-only scoping |
+| No attendees on segments | People tagging lives only in Notepad |
+| Stays belong to one section | No cross-section stays |
+| Empty days render placeholder | Never blank |
+| Flights = Travel segments | No separate hierarchy |
+| No merged data sources | Unified via `portal_items` |
+| No PDF pipeline | Print stylesheet only |
 
 ---
 
 ## Known Issues
-1. better-sqlite3 crash in Codespace (environment-specific)
-2. Canvas system frozen (39 emerald remain)
-3. `schema.sql` outdated (use Drizzle schema + seed)
+
+1. **better-sqlite3 crash in Codespace** — environment-specific; not present on local PC
+2. **Canvas system frozen** — 39 emerald remain, to be deleted
+3. **`schema.sql` outdated** — missing newer columns; use Drizzle schema + `scripts/setup-db.js` + seed
+4. **Missing DB columns on fresh setup** — `scripts/setup-db.js` handles all known columns; extend if new errors appear
+
+---
+
+## Development Workflow
+
+**Editing:** Codespace (VS Code, Python heredocs, Copilot)
+**Testing:** Local PC (no better-sqlite3 crash, real browser at localhost:3000)
+**Sync:** `git push` from Codespace → `git pull` on local → test → report bugs
 
 ---
 
 ## Testing Commands
 
 ```bash
-npm run dev        # Dev server
-npm run seed       # Recreate + seed database
-npm run build      # Production build
-npm start          # Production server
+# Local setup (first time)
+node scripts/setup-db.js   # Create DB from schema + migrations
+npm run seed               # Seed data
+
+# Daily
+npm run dev                # Dev server (port 3000)
+npm run build              # Production build
+npm start                  # Production server
 ```
+
+---
+
+## Current Session State
+
+**Last completed:**
+- Admin preview feature (extracted PortalWall, added preview route with banner)
+- HeroEditor: image upload (replaced URL input)
+- View Wall button → Preview Wall button
+- `scripts/setup-db.js` added to repo
+
+**Last commit:** `08c835f` — pushed to GitHub
+
+**Next action:** Begin Phase 6.1 (Quick Wins)
+
+---
+
+## Phase 6.1 Session Plan
+
+1. Hero preset expansion (3 → 8) — 15 min
+2. Content tile icons — 30 min
+3. Notices removal — 15 min
+4. Portal member name collection — 20 min
+5. Commit + push
+6. Pull locally, test on localhost
+7. Report findings
+
+**Estimated session time:** ~1.5 hours

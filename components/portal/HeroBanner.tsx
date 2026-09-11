@@ -11,6 +11,11 @@ const PRESETS: Record<string, string> = {
   minimal: "bg-white text-gray-900",
   coastal: "bg-gradient-to-r from-blue-400 to-cyan-300 text-white",
   dark: "bg-gray-900 text-white",
+  desert: "bg-gradient-to-r from-amber-300 to-orange-400 text-amber-900",
+  alpine: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white",
+  tropical: "bg-gradient-to-r from-teal-400 to-rose-400 text-white",
+  editorial: "bg-slate-800 text-white",
+  sunset: "bg-gradient-to-r from-rose-400 to-orange-400 text-white",
 };
 
 export default function HeroBanner({ title, subtitle, image, preset }: HeroBannerProps) {

@@ -10,7 +10,6 @@ import {
   addPortalMember,
   removePortalMember,
   sendMagicLinkEmails,
-  createPortalNotice,
 } from "@/lib/portal";
 import { logActivity } from "@/lib/logging";
 
@@ -44,10 +43,11 @@ export async function addMemberAction(formData: FormData) {
   const user = await requireAuth();
   const portalId = Number(formData.get("portalId"));
   const email = String(formData.get("email") || "");
+  const name = String(formData.get("name") || "").trim();
 
   if (!portalId || !email) throw new Error("Email required");
 
-  await addPortalMember(portalId, email);
+  await addPortalMember(portalId, email, name || undefined);
 
   await logActivity({
     userId: Number(user.id),
@@ -90,29 +90,6 @@ export async function sendMagicLinksAction(formData: FormData) {
     entityType: "portal",
     entityId: portalId,
     details: "Sent magic links to all members",
-  });
-
-  redirect(`/admin/portals/${portalId}`);
-}
-
-export async function addNoticeAction(formData: FormData) {
-  const user = await requireAuth();
-  const portalId = Number(formData.get("portalId"));
-  const title = String(formData.get("title") || "");
-  const content = String(formData.get("content") || "");
-  const isPinned = formData.get("isPinned") === "on";
-  const isGlobalAnnouncement = formData.get("isGlobalAnnouncement") === "on";
-
-  if (!title || !content) throw new Error("Title and content required");
-
-  await createPortalNotice(portalId, { title, content, isPinned, isGlobalAnnouncement });
-
-  await logActivity({
-    userId: Number(user.id),
-    actionType: "create",
-    entityType: "portal_notice",
-    entityId: portalId,
-    details: `Posted notice: ${title}`,
   });
 
   redirect(`/admin/portals/${portalId}`);
