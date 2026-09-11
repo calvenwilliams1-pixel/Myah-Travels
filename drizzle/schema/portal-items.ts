@@ -2,6 +2,7 @@ import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { portals } from "./portals";
 import { contentLibrary } from "./content-library";
+import { itineraries } from "./itineraries";
 
 export const portalItems = sqliteTable(
   "portal_items",
@@ -13,6 +14,9 @@ export const portalItems = sqliteTable(
     sourceType: text("source_type").notNull().default("library"),
     contentLibraryId: integer("content_library_id").references(() => contentLibrary.id, {
       onDelete: "set null",
+    }),
+    itineraryId: integer("itinerary_id").references(() => itineraries.id, {
+      onDelete: "cascade",
     }),
     title: text("title"),
     description: text("description"),

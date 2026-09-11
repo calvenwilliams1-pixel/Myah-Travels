@@ -35,3 +35,5 @@ export { portalChecklistStates } from "./portal-checklist-states";
 
 export * from "./content-library";
 export * from "./portal-items";
+
+export * from "./itineraries";
