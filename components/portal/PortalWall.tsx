@@ -23,6 +23,7 @@ export interface PortalWallItem {
   resolvedCategory: string | null;
   resolvedFilePath: string | null;
   resolvedTextContent: string | null;
+  itineraryId?: number | null;
 }
 
 interface PortalWallProps {
@@ -55,7 +56,7 @@ export default function PortalWall({ portal, items }: PortalWallProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((item) => (
-              <WallItemRenderer key={item.id} item={item} />
+              <WallItemRenderer key={item.id} item={{ ...item, portalSlug: portal.slug }} />
             ))}
           </div>
         )}

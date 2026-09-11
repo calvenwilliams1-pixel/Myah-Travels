@@ -10,6 +10,8 @@ interface WallItemProps {
     resolvedCategory: string | null;
     resolvedFilePath: string | null;
     resolvedTextContent: string | null;
+    portalSlug?: string;
+    itineraryId?: number | null;
   };
 }
 
@@ -82,6 +84,19 @@ export default function WallItemRenderer({ item }: WallItemProps) {
           )}
         </div>
       </div>
+    );
+  }
+
+  if (resolvedType === "itinerary") {
+    return (
+      <a
+        href={`/portal/${item.portalSlug}/itinerary/${item.itineraryId}`}
+        className="block bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:border-primary transition-colors"
+      >
+        <div className="text-4xl mb-3">📋</div>
+        <h3 className="font-semibold">{resolvedTitle}</h3>
+        <p className="text-sm text-primary mt-2">View itinerary →</p>
+      </a>
     );
   }
 
