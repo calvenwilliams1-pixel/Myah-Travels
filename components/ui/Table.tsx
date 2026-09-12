@@ -11,10 +11,18 @@ interface TableProps<T> {
   data: T[];
   keyExtractor: (row: T) => string | number;
   onRowClick?: (row: T) => void;
+  rowClassName?: string | ((row: T) => string);
   emptyMessage?: string;
 }
 
-export function Table<T>({ columns, data, keyExtractor, onRowClick, emptyMessage = "No data found" }: TableProps<T>) {
+export function Table<T>({
+  columns,
+  data,
+  keyExtractor,
+  onRowClick,
+  rowClassName,
+  emptyMessage = "No data found",
+}: TableProps<T>) {
   if (data.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -22,6 +30,16 @@ export function Table<T>({ columns, data, keyExtractor, onRowClick, emptyMessage
       </div>
     );
   }
+
+  const getRowClassName = (row: T): string => {
+    const base = "border-b border-gray-100 transition-colors";
+    const extra =
+      typeof rowClassName === "function"
+        ? rowClassName(row)
+        : rowClassName || "";
+    const interactive = onRowClick ? "cursor-pointer hover:bg-gray-50" : "";
+    return `${base} ${interactive} ${extra}`.trim();
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -39,7 +57,8 @@ export function Table<T>({ columns, data, keyExtractor, onRowClick, emptyMessage
           {data.map((row) => (
             <tr
               key={keyExtractor(row)}
-              className="border-b border-gray-100"
+              className={getRowClassName(row)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((col, i) => (
                 <td key={i} className={`py-3 px-4 ${col.className || ""}`}>

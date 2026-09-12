@@ -8,7 +8,7 @@ import {
   portalDocuments,
   portalFaqs,
 } from "@/drizzle/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import crypto from "crypto";
 import { queueEmail, queueBulkEmails } from "@/lib/email";
 import { magicLinkEmail, portalNoticeEmail, globalAnnouncementEmail } from "@/lib/email/templates";
@@ -36,6 +36,18 @@ export async function getPortalBySlug(slug: string) {
     .where(and(eq(portals.slug, slug), isNull(portals.deletedAt)))
     .limit(1);
   return result[0] ?? null;
+}
+
+export async function getDeletedPortals() {
+  return db.select().from(portals)
+    .where(isNotNull(portals.deletedAt))
+    .orderBy(desc(portals.deletedAt));
+}
+
+export async function restorePortal(id: number) {
+  return db.update(portals)
+    .set({ deletedAt: null, isActive: true })
+    .where(eq(portals.id, id));
 }
 
 async function generateUniqueSlug(baseSlug: string): Promise<string> {

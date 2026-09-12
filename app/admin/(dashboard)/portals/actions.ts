@@ -7,6 +7,7 @@ import {
   updatePortal,
   archivePortal,
   softDeletePortal,
+  restorePortal,
   addPortalMember,
   removePortalMember,
   sendMagicLinkEmails,
@@ -164,4 +165,22 @@ export async function deletePortalAction(formData: FormData) {
   });
 
   redirect("/admin/portals");
+}
+
+
+export async function restorePortalAction(formData: FormData) {
+  const user = await requireAuth();
+  const portalId = Number(formData.get("portalId"));
+
+  await restorePortal(portalId);
+
+  await logActivity({
+    userId: Number(user.id),
+    actionType: "restore",
+    entityType: "portal",
+    entityId: portalId,
+    details: "Restored portal",
+  });
+
+  redirect("/admin/portals?show=deleted");
 }

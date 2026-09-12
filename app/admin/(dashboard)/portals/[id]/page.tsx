@@ -38,6 +38,9 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
           <Link href={`/admin/portals/${portal.id}/notepad`}>
             <Button variant="secondary">Notepad</Button>
           </Link>
+          <Link href={`/admin/portals/${portal.id}/preview`} target="_blank" rel="noopener noreferrer">
+            <Button variant="ghost">Preview Wall ↗</Button>
+          </Link>
           <Link href={`/admin/portals/${portal.id}/edit`}>
             <Button>Edit Wall</Button>
           </Link>
