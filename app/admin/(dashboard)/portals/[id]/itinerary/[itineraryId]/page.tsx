@@ -338,14 +338,14 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => void }) {
         type="date"
         value={stay.checkInDate}
         onChange={(e) => update({ checkInDate: e.target.value })}
-        className="px-2 py-1 border border-gray-200 rounded"
+        className="px-2 py-1 border border-gray-200 rounded cursor-pointer"
       />
       <span className="text-gray-400">→</span>
       <input
         type="date"
         value={stay.checkOutDate}
         onChange={(e) => update({ checkOutDate: e.target.value })}
-        className="px-2 py-1 border border-gray-200 rounded"
+        className="px-2 py-1 border border-gray-200 rounded cursor-pointer"
       />
       <button onClick={remove} className="text-red-500 px-2">✕</button>
     </div>
@@ -409,7 +409,7 @@ function DayEditor({ day, onChanged }: { day: Day; onChanged: () => void }) {
           type="date"
           value={day.date}
           readOnly
-          className="text-xs px-2 py-0.5 bg-gray-50 border border-gray-200 rounded"
+          className="text-xs px-2 py-0.5 bg-gray-50 border border-gray-200 rounded cursor-pointer"
         />
         <input
           type="text"
@@ -480,7 +480,7 @@ function SegmentRow({ segment, onChanged }: { segment: Segment; onChanged: () =>
         <select
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value as any })}
-          className="px-2 py-1 border border-gray-200 rounded text-sm"
+          className="px-2 py-1 border border-gray-200 rounded text-sm cursor-pointer"
         >
           <option value="activity">Activity</option>
           <option value="travel">Travel</option>
@@ -516,13 +516,13 @@ function SegmentRow({ segment, onChanged }: { segment: Segment; onChanged: () =>
             type="datetime-local"
             value={form.departureDatetime || ""}
             onChange={(e) => setForm({ ...form, departureDatetime: e.target.value })}
-            className="px-2 py-1 border border-gray-200 rounded text-sm"
+            className="px-2 py-1 border border-gray-200 rounded text-sm cursor-pointer"
           />
           <input
             type="datetime-local"
             value={form.arrivalDatetime || ""}
             onChange={(e) => setForm({ ...form, arrivalDatetime: e.target.value })}
-            className="px-2 py-1 border border-gray-200 rounded text-sm"
+            className="px-2 py-1 border border-gray-200 rounded text-sm cursor-pointer"
           />
           <input
             type="text"
@@ -545,13 +545,13 @@ function SegmentRow({ segment, onChanged }: { segment: Segment; onChanged: () =>
             type="time"
             value={form.startTime || ""}
             onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-            className="px-2 py-1 border border-gray-200 rounded text-sm"
+            className="px-2 py-1 border border-gray-200 rounded text-sm cursor-pointer"
           />
           <input
             type="time"
             value={form.endTime || ""}
             onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-            className="px-2 py-1 border border-gray-200 rounded text-sm"
+            className="px-2 py-1 border border-gray-200 rounded text-sm cursor-pointer"
           />
           <input
             type="text"
