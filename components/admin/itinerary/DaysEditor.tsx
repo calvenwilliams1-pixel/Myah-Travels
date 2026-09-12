@@ -108,6 +108,7 @@ function DayRow({
       {showAddSegment && (
         <AddSegmentForm
           dayId={day.id}
+          dayDate={day.date}
           onSaved={() => {
             setShowAddSegment(false);
             onChanged();

@@ -4,20 +4,23 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
+import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
 import AddStayForm from "./AddStayForm";
 import StaysEditor from "./StaysEditor";
 import AddDayForm from "./AddDayForm";
 import DaysEditor from "./DaysEditor";
-import type { Section } from "./ItineraryEditor";
+import type { Section, PortalBounds } from "./ItineraryEditor";
 
 interface SectionEditorProps {
   section: Section;
+  portalBounds: PortalBounds;
   onChanged: () => void;
   onDelete: () => void;
 }
 
 export default function SectionEditor({
   section,
+  portalBounds,
   onChanged,
   onDelete,
 }: SectionEditorProps) {
@@ -66,17 +69,31 @@ export default function SectionEditor({
 
       {/* Dates */}
       <div className="grid grid-cols-2 gap-4">
-        <AutosaveDateFieldLazy
+        <AutosaveDateField
           label="Start Date"
           value={section.startDate || ""}
           onSave={(v) => updateSection({ startDate: v })}
           draftKey={`section:${section.id}:startDate`}
+          min={portalBounds.departureDate || undefined}
+          max={portalBounds.returnDate || undefined}
+          helperText={
+            portalBounds.departureDate
+              ? `On or after ${portalBounds.departureDate}`
+              : undefined
+          }
         />
-        <AutosaveDateFieldLazy
+        <AutosaveDateField
           label="End Date"
           value={section.endDate || ""}
           onSave={(v) => updateSection({ endDate: v })}
           draftKey={`section:${section.id}:endDate`}
+          min={section.startDate || portalBounds.departureDate || undefined}
+          max={portalBounds.returnDate || undefined}
+          helperText={
+            portalBounds.returnDate
+              ? `On or before ${portalBounds.returnDate}`
+              : undefined
+          }
         />
       </div>
 
@@ -149,7 +166,3 @@ export default function SectionEditor({
     </Card>
   );
 }
-
-// Lazy import to avoid circular dependency
-import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
-const AutosaveDateFieldLazy = AutosaveDateField;

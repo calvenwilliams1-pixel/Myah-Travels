@@ -70,6 +70,11 @@ export interface Itinerary {
   sections: Section[];
 }
 
+export interface PortalBounds {
+  departureDate: string | null;
+  returnDate: string | null;
+}
+
 // ============================================
 // MAIN EDITOR
 // ============================================
@@ -84,6 +89,10 @@ export default function ItineraryEditor({
   itineraryId,
 }: ItineraryEditorProps) {
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
+  const [portalBounds, setPortalBounds] = useState<PortalBounds>({
+    departureDate: null,
+    returnDate: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [showAddSection, setShowAddSection] = useState(false);
 
@@ -91,6 +100,12 @@ export default function ItineraryEditor({
     const res = await fetch(`/api/itineraries/${itineraryId}`);
     const data = await res.json();
     setItinerary(data.itinerary);
+    if (data.portal) {
+      setPortalBounds({
+        departureDate: data.portal.departureDate ?? null,
+        returnDate: data.portal.returnDate ?? null,
+      });
+    }
     setIsLoading(false);
   }
 
@@ -170,6 +185,7 @@ export default function ItineraryEditor({
           <SectionEditor
             key={section.id}
             section={section}
+            portalBounds={portalBounds}
             onChanged={fetchItinerary}
             onDelete={() => deleteSection(section.id)}
           />

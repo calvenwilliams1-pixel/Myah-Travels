@@ -8,8 +8,43 @@ import { Input } from "@/components/ui/Input";
 
 interface AddSegmentFormProps {
   dayId: number;
+  dayDate: string;   // YYYY-MM-DD
   onSaved: () => void;
   onCancel: () => void;
+}
+
+// Compute min/max datetime-local strings for flight pickers:
+// Allow a 1-day buffer on each side of the day's date so flights that
+// depart late on the previous day or arrive early the next day are valid.
+function computeDatetimeBounds(dayDate: string): { min: string; max: string } {
+  try {
+    const day = new Date(dayDate + "T00:00:00");
+    const dayBefore = new Date(day);
+    dayBefore.setDate(dayBefore.getDate() - 1);
+    const dayAfter = new Date(day);
+    dayAfter.setDate(dayAfter.getDate() + 1);
+
+    const toLocalString = (d: Date) => {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}T00:00`;
+    };
+
+    const toLocalEnd = (d: Date) => {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}T23:59`;
+    };
+
+    return {
+      min: toLocalString(dayBefore),
+      max: toLocalEnd(dayAfter),
+    };
+  } catch {
+    return { min: "", max: "" };
+  }
 }
 
 type SegmentType = "activity" | "travel" | "meal" | "free_day";
@@ -23,9 +58,11 @@ const SEGMENT_TYPE_OPTIONS = [
 
 export default function AddSegmentForm({
   dayId,
+  dayDate,
   onSaved,
   onCancel,
 }: AddSegmentFormProps) {
+  const datetimeBounds = computeDatetimeBounds(dayDate);
   const [type, setType] = useState<SegmentType>("activity");
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState("");

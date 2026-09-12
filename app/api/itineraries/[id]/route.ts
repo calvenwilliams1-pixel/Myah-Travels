@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getFullItinerary, updateItinerary, softDeleteItinerary } from "@/lib/itineraries";
+import { getPortalById } from "@/lib/portal";
 import { UpdateItinerarySchema } from "@/lib/validation/itinerary";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -11,7 +12,20 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const itinerary = await getFullItinerary(id);
   if (!itinerary) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  return NextResponse.json({ itinerary });
+  const portal = await getPortalById(itinerary.portalId);
+
+  return NextResponse.json({
+    itinerary,
+    portal: portal
+      ? {
+          id: portal.id,
+          name: portal.name,
+          slug: portal.slug,
+          departureDate: portal.departureDate,
+          returnDate: portal.returnDate,
+        }
+      : null,
+  });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
