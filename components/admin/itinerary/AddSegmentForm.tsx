@@ -1,5 +1,6 @@
 "use client";
 
+import { openPickerOnClick } from "@/lib/ui/openPicker";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -175,6 +176,8 @@ export default function AddSegmentForm({
               <Input
                 label="Departure"
                 type="datetime-local"
+            onClick={openPickerOnClick}
+
                 value={departureDatetime}
                 onChange={(e) => setDepartureDatetime(e.target.value)}
                 helperText="Local time at departure"
@@ -183,6 +186,8 @@ export default function AddSegmentForm({
               <Input
                 label="Arrival"
                 type="datetime-local"
+            onClick={openPickerOnClick}
+
                 value={arrivalDatetime}
                 onChange={(e) => setArrivalDatetime(e.target.value)}
                 helperText="Local time at arrival"
@@ -210,6 +215,8 @@ export default function AddSegmentForm({
               <Input
                 label="Start Time"
                 type="time"
+            onClick={openPickerOnClick}
+
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 helperText="e.g., 14:00"
@@ -218,6 +225,8 @@ export default function AddSegmentForm({
               <Input
                 label="End Time"
                 type="time"
+            onClick={openPickerOnClick}
+
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 helperText="e.g., 16:30"

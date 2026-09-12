@@ -1,10 +1,10 @@
-# SRS v4.0 - Updated with Dual-Mode Editor
+# MyCalTravels — SRS v5.0
 
-## Myah Travels Website
+## Software Requirements Specification
 
-**Version:** 4.0 (Post Canvas + Feed + Dual-Mode Editor)
-**Date:** August 25, 2026
-**Status:** Implementation In Progress
+**Version:** 5.0 (Block-Based Content + Portal Wall + Itinerary Builder + Admin Notepad)
+**Date:** September 12, 2026
+**Status:** Portal V1 + Portal V2 backends complete. Phase 7 bug-fix pass in progress.
 **Stakeholder:** Myah (Travel Writer & Agent)
 
 ---
@@ -17,27 +17,54 @@
 | 2.0 | Aug 18, 2026 | Magic links, activity logging, soft deletes, PIPEDA |
 | 3.0 | Aug 18, 2026 | Blocking fixes, 2FA, retention policy, final decisions |
 | 4.0 | Aug 25, 2026 | Canvas Design System, Feed System, Theme System, Dual-Mode Editor |
+| **5.0** | **Sep 12, 2026** | **Major architecture pivot: Block-based content system replaces Canvas. Portal Wall + Itinerary Builder + Admin Notepad added. Autosave infrastructure. Theme system simplified.** |
 
 ---
 
-## Key Changes Since v3.0
+## Section 1: Introduction
 
-| # | Change | Status |
-|---|--------|--------|
-| 1 | Canvas Design System (Phases 1-15) | ✅ Complete |
-| 2 | Facebook-style feed homepage | ✅ Complete |
-| 3 | Theme system (colors, background, transparency) | ✅ Complete |
-| 4 | Dual-Mode Editor (Story + Design) | 🔄 In Progress |
-| 5 | Rich text in canvas elements | ✅ Complete |
-| 6 | Pin/Highlight feed posts | ✅ Complete |
-| 7 | Password change with brute force protection | ✅ Complete |
-| 8 | Mode selection (story/design) at post creation | ✅ Complete |
+### 1.1 Purpose
+
+This document specifies the requirements for MyCalTravels, a web platform serving a single travel writer/agent (Myah) and her clients.
+
+### 1.2 Scope
+
+MyCalTravels provides:
+- **Public site** — Feed homepage, blog, guides, reviews, videos
+- **Admin CMS** — Block-based content editor for posts/guides/reviews
+- **Client portals** — Travel Information Wall per trip, accessible via magic link
+- **Itinerary Builder** — Structured itinerary creation with beautiful client rendering
+- **Admin Notepad** — Private per-portal logistics scratchpad
+- **Theme System** — Semantic colour tokens driven by admin settings
+
+### 1.3 Key Architectural Pivot (v5.0)
+
+The project pivoted from a Canvas-style design tool to a **block-based content system** in v5.0. The Canvas system is frozen and pending deletion.
+
+**Core principle:**
+> Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
+
+**What was rejected:**
+- CanvasElement for writers
+- Moveable/drag/resize/rotate for writers
+- Properties panels with per-element styling
+- Free-form layout
+- Full colour customisation
+- General-purpose design tools
+
+**What replaced it:**
+- Semantic content blocks (Title, Body, Hero, Gallery, etc.)
+- Templates define structure (which blocks allowed, order, required/optional)
+- Portal Wall for client trip delivery
+- Curated colour palettes (not free-form pickers)
+- Named hero presets (no colour pickers)
+- Admin Notepad for one-off logistics
 
 ---
 
-## Section 2: System Overview (Updated)
+## Section 2: System Overview
 
-### 2.1 User Roles (Unchanged)
+### 2.1 User Roles
 
 | Role | Access | Authentication |
 |------|--------|----------------|
@@ -45,118 +72,297 @@
 | Portal Member | Specific portal only | Magic link → Session cookie |
 | Visitor | Public content | None |
 
-### 2.2 Key Design Decisions (Updated)
+**Note:** The system currently supports a single admin account. Multi-admin is deferred to Phase 3.
+
+### 2.2 Key Design Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Content Editor | Dual-Mode (Story + Design) | Myah chooses Word-like or Canva-like per post |
-| Canvas Position | Pixel-based at 800px design width | Simpler than ratios, scaled via CSS transform |
-| Responsive | `transform: scale()` | No data model changes needed |
-| Rich Text | TipTap JSON in canvas elements | Full formatting in both modes |
-| Feed | Facebook-style infinite scroll | Single homepage for all content |
-| Theme | Admin-controlled colors/background | Myah customizes site appearance |
-| Storage | SQLite (unchanged) | Already working, no need for flat files |
+| Content Editor | Block-based (vertical editor) | No design decisions for writer |
+| Block System | 10 semantic blocks | Fixed schema, structured content |
+| Templates | Structural only | Define which blocks allowed + order |
+| Client Delivery | Portal Wall per trip | Replaces document repository model |
+| Portal Auth | Magic link → session cookie | No passwords for clients |
+| Itinerary | Separate content type, not block | Chronology-driven, not prominence-driven |
+| Flights | Travel segments (no separate table) | Simplifies hierarchy |
+| Stays | Belong to one section | No cross-section spans |
+| Admin Notepad | Comma-separated tags (V1) | People table upgrade trigger defined |
+| Draft Durability | localStorage (synchronous) | Single-device, critical data integrity |
+| Autosave | Debounced with dirty-tracking | Prevents silent work loss |
+| Theme | Curated palettes + named presets | No raw colour pickers |
+| Background | Fixed white | Professional standard |
+| Status Colours | Fixed (never themeable) | Universal meaning |
+| Dark Mode | Deferred (reader preference) | Separate from branding |
+| Storage | SQLite (better-sqlite3) | Already working |
+| Testing | Vitest + Testing Library | Critical data-integrity code requires tests |
 
 ---
 
-## New Section 17: Dual-Mode Editor Specification
+## Section 3: Block System (Content)
 
-### 17.1 Mode Selection
+### 3.1 Overview
 
-- Shown once when creating a post/guide/review
-- Two options: **Story** (long-form writing) or **Design** (visual canvas)
-- Mode is **locked** at creation - no conversion
+Posts, guides, and reviews are composed of ordered **content blocks**. Each block is one content type with one data model, one editor, and one renderer.
 
-### 17.2 Story Mode
+### 3.2 Block Types (10)
 
-- TipTap-based rich text editor
-- Continuous flowing text
-- Can embed canvas windows inline
-- Canvas windows are fully editable (not static snapshots)
-- Window resize scales internal content
+| Block | Purpose |
+|-------|---------|
+| Title | Section heading (level 1/2/3) |
+| Body | Rich text (TipTap JSON) |
+| Callout | Tip / warning / info variant |
+| Hero | Full-width image with caption |
+| Image | Single image with caption |
+| Gallery | Grid of images |
+| QuickFacts | Label/value pairs |
+| Quote | Text + author |
+| ProsCons | Two-column comparison |
+| Verdict | Text + star rating |
 
-### 17.3 Design Mode
+### 3.3 Block Registry
 
-- Full canvas (Canva-style)
-- Fixed design width (800px), infinite height
-- All elements movable, resizable, rotatable
-- Rich text elements with TipTap formatting inside
-- Snap-to-grid + alignment guides
-- Multi-select (shift-click, marquee drag)
-- Grouping (groupId on elements)
+- `BLOCK_REGISTRY` maps `BlockType` → definition (label, icon, `getDefaultData()`)
+- Renderers receive `{ data, style }` — TemplateStyle has all design
+- Switch-based rendering (refactor to registry if 20+ blocks)
 
-### 17.4 Shared Element Types
+### 3.4 Template System
 
-| Element | Features |
-|---------|----------|
-| Text | Rich text (TipTap), font, color, size, bold/italic, alignment |
-| Image | Upload/URL, crop/reposition, opacity |
-| Shape | Square, circle, diamond, line, fill, border, radius |
-| Button | Label, URL, open-in-new-tab, styling |
-| Checklist | Visual list with checkboxes (interactive) |
-| PDF | Inline preview + download |
-| Divider | Horizontal line |
-| Portal Dates | Shows departure/return/countdown |
-| Portal Notices | Shows notices with filtering |
-| Portal Documents | Shows documents with download |
-| Portal FAQs | Shows FAQs with expand/collapse |
+- Templates define which blocks allowed + order
+- `TemplateSection` has `label` + `state` (required/optional/disabled)
+- `TemplateCreator` is the admin UI
+- 3 starter templates: Story, Travel Guide, Review
+- Live templates: edit affects all posts using them
+- `version: 1` in layoutData for future versioning
 
-### 17.5 Shared Styling
+### 3.5 Post Storage
 
-Every element supports:
-- Fill color (full hex picker)
-- Border width + color
-- Border radius
-- Transparency (opacity)
-- Font (text elements)
-- Text color
-- Text size
-- Bold/italic/alignment
-- Layer controls (forward/backward)
-
-### 17.6 Page Styling
-
-Both modes support:
-- Background color
-- Background image
-- Background transparency
-- Page padding
-
-### 17.7 Templates
-
-- Save as template captures snapshot of elements
-- Applying template copies elements as editable starting point
-- Templates are independent (editing post doesn't affect template)
-- Stored in template picker/manager UI
-
-### 17.8 Undo/Redo
-
-- Global undo stack (capped 50)
-- Ctrl+Z / Ctrl+Y
-- Nudge operations create undo points
-
-### 17.9 Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+Z | Undo |
-| Ctrl+Y / Ctrl+Shift+Z | Redo |
-| Ctrl+C / Ctrl+V | Copy/paste |
-| Delete/Backspace | Delete selected |
-| Arrow keys | Nudge (1px or 10px with shift) |
-| Escape | Deselect all |
-
-### 17.10 Autosave
-
-- 2s debounce
-- Shows "Saving..." / "Saved" / "Save failed" status
-- Flush on unmount
+- Post = `templateId` + ordered list of block instances
+- Block instance = `{ id, type, data }`
+- Content only (no x/y/width/height/coordinates)
 
 ---
 
-## New Section 18: Feed System Specification
+## Section 4: Theme System
 
-### 18.1 Homepage Feed
+### 4.1 Semantic Tokens
+
+- `--color-primary`, `--color-primary-dark`, RGB variants
+- `--color-secondary` (derived from primary)
+- `--color-accent`
+- `--color-background` (fixed white)
+- Status colours: `success`, `warning`, `danger`, `info` (fixed)
+
+### 4.2 Admin Controls
+
+| Control | Options |
+|---------|---------|
+| Primary colour | Hex picker OR curated palette |
+| Accent colour | Hex picker OR curated palette |
+| Curated palettes | 6 pre-validated (Coastal, Desert, Alpine, Editorial, Tropical, Minimal) |
+| Hero presets | 8 named presets (Minimal, Coastal, Dark, Desert, Alpine, Tropical, Editorial, Sunset) |
+
+**Explicitly removed:**
+- Secondary colour picker (auto-derived)
+- Background colour picker (fixed white)
+- Background image/opacity settings (fixed)
+- Free-form colour combinations
+
+### 4.3 Guardrails
+
+- No raw colour pickers for writers
+- Status colours never themeable
+- Background always white (professional)
+- Hero presets are named options only
+
+---
+
+## Section 5: Content Library
+
+### 5.1 Overview
+
+Reusable content authored once, referenced by multiple portals.
+
+### 5.2 Data Model
+
+`content_library` table:
+- `id`, `title`, `description`
+- `type`: `pdf` | `image` | `text`
+- `category`: `guide` | `checklist` | `faq` | `alert` | `document` | `other`
+- `file_path`, `text_content`
+- `created_at`, `deleted_at`
+
+### 5.3 Behaviour
+
+- Categories drive filtering, never rendering
+- Referenced by `portal_items`, never copied
+- Editing library item updates all portals using it
+- Portal can detach/freeze an item if needed
+
+---
+
+## Section 6: Portal Wall
+
+### 6.1 Overview
+
+Client-facing "Travel Information Wall" — a visual bulletin board where trip information is visible at a glance.
+
+### 6.2 Data Model
+
+`portal_items` table (unified pipeline):
+- `source_type`: `library` | `portal_specific` | `itinerary`
+- `content_library_id` (for library references)
+- `itinerary_id` (for itinerary references)
+- Inline fields for `portal_specific`: `title`, `type`, `category`, `file_path`, `text_content`
+- `position` (ordering)
+
+### 6.3 Rendering
+
+Wall item types:
+- `pdf` → card with icon + download link
+- `image` → full-width image
+- `text` → styled card
+- `itinerary` → tile that opens full itinerary view
+
+### 6.4 Hero Banner
+
+- Fields: `hero_title`, `hero_subtitle`, `hero_image`, `hero_preset`
+- Image takes precedence over preset
+- Presets: 8 named options
+
+### 6.5 Admin Preview
+
+- Route: `/admin/portals/[id]/preview`
+- Uses admin session (no magic link required)
+- Preview banner: "Preview mode — this is what your client sees."
+- Handles deleted/archived/inactive portals with status banners
+
+---
+
+## Section 7: Itinerary Builder
+
+### 7.1 Overview
+
+Structured itinerary creation with beautiful client rendering. Attached to portal wall via `portal_items.source_type='itinerary'`.
+
+### 7.2 Data Model
+
+```
+itineraries (soft delete)
+  └── itinerary_sections
+        ├── itinerary_days
+        │     └── itinerary_segments
+        └── itinerary_stays
+```
+
+**Segment types:** `activity`, `travel`, `meal`, `free_day`
+
+**Key rules:**
+- Flights = Travel segments (no separate flights table)
+- Stays belong to one section (no cross-section spans)
+- Sequential stays only
+- Time-derived ordering (no manual reorder)
+- Empty days render intentional placeholder
+- Print stylesheet export (no PDF pipeline)
+
+### 7.3 Client Rendering
+
+- Time-grouped display (Morning / Afternoon / Evening)
+- Segment card colours by type
+- Travel cards for flights
+- Stay banner ("where you're sleeping tonight")
+- Empty-day placeholder: "No activities scheduled"
+- Print / Save PDF via browser-native print stylesheet
+
+### 7.4 Admin Editor
+
+- Extracted into 9 focused components (~17-line wrapper page)
+- Inline forms replace all `prompt()` dialogs
+- 4 form primitives: AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField
+- Autosave-backed editing (draft durability)
+- Section date constraints propagate to stays and days
+- Travel segments reveal flight-specific fields
+
+### 7.5 Scope (V1 vs V2)
+
+**V1 (shipped):**
+- Sections, days, segments, stays
+- Travel segments with flight fields
+- Empty-day placeholder
+- Print stylesheet
+
+**V2 (deferred):**
+- Options segments (A/B alternatives)
+- Cruise mode (port schedule tables)
+- Overlapping stays
+- Group splits
+- Attendees on segments
+
+---
+
+## Section 8: Admin Notepad
+
+### 8.1 Overview
+
+Private, admin-only scratchpad per portal for logistics that aren't part of the itinerary.
+
+### 8.2 Data Model
+
+`notepad_entries` table:
+- `id`, `portal_id`
+- `content` (text)
+- `tags` (comma-separated names)
+- `created_at`, `updated_at`, `deleted_at`
+
+### 8.3 Behaviour
+
+- Never rendered to clients
+- Search by content or tag
+- Autocomplete from portal members + previously-used tags
+- TagInput pattern only (no coupling to post-tag backend)
+
+### 8.4 Data Guardrail
+
+Logistics notes only (dietary needs, mobility, preferences). No diagnostic detail, treatment information, or medical history.
+
+---
+
+## Section 9: Autosave Infrastructure
+
+### 9.1 useAutosaveField Hook
+
+- Primitive-only values (string | number | boolean | null)
+- Single `saveInternal()` path — no direct `onSave` calls
+- Multi-value in-flight dedup via `Map<T, number>`
+- Version gating: stale responses ignored
+- Mount gating: React state only; refs + localStorage always update
+- Return shape: `{ value, setValue, saveState, dirty, flush, retry }`
+
+### 9.2 Durability Layer
+
+- localStorage only, synchronous writes
+- Namespaced keys: `myahtravels:draft:{entityType}:{entityId}:{fieldPath}`
+- Draft cleared only when: latest version AND `savedValue === currentValue`
+- Never cleared on error or stale save
+- Exports: `writeDraft`, `readDraft`, `clearDraft`, `getFullDraftKey`, `getAllDraftKeys`, `findDraftsForEntity`, `clearDraftsForEntity`
+
+### 9.3 Save Indicator
+
+- `SaveState`: `idle` | `saving` | `saved` | `error`
+- Component: `SaveIndicator`
+- Aggregation: `aggregateSaveState()` — error > saving > saved > idle
+
+### 9.4 Test Coverage
+
+- 15 autosave tests (A1–A15)
+- 14 durability tests (D1–D14)
+- 19 storage-layer tests
+- **48 total tests passing**
+
+---
+
+## Section 10: Feed System
+
+### 10.1 Homepage Feed
 
 - Infinite scroll (IntersectionObserver)
 - Card-based layout
@@ -164,75 +370,203 @@ Both modes support:
 - Pinned posts stay at top
 - Highlighted posts have visual distinction
 
-### 18.2 Filters
+### 10.2 Filters
 
-| Filter | Options |
-|--------|---------|
-| Content type | All, Posts, Guides, Reviews |
-| Category | All topics + category chips |
-| Sort | Newest, Oldest, Pinned First |
-
-### 18.3 Pin/Highlight
-
-- Admin toggles from post list
-- Pin = stays at top of feed
-- Highlight = visual badge/border
-- Multiple pins allowed (ordered by pinnedAt)
+- Content type: All, Posts, Guides, Reviews
+- Category chips
+- Sort: Newest, Oldest, Pinned First
 
 ---
 
-## New Section 19: Theme System Specification
+## Section 11: Authentication & Security
 
-### 19.1 Colors
+### 11.1 Admin Auth
 
-- Primary color (hex)
-- Secondary color (hex)
-- Accent color (hex)
-- Background color (hex)
+- Username + password (hashed)
+- TOTP (2FA) optional per-user
+- Lucia sessions
+- Brute-force protection (rate limiting)
+- Password change flow
 
-### 19.2 Background
+### 11.2 Portal Auth
 
-- Background image upload
-- Background transparency slider
-- Background color behind image
+- Magic link → session cookie
+- Rate limited
+- Session expires based on trip return date + 3 days (or 30 days fallback)
+- Logout destroys session
 
-### 19.3 Admin Controls
+### 11.3 Audit Logging
 
-- Settings page has color pickers
-- Background image path input
-- Transparency range slider
-- Changes apply immediately (with revalidation)
+- `activity_log` table
+- Used across: portal create/update/archive/delete, member add/remove, preview access, settings changes, login attempts, media uploads
 
----
+### 11.4 Data Protection
 
-## Updated Section 14: Future Roadmap
-
-### Phase 2 (Post-Launch) - Updated
-- ~~Facebook integration~~ (removed - feed system built)
-- Amazon book links
-- Portal member reply capability
-- Cross-post copy/paste (P1-5)
-- Right-click context menu (P1-4)
-- Triangle shape (P1-3)
-- Mobile touch editing (P2-2)
-- Per-element undo/redo (P2-3)
-
-### Phase 3 (Long-term)
-- Multiple admin accounts
-- Email newsletter
-- Client document upload to portal
+- PIPEDA-compliant retention policy
+- Soft deletes for user content
+- Email suppressions for opt-outs
+- PII isolation (notepad vs post-tags)
 
 ---
 
-## Updated Next Steps
+## Section 12: Email System
 
-1. Complete P1 (triangle, context menu, cross-post copy/paste)
-2. Local testing of all P0 + P1 features
-3. Database migration for mode field
-4. Fix any compile errors
-5. User acceptance testing with Myah
-6. Deploy to mini PC
+### 12.1 Outbound Email
+
+- Resend integration
+- Email queue with retry tracking
+- Templates for: magic links, portal notices, global announcements
+
+### 12.2 Magic Links
+
+- Generated on demand
+- Expire based on trip return date
+- Revoked on archive/delete
+- Sent to portal members only
+
+### 12.3 Global Announcements (Deferred)
+
+- Email all active portal members
+- Attach documents
+- One-click send
 
 ---
 
-**Status:** IN PROGRESS - Phase 16 P1 partial complete
+## Section 13: Database Schema
+
+### 13.1 Key Tables
+
+| Category | Tables |
+|----------|--------|
+| **Auth** | `users`, `sessions`, `portal_members`, `portal_magic_links`, `portal_sessions` |
+| **Content** | `posts`, `guides`, `reviews`, `tags`, `categories`, `post_tags`, `guide_tags`, `review_tags` |
+| **Templates** | `templates` |
+| **Portal** | `portals`, `portal_items`, `content_library`, `portal_notices`* , `portal_documents`* , `portal_faqs`* , `portal_checklist_states`* |
+| **Itinerary** | `itineraries`, `itinerary_sections`, `itinerary_days`, `itinerary_segments`, `itinerary_stays` |
+| **Notepad** | `notepad_entries` |
+| **System** | `settings`, `media`, `clients`, `activity_log`, `email_queue`, `email_suppressions`, `pages`, `redirects`, `related_content`, `revisions`, `videos`, `certifications`, `assets`* |
+
+*Legacy tables, unused.
+
+### 13.2 Schema Notes
+
+- `schema.sql` outdated; use `scripts/setup-db.js` for fresh installs
+- Soft delete: `itineraries` has `deleted_at`; children cascade hard-delete
+- Portal soft delete: `isActive`, `archivedAt`, `deletedAt`
+- `portal_items.source_type` supports: `library`, `portal_specific`, `itinerary`
+
+---
+
+## Section 14: Non-Functional Requirements
+
+### 14.1 Performance
+
+- Feed: infinite scroll, lazy loading
+- Autosave: 500ms debounce, localStorage writes synchronous
+- Print export: browser-native
+
+### 14.2 Reliability
+
+- Autosave never blocks editing
+- localStorage failures swallowed
+- Draft durability prevents silent work loss
+- React state updates gated by mount; refs + localStorage always update
+
+### 14.3 Security
+
+- Rate limiting on auth endpoints
+- Soft deletes for user content
+- Activity logging for audit trail
+- PII isolation (notepad data separate from low-stakes tags)
+
+### 14.4 Accessibility
+
+- Semantic HTML
+- ARIA labels on interactive elements
+- Keyboard navigation
+
+---
+
+## Section 15: Development Workflow
+
+| Environment | Purpose |
+|-------------|---------|
+| Codespace | Editing, Python heredocs, Copilot, test writing |
+| Local PC | Testing (no better-sqlite3 crash, real browser) |
+
+**Sync:** `git push` Codespace → `git pull` local → test → report bugs
+
+---
+
+## Section 16: Testing Commands
+
+```bash
+# Local first-time setup
+node scripts/setup-db.js
+npm run seed
+
+# Daily
+npm run dev
+npm run build
+npm start
+
+# Tests
+npm test
+npm run test:watch
+npm run test:ui
+```
+
+---
+
+## Section 17: Known Issues
+
+1. **better-sqlite3 crash in Codespace** — environment-specific; not on local PC
+2. **Canvas system frozen** — 39 emerald remain; pending deletion
+3. **`schema.sql` outdated** — use `scripts/setup-db.js`
+4. **Native date/time pickers** — highlight-on-click issue (Phase 7 bug fix)
+5. **Segment edits revert on collapse** — SegmentRow lifecycle (Phase 7 bug fix)
+
+---
+
+## Section 18: Roadmap
+
+### Phase 7 — Bug Fix Pass (Current)
+- Batch 1: Segment edit revert, admin preview session, date picker `showPicker()`
+- Batch 2: Date constraints, optional field audit
+- Batch 3: Portal manager trash + recovery + preview
+- Batch 4: Tile restyle, styled toast, Save button, custom pickers
+- Batch 5: Segment UX refinement
+- Batch 6: Download verification
+
+### Phase 7.3 — Production Hardening
+- Delete Canvas system
+- Fix better-sqlite3 on deployment
+- Preview popup (modal → floating → fullscreen)
+- Undo/Redo, Publish Validation, Error Boundaries
+- Target surface token conversion
+
+### Phase 8 — Future
+- **Itinerary V2:** Options segments, cruise mode, overlapping stays, group splits
+- **People & Tagging V2:** People table (trigger-based), per-person lookup
+- **Portal:** Client reply capability, global announcements, docs acknowledgment
+- **Content Migration:** Template migration (Canvas → Block), inline editing
+- **Low Priority:** Dark mode, template versioning, reading time
+
+---
+
+## Section 19: Explicit Non-Goals
+
+- No multi-admin support (deferred)
+- No Canvas for writers (frozen)
+- No free-form layout or design tools
+- No raw colour pickers for writers
+- No brand-aware dark mode
+- No PDF generation pipeline (print stylesheet only)
+- No offline-first architecture
+- No cross-device draft sync
+- No collaborative editing
+- No multi-tab autosave sync
+
+---
+
+**End of SRS v5.0**

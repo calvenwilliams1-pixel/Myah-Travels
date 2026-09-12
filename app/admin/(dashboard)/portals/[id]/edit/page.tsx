@@ -1,5 +1,6 @@
 "use client";
 
+import { openPickerOnClick } from "@/lib/ui/openPicker";
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
@@ -117,6 +118,7 @@ export default function PortalEditPage() {
                 type="date"
                 value={departureDate}
                 onChange={(e) => setDepartureDate(e.target.value)}
+                onClick={openPickerOnClick}
               />
               <Input
                 label="Return Date"
@@ -124,6 +126,7 @@ export default function PortalEditPage() {
                 type="date"
                 value={returnDate}
                 onChange={(e) => setReturnDate(e.target.value)}
+                onClick={openPickerOnClick}
               />
             </div>
           </div>

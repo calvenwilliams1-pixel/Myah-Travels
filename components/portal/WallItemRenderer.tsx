@@ -13,6 +13,8 @@ interface WallItemProps {
     portalSlug?: string;
     itineraryId?: number | null;
   };
+  mode?: "client" | "admin-preview";
+  portalId?: number;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -38,7 +40,11 @@ function getIcon(category: string | null, type: string): string {
   return TYPE_ICONS[type] || "📌";
 }
 
-export default function WallItemRenderer({ item }: WallItemProps) {
+export default function WallItemRenderer({
+  item,
+  mode = "client",
+  portalId,
+}: WallItemProps) {
   const { resolvedType, resolvedTitle, resolvedDescription, resolvedCategory, resolvedFilePath, resolvedTextContent } = item;
   const icon = getIcon(resolvedCategory, resolvedType);
 
@@ -88,9 +94,14 @@ export default function WallItemRenderer({ item }: WallItemProps) {
   }
 
   if (resolvedType === "itinerary") {
+    const href =
+      mode === "admin-preview" && portalId
+        ? `/admin/portals/${portalId}/itinerary/${item.itineraryId}/preview`
+        : `/portal/${item.portalSlug}/itinerary/${item.itineraryId}`;
+
     return (
       <a
-        href={`/portal/${item.portalSlug}/itinerary/${item.itineraryId}`}
+        href={href}
         className="block bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:border-primary transition-colors"
       >
         <div className="text-4xl mb-3">📋</div>

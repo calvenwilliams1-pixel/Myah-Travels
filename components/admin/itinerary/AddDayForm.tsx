@@ -1,5 +1,6 @@
 "use client";
 
+import { openPickerOnClick } from "@/lib/ui/openPicker";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -64,6 +65,8 @@ export default function AddDayForm({
         <Input
           label="Date"
           type="date"
+            onClick={openPickerOnClick}
+
           value={date}
           onChange={(e) => setDate(e.target.value)}
           min={sectionStartDate || undefined}

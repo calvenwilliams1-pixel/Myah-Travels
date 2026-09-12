@@ -72,7 +72,7 @@ export default async function AdminPreviewPage({ params }: { params: { id: strin
   return (
     <AdminPreviewShell>
       <PreviewBanner variant="info">Preview mode — this is what your client sees.</PreviewBanner>
-      <PortalWall portal={portal} items={items} />
+      <PortalWall portal={portal} items={items} mode="admin-preview" />
     </AdminPreviewShell>
   );
 }

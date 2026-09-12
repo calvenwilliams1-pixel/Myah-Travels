@@ -1,5 +1,6 @@
 "use client";
 
+import { openPickerOnClick } from "@/lib/ui/openPicker";
 import React, { useState, useEffect, useRef } from "react";
 import { useAutosaveField } from "@/lib/hooks/useAutosaveField";
 import SaveIndicator from "@/components/admin/SaveIndicator";
@@ -60,7 +61,8 @@ export default function AutosaveTimeField({
           onBlur={() => field.flush()}
           disabled={disabled}
           className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] cursor-pointer"
-        />
+                    onClick={openPickerOnClick}
+          />
         {field.dirty && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
             <SaveIndicator state={field.saveState} showText={false} />

@@ -115,9 +115,12 @@ function SegmentRow({
             />
           </div>
 
-          {/* Expanded detail fields */}
-          {isExpanded && (
-            <div className="mt-3 space-y-2 pl-6 border-l-2 border-gray-200">
+          {/* Expanded detail fields — kept mounted to preserve state; hidden via CSS when collapsed */}
+          <div
+            className={`mt-3 space-y-2 pl-6 border-l-2 border-gray-200 ${
+              isExpanded ? "block" : "hidden"
+            }`}
+          >
               {segment.type === "travel" ? (
                 <>
                   <div className="grid grid-cols-2 gap-2">
@@ -199,8 +202,7 @@ function SegmentRow({
                   draftKey={`segment:${segment.id}:instructions`}
                 />
               </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

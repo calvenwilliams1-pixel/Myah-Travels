@@ -1,5 +1,6 @@
 "use client";
 
+import { openPickerOnClick } from "@/lib/ui/openPicker";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -100,6 +101,8 @@ export default function AddStayForm({
           <Input
             label="Check-in Date"
             type="date"
+            onClick={openPickerOnClick}
+
             value={checkInDate}
             onChange={(e) => setCheckInDate(e.target.value)}
             min={sectionStartDate || undefined}
@@ -109,6 +112,8 @@ export default function AddStayForm({
           <Input
             label="Check-out Date"
             type="date"
+            onClick={openPickerOnClick}
+
             value={checkOutDate}
             onChange={(e) => setCheckOutDate(e.target.value)}
             min={sectionStartDate || undefined}
@@ -131,6 +136,8 @@ export default function AddStayForm({
           <Input
             label="Check-in Time (optional)"
             type="time"
+            onClick={openPickerOnClick}
+
             value={checkInTime}
             onChange={(e) => setCheckInTime(e.target.value)}
             helperText="e.g., 15:00"
@@ -139,6 +146,8 @@ export default function AddStayForm({
           <Input
             label="Check-out Time (optional)"
             type="time"
+            onClick={openPickerOnClick}
+
             value={checkOutTime}
             onChange={(e) => setCheckOutTime(e.target.value)}
             helperText="e.g., 11:00"

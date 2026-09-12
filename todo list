@@ -1,16 +1,12 @@
-# MyCalTravels — TODO.md (Revision 3)
+# MyCalTravels — TODO.md (Revision 4)
 
 ## Status
 
-**Portal System V1 + V2 COMPLETE. Quick Wins + Itinerary Builder + Admin Notepad all shipped. Ready for testing + Phase 7 planning.**
+**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Session A+B (autosave, form primitives, prompt replacement) COMPLETE. Currently in Phase 7: Bug Fix Pass from live testing.**
 
 ## Core Principle
 
-Developer controls design.
-Template controls layout.
-Writer controls content.
-Settings control brand.
-System controls hierarchy.
+Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
 
 ---
 
@@ -23,144 +19,131 @@ System controls hierarchy.
 - Live Preview (sticky split screen)
 - Semantic theme tokens (primary, secondary, accent, success, warning, danger, info)
 - Curated colour palettes (6 pre-validated)
-- Fixed white background (professional standard)
-- Status colours fixed (never themeable)
-- **Content Library** (create once, reuse everywhere)
-- **Portal Wall** (travel information wall, client-facing)
-- **Admin Preview** (bypass magic link for admin)
-- **Hero Banner** with 8 named presets (no colour pickers)
-- **Itinerary as portal_items** (unified pipeline, no merge)
-- **Flights = Travel segments** (no separate table)
-- **Notepad is admin-only** (never rendered to clients)
-- **Print stylesheet for itinerary export** (no PDF pipeline)
-- **Empty days render placeholder** (never blank)
+- Fixed white background
+- Status colours fixed
+- Content Library (create once, reuse everywhere)
+- Portal Wall (client-facing)
+- Admin Preview (bypass magic link)
+- Hero Banner with 8 named presets
+- Itinerary as `portal_items` (unified pipeline)
+- Flights = Travel segments
+- Notepad is admin-only
+- Print stylesheet for itinerary export
+- Empty days render placeholder
+- **Autosave hook with durability layer** (localStorage draft persistence)
+- **Form primitives** (AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField)
+- **Inline forms replace `prompt()` dialogs**
+- **Test framework: vitest + testing library** (48 tests passing)
 
 ### REJECTED
 - CanvasElement for writers
 - Moveable for writers
 - Drag-anywhere layout
-- Shape editors
-- Border controls
-- Property panels
+- Shape editors / border controls / property panels
 - General-purpose design tools
-- Full colour customisation (4 pickers)
+- Full colour customisation
 - Free-form background colour picker
 - Brand-aware dark mode
-- **Standalone Itinerary data source** (unified via `portal_items`)
-- **Itinerary PDF pipeline** (print stylesheet only)
-- **Options segments in V1** (deferred to V2)
-- **Cruise mode in V1** (deferred to V2)
-- **People table in V1** (trigger-based upgrade)
-- **Notepad cross-portal sharing** (strictly scoped)
-- **Merging data sources on the wall** (single pipeline)
-- **Notices feature** (removed — redundant with Alert category)
-- **TagInput post-tag backend coupling** (UI pattern only)
+- Standalone Itinerary data source
+- Itinerary PDF pipeline
+- Options segments in V1
+- Cruise mode in V1
+- People table in V1
+- Notepad cross-portal sharing
+- Merging data sources on the wall
+- Notices feature
+- TagInput post-tag backend coupling
 
 ---
 
-## Phase 1: Block Foundation ✅ COMPLETE
-- [x] BlockType discriminated union (10 blocks)
-- [x] BLOCK_REGISTRY
-- [x] TemplateSection (label + state)
-- [x] TemplateStyle
-- [x] RGB CSS variables
-- [x] Semantic Tailwind tokens
-- [x] ThemeProvider wraps public + admin
+## Phase 1: Block Foundation ✅
+## Phase 2: Content Blocks ✅
+## Phase 3: Template Creator ✅
+## Phase 4: Theme System ✅
+## Phase 5: Portal V1 ✅
+## Phase 6.1: Quick Wins ✅
+## Phase 6.2: Itinerary Builder V1 ✅
+## Phase 6.3: Admin Notepad ✅
+## Phase 6.4A: Autosave Hook (A1–A2) ✅
+- [x] Notepad verified clean (cache issue)
+- [x] Admin itinerary preview route
 
-## Phase 2: Content Blocks ✅ COMPLETE
-- [x] 10 block editors
-- [x] 10 block renderers
-- [x] PostRenderer (switch, 10 cases)
-- [x] BlockEditor
-- [x] TemplatePreview
-- [x] Zero type errors, build passes
+## Phase 6.4B: Autosave Infrastructure (A3a/A3b) ✅
+- [x] `useAutosaveField` hook
+- [x] 15 autosave tests (A1–A15)
+- [x] Storage layer (`lib/drafts`)
+- [x] 19 storage-layer tests
+- [x] 14 durability tests (D1–D14)
+- [x] Save indicator component
+- [x] `aggregateSaveState` helper
+- [x] 48 total tests passing
 
-## Phase 3: Template Creator ✅ COMPLETE
-- [x] TemplateCreator UI
-- [x] Template store
-- [x] Admin route `/admin/templates`
-- [x] Nav link + QuickAction
-- [x] 3 starter templates
+## Phase 6.4C: Form Primitives (B0) ✅
+- [x] AutosaveTextField
+- [x] AutosaveDateField
+- [x] AutosaveTimeField
+- [x] AutosaveSelectField
 
-## Phase 4: Theme System ✅ COMPLETE
-- [x] Removed secondary + background pickers
-- [x] Secondary derived from primary
-- [x] 6 curated palettes + PalettePicker
-- [x] All 225 hardcoded colours migrated
-- [x] Rename to MyCalTravels
-
-## Phase 5: Portal V1 ✅ COMPLETE
-- [x] `content_library` table + admin UI
-- [x] `portal_items` table (library + portal-specific)
-- [x] Portal Wall rendering (pdf/image/text)
-- [x] Hero Banner (title, subtitle, image, 3 presets)
-- [x] Admin Preview route
-- [x] PortalWall extracted as pure rendering component
-- [x] Hero image upload
-- [x] Preview Wall button on edit page
-- [x] `scripts/setup-db.js`
-- [x] `schema.sql` supports migration chain
-
-## Phase 6.1: Quick Wins ✅ COMPLETE
-- [x] Hero preset expansion (3 → 8)
-- [x] Content tile icons (category → emoji)
-- [x] Notices removal (UI + action)
-- [x] Portal member name collection
-
-## Phase 6.2: Itinerary Builder V1 ✅ COMPLETE
-- [x] Schema: itineraries, sections, days, segments, stays
-- [x] `portal_items.itinerary_id` + `source_type='itinerary'`
-- [x] Migration 0003 with portal_items rebuild
-- [x] Backend repository (`lib/itineraries`)
-- [x] Validation (Zod + travel datetime ordering + overlap detection)
-- [x] 11 API routes
-- [x] Admin itinerary editor (list + editor pages)
-- [x] Client itinerary view (time-grouped, type-coloured)
-- [x] Travel cards for flights
-- [x] Stay banner ("where you're sleeping tonight")
-- [x] Empty-day placeholder
-- [x] Print stylesheet
-- [x] Wall integration via unified pipeline
-- [x] Preview itinerary from admin
-
-## Phase 6.3: Admin Notepad ✅ COMPLETE
-- [x] Migration 0004: `notepad_entries`
-- [x] Backend repository + search + distinct tags
-- [x] API routes (list, search, create, update, delete)
-- [x] Admin UI (list, add, search, autocomplete)
-- [x] Data guardrail banner
-- [x] TagInput UI pattern (no post-tag backend coupling)
-- [x] Navigation buttons on portal detail page
+## Phase 6.4D: Replace prompt() (B1) ✅
+- [x] 580-line page extracted into 9 focused components
+- [x] Inline add forms for section, stay, day, segment
+- [x] Segment type selector with icons
+- [x] Travel segments reveal flight-specific fields
+- [x] Section date constraints on stays and days
+- [x] "Use section dates" quick-select
+- [x] Helper text on every field
+- [x] Page reduced to 17-line thin wrapper
 
 ---
 
-## Phase 7: Testing + Polish (Current Focus)
+## Phase 7: Bug Fix Pass (CURRENT) — From Live Testing
 
-### 7.1 Full Test Pass (Local PC)
-- [ ] Content Library: add PDF/Image/Text, filter, delete
-- [ ] Portal Editor: hero presets, attach items, reorder, preview
-- [ ] Wall: magic link flow, hero, icons, itinerary tile
-- [ ] Itinerary Builder: create → section → day → segment
-- [ ] Travel segment flight fields
-- [ ] Client itinerary view (time grouping, colours, stays)
-- [ ] Empty day placeholder
-- [ ] Print / Save PDF
-- [ ] Notepad: add, tag, search
-- [ ] Regressions: settings, login, homepage feed
-- [ ] Fix any bugs found
+### Batch 1: Critical Bugs
+- [ ] **Bug 1:** Segment edits revert when collapsed/re-expanded
+- [ ] **Bug 2:** Admin preview → click itinerary → "session expired"
+- [ ] **Bug 3:** Date/time inputs highlight instead of opening picker (need `showPicker()`)
 
-### 7.2 Loose Ends (Before Phase 8)
-- [ ] Attach itinerary UI on admin editor page (currently only on list page)
-- [ ] Admin preview of itinerary (currently requires portal_session)
+### Batch 2: Date Constraint Improvements
+- [ ] Section date pickers constrained to portal departure/return
+- [ ] Segment date pickers constrained to day date
+- [ ] Flight datetime buffer allowance (soft constraints)
+- [ ] Make all non-essential fields optional (audit forms)
+
+### Batch 3: Portal Manager UX
+- [ ] Trashcan + confirmation on portal rows
+- [ ] Recovery view for soft-deleted portals
+- [ ] "Preview Wall" icon in portal manager rows
+- [ ] "Preview Wall" button on `/admin/portals/[id]`
+
+### Batch 4: UI Polish
+- [ ] Restyle itinerary tile (less empty space)
+- [ ] Replace `alert()` with styled toast
+- [ ] Add explicit Save button (alongside autosave)
+- [ ] Make date/time pickers bigger, more colorful (custom pickers)
+
+### Batch 5: Segment UX Refinement
+- [ ] Clarify segment type / day title relationship
+- [ ] Improve segment collapse behavior
+- [ ] Fix time picker responsiveness (multiple clicks)
+- [ ] Fix AM/PM switching (multiple clicks)
+
+### Batch 6: Download/Export
+- [ ] Verify PDF download works from client view
+- [ ] Consider admin-side download button
+
+---
+
+## Phase 7.2 Loose Ends (Before Phase 8)
+- [x] Attach itinerary UI on admin editor page
+- [x] Admin preview of itinerary
 - [ ] Verify travel segment `datetime-local` ↔ ISO string handling
 - [ ] Verify PDF export includes proper timestamp
 
-### 7.3 Production Hardening
+## Phase 7.3 Production Hardening
 - [ ] Fix better-sqlite3 crash on mini PC deployment
 - [ ] Delete Canvas system (39 emerald remain)
 - [ ] Preview popup (modal → floating → fullscreen)
 - [ ] Target surface token conversion (~20-30 `bg-gray-50/100`)
-- [ ] Auto Save (debounced, 2s)
 - [ ] Undo / Redo (global stack, capped 50)
 - [ ] Publish Validation (required blocks filled)
 - [ ] Error Boundaries per block
@@ -171,20 +154,19 @@ System controls hierarchy.
 ## Phase 8: Future / Deferred
 
 ### Itinerary V2
-- [ ] Options segments (A/B alternatives on free days)
+- [ ] Options segments (A/B alternatives)
 - [ ] Cruise mode (port schedule tables)
 - [ ] Overlapping stays
 - [ ] Group splits
-- [ ] Attendees on segments (deferred indefinitely — lives in Notepad)
 
 ### People & Tagging V2
 - [ ] People table (triggered by naming inconsistency)
 - [ ] Per-person itinerary lookup
-- [ ] PII isolation (separate from post-tags)
+- [ ] PII isolation
 
 ### Portal Enhancements
 - [ ] Client portal reply capability
-- [ ] Global announcements (send email to all portal members)
+- [ ] Global announcements (email all portal members)
 - [ ] Client-facing docs acknowledgment
 
 ### Content Migration
@@ -192,64 +174,37 @@ System controls hierarchy.
 - [ ] Inline Editing (blocks)
 
 ### Low Priority
-- [ ] Dark mode (reader preference only)
+- [ ] Dark mode
 - [ ] Template versioning
 - [ ] Reading time / word count
-- [ ] Additional block types (20+ threshold before registry refactor)
+- [ ] Additional block types
 
 ---
 
 ## Architecture Decisions (Locked)
 
-### Block System (Posts)
-- 10 blocks: Title, Body, Callout, Hero, Image, Gallery, QuickFacts, Quote, ProsCons, Verdict
-- Switch-based rendering
-- Discriminated unions
-- Renderers receive `{ data, style }`
+### Autosave Hook
+- Single `saveInternal()` path — no other `onSave` calls
+- Multi-value in-flight dedup via `Map<T, number>`
+- Version gating: stale responses ignored
+- Mount gating: React state updates only
+- Refs + localStorage NOT mount-gated
+- Unified save pipeline: debounce, flush, retry
+- No save queue, no offline support, no undo (v1)
 
-### Theme System
-- Primary + Accent = user-picked (2 pickers)
-- Secondary = derived from primary
-- Background = fixed white
-- Status colours = fixed
-- 6 curated palettes
-- 8 hero presets
+### Durability Layer
+- localStorage only, synchronous writes
+- Namespaced keys: `myahtravels:draft:{entityType}:{entityId}:{fieldPath}`
+- try/catch wrapped, never blocks editing
+- Draft cleared only on latest-version success + value match
+- Discard: clears drafts for current itinerary only
+- Multi-tab: unsupported, documented
 
-### Content Library
-- `content_library` table
-- Categories = filtering only (never rendering)
-- Referenced by `portal_items`, never copied
-- Type: `pdf` | `image` | `text`
-
-### Portal Wall
-- Single pipeline via `portal_items`
-- `source_type`: `library` | `portal_specific` | `itinerary`
-- Rendering by `type`: pdf | image | text | itinerary
-- Wall queries one table + resolves references
-- Hero: image takes precedence over preset
-
-### Itinerary
-- Separate content type, NOT Portal Blocks
-- Chronology-driven (not prominence-driven)
-- Travel segments carry flight data (no separate table)
-- Stays belong to one section (no cross-section)
-- Sequential stays only
-- Time-derived ordering (no manual reorder)
-- Empty days render placeholder
-- Print stylesheet export (no PDF pipeline)
-- Attached via `portal_items.source_type='itinerary'`
-
-### Notepad
-- Admin-only, never rendered to clients
-- Comma-separated tags (V1), People table (V2 trigger)
-- Logistics notes only (no diagnostic detail)
-- TagInput UI pattern only, no post-tag backend coupling
-- Search by content or tag
-
-### Templates
-- Structural only
-- Live templates (edit → all posts update)
-- `version: 1` in layoutData
+### Form Primitives
+- `useAutosaveField` handles all logic
+- Primitive values only (string | number | boolean | null)
+- Four field components: Text, Date, Time, Select
+- External value sync via refs
 
 ---
 
@@ -269,15 +224,18 @@ System controls hierarchy.
 | Flights = Travel segments | No separate hierarchy |
 | No merged data sources | Unified via `portal_items` |
 | No PDF pipeline | Print stylesheet only |
+| Autosave never blocks editing | localStorage failures swallowed |
+| React state gated by mount | Refs + localStorage always update |
 
 ---
 
 ## Known Issues
 
 1. **better-sqlite3 crash in Codespace** — environment-specific; not present on local PC
-2. **Canvas system frozen** — 39 emerald remain, to be deleted
-3. **`schema.sql` outdated** — missing newer columns; use Drizzle schema + `scripts/setup-db.js` + seed
-4. **Missing DB columns on fresh setup** — `scripts/setup-db.js` handles all known columns; extend if new errors appear
+2. **Canvas system frozen** — 39 emerald remain
+3. **`schema.sql` outdated** — use Drizzle schema + `scripts/setup-db.js` + seed
+4. **Missing DB columns on fresh setup** — `scripts/setup-db.js` handles known cases
+5. **Native date/time pickers ugly + multi-click** — Batch 4 addresses
 
 ---
 
@@ -285,59 +243,64 @@ System controls hierarchy.
 
 **Editing:** Codespace (VS Code, Python heredocs, Copilot)
 **Testing:** Local PC (no better-sqlite3 crash, real browser at localhost:3000)
-**Sync:** `git push` from Codespace → `git pull` on local → test → report bugs
+**Sync:** `git push` Codespace → `git pull` local → test → report bugs
 
 ---
 
 ## Testing Commands
 
 ```bash
-# Local first-time setup
-node scripts/setup-db.js   # Create DB (schema + migrations + missing columns)
+# First-time local setup
+node scripts/setup-db.js   # Create DB
 npm run seed               # Seed data
 
 # Daily
 npm run dev                # Dev server (port 3000)
 npm run build              # Production build
 npm start                  # Production server
+
+# Tests
+npm test                   # Run all vitest tests (48 passing)
+npm run test:watch         # Watch mode
+npm run test:ui            # Vitest UI
 ```
 
 ---
 
 ## Current Session State
 
-**Last completed:**
-- Phase 6.1: Quick Wins (hero presets, icons, notices removed, member names)
-- Phase 6.2: Itinerary Builder V1 (full stack)
-- Phase 6.3: Admin Notepad (full stack)
+**Recently completed:**
+- Phase 6.4A: Notepad verified + admin itinerary preview
+- Phase 6.4B: Autosave hook + 48 tests passing
+- Phase 6.4C: 4 form primitives
+- Phase 6.4D: Replaced all `prompt()` with inline forms (580 → 17 lines)
 
 **Recent commits:**
-- `08c835f` — Admin preview feature
-- `f329aa1` — Phase 6.2.5 itinerary editor
-- `f0f1ce4` — Phase 6.2 complete
-- (pending) — Phase 6.3 notepad commit
+- `e9f0bae` — B0 form primitives
+- (pending) — B1 prompt replacement
+- Earlier: Phase 6.1–6.3 complete
 
-**Next action:** Pull locally, run full test pass, fix bugs, then Phase 7.3 production hardening.
-
----
-
-## Phase 7.1 Test Session Plan
-
-**Local PC testing:**
-1. `git pull origin main`
-2. `npm run dev`
-3. Test each feature from the checklist above
-4. Log bugs found
-5. Report findings
-
-**Estimated session time:** ~1-2 hours for thorough pass
+**Next action:** Fix Batch 1 critical bugs from live testing
 
 ---
 
-## What's Left After Testing
+## Phase 7 Bug Fix Priorities
 
-1. **Loose ends** (3 items in 7.2) — small fixes
-2. **Production hardening** (7.3) — Canvas deletion, deployment fixes
-3. **Phase 8 features** — all deferred items
+| Batch | Priority | Description |
+|-------|----------|-------------|
+| 1 | **Critical** | Segment edit revert, admin preview session, date picker `showPicker()` |
+| 2 | High | Date constraints, optional field audit |
+| 3 | High | Portal manager trash + recovery + preview |
+| 4 | Medium | Tile restyle, toast, Save button, picker UI |
+| 5 | Medium | Segment UX, time picker clicks |
+| 6 | Low | Download verification |
 
-**Nothing urgent blocks launch after Phase 7.1 testing passes.**
+**Recommendation: Complete Batch 1 before any other work.** These block further testing.
+
+---
+
+## What's Left After Phase 7
+
+1. **Phase 7.3** — Production hardening (Canvas deletion, deployment, undo/redo)
+2. **Phase 8** — V2 features (Options, cruise mode, People table, global announcements)
+3. **Phase 8+** — Post-launch (dark mode, versioning, block expansion)

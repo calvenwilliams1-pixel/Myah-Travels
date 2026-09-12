@@ -29,9 +29,14 @@ export interface PortalWallItem {
 interface PortalWallProps {
   portal: PortalWallPortal;
   items: PortalWallItem[];
+  mode?: "client" | "admin-preview";
 }
 
-export default function PortalWall({ portal, items }: PortalWallProps) {
+export default function PortalWall({
+  portal,
+  items,
+  mode = "client",
+}: PortalWallProps) {
   const subtitle =
     portal.heroSubtitle ||
     (portal.departureDate && portal.returnDate
@@ -56,7 +61,12 @@ export default function PortalWall({ portal, items }: PortalWallProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((item) => (
-              <WallItemRenderer key={item.id} item={{ ...item, portalSlug: portal.slug }} />
+              <WallItemRenderer
+                key={item.id}
+                item={{ ...item, portalSlug: portal.slug }}
+                mode={mode}
+                portalId={portal.id}
+              />
             ))}
           </div>
         )}

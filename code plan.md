@@ -1,14 +1,12 @@
-You're right. Let me produce the complete CODE-PLAN with the full file map.
-
-# MyCalTravels - CODE-PLAN.md (Revision 2 — Full)
+# MyCalTravels — CODE-PLAN.md (Revision 3)
 
 ## Overview
 
-Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Canvas system FROZEN (pending deletion). Phase 6 (Portal V2) in planning. Production build passes cleanly.
+Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Canvas system FROZEN (pending deletion). Currently in Phase 7 bug-fix pass. Production build passes cleanly.
 
 ## Tech Stack
 
-Next.js 14 App Router, TypeScript, SQLite (better-sqlite3), Drizzle ORM, Tailwind CSS, Lucia Auth, TipTap, react-moveable 0.56.0, DOMPurify
+Next.js 14 App Router, TypeScript, SQLite (better-sqlite3), Drizzle ORM, Tailwind CSS, Lucia Auth, TipTap, Vitest + Testing Library, react-moveable 0.56.0 (frozen Canvas only), DOMPurify
 
 ---
 
@@ -23,18 +21,20 @@ certifications.ts        # Myah's certifications
 client-attachments.ts    # Client file attachments
 client-merges.ts         # Client merge records
 clients.ts               # Client inquiries
-content-library.ts       # Reusable content (Phase 5)
+content-library.ts       # Reusable content
 email-queue.ts           # Outbound email queue
 email-suppressions.ts    # Email opt-outs
 guide-tags.ts            # Guide-tag junction
 guides.ts                # Destination guides (mode, isPinned)
 index.ts                 # Schema exports
+itineraries.ts           # Itineraries + sections + days + segments + stays
 media.ts                 # Media library
+notepad-entries.ts       # Admin-only notepad
 pages.ts                 # Static pages
-portal-checklist-states.ts # Portal checklist progress
+portal-checklist-states.ts # Portal checklist progress (legacy)
 portal-documents.ts      # Portal documents (legacy)
 portal-faqs.ts           # Portal FAQs (legacy)
-portal-items.ts          # Unified wall pipeline (Phase 5)
+portal-items.ts          # Unified wall pipeline
 portal-magic-links.ts    # Magic link tokens
 portal-members.ts        # Portal members
 portal-notices.ts        # Portal notices (legacy)
@@ -66,9 +66,12 @@ security/index.ts        # Rate limiting, validation, sanitisation
 content/index.ts         # CRUD for posts, guides, reviews, tags, categories
 clients/index.ts         # Client inquiry management
 media/index.ts           # Media upload/management
-portal/index.ts          # Portal CRUD, magic links, sessions, notices (legacy)
-portal-items/index.ts    # Unified wall pipeline (Phase 5)
-content-library/index.ts # Reusable content CRUD (Phase 5)
+portal/index.ts          # Portal CRUD, magic links, sessions
+portal-items/index.ts    # Unified wall pipeline (library + portal_specific + itinerary)
+content-library/index.ts # Reusable content CRUD
+itineraries/index.ts     # Itinerary repository (30+ functions)
+notepad/index.ts         # Admin notepad repository + search
+drafts/index.ts          # localStorage draft storage (durability layer)
 settings/index.ts        # Site settings
 email/
 ├── index.ts             # Resend integration, queue
@@ -80,21 +83,15 @@ jobs/index.ts            # Scheduled tasks
 monitoring/index.ts      # Health checks
 theme/index.ts           # Colour validation, opacity, hexToRgb, darkenHex
 validation/
-└── portal.ts            # Zod schemas for library + portal items
-canvas/
-├── index.ts             # createElement, templates, parse (FROZEN)
-├── parse.ts             # Pure parse (client-safe)
-├── create-element.ts    # Pure createElement (client-safe)
-└── clipboard.ts         # Cross-post copy/paste
-
-# Phase 6 Planned
-itineraries/index.ts     # (Planned) Itinerary repository
-notepad/index.ts         # (Planned) Notepad repository
-validation/
-└── itinerary.ts         # (Planned) Itinerary Zod schemas
+├── portal.ts            # Zod schemas for library + portal items
+└── itinerary.ts         # Zod schemas for itineraries
+hooks/
+├── useAutosaveField.ts  # Autosave hook (critical data-integrity code)
+└── aggregateSaveState.ts # Multi-field save state aggregation
+canvas/                  # FROZEN — Canvas system (see below)
 ```
 
-### Block System (Posts — `components/editor/blocks/`)
+### Block System (`components/editor/blocks/`)
 ```
 BlockEditor.tsx          # Main vertical editor (10 blocks wired)
 TitleBlockEditor.tsx
@@ -131,17 +128,41 @@ CleanTipTapRenderer.tsx
 ```
 components/portal/
 ├── PortalWall.tsx             # Pure renderer (no auth)
-├── HeroBanner.tsx             # Image or preset fallback
-└── WallItemRenderer.tsx       # Item card by type (pdf/image/text)
+├── HeroBanner.tsx             # Image or preset fallback (8 presets)
+├── WallItemRenderer.tsx       # Item card by type (pdf/image/text/itinerary)
+└── itinerary/
+    └── ItineraryView.tsx      # Full itinerary view (client + admin preview)
 
 components/admin/
+├── SaveIndicator.tsx          # Small save status dot/text
 ├── content-library/
 │   └── AddContentModal.tsx    # Add PDF/Image/Text (auto-detect)
-└── portals/
-    ├── HeroEditor.tsx         # Hero settings + image upload
-    ├── AttachLibraryModal.tsx # Attach library items
-    ├── PortalSpecificItemModal.tsx # One-off content
-    └── PortalItemsList.tsx    # Reorder + remove
+├── portals/
+│   ├── HeroEditor.tsx         # Hero settings + image upload
+│   ├── AttachLibraryModal.tsx # Attach library items
+│   ├── PortalSpecificItemModal.tsx # One-off content
+│   └── PortalItemsList.tsx    # Reorder + remove
+├── itinerary/
+│   ├── ItineraryEditor.tsx    # Main editor shell
+│   ├── AddSectionForm.tsx     # Inline new section form
+│   ├── SectionEditor.tsx      # Section with stays + days
+│   ├── AddStayForm.tsx        # Inline new stay form
+│   ├── StaysEditor.tsx        # Stay list + StayRow
+│   ├── AddDayForm.tsx         # Inline new day form
+│   ├── DaysEditor.tsx         # Day list + DayRow
+│   ├── AddSegmentForm.tsx     # Inline new segment form (type selector)
+│   └── SegmentsEditor.tsx     # Segment list + SegmentRow (collapsible)
+└── notepad/
+    ├── NotepadEntryForm.tsx   # Add note form
+    └── (notepad page at app/admin/(dashboard)/portals/[id]/notepad/)
+```
+
+### Form Primitives (`components/ui/autosave/`)
+```
+AutosaveTextField.tsx    # Text input with autosave + SaveIndicator
+AutosaveDateField.tsx    # Date input with min/max + quickSelect
+AutosaveTimeField.tsx    # Time input with autosave
+AutosaveSelectField.tsx  # Select with immediate flush
 ```
 
 ### Canvas Editor (`components/editor/canvas/` — FROZEN)
@@ -219,7 +240,8 @@ ui/
 ├── Table.tsx
 ├── ColorPicker.tsx
 ├── Modal.tsx
-└── Pagination.tsx
+├── Pagination.tsx
+└── autosave/            # Form primitives (see above)
 
 ErrorBoundary.tsx
 admin/FeedAdminControls.tsx
@@ -272,9 +294,16 @@ Certifications.tsx
 │   ├── new/page.tsx     # Create portal
 │   ├── actions.ts       # Server actions
 │   └── [id]/
-│       ├── page.tsx     # Portal detail
-│       ├── edit/page.tsx # Wall editor
-│       └── preview/page.tsx # Admin preview
+│       ├── page.tsx                    # Portal detail
+│       ├── edit/page.tsx               # Wall editor
+│       ├── preview/page.tsx            # Admin wall preview
+│       ├── itinerary/
+│       │   ├── page.tsx                # Itinerary list
+│       │   └── [itineraryId]/
+│       │       ├── page.tsx            # Itinerary editor (17-line wrapper)
+│       │       └── preview/page.tsx    # Admin itinerary preview
+│       └── notepad/
+│           └── page.tsx                # Admin notepad
 ├── homepage/            # Homepage canvas editor
 └── components/          # Dashboard widgets
     ├── ActivePortals.tsx
@@ -284,13 +313,6 @@ Certifications.tsx
     ├── RecentPosts.tsx
     ├── Sidebar.tsx
     └── StorageUsage.tsx
-
-# Phase 6 Planned
-(dashboard)/portals/[id]/
-├── itinerary/
-│   ├── page.tsx               # (Planned) Itinerary list
-│   └── [itineraryId]/page.tsx # (Planned) Itinerary editor
-└── notepad/page.tsx           # (Planned) Admin notepad
 ```
 
 ### Public Pages (`app/`)
@@ -314,18 +336,18 @@ contact/
 └── actions.ts           # Contact submission
 
 search/page.tsx          # Search results
+search/SearchContent.tsx # Search client component (Suspense-wrapped)
 
 portal/
-├── [portalSlug]/page.tsx # Client wall (magic link auth)
+├── [portalSlug]/
+│   ├── page.tsx                    # Client wall (magic link auth)
+│   └── itinerary/
+│       └── [itineraryId]/page.tsx  # Client itinerary view
 ├── access/[token]/page.tsx
 ├── consume/[token]/route.ts
 └── logout/route.ts
 
 layout.tsx               # Root layout
-
-# Phase 6 Planned
-portal/[slug]/itinerary/
-└── [itineraryId]/page.tsx # (Planned) Client itinerary view
 ```
 
 ### API Routes (`app/api/`)
@@ -338,18 +360,45 @@ health/route.ts
 tags/suggest/route.ts
 
 content-library/
-├── route.ts             # GET, POST (Phase 5)
-└── [id]/route.ts        # DELETE (Phase 5)
+├── route.ts             # GET (list), POST (create)
+└── [id]/route.ts        # DELETE
 
 portal/[id]/
-├── route.ts             # GET (portal)
-├── items/route.ts       # GET, POST (Phase 5)
-├── items/[itemId]/route.ts # DELETE (Phase 5)
-└── reorder/route.ts     # POST (Phase 5)
+├── route.ts             # GET (portal with hero fields)
+├── items/route.ts       # GET, POST (attach or portal-specific)
+├── items/[itemId]/route.ts # DELETE
+├── reorder/route.ts     # POST
+└── notepad/route.ts     # GET (list + search), POST (create)
 
-canvas/templates/
-├── route.ts             # Template list/create (FROZEN)
-└── [id]/route.ts        # Template get/update/delete
+itineraries/
+├── [id]/route.ts                # GET (full), PATCH (title), DELETE
+├── [id]/sections/route.ts       # GET, POST
+├── [id]/attach/route.ts         # POST (attach to portal wall)
+└── (portal itinerary list/create via /api/portal/[id]/itineraries)
+
+portal/[id]/itineraries/route.ts # GET (list), POST (create)
+
+sections/
+├── [id]/route.ts                # PATCH, DELETE
+├── [id]/days/route.ts           # GET, POST
+└── [id]/stays/route.ts          # GET, POST
+
+days/
+├── [id]/route.ts                # PATCH, DELETE
+└── [id]/segments/route.ts       # GET, POST
+
+segments/
+└── [id]/route.ts                # PATCH, DELETE
+
+stays/
+└── [id]/route.ts                # PATCH, DELETE
+
+notepad/
+└── [id]/route.ts                # PATCH, DELETE
+
+canvas/templates/                # FROZEN
+├── route.ts
+└── [id]/route.ts
 
 admin/
 ├── [type]/[id]/toggle/route.ts
@@ -361,43 +410,6 @@ email/
 ├── process-queue/route.ts
 ├── status/route.ts
 └── webhook/route.ts
-
-# Phase 6 Planned
-itineraries/
-├── route.ts
-├── [id]/route.ts
-├── [id]/sections/route.ts
-├── [id]/attach/route.ts
-└── ...
-
-portal/[id]/notepad/
-├── route.ts
-└── [entryId]/route.ts
-```
-
-### Phase 6 Planned Components
-```
-components/admin/itinerary/
-├── ItineraryList.tsx
-├── ItineraryEditor.tsx
-├── SectionEditor.tsx
-├── StaysEditor.tsx
-├── DayEditor.tsx
-├── SegmentEditor.tsx
-└── TravelSegmentFields.tsx
-
-components/admin/notepad/
-├── NotepadList.tsx
-├── NotepadEntryForm.tsx
-└── TagInput.tsx
-
-components/portal/itinerary/
-├── ItineraryView.tsx
-├── SectionView.tsx
-├── DayView.tsx
-├── SegmentCard.tsx
-├── TravelCard.tsx
-└── StayBanner.tsx
 ```
 
 ### Scripts
@@ -409,8 +421,15 @@ scripts/
 
 ### Tests
 ```
+lib/hooks/
+├── useAutosaveField.test.tsx           # 15 autosave tests (A1–A15)
+└── useAutosaveField.durability.test.tsx # 14 durability tests (D1–D14)
+
+lib/drafts/
+└── index.test.ts                       # 19 storage-layer tests
+
 tests/
-└── integration.test.ts
+└── integration.test.ts                 # Legacy integration test
 ```
 
 ### Migrations
@@ -418,15 +437,25 @@ tests/
 drizzle/migrations/
 ├── 0001_fts5_triggers.sql
 ├── 0002_portal_content_library.sql   # Phase 5
-├── 0003_itinerary.sql                # (Planned) Phase 6
-└── 0004_notepad.sql                  # (Planned) Phase 6
+├── 0003_itinerary.sql                # Phase 6.2 (incl. portal_items rebuild)
+└── 0004_notepad.sql                  # Phase 6.3
+```
+
+### Config
+```
+vitest.config.ts         # Vitest config (jsdom, alias resolution)
+vitest.setup.ts          # Test setup (jest-dom matchers, act warning filter)
+tailwind.config.js       # Semantic colour tokens
+next.config.mjs          # Next config (serverActions.allowedOrigins)
+drizzle.config.ts        # Drizzle config
+tsconfig.json            # TypeScript config
 ```
 
 ---
 
 ## Database Schema Details
 
-### Key Tables Overview
+### Core Tables
 | Table | Purpose |
 |-------|---------|
 | `users` | Admin user (single: Myah) |
@@ -435,67 +464,102 @@ drizzle/migrations/
 | `templates` | Canvas + block templates (`content_type`) |
 | `settings` | Key-value site settings |
 | `tags`, `categories` | Post tag system |
-| `portals` | Client portals (hero fields) |
-| `content_library` | Reusable content |
-| `portal_items` | Unified wall pipeline |
-| `portal_members` | Client emails + names |
-| `portal_magic_links`, `portal_sessions` | Client auth |
-| `portal_notices`, `portal_documents`, `portal_faqs` | Legacy (unused) |
 
-### Phase 6 Tables (Planned)
+### Portal Tables
 | Table | Purpose |
 |-------|---------|
-| `itineraries` | Trip itineraries |
+| `portals` | Client portals (hero fields) |
+| `content_library` | Reusable content |
+| `portal_items` | Unified wall pipeline (`source_type`: `library` \| `portal_specific` \| `itinerary`) |
+| `portal_members` | Client emails + names |
+| `portal_magic_links`, `portal_sessions` | Client auth |
+| `portal_notices`, `portal_documents`, `portal_faqs`, `portal_checklist_states` | Legacy (unused) |
+
+### Itinerary Tables
+| Table | Purpose |
+|-------|---------|
+| `itineraries` | Trip itineraries (soft delete) |
 | `itinerary_sections` | Sections within itinerary |
 | `itinerary_days` | Days within section |
-| `itinerary_segments` | Activities/travel/meals/etc |
+| `itinerary_segments` | Activities/travel/meals/free days |
 | `itinerary_stays` | Hotel stays (spans) |
-| `notepad_entries` | Admin scratchpad |
 
-**Critical:** `portal_items.source_type` gains `'itinerary'` value; `portal_items.itinerary_id` references `itineraries(id)`.
+### Notepad
+| Table | Purpose |
+|-------|---------|
+| `notepad_entries` | Admin-only scratchpad per portal |
+
+### Soft-Delete Pattern
+- `itineraries` has `deleted_at`
+- Child tables cascade hard-delete
+- `portals` uses `isActive`, `archivedAt`, `deletedAt`
 
 ### Schema Notes
 - `schema.sql` outdated; use `scripts/setup-db.js`
 - Missing columns handled: `opt_out_global_announcement`, `is_favourite`, `last_used_at`, `expires_at`, `is_expired`, `last_attempt_at`, hero fields
-- Soft-delete pattern for `itineraries`; child tables use hard-delete cascade
+
+---
+
+## Autosave Hook Architecture
+
+### `useAutosaveField<T>`
+- Primitive-only (string | number | boolean | null)
+- Single `saveInternal()` path — no direct `onSave` calls
+- Multi-value in-flight dedup via `Map<T, number>`
+- Version gating: stale responses ignored
+- Mount gating: React state only; refs + localStorage always update
+- Return shape: `{ value, setValue, saveState, dirty, flush, retry }`
+
+### Durability Layer
+- localStorage only, synchronous writes
+- Namespaced keys: `myahtravels:draft:{entityType}:{entityId}:{fieldPath}`
+- try/catch wrapped, never blocks editing
+- Draft cleared only when: latest version AND `savedValue === currentValue`
+- Exports: `writeDraft`, `readDraft`, `clearDraft`, `getFullDraftKey`, `getAllDraftKeys`, `findDraftsForEntity`, `clearDraftsForEntity`
+
+### Form Primitives
+- `AutosaveTextField` — text with autosave + indicator
+- `AutosaveDateField` — date with min/max + quickSelect
+- `AutosaveTimeField` — time with autosave
+- `AutosaveSelectField` — select with immediate flush
+- External value sync via refs (parent re-renders propagate safely)
 
 ---
 
 ## Known Issues
 
 1. **better-sqlite3 crash in Codespace** — environment-specific; not on local PC. Workflow: edit Codespace, test local.
-
 2. **Canvas system frozen** — 39 emerald remain. Delete when block editor approved.
-
 3. **`schema.sql` outdated** — handled by `scripts/setup-db.js`.
-
-4. **Missing DB columns on fresh setup** — extend `scripts/setup-db.js` if new errors appear.
+4. **Native date/time pickers** — highlight-on-click issue requires `showPicker()` fallback (Bug 3, Phase 7).
+5. **Segment edits revert on collapse** — SegmentRow unmounts fields; needs lifecycle fix (Bug 1, Phase 7).
 
 ---
 
 ## Remaining Work
 
-### Phase 6.1 (Next)
-- Hero presets 3 → 8
-- Content tile icons
-- Notices removal
-- Portal member names
+### Phase 7.1 — Bug Fix Pass (Current)
+- Batch 1: Segment edit revert, admin preview session, date picker `showPicker()`
+- Batch 2: Date constraints, optional field audit
+- Batch 3: Portal manager trash + recovery + preview
+- Batch 4: Tile restyle, styled toast, Save button, custom pickers
+- Batch 5: Segment UX refinement
+- Batch 6: Download verification
 
-### Phase 6.2
-- Itinerary Builder V1 (schema, backend, admin UI, client view, wall integration)
-
-### Phase 6.3
-- Admin Notepad (schema, backend, UI)
-
-### Phase 7 (Future)
-- Options segments, cruise mode, overlapping stays, group splits, People table
-
-### Production Hardening
+### Phase 7.3 — Production Hardening
 - Delete Canvas system
 - Fix better-sqlite3 on deployment
-- Preview popup
-- Target surface tokens
-- Auto Save, Undo/Redo, Publish Validation
+- Undo/Redo, Publish Validation, Error Boundaries
+- Preview popup (modal → floating → fullscreen)
+- Target surface token conversion
+
+### Phase 8 — Future / Deferred
+- Itinerary V2: Options segments, cruise mode, overlapping stays, group splits
+- People table (trigger-based upgrade)
+- Global announcements (email all portal members)
+- Client portal reply capability
+- Template migration (Canvas → Block)
+- Dark mode (reader preference only)
 
 ---
 
@@ -510,6 +574,11 @@ npm run seed               # Seed data
 npm run dev                # Dev server (port 3000)
 npm run build              # Production build
 npm start                  # Production server
+
+# Tests
+npm test                   # Run all vitest tests (48 passing)
+npm run test:watch         # Watch mode
+npm run test:ui            # Vitest UI
 ```
 
 **Note:** `.env` needs `RESEND_API_KEY=re_dummy_key_for_dev` for admin pages.
@@ -524,4 +593,4 @@ npm start                  # Production server
 
 ---
 
-**Last Updated:** September 10, 2026
+**Last Updated:** September 12, 2026
