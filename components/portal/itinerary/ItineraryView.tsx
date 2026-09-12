@@ -1,4 +1,5 @@
 import React from "react";
+import PrintButton from "./PrintButton";
 
 interface Segment {
   id: number;
@@ -95,12 +96,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client" }
           >
             ← Back to wall
           </a>
-          <button
-            onClick={() => typeof window !== "undefined" && window.print()}
-            className="text-sm text-primary hover:underline print:hidden"
-          >
-            Print / Save PDF
-          </button>
+          <PrintButton />
         </div>
       </div>
 
