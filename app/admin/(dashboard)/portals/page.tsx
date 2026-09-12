@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth";
 import { Table } from "@/components/ui/Table";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import ConfirmSubmitButton from "@/components/ui/ConfirmSubmitButton";
 import {
   archivePortalAction,
   deletePortalAction,
@@ -154,14 +155,13 @@ export default async function PortalsPage({
                             name="portalId"
                             value={portal.id}
                           />
-                          <button
-                            type="submit"
+                          <ConfirmSubmitButton
+                            confirmMessage={`Delete portal "${portal.name}"? It can be restored from the Deleted view.`}
                             title="Delete portal"
-                            aria-label="Delete portal"
                             className="text-gray-400 hover:text-red-600 text-base"
                           >
                             🗑
-                          </button>
+                          </ConfirmSubmitButton>
                         </form>
                       </div>
                     ),

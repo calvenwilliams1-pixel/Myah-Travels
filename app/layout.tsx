@@ -1,5 +1,6 @@
 import React from "react";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast/ToastProvider";
 
 export const metadata = {
   title: "MyCalTravels",
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-white text-gray-900 antialiased">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

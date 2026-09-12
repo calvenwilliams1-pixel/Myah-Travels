@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useToast } from "@/components/ui/toast/ToastProvider";
 
 interface Itinerary {
   id: number;
@@ -22,6 +23,7 @@ export default function ItineraryListPage() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const { showToast } = useToast();
 
   async function fetchItineraries() {
     const res = await fetch(`/api/portal/${portalId}/itineraries`);
@@ -65,7 +67,7 @@ export default function ItineraryListPage() {
     });
     const data = await res.json();
     if (data.success) {
-      alert("Itinerary attached to portal wall!");
+      showToast("Itinerary attached to portal wall", { variant: "success" });
     }
   }
 

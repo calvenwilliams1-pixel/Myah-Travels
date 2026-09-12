@@ -102,11 +102,25 @@ export default function WallItemRenderer({
     return (
       <a
         href={href}
-        className="block bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:border-primary transition-colors"
+        className="group relative flex flex-col bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all"
       >
-        <div className="text-4xl mb-3">📋</div>
-        <h3 className="font-semibold">{resolvedTitle}</h3>
-        <p className="text-sm text-primary mt-2">View itinerary →</p>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl">📋</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+            Itinerary
+          </span>
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 leading-tight mb-3">
+          {resolvedTitle}
+        </h3>
+        <div className="flex items-center justify-between mt-auto pt-2">
+          <span className="text-xs text-gray-600">
+            Multi-day trip · Full details
+          </span>
+          <span className="text-sm text-primary font-medium group-hover:translate-x-1 transition-transform">
+            View →
+          </span>
+        </div>
       </a>
     );
   }
