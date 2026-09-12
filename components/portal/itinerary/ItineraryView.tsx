@@ -105,7 +105,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-2">{itinerary.title}</h1>
         <p className="text-gray-500 mb-8">
           {itinerary.sections.length} section{itinerary.sections.length !== 1 ? "s" : ""} ·{" "}

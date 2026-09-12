@@ -149,6 +149,9 @@ export default function AddSegmentForm({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Type
           </label>
+          <p className="text-xs text-gray-500 mb-2">
+            A segment is one thing happening at a specific time — a museum visit, a flight, dinner, or a free block of time.
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {SEGMENT_TYPE_OPTIONS.map((opt) => (
               <button

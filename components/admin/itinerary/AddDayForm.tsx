@@ -85,7 +85,7 @@ export default function AddDayForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Arrival & Transfer"
-          helperText="A short nickname so this day is scannable (e.g., 'Arrival Day', 'Cruise Day')"
+          helperText="A short nickname for this day (e.g., 'Arrival Day', 'Cruise Day', 'Museum Day'). The details of each activity go into Segments."
         />
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
