@@ -56,6 +56,7 @@ interface ItineraryViewProps {
   itinerary: Itinerary;
   portalSlug: string;
   mode?: "client" | "admin-preview";
+  portalId?: number;
 }
 
 const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string; label: string }> = {
@@ -65,7 +66,7 @@ const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string;
   free_day: { bg: "bg-gray-50", border: "border-gray-200", icon: "🌴", label: "Free Day" },
 };
 
-export default function ItineraryView({ itinerary, portalSlug, mode = "client" }: ItineraryViewProps) {
+export default function ItineraryView({ itinerary, portalSlug, mode = "client", portalId }: ItineraryViewProps) {
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
       {mode === "admin-preview" && (
@@ -91,7 +92,11 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client" }
       <div className="bg-white border-b border-gray-200 print:border-0 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <a
-            href={`/portal/${portalSlug}`}
+            href={
+              mode === "admin-preview" && portalId
+                ? `/admin/portals/${portalId}/preview`
+                : `/portal/${portalSlug}`
+            }
             className="text-sm text-gray-500 hover:text-primary print:hidden"
           >
             ← Back to wall

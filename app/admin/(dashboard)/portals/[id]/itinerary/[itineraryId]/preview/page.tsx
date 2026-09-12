@@ -44,7 +44,7 @@ export default async function AdminItineraryPreviewPage({
           ← Back to editor
         </Link>
       </div>
-      <ItineraryView itinerary={itinerary} portalSlug={portal.slug} mode="admin-preview" />
+      <ItineraryView itinerary={itinerary} portalSlug={portal.slug} portalId={portalId} mode="admin-preview" />
     </>
   );
 }
