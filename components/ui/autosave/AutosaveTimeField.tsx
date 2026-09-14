@@ -56,6 +56,7 @@ export default function AutosaveTimeField({
         <input
           id={inputId}
           type="time"
+          step={60}
           value={field.value}
           onChange={(e) => field.setValue(e.target.value)}
           onBlur={() => field.flush()}

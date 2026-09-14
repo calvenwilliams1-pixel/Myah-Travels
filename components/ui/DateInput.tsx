@@ -8,9 +8,13 @@ interface DateInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export default function DateInput({ className, ...props }: DateInputProps) {
+  const step = props.type === "time" || props.type === "datetime-local"
+    ? (props.step ?? 60)
+    : props.step;
   return (
     <input
       {...props}
+      step={step}
       className={
         className ||
         "w-full px-3 py-2 border border-primary/30 rounded-lg text-base cursor-pointer"

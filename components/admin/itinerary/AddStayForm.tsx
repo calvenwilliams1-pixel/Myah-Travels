@@ -136,8 +136,8 @@ export default function AddStayForm({
           <Input
             label="Check-in Time (optional)"
             type="time"
+            step={60}
             onClick={openPickerOnClick}
-
             value={checkInTime}
             onChange={(e) => setCheckInTime(e.target.value)}
             helperText="e.g., 15:00"
@@ -146,8 +146,8 @@ export default function AddStayForm({
           <Input
             label="Check-out Time (optional)"
             type="time"
+            step={60}
             onClick={openPickerOnClick}
-
             value={checkOutTime}
             onChange={(e) => setCheckOutTime(e.target.value)}
             helperText="e.g., 11:00"

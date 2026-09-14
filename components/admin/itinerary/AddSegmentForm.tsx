@@ -255,8 +255,8 @@ export default function AddSegmentForm({
               <Input
                 label="Start Time"
                 type="time"
-            onClick={openPickerOnClick}
-
+                step={60}
+                onClick={openPickerOnClick}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 helperText="e.g., 14:00"
@@ -265,8 +265,8 @@ export default function AddSegmentForm({
               <Input
                 label="End Time"
                 type="time"
-            onClick={openPickerOnClick}
-
+                step={60}
+                onClick={openPickerOnClick}
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 helperText="e.g., 16:30"
