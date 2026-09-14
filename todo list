@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 4)
+# MyCalTravels — TODO.md (Revision 5)
 
 ## Status
 
-**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Session A+B (autosave, form primitives, prompt replacement) COMPLETE. Currently in Phase 7: Bug Fix Pass from live testing.**
+**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Autosave infrastructure COMPLETE (48 tests). Phase 7 Bug Fix Pass COMPLETE (all 6 batches). Currently in Phase 7.5: Demo Rendering & Visual Review.**
 
 ## Core Principle
 
@@ -64,16 +64,16 @@ Developer controls design. Template controls layout. Writer controls content. Se
 ## Phase 6.1: Quick Wins ✅
 ## Phase 6.2: Itinerary Builder V1 ✅
 ## Phase 6.3: Admin Notepad ✅
-## Phase 6.4A: Autosave Hook (A1–A2) ✅
+## Phase 6.4A: Autosave Hook (A1-A2) ✅
 - [x] Notepad verified clean (cache issue)
 - [x] Admin itinerary preview route
 
 ## Phase 6.4B: Autosave Infrastructure (A3a/A3b) ✅
 - [x] `useAutosaveField` hook
-- [x] 15 autosave tests (A1–A15)
+- [x] 15 autosave tests (A1-A15)
 - [x] Storage layer (`lib/drafts`)
 - [x] 19 storage-layer tests
-- [x] 14 durability tests (D1–D14)
+- [x] 14 durability tests (D1-D14)
 - [x] Save indicator component
 - [x] `aggregateSaveState` helper
 - [x] 48 total tests passing
@@ -96,53 +96,67 @@ Developer controls design. Template controls layout. Writer controls content. Se
 
 ---
 
-## Phase 7: Bug Fix Pass (CURRENT) — From Live Testing
+## Phase 7: Bug Fix Pass ✅ COMPLETE (all 6 batches)
 
-### Batch 1: Critical Bugs
-- [ ] **Bug 1:** Segment edits revert when collapsed/re-expanded
-- [ ] **Bug 2:** Admin preview → click itinerary → "session expired"
-- [ ] **Bug 3:** Date/time inputs highlight instead of opening picker (need `showPicker()`)
+### Batch 1: Critical Bugs ✅
+- [x] **Bug 1:** Segment edits revert when collapsed/re-expanded
+- [x] **Bug 2:** Admin preview -> click itinerary -> "session expired"
+- [x] **Bug 3:** Date/time inputs highlight instead of opening picker (`showPicker()`)
 
-### Batch 2: Date Constraint Improvements
-- [ ] Section date pickers constrained to portal departure/return
-- [ ] Segment date pickers constrained to day date
-- [ ] Flight datetime buffer allowance (soft constraints)
-- [ ] Make all non-essential fields optional (audit forms)
+### Batch 2: Date Constraint Improvements ✅
+- [x] Section date pickers constrained to portal departure/return
+- [x] Segment date pickers constrained to day date
+- [x] Flight datetime buffer allowance (soft constraints)
+- [x] Make all non-essential fields optional (audit forms)
 
-### Batch 3: Portal Manager UX
-- [ ] Trashcan + confirmation on portal rows
-- [ ] Recovery view for soft-deleted portals
-- [ ] "Preview Wall" icon in portal manager rows
-- [ ] "Preview Wall" button on `/admin/portals/[id]`
+### Batch 3: Portal Manager UX ✅
+- [x] Trashcan + confirmation on portal rows
+- [x] Recovery view for soft-deleted portals
+- [x] "Preview Wall" icon in portal manager rows
+- [x] "Preview Wall" button on `/admin/portals/[id]`
 
-### Batch 4: UI Polish
-- [ ] Restyle itinerary tile (less empty space)
-- [ ] Replace `alert()` with styled toast
-- [ ] Add explicit Save button (alongside autosave)
-- [ ] Make date/time pickers bigger, more colorful (custom pickers)
+### Batch 4: UI Polish ✅
+- [x] Restyle itinerary tile (less empty space)
+- [x] Replace `alert()` with styled toast
+- [x] Add explicit Save button (alongside autosave)
+- [x] Make date/time pickers bigger, more colorful (custom pickers)
 
-### Batch 5: Segment UX Refinement
-- [ ] Clarify segment type / day title relationship
-- [ ] Improve segment collapse behavior
-- [ ] Fix time picker responsiveness (multiple clicks)
-- [ ] Fix AM/PM switching (multiple clicks)
+### Batch 5: Segment UX Refinement ✅
+- [x] Clarify segment type / day title relationship
+- [x] Improve segment collapse behavior
+- [x] Fix time picker responsiveness (multiple clicks)
+- [x] Fix AM/PM switching (multiple clicks)
 
-### Batch 6: Download/Export
-- [ ] Verify PDF download works from client view
-- [ ] Consider admin-side download button
+### Batch 6: Download/Export ✅
+- [x] Verify PDF download works from client view
+- [x] Consider admin-side download button
+
+---
+
+## Phase 7.5: Demo Rendering & Visual Review (CURRENT)
+
+Goal: Seed real itineraries into the DB and render them through the builder to see what a fully-realised, curated document looks like.
+
+- [x] **Singapore Demo** - portal "Singapore Demo" (id 4) + itinerary "Singapore - 3-Day Journey" (id 3) seeded, attached to wall
+- [ ] **Full Japan + Cruise + Singapore itinerary** - pending seed script
+  - [ ] Confirm portal strategy (A: fresh portal / B: rename existing)
+  - [ ] Confirm cruise section handling (A: V1 render / B: skip / C: V1 render + flag as compromise)
+  - [ ] Write `scripts/seed-japan-singapore-demo.js`
+  - [ ] Run on local PC, view at `/admin/portals/[id]/itinerary/[itineraryId]/preview`
+  - [ ] Capture feedback (layout, time grouping, stay banner, flight cards, print)
 
 ---
 
 ## Phase 7.2 Loose Ends (Before Phase 8)
 - [x] Attach itinerary UI on admin editor page
 - [x] Admin preview of itinerary
-- [ ] Verify travel segment `datetime-local` ↔ ISO string handling
-- [ ] Verify PDF export includes proper timestamp
+- [x] Verify travel segment `datetime-local` <-> ISO string handling
+- [x] Verify PDF export includes proper timestamp
 
 ## Phase 7.3 Production Hardening
 - [ ] Fix better-sqlite3 crash on mini PC deployment
 - [ ] Delete Canvas system (39 emerald remain)
-- [ ] Preview popup (modal → floating → fullscreen)
+- [ ] Preview popup (modal -> floating -> fullscreen)
 - [ ] Target surface token conversion (~20-30 `bg-gray-50/100`)
 - [ ] Undo / Redo (global stack, capped 50)
 - [ ] Publish Validation (required blocks filled)
@@ -170,7 +184,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - [ ] Client-facing docs acknowledgment
 
 ### Content Migration
-- [ ] Template Migration (Canvas → Block)
+- [ ] Template Migration (Canvas -> Block)
 - [ ] Inline Editing (blocks)
 
 ### Low Priority
@@ -184,7 +198,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 ## Architecture Decisions (Locked)
 
 ### Autosave Hook
-- Single `saveInternal()` path — no other `onSave` calls
+- Single `saveInternal()` path - no other `onSave` calls
 - Multi-value in-flight dedup via `Map<T, number>`
 - Version gating: stale responses ignored
 - Mount gating: React state updates only
@@ -231,11 +245,10 @@ Developer controls design. Template controls layout. Writer controls content. Se
 
 ## Known Issues
 
-1. **better-sqlite3 crash in Codespace** — environment-specific; not present on local PC
-2. **Canvas system frozen** — 39 emerald remain
-3. **`schema.sql` outdated** — use Drizzle schema + `scripts/setup-db.js` + seed
-4. **Missing DB columns on fresh setup** — `scripts/setup-db.js` handles known cases
-5. **Native date/time pickers ugly + multi-click** — Batch 4 addresses
+1. **better-sqlite3 crash in Codespace** - environment-specific; not present on local PC
+2. **Canvas system frozen** - 39 emerald remain
+3. **`schema.sql` outdated** - use Drizzle schema + `scripts/setup-db.js` + seed
+4. **Missing DB columns on fresh setup** - `scripts/setup-db.js` handles known cases
 
 ---
 
@@ -243,27 +256,25 @@ Developer controls design. Template controls layout. Writer controls content. Se
 
 **Editing:** Codespace (VS Code, Python heredocs, Copilot)
 **Testing:** Local PC (no better-sqlite3 crash, real browser at localhost:3000)
-**Sync:** `git push` Codespace → `git pull` local → test → report bugs
+**Sync:** `git push` Codespace -> `git pull` local -> test -> report bugs
 
 ---
 
 ## Testing Commands
 
-```bash
-# First-time local setup
-node scripts/setup-db.js   # Create DB
-npm run seed               # Seed data
+    # First-time local setup
+    node scripts/setup-db.js   # Create DB
+    npm run seed               # Seed data
 
-# Daily
-npm run dev                # Dev server (port 3000)
-npm run build              # Production build
-npm start                  # Production server
+    # Daily
+    npm run dev                # Dev server (port 3000)
+    npm run build              # Production build
+    npm start                  # Production server
 
-# Tests
-npm test                   # Run all vitest tests (48 passing)
-npm run test:watch         # Watch mode
-npm run test:ui            # Vitest UI
-```
+    # Tests
+    npm test                   # Run all vitest tests (48 passing)
+    npm run test:watch         # Watch mode
+    npm run test:ui            # Vitest UI
 
 ---
 
@@ -273,34 +284,30 @@ npm run test:ui            # Vitest UI
 - Phase 6.4A: Notepad verified + admin itinerary preview
 - Phase 6.4B: Autosave hook + 48 tests passing
 - Phase 6.4C: 4 form primitives
-- Phase 6.4D: Replaced all `prompt()` with inline forms (580 → 17 lines)
+- Phase 6.4D: Replaced all `prompt()` with inline forms (580 -> 17 lines)
+- **Phase 7: All 6 batches complete** (critical bugs, date constraints, portal manager UX, UI polish, segment UX, download verification)
+- **Phase 7.5: Singapore Demo seeded** (portal id 4, itinerary id 3)
 
-**Recent commits:**
-- `e9f0bae` — B0 form primitives
-- (pending) — B1 prompt replacement
-- Earlier: Phase 6.1–6.3 complete
-
-**Next action:** Fix Batch 1 critical bugs from live testing
+**Next action:** Write + run full Japan + Cruise + Singapore seed script, then visual review.
 
 ---
 
-## Phase 7 Bug Fix Priorities
+## Phase 7 Bug Fix Priorities (COMPLETE)
 
-| Batch | Priority | Description |
-|-------|----------|-------------|
-| 1 | **Critical** | Segment edit revert, admin preview session, date picker `showPicker()` |
-| 2 | High | Date constraints, optional field audit |
-| 3 | High | Portal manager trash + recovery + preview |
-| 4 | Medium | Tile restyle, toast, Save button, picker UI |
-| 5 | Medium | Segment UX, time picker clicks |
-| 6 | Low | Download verification |
-
-**Recommendation: Complete Batch 1 before any other work.** These block further testing.
+| Batch | Priority | Description | Status |
+|-------|----------|-------------|--------|
+| 1 | **Critical** | Segment edit revert, admin preview session, date picker `showPicker()` | DONE |
+| 2 | High | Date constraints, optional field audit | DONE |
+| 3 | High | Portal manager trash + recovery + preview | DONE |
+| 4 | Medium | Tile restyle, toast, Save button, picker UI | DONE |
+| 5 | Medium | Segment UX, time picker clicks | DONE |
+| 6 | Low | Download verification | DONE |
 
 ---
 
 ## What's Left After Phase 7
 
-1. **Phase 7.3** — Production hardening (Canvas deletion, deployment, undo/redo)
-2. **Phase 8** — V2 features (Options, cruise mode, People table, global announcements)
-3. **Phase 8+** — Post-launch (dark mode, versioning, block expansion)
+1. **Phase 7.5** - Demo rendering & visual review (in progress)
+2. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
+3. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
+4. **Phase 8+** - Post-launch (dark mode, versioning, block expansion)
