@@ -1,4 +1,4 @@
-import { openPickerOnClick } from "@/lib/ui/openPicker";
+import DateInput from "@/components/ui/DateInput";
 import React from "react";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -24,24 +24,20 @@ export default function NewPortalPage() {
               <label className="block text-sm font-semibold text-primary mb-2">
                 DEPARTURE DATE
               </label>
-              <input
+              <DateInput
                 type="date"
                 name="departureDate"
-                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-base cursor-pointer"
-                          onClick={openPickerOnClick}
-          />
+              />
             </div>
 
             <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
               <label className="block text-sm font-semibold text-primary mb-2">
                 RETURN DATE
               </label>
-              <input
+              <DateInput
                 type="date"
                 name="returnDate"
-                className="w-full px-3 py-2 border border-primary/30 rounded-lg text-base cursor-pointer"
-                          onClick={openPickerOnClick}
-          />
+              />
             </div>
           </div>
 

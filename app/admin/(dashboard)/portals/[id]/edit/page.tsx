@@ -1,11 +1,11 @@
 "use client";
 
-import { openPickerOnClick } from "@/lib/ui/openPicker";
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import DateInput from "@/components/ui/DateInput";
 import HeroEditor from "@/components/admin/portals/HeroEditor";
 import PortalItemsList from "@/components/admin/portals/PortalItemsList";
 import AttachLibraryModal from "@/components/admin/portals/AttachLibraryModal";
@@ -112,22 +112,24 @@ export default function PortalEditPage() {
               required
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Departure Date"
-                name="departureDate"
-                type="date"
-                value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)}
-                onClick={openPickerOnClick}
-              />
-              <Input
-                label="Return Date"
-                name="returnDate"
-                type="date"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-                onClick={openPickerOnClick}
-              />
+              <div>
+                <label className="block text-sm font-medium mb-1">Departure Date</label>
+                <DateInput
+                  type="date"
+                  name="departureDate"
+                  value={departureDate}
+                  onChange={(e) => setDepartureDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Return Date</label>
+                <DateInput
+                  type="date"
+                  name="returnDate"
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </Card>
