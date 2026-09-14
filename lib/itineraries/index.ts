@@ -159,6 +159,8 @@ export async function createSegment(dayId: number, data: {
   location?: string;
   instructions?: string;
   confirmation?: string;
+  referenceType?: string;
+  referenceLabel?: string;
   departureAirport?: string;
   arrivalAirport?: string;
   departureDatetime?: string;
@@ -175,6 +177,8 @@ export async function createSegment(dayId: number, data: {
     location: data.location ?? null,
     instructions: data.instructions ?? null,
     confirmation: data.confirmation ?? null,
+    referenceType: data.referenceType ?? null,
+    referenceLabel: data.referenceLabel ?? null,
     departureAirport: data.departureAirport ?? null,
     arrivalAirport: data.arrivalAirport ?? null,
     departureDatetime: data.departureDatetime ?? null,
@@ -192,6 +196,8 @@ export async function updateSegment(id: number, data: Partial<{
   location: string;
   instructions: string;
   confirmation: string;
+  referenceType: string;
+  referenceLabel: string;
   departureAirport: string;
   arrivalAirport: string;
   departureDatetime: string;

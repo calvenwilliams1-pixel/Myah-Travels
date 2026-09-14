@@ -71,6 +71,8 @@ export const itinerarySegments = sqliteTable(
     location: text("location"),
     instructions: text("instructions"),
     confirmation: text("confirmation"),
+    referenceType: text("reference_type"),
+    referenceLabel: text("reference_label"),
     departureAirport: text("departure_airport"),
     arrivalAirport: text("arrival_airport"),
     departureDatetime: text("departure_datetime"),

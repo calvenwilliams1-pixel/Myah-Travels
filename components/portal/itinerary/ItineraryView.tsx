@@ -1,4 +1,5 @@
 import React from "react";
+import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
 import PrintButton from "./PrintButton";
 
 interface Segment {
@@ -10,6 +11,8 @@ interface Segment {
   location: string | null;
   instructions: string | null;
   confirmation: string | null;
+  referenceType: string | null;
+  referenceLabel: string | null;
   departureAirport: string | null;
   arrivalAirport: string | null;
   departureDatetime: string | null;
@@ -257,11 +260,14 @@ function SegmentCard({ segment }: { segment: Segment }) {
               {segment.instructions}
             </p>
           )}
-          {segment.confirmation && (
-            <p className="text-xs text-gray-500 mt-2">
-              Confirmation: <span className="font-mono">{segment.confirmation}</span>
-            </p>
-          )}
+          {segment.confirmation && (() => {
+            const label = resolveReferenceLabel(segment.referenceType, segment.referenceLabel);
+            return (
+              <p className="text-xs text-gray-500 mt-2">
+                {label ?? "Confirmation"}: <span className="font-mono">{segment.confirmation}</span>
+              </p>
+            );
+          })()}
         </div>
       </div>
     </div>
@@ -306,11 +312,14 @@ function TravelCard({ segment }: { segment: Segment }) {
             </p>
           )}
 
-          {segment.confirmation && (
-            <p className="text-xs text-gray-500 mt-1">
-              Confirmation: <span className="font-mono">{segment.confirmation}</span>
-            </p>
-          )}
+          {segment.confirmation && (() => {
+            const label = resolveReferenceLabel(segment.referenceType, segment.referenceLabel);
+            return (
+              <p className="text-xs text-gray-500 mt-1">
+                {label ?? "Confirmation"}: <span className="font-mono">{segment.confirmation}</span>
+              </p>
+            );
+          })()}
 
           {segment.instructions && (
             <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">

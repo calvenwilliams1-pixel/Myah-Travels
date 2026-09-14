@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
+import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
 import type { Segment } from "./ItineraryEditor";
 
 interface SegmentsEditorProps {
@@ -184,13 +185,43 @@ function SegmentRow({
                 </>
               )}
 
-              <AutosaveTextField
-                label="Confirmation"
-                value={segment.confirmation || ""}
-                onSave={(v) => update({ confirmation: v })}
-                draftKey={`segment:${segment.id}:confirmation`}
-                placeholder="COPNYP"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reference Type
+                </label>
+                <select
+                  value={segment.referenceType || ""}
+                  onChange={(e) => update({ referenceType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
+                >
+                  <option value="">— None —</option>
+                  {REFERENCE_TYPES.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {segment.referenceType === "other" && (
+                <AutosaveTextField
+                  label="Custom Label"
+                  value={segment.referenceLabel || ""}
+                  onSave={(v) => update({ referenceLabel: v })}
+                  draftKey={`segment:${segment.id}:referenceLabel`}
+                  placeholder="Ticket Number"
+                />
+              )}
+
+              {segment.referenceType && segment.referenceType !== "" && (
+                <AutosaveTextField
+                  label="Reference Value"
+                  value={segment.confirmation || ""}
+                  onSave={(v) => update({ confirmation: v })}
+                  draftKey={`segment:${segment.id}:confirmation`}
+                  placeholder="COPNYP"
+                />
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

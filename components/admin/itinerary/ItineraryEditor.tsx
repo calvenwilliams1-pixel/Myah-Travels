@@ -21,6 +21,8 @@ export interface Segment {
   location: string | null;
   instructions: string | null;
   confirmation: string | null;
+  referenceType: string | null;
+  referenceLabel: string | null;
   departureAirport: string | null;
   arrivalAirport: string | null;
   departureDatetime: string | null;

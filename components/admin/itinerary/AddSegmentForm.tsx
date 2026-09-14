@@ -1,6 +1,7 @@
 "use client";
 
 import { openPickerOnClick } from "@/lib/ui/openPicker";
+import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -70,6 +71,8 @@ export default function AddSegmentForm({
   const [location, setLocation] = useState("");
   const [instructions, setInstructions] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [referenceType, setReferenceType] = useState("");
+  const [referenceLabel, setReferenceLabel] = useState("");
 
   // Travel-only fields
   const [departureAirport, setDepartureAirport] = useState("");
@@ -112,6 +115,8 @@ export default function AddSegmentForm({
       location: location.trim() || undefined,
       instructions: instructions.trim() || undefined,
       confirmation: confirmation.trim() || undefined,
+      referenceType: referenceType || undefined,
+      referenceLabel: referenceType === "other" ? (referenceLabel.trim() || undefined) : undefined,
     };
 
     if (type === "travel") {
@@ -300,13 +305,43 @@ export default function AddSegmentForm({
           </p>
         </div>
 
-        <Input
-          label="Confirmation (optional)"
-          value={confirmation}
-          onChange={(e) => setConfirmation(e.target.value)}
-          placeholder="COPNYP"
-          helperText="Booking reference"
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Reference Type (optional)
+          </label>
+          <select
+            value={referenceType}
+            onChange={(e) => setReferenceType(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
+          >
+            <option value="">— None —</option>
+            {REFERENCE_TYPES.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {referenceType === "other" && (
+          <Input
+            label="Custom Label"
+            value={referenceLabel}
+            onChange={(e) => setReferenceLabel(e.target.value)}
+            placeholder="Ticket Number"
+            helperText="What should the client see before the value?"
+          />
+        )}
+
+        {referenceType !== "" && (
+          <Input
+            label="Reference Value"
+            value={confirmation}
+            onChange={(e) => setConfirmation(e.target.value)}
+            placeholder="COPNYP"
+            helperText="The booking reference / code itself"
+          />
+        )}
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
