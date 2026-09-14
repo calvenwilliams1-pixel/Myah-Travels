@@ -41,6 +41,8 @@ export const CreateSegmentSchema = z.object({
   location: z.string().optional(),
   instructions: z.string().optional(),
   confirmation: z.string().optional(),
+  referenceType: z.enum(["record_locator", "booking_number", "confirmation", "other"]).optional(),
+  referenceLabel: z.string().optional(),
   departureAirport: z.string().optional(),
   arrivalAirport: z.string().optional(),
   departureDatetime: z.string().optional(),
