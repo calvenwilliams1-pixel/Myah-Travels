@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 7)
+# MyCalTravels — TODO.md (Revision 8)
 
 ## Status
 
-**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Autosave infrastructure COMPLETE (48 tests). Phase 7 Bug Fix Pass COMPLETE (all 6 batches). Phase 7.5 Demo Rendering partially complete (Singapore seeded; Japan+Cruise+Singapore pending). Phase 7.6 Wave 1 + Wave 2 code-complete. Currently working through Wave 2 loose ends and Wave 3 (per-client access control).**
+**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Autosave infrastructure COMPLETE (48 tests). Phase 7 Bug Fix Pass COMPLETE (all 6 batches). Phase 7.5 Demo Rendering partially complete (Singapore seeded; Japan+Cruise+Singapore pending). Phase 7.6 Waves 1, 2, 3 code-complete. Launch Day section added (Phase 7.7) — email + magic link go-live checklist. Next: Wave 4 styling, Japan demo seed, launch prep.**
 
 ## Core Principle
 
@@ -164,19 +164,22 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 - [x] Render the correct label on the client itinerary card
 - [x] Schema: added `reference_type` + `reference_label` to `itinerary_segments`
 
-#### 7.6.3 Preview panel minimize
-- [ ] Minimize button on the live preview pane in post editor
-- [ ] Remember minimized state (localStorage)
+#### 7.6.3 Preview panel minimize ✅ COMPLETE
+- [x] Minimize button on the live preview pane in post editor
+- [x] Remember minimized state (localStorage)
+- [x] Shipped in b0d8a73
 
 ### Wave 2 Loose Ends (discovered during build)
 
-#### 7.6.4a Seed script update for legs
-- [ ] `scripts/seed-singapore-demo.js` inserts travel segments the old way
-- [ ] Update to insert into `itinerary_travel_legs` after each travel segment
+#### 7.6.4a Seed script update for legs ✅ COMPLETE
+- [x] `scripts/seed-singapore-demo.js` inserts travel segments the old way
+- [x] Update to insert into `itinerary_travel_legs` after each travel segment
+- [x] Shipped in da1553f
 
-#### 7.6.4b `getSegmentsForDay` returns no legs
-- [ ] Called by `GET /api/days/[id]/segments` without batch-loading legs
-- [ ] Either extend to include legs, or document as internal-only
+#### 7.6.4b `getSegmentsForDay` returns no legs ✅ COMPLETE
+- [x] Called by `GET /api/days/[id]/segments` without batch-loading legs
+- [x] Extended to batch-load legs for travel segments
+- [x] Shipped in da1553f
 
 ### Wave 2 — Travel Segments Overhaul (same pass as Wave 1)
 
@@ -196,20 +199,24 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 
 ### Wave 3 — Per-Client Access Control
 
-#### 7.6.6 Unique magic links per member
-- [ ] Magic links issued per portal member, not per portal
-- [ ] Whitelist model: only active members hold valid links
-- [ ] Session invalidation on revoke
+#### 7.6.6 Unique magic links per member ✅ COMPLETE
+- [x] Magic links issued per portal member, not per portal (already in schema — per-member token FK)
+- [x] Whitelist model: only active members hold valid links
+- [x] Session invalidation on revoke
+- [x] Audit confirmed existing architecture was already per-member
 
-#### 7.6.7 Ban / revoke / unban
-- [ ] Admin can revoke a member's access (link stops working)
-- [ ] Admin can blacklist a member (no new links issued)
-- [ ] Undo ban — restore access at any time
-- [ ] Banned member sees a generic "access unavailable" page
-- [ ] Admin UI: ban/unban button on portal detail page
-- [ ] Admin UI: view blacklisted members, unban from there
-- [ ] Audit log: ban/unban events recorded
-- [ ] Schema: `portal_members.status`, `banned_at`, `ban_reason`, `link_revoked_at`
+#### 7.6.7 Ban / revoke / unban ✅ COMPLETE
+- [x] Admin can revoke a member's access (link stops working)
+- [x] Admin can blacklist a member (no new links issued)
+- [x] Undo ban — restore access at any time
+- [x] Banned member sees a generic "access unavailable" page (via existing "Link Expired or Invalid" — no info leak)
+- [x] Admin UI: ban/unban button on portal detail page
+- [x] Admin UI: banned members show red "Banned" badge + Unban button (stay visible, not deleted)
+- [x] Audit log: ban/unban events recorded
+- [x] Schema: `portal_members.status`, `banned_at`, `ban_reason`, `link_revoked_at`
+- [x] Enforcement: `isMemberOfPortal` requires `status='active'`; `validateMagicLink`, `validatePortalSession`, `generateMagicLink` all gated
+- [x] Ban side-effects: destroy all live sessions, revoke all unused links
+- [x] Unban: clears ban fields; old links/sessions stay dead (deliberate — fresh link required)
 
 #### 7.6.8 Confirm notepad tag behavior
 - [ ] Member names auto-populate as notepad tags on portal creation
@@ -230,6 +237,83 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 #### 7.6.11 Hero image from Content Library
 - [ ] Hero image picker: choose from Content Library OR upload from PC
 - [ ] Audit other image blocks (Image, Gallery) for the same treatment
+
+---
+
+## Phase 7.7: Launch Day — Email + Magic Link Go-Live
+
+Operational setup for the deployed system. The code is complete; this is everything needed to make emails actually send, links arrive, and the cron processor run on the mini PC.
+
+### Pre-Launch (before deploy day)
+
+- [ ] Register Resend account (resend.com)
+- [ ] Add production domain to Resend
+- [ ] Add DNS records at registrar: SPF, DKIM, DMARC (provided by Resend)
+- [ ] Wait for Resend domain verification (status must be "Verified")
+- [ ] Generate production Resend API key (`re_...`)
+- [ ] Decide production `SITE_URL` (e.g., `https://myahtravels.com`)
+- [ ] Generate strong `CRON_SECRET` (32+ random chars)
+- [ ] Decide `EMAIL_FROM` — must be at verified domain (e.g., `Myah <hello@myahtravels.com>`)
+- [ ] Decide `EMAIL_ADMIN_TO` — Myah's real inbox for admin notifications
+
+### Environment Setup (on mini PC)
+
+- [ ] Add to `.env` on mini PC:
+  - `RESEND_API_KEY=re_...` (real key, never committed)
+  - `EMAIL_FROM=Myah <hello@myahtravels.com>`
+  - `EMAIL_ADMIN_TO=myah@...`
+  - `SITE_URL=https://myahtravels.com`
+  - `CRON_SECRET=<strong random string>`
+  - `PORTAL_MAGIC_LINK_EXPIRY_DAYS=7`
+  - `DATABASE_URL=./data/site.db`
+  - `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+- [ ] Verify `.env` is in `.gitignore` (never committed)
+- [ ] Verify `data/site.db` path is correct for deploy target
+
+### Database Setup
+
+- [ ] Run `node scripts/setup-db.js` (adds missing columns including ban fields)
+- [ ] Run `npm run seed` if fresh install
+- [ ] Verify `portal_members` has `status`, `banned_at`, `ban_reason`, `link_revoked_at`
+- [ ] Verify `itinerary_travel_legs` table exists
+- [ ] Verify `itinerary_segments` has `reference_type`, `reference_label`
+
+### Cron Setup
+
+- [ ] Edit crontab on mini PC: `crontab -e`
+- [ ] Add entry:
+  `* * * * * curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue > /dev/null 2>&1`
+- [ ] Every 1 minute (not 5) — avoids race conditions, imperceptible to clients
+- [ ] Verify cron fires by checking `email_queue` status transitions after a test send
+
+### First Live Test
+
+- [ ] Restart service (`systemctl restart mycaltravels`)
+- [ ] Open admin → a portal → click **Send Magic Links**
+- [ ] Confirm email arrives at a real inbox within 60 seconds
+- [ ] Click the link → access page → Continue → wall loads
+- [ ] Verify `portal_session` cookie is set (httpOnly)
+- [ ] Log out → verify logout destroys the session
+- [ ] Send a second magic link → confirm the first is revoked (per `generateMagicLink` behavior)
+
+### Verification Checklist
+
+- [ ] Email arrives (not in spam — check SPF/DKIM pass in headers)
+- [ ] Magic link URL points to production domain, not localhost
+- [ ] Access page shows valid (not "Link Expired or Invalid")
+- [ ] Wall loads after Continue
+- [ ] Cron processing runs within 1 minute
+- [ ] Logs show no `[email] RESEND_API_KEY is not set` warning
+- [ ] Failed sends surface in `email_queue` with `error_message` populated
+- [ ] Ban a test member → their link dies immediately → unban → send fresh link → works
+
+### Optional (Post-Launch)
+
+- [ ] Wire Resend webhook → `/api/email/webhook` for bounce/complaint tracking
+- [ ] Set `RESEND_WEBHOOK_SECRET` in `.env`
+- [ ] Add a "Pending emails" admin page (queue visibility)
+- [ ] Test `npx tsx scripts/send-magic-links.ts <slug>` against production
+- [ ] Set up monitoring: email failure rate, cron health
 
 ---
 
@@ -373,8 +457,12 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 - Phase 6.4D: Replaced all `prompt()` with inline forms (580 -> 17 lines)
 - **Phase 7: All 6 batches complete** (critical bugs, date constraints, portal manager UX, UI polish, segment UX, download verification)
 - **Phase 7.5: Singapore Demo seeded** (portal id 4, itinerary id 3)
+- **Phase 7.6 Wave 1**: 7.6.1 time picker `:00` default, 7.6.2 reference dropdown, 7.6.3 preview minimize
+- **Phase 7.6 Wave 2**: 7.6.4 travel modes (flight/train/bus/transfer/other), 7.6.5 multi-leg + layovers + connection gaps + date badges
+- **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
+- **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** 7.6.3 (preview minimize) or Wave 2 loose ends. Wave 3 (per-client access control) next major push.
+**Next action:** Wave 4 styling (7.6.9-7.6.11), or Japan+Cruise+Singapore demo seed (Phase 7.5), or launch-day prep (Phase 7.7).
 
 ---
 
@@ -394,7 +482,8 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 ## What's Left After Phase 7
 
 1. **Phase 7.5** - Demo rendering (Singapore done; Japan+Cruise+Singapore seed pending)
-2. **Phase 7.6** - Refinement pass (Waves 1+2 code-complete; Wave 3 next)
-3. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
-4. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
-5. **Phase 8+** - Post-launch (dark mode, versioning, block expansion)
+2. **Phase 7.6** - Refinement pass (Waves 1, 2, 3 complete; Wave 4 styling next)
+3. **Phase 7.7** - Launch Day (email + magic link go-live)
+4. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
+5. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
+6. **Phase 8+** - Post-launch (dark mode, versioning, block expansion)
