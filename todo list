@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 6)
+# MyCalTravels — TODO.md (Revision 7)
 
 ## Status
 
-**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Autosave infrastructure COMPLETE (48 tests). Phase 7 Bug Fix Pass COMPLETE (all 6 batches). Phase 7.5 Demo Rendering partially complete (Singapore seeded; Japan+Cruise+Singapore pending). Currently in Phase 7.6: Refinement Pass (post-walkthrough feedback from Myah).**
+**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Autosave infrastructure COMPLETE (48 tests). Phase 7 Bug Fix Pass COMPLETE (all 6 batches). Phase 7.5 Demo Rendering partially complete (Singapore seeded; Japan+Cruise+Singapore pending). Phase 7.6 Wave 1 + Wave 2 code-complete. Currently working through Wave 2 loose ends and Wave 3 (per-client access control).**
 
 ## Core Principle
 
@@ -153,32 +153,46 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 
 ### Wave 1 — Quick Wins & Critical UX (IN PROGRESS)
 
-#### 7.6.1 Time picker default minute = 00 — FIRST TASK
-- [ ] Time inputs open at `:00` instead of `:49`
-- [ ] Fix across Segment, Stay, Day forms
-- [ ] Verify AM/PM default behavior
+#### 7.6.1 Time picker default minute = 00 ✅ COMPLETE
+- [x] Time inputs open at `:00` instead of `:49`
+- [x] Fix across Segment, Stay, Day forms
+- [x] Verify AM/PM default behavior
 
-#### 7.6.2 Confirmation field -> Reference dropdown
-- [ ] Replace free-text "Confirmation" with dropdown: Record Locator / Booking Number / Confirmation / Other
-- [ ] "Other" reveals a free-text field for a custom label
-- [ ] Render the correct label on the client itinerary card
-- [ ] Schema: add `reference_type` to `itinerary_segments`
+#### 7.6.2 Confirmation field -> Reference dropdown ✅ COMPLETE
+- [x] Replace free-text "Confirmation" with dropdown: Record Locator / Booking Number / Confirmation / Other
+- [x] "Other" reveals a free-text field for a custom label
+- [x] Render the correct label on the client itinerary card
+- [x] Schema: added `reference_type` + `reference_label` to `itinerary_segments`
 
 #### 7.6.3 Preview panel minimize
 - [ ] Minimize button on the live preview pane in post editor
 - [ ] Remember minimized state (localStorage)
 
+### Wave 2 Loose Ends (discovered during build)
+
+#### 7.6.4a Seed script update for legs
+- [ ] `scripts/seed-singapore-demo.js` inserts travel segments the old way
+- [ ] Update to insert into `itinerary_travel_legs` after each travel segment
+
+#### 7.6.4b `getSegmentsForDay` returns no legs
+- [ ] Called by `GET /api/days/[id]/segments` without batch-loading legs
+- [ ] Either extend to include legs, or document as internal-only
+
 ### Wave 2 — Travel Segments Overhaul (same pass as Wave 1)
 
-#### 7.6.4 Travel modes beyond flights
-- [ ] Travel segments support: Flight / Train / Bus / Transfer / Other
-- [ ] Per-mode fields shown contextually (train line, bus number, station names, etc.)
-- [ ] All travel modes get the Reference field (7.6.2)
-- [ ] Schema: add `travel_mode` to `itinerary_segments`
+#### 7.6.4 Travel modes beyond flights ✅ COMPLETE
+- [x] Travel segments support: Flight / Train / Bus / Transfer / Other
+- [x] Per-mode fields shown contextually (train line, bus number, station names, etc.)
+- [x] All travel modes get the Reference field (7.6.2)
+- [x] Schema: `itinerary_travel_legs` table with `travel_mode`
 
-#### 7.6.5 Multi-leg / layover support
-- [ ] Support layovers within a trip (e.g., Toronto -> Calgary -> Tokyo)
-- [ ] Travel chain renders as legs on the client card
+#### 7.6.5 Multi-leg / layover support ✅ COMPLETE
+- [x] Support layovers within a trip (e.g., Toronto -> Calgary -> Tokyo)
+- [x] Travel chain renders as legs on the client card
+- [x] Connection gaps computed (plain datetime arithmetic, no timezone math)
+- [x] Date-crossing "+N days" badges
+- [x] Optional per-leg IANA timezone labels (cosmetic only)
+- [x] Data migration backfills existing travel segments with one leg each
 
 ### Wave 3 — Per-Client Access Control
 
@@ -360,7 +374,7 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 - **Phase 7: All 6 batches complete** (critical bugs, date constraints, portal manager UX, UI polish, segment UX, download verification)
 - **Phase 7.5: Singapore Demo seeded** (portal id 4, itinerary id 3)
 
-**Next action:** Phase 7.6 Wave 1 — fix time picker default minute (7.6.1).
+**Next action:** 7.6.3 (preview minimize) or Wave 2 loose ends. Wave 3 (per-client access control) next major push.
 
 ---
 
@@ -380,7 +394,7 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 ## What's Left After Phase 7
 
 1. **Phase 7.5** - Demo rendering (Singapore done; Japan+Cruise+Singapore seed pending)
-2. **Phase 7.6** - Refinement pass (4 waves; Wave 1 in progress)
+2. **Phase 7.6** - Refinement pass (Waves 1+2 code-complete; Wave 3 next)
 3. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
 4. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
 5. **Phase 8+** - Post-launch (dark mode, versioning, block expansion)
