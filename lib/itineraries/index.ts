@@ -8,6 +8,7 @@ import {
 } from "@/drizzle/schema";
 import { eq, and, isNull, desc, asc } from "drizzle-orm";
 import { getLegsForSegments } from "./travelLegs";
+import { getBlocksForDays } from "./blocks";
 
 // ============================================
 // ITINERARY CRUD
@@ -26,11 +27,15 @@ export async function getItineraryById(id: number) {
   return result[0] ?? null;
 }
 
-export async function createItinerary(portalId: number, title: string) {
-  return db.insert(itineraries).values({ portalId, title }).returning();
+export async function createItinerary(portalId: number, title: string, themePreset?: string) {
+  return db.insert(itineraries).values({
+    portalId,
+    title,
+    themePreset: themePreset ?? null,
+  }).returning();
 }
 
-export async function updateItinerary(id: number, data: { title?: string }) {
+export async function updateItinerary(id: number, data: { title?: string; themePreset?: string | null }) {
   return db.update(itineraries)
     .set({ ...data, updatedAt: new Date().toISOString() })
     .where(eq(itineraries.id, id))
@@ -84,6 +89,7 @@ export async function updateSection(id: number, data: {
   baseCity?: string;
   startDate?: string;
   endDate?: string;
+  themePresetOverride?: string | null;
 }) {
   return db.update(itinerarySections).set(data).where(eq(itinerarySections.id, id)).returning();
 }
@@ -214,6 +220,7 @@ export async function updateSegment(id: number, data: Partial<{
   arrivalDatetime: string;
   airline: string;
   flightNumber: string;
+  isHighlighted: boolean;
 }>) {
   return db.update(itinerarySegments).set(data).where(eq(itinerarySegments.id, id)).returning();
 }
@@ -315,7 +322,11 @@ export async function getFullItinerary(itineraryId: number) {
 
   const legsMap = await getLegsForSegments(travelSegmentIds);
 
-  // Attach legs to travel segments.
+  // Batch-load itinerary blocks (Phase 7.6.9).
+  const allDayIds = allSegments.map((s) => s.dayId);
+  const blocksMap = await getBlocksForDays(allDayIds);
+
+  // Attach legs to travel segments and blocks to days.
   const sectionsWithDays = sections.map((section) => {
     const days = daysBySection.get(section.id) ?? [];
     const daysWithSegments = days.map((day) => ({
@@ -325,6 +336,7 @@ export async function getFullItinerary(itineraryId: number) {
           ? { ...seg, legs: legsMap.get(seg.id) ?? [] }
           : seg
       ),
+      blocks: blocksMap.get(day.id) ?? [],
     }));
     return {
       ...section,
