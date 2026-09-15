@@ -3,7 +3,15 @@ import { db } from "@/lib/db";
 import { emailQueue, emailSuppressions } from "@/drizzle/schema";
 import { eq, and, or, lte, asc, inArray } from "drizzle-orm";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const RESEND_KEY = process.env.RESEND_API_KEY;
+const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
+
+if (!RESEND_KEY) {
+  console.warn(
+    "[email] RESEND_API_KEY is not set — emails will queue but not send. " +
+    "Set it in .env to enable delivery."
+  );
+}
 
 const EMAIL_FROM =
   process.env.EMAIL_FROM || "MyCalTravels <notifications@myahtravels.com>";
@@ -119,17 +127,30 @@ export async function getPendingEmails(limit = 50) {
 
 export async function claimEmailsForProcessing(limit = 50): Promise<number[]> {
   try {
-    const pending = await getPendingEmails(limit);
-    const ids = pending.map((e) => e.id);
-
-    if (ids.length === 0) return [];
-
-    await db
+    // Atomic claim: single UPDATE ... WHERE id IN (SELECT ... LIMIT n) RETURNING id.
+    // better-sqlite3 is a synchronous, single-connection driver — all writes
+    // serialize at the Node event-loop level regardless of journal mode. Two
+    // concurrent callers therefore cannot both claim the same pending row.
+    // (Note: this reasoning relies on single-connection serialization, not WAL.
+    // If this ever moves behind a connection pool, revisit — a pool would allow
+    // true concurrent writes and the atomicity would then depend on the SQL.)
+    const claimed = await db
       .update(emailQueue)
       .set({ status: "processing" })
-      .where(inArray(emailQueue.id, ids));
+      .where(
+        inArray(
+          emailQueue.id,
+          db
+            .select({ id: emailQueue.id })
+            .from(emailQueue)
+            .where(eq(emailQueue.status, "pending"))
+            .orderBy(asc(emailQueue.createdAt))
+            .limit(limit)
+        )
+      )
+      .returning({ id: emailQueue.id });
 
-    return ids;
+    return claimed.map((row) => row.id);
   } catch (error) {
     console.error("Failed to claim emails:", error);
     return [];
@@ -242,6 +263,12 @@ export async function processEmailQueue(batchSize = 50): Promise<{
 
   for (const email of emails) {
     try {
+      if (!resend) {
+        await markEmailFailed(email.id, "RESEND_API_KEY not configured");
+        failed += 1;
+        continue;
+      }
+
       const result = await resend.emails.send({
         from: EMAIL_FROM,
         to: email.toEmail,
