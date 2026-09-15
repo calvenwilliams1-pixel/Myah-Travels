@@ -11,6 +11,22 @@ import SectionEditor from "./SectionEditor";
 // TYPES
 // ============================================
 
+export interface TravelLeg {
+  id: number;
+  segmentId: number;
+  legOrder: number;
+  travelMode: string;
+  origin: string | null;
+  destination: string | null;
+  departureAt: string | null;
+  arrivalAt: string | null;
+  originTimezone: string | null;
+  destinationTimezone: string | null;
+  operator: string | null;
+  identifier: string | null;
+  reference: string | null;
+}
+
 export interface Segment {
   id: number;
   dayId: number;
@@ -29,6 +45,7 @@ export interface Segment {
   arrivalDatetime: string | null;
   airline: string | null;
   flightNumber: string | null;
+  legs?: TravelLeg[];
 }
 
 export interface Day {

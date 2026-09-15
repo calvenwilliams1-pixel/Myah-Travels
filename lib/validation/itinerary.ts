@@ -97,3 +97,32 @@ export const CreateStaySchema = z.object({
 export const AttachItinerarySchema = z.object({
   itineraryId: z.number(),
 });
+
+
+const TRAVEL_MODES = ["flight", "train", "bus", "transfer", "other"] as const;
+
+export const CreateLegSchema = z.object({
+  travelMode: z.enum(TRAVEL_MODES),
+  origin: z.string().optional(),
+  destination: z.string().optional(),
+  departureAt: z.string().optional(),
+  arrivalAt: z.string().optional(),
+  originTimezone: z.string().optional(),
+  destinationTimezone: z.string().optional(),
+  operator: z.string().optional(),
+  identifier: z.string().optional(),
+  reference: z.string().optional(),
+});
+
+export const UpdateLegSchema = z.object({
+  travelMode: z.enum(TRAVEL_MODES).optional(),
+  origin: z.string().optional(),
+  destination: z.string().optional(),
+  departureAt: z.string().optional(),
+  arrivalAt: z.string().optional(),
+  originTimezone: z.string().optional(),
+  destinationTimezone: z.string().optional(),
+  operator: z.string().optional(),
+  identifier: z.string().optional(),
+  reference: z.string().optional(),
+});

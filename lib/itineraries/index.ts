@@ -7,6 +7,7 @@ import {
   itineraryStays,
 } from "@/drizzle/schema";
 import { eq, and, isNull, desc, asc } from "drizzle-orm";
+import { getLegsForSegments } from "./travelLegs";
 
 // ============================================
 // ITINERARY CRUD
@@ -276,21 +277,52 @@ export async function getFullItinerary(itineraryId: number) {
 
   const sections = await getSectionsForItinerary(itineraryId);
 
-  const sectionsWithDays = await Promise.all(
-    sections.map(async (section) => {
-      const days = await getDaysForSection(section.id);
-      const stays = await getStaysForSection(section.id);
+  // First pass: gather all segments so we can batch-load legs in one query.
+  const allSegments: Array<{ dayId: number; segment: any }> = [];
+  const daysBySection = new Map<number, any[]>();
+  const staysBySection = new Map<number, any[]>();
 
-      const daysWithSegments = await Promise.all(
-        days.map(async (day) => {
-          const segments = await getSegmentsForDay(day.id);
-          return { ...day, segments };
-        })
-      );
+  for (const section of sections) {
+    const days = await getDaysForSection(section.id);
+    const stays = await getStaysForSection(section.id);
+    staysBySection.set(section.id, stays);
 
-      return { ...section, days: daysWithSegments, stays };
-    })
-  );
+    const daysWithSegs = await Promise.all(
+      days.map(async (day) => {
+        const segments = await getSegmentsForDay(day.id);
+        for (const seg of segments) {
+          allSegments.push({ dayId: day.id, segment: seg });
+        }
+        return { ...day, segments };
+      })
+    );
+    daysBySection.set(section.id, daysWithSegs);
+  }
+
+  // Batch-load all travel legs for every segment in this itinerary.
+  const travelSegmentIds = allSegments
+    .filter((s) => s.segment.type === "travel")
+    .map((s) => s.segment.id);
+
+  const legsMap = await getLegsForSegments(travelSegmentIds);
+
+  // Attach legs to travel segments.
+  const sectionsWithDays = sections.map((section) => {
+    const days = daysBySection.get(section.id) ?? [];
+    const daysWithSegments = days.map((day) => ({
+      ...day,
+      segments: day.segments.map((seg: any) =>
+        seg.type === "travel"
+          ? { ...seg, legs: legsMap.get(seg.id) ?? [] }
+          : seg
+      ),
+    }));
+    return {
+      ...section,
+      days: daysWithSegments,
+      stays: staysBySection.get(section.id) ?? [],
+    };
+  });
 
   return { ...itinerary, sections: sectionsWithDays };
 }

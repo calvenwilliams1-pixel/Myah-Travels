@@ -19,6 +19,23 @@ interface Segment {
   arrivalDatetime: string | null;
   airline: string | null;
   flightNumber: string | null;
+  legs?: TravelLeg[];
+}
+
+interface TravelLeg {
+  id: number;
+  segmentId: number;
+  legOrder: number;
+  travelMode: string;
+  origin: string | null;
+  destination: string | null;
+  departureAt: string | null;
+  arrivalAt: string | null;
+  originTimezone: string | null;
+  destinationTimezone: string | null;
+  operator: string | null;
+  identifier: string | null;
+  reference: string | null;
 }
 
 interface Day {
@@ -276,60 +293,227 @@ function SegmentCard({ segment }: { segment: Segment }) {
 
 function TravelCard({ segment }: { segment: Segment }) {
   const style = SEGMENT_STYLES.travel;
+  const legs = segment.legs ?? [];
 
+  // Backward compat: if no legs exist (legacy data that wasn't migrated yet),
+  // fall back to rendering the old segment-column layout.
+  if (legs.length === 0) {
+    return <LegacyTravelCard segment={segment} />;
+  }
+
+  const sorted = [...legs].sort((a, b) => a.legOrder - b.legOrder);
+  const gaps = computeConnectionGaps(sorted);
+
+  return (
+    <div className={`${style.bg} ${style.border} border rounded-lg p-4`}>
+      <p className="font-medium mb-3">{segment.title}</p>
+
+      <div className="space-y-2">
+        {sorted.map((leg, idx) => {
+          const crossing = legCrossesDate(leg);
+          return (
+            <React.Fragment key={leg.id}>
+              <LegRow leg={leg} crossing={crossing} />
+              {idx < sorted.length - 1 && (() => {
+                const gap = gaps.find((g) => g.afterLegOrder === leg.legOrder);
+                if (!gap) return null;
+                return <ConnectionGapRow minutes={gap.minutes} crossesDate={gap.crossesDate} daysCrossed={gap.daysCrossed} />;
+              })()}
+            </React.Fragment>
+          );
+        })}
+      </div>
+
+      {segment.instructions && (
+        <p className="text-sm text-gray-700 mt-3 whitespace-pre-wrap">
+          {segment.instructions}
+        </p>
+      )}
+    </div>
+  );
+}
+
+const MODE_ICON: Record<string, string> = {
+  flight: "✈️",
+  train: "🚆",
+  bus: "🚌",
+  transfer: "🚐",
+  other: "📍",
+};
+
+function LegRow({
+  leg,
+  crossing,
+}: {
+  leg: TravelLeg;
+  crossing: { crosses: boolean; days: number };
+}) {
+  const icon = MODE_ICON[leg.travelMode] || "📍";
+  const sameDay = leg.departureAt && leg.arrivalAt
+    ? leg.departureAt.slice(0, 10) === leg.arrivalAt.slice(0, 10)
+    : true;
+
+  return (
+    <div className="bg-white/60 rounded p-2.5 border border-gray-200">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-lg">{icon}</span>
+        <span className="font-medium text-sm">
+          {leg.origin || "?"} → {leg.destination || "?"}
+        </span>
+        {(leg.operator || leg.identifier) && (
+          <span className="text-xs text-gray-500">
+            {leg.operator}
+            {leg.operator && leg.identifier && " · "}
+            {leg.identifier}
+          </span>
+        )}
+      </div>
+
+      {(leg.departureAt || leg.arrivalAt) && (
+        <div className="mt-1 text-xs text-gray-600 space-y-0.5">
+          {leg.departureAt && (
+            <p>
+              Departs {formatDateTime(leg.departureAt)}
+              {leg.originTimezone && (
+                <span className="text-gray-400"> ({leg.originTimezone})</span>
+              )}
+            </p>
+          )}
+          {leg.arrivalAt && (
+            <p>
+              Arrives {formatDateTime(leg.arrivalAt)}
+              {leg.destinationTimezone && (
+                <span className="text-gray-400"> ({leg.destinationTimezone})</span>
+              )}
+              {!sameDay && crossing.crosses && (
+                <span className="ml-1 text-amber-600 font-medium">
+                  +{crossing.days} day{crossing.days !== 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+          )}
+        </div>
+      )}
+
+      {leg.reference && (
+        <p className="text-xs text-gray-500 mt-1 font-mono">{leg.reference}</p>
+      )}
+    </div>
+  );
+}
+
+function ConnectionGapRow({
+  minutes,
+  crossesDate,
+  daysCrossed,
+}: {
+  minutes: number;
+  crossesDate: boolean;
+  daysCrossed: number;
+}) {
+  const label = formatGap(minutes);
+  return (
+    <div className="flex items-center justify-center gap-2 text-xs text-gray-500 py-0.5">
+      <span className="h-px bg-gray-300 flex-1 max-w-[40px]" />
+      <span>
+        {label} connection
+        {crossesDate && daysCrossed > 0 && (
+          <span className="ml-1 text-amber-600">(+{daysCrossed} day{daysCrossed !== 1 ? "s" : ""})</span>
+        )}
+      </span>
+      <span className="h-px bg-gray-300 flex-1 max-w-[40px]" />
+    </div>
+  );
+}
+
+function formatGap(minutes: number): string {
+  if (minutes < 0) return "—";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+function LegacyTravelCard({ segment }: { segment: Segment }) {
+  const style = SEGMENT_STYLES.travel;
   return (
     <div className={`${style.bg} ${style.border} border rounded-lg p-4`}>
       <div className="flex items-start gap-3">
         <span className="text-2xl">✈️</span>
         <div className="flex-1">
           <p className="font-medium mb-3">{segment.title}</p>
-
           {(segment.departureAirport || segment.arrivalAirport) && (
             <div className="flex items-center gap-3 mb-2">
               <div className="text-center">
                 <p className="text-lg font-bold">{segment.departureAirport || "?"}</p>
                 {segment.departureDatetime && (
-                  <p className="text-xs text-gray-500">
-                    {formatDateTime(segment.departureDatetime)}
-                  </p>
+                  <p className="text-xs text-gray-500">{formatDateTime(segment.departureDatetime)}</p>
                 )}
               </div>
               <span className="text-gray-400">→</span>
               <div className="text-center">
                 <p className="text-lg font-bold">{segment.arrivalAirport || "?"}</p>
                 {segment.arrivalDatetime && (
-                  <p className="text-xs text-gray-500">
-                    {formatDateTime(segment.arrivalDatetime)}
-                  </p>
+                  <p className="text-xs text-gray-500">{formatDateTime(segment.arrivalDatetime)}</p>
                 )}
               </div>
             </div>
           )}
-
           {(segment.airline || segment.flightNumber) && (
             <p className="text-sm text-gray-700">
               {segment.airline} {segment.flightNumber && `· ${segment.flightNumber}`}
             </p>
           )}
-
-          {segment.confirmation && (() => {
-            const label = resolveReferenceLabel(segment.referenceType, segment.referenceLabel);
-            return (
-              <p className="text-xs text-gray-500 mt-1">
-                {label ?? "Confirmation"}: <span className="font-mono">{segment.confirmation}</span>
-              </p>
-            );
-          })()}
-
           {segment.instructions && (
-            <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
-              {segment.instructions}
-            </p>
+            <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{segment.instructions}</p>
           )}
         </div>
       </div>
     </div>
   );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Local copies of the leg helpers (mirror lib/itineraries/travelLegs)
+// Kept in this file so the client renderer doesn't import server code.
+// ─────────────────────────────────────────────────────────────
+
+function parseNaive(s: string | null): Date | null {
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function computeConnectionGaps(legs: TravelLeg[]) {
+  const gaps: Array<{ afterLegOrder: number; minutes: number; crossesDate: boolean; daysCrossed: number }> = [];
+  for (let i = 0; i < legs.length - 1; i++) {
+    const a = legs[i];
+    const b = legs[i + 1];
+    const arr = parseNaive(a.arrivalAt);
+    const dep = parseNaive(b.departureAt);
+    if (!arr || !dep) continue;
+    const minutes = Math.round((dep.getTime() - arr.getTime()) / 60000);
+    const dateA = arr.toISOString().slice(0, 10);
+    const dateB = dep.toISOString().slice(0, 10);
+    const crossesDate = dateA !== dateB;
+    const daysCrossed = crossesDate
+      ? Math.round((new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000)
+      : 0;
+    gaps.push({ afterLegOrder: a.legOrder, minutes, crossesDate, daysCrossed });
+  }
+  return gaps;
+}
+
+function legCrossesDate(leg: TravelLeg): { crosses: boolean; days: number } {
+  const dep = parseNaive(leg.departureAt);
+  const arr = parseNaive(leg.arrivalAt);
+  if (!dep || !arr) return { crosses: false, days: 0 };
+  const dDep = dep.toISOString().slice(0, 10);
+  const dArr = arr.toISOString().slice(0, 10);
+  if (dDep === dArr) return { crosses: false, days: 0 };
+  const days = Math.round((new Date(dArr).getTime() - new Date(dDep).getTime()) / 86400000);
+  return { crosses: true, days };
 }
 
 // ============================================

@@ -105,3 +105,28 @@ export const itineraryStays = sqliteTable(
     idxSectionId: index("idx_stays_section_id").on(table.sectionId),
   })
 );
+
+export const itineraryTravelLegs = sqliteTable(
+  "itinerary_travel_legs",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    segmentId: integer("segment_id")
+      .notNull()
+      .references(() => itinerarySegments.id, { onDelete: "cascade" }),
+    legOrder: integer("leg_order").notNull(),
+    travelMode: text("travel_mode").notNull(),
+    origin: text("origin"),
+    destination: text("destination"),
+    departureAt: text("departure_at"),
+    arrivalAt: text("arrival_at"),
+    originTimezone: text("origin_timezone"),
+    destinationTimezone: text("destination_timezone"),
+    operator: text("operator"),
+    identifier: text("identifier"),
+    reference: text("reference"),
+  },
+  (table) => ({
+    idxSegmentId: index("idx_travel_legs_segment_id").on(table.segmentId),
+    idxLegOrder: index("idx_travel_legs_leg_order").on(table.segmentId, table.legOrder),
+  })
+);

@@ -2,6 +2,7 @@
 
 import { openPickerOnClick } from "@/lib/ui/openPicker";
 import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
+import TravelLegFields, { EMPTY_LEG, type TravelLegDraft, type TravelMode } from "./TravelLegFields";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -74,13 +75,8 @@ export default function AddSegmentForm({
   const [referenceType, setReferenceType] = useState("");
   const [referenceLabel, setReferenceLabel] = useState("");
 
-  // Travel-only fields
-  const [departureAirport, setDepartureAirport] = useState("");
-  const [arrivalAirport, setArrivalAirport] = useState("");
-  const [departureDatetime, setDepartureDatetime] = useState("");
-  const [arrivalDatetime, setArrivalDatetime] = useState("");
-  const [airline, setAirline] = useState("");
-  const [flightNumber, setFlightNumber] = useState("");
+  // Travel-only: multi-leg list
+  const [legs, setLegs] = useState<TravelLegDraft[]>([{ ...EMPTY_LEG }]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,12 +88,20 @@ export default function AddSegmentForm({
     }
 
     if (type === "travel") {
-      if (departureDatetime && arrivalDatetime) {
-        if (new Date(departureDatetime) >= new Date(arrivalDatetime)) {
-          setError("Arrival must be after departure");
-          return;
+      if (legs.length === 0) {
+        setError("Travel segments need at least one leg");
+        return;
+      }
+      for (let i = 0; i < legs.length; i++) {
+        const leg = legs[i];
+        if (leg.departureAt && leg.arrivalAt) {
+          if (new Date(leg.departureAt) >= new Date(leg.arrivalAt)) {
+            setError(`Leg ${i + 1}: arrival must be after departure`);
+            return;
+          }
         }
       }
+    } else {
       if (startTime && endTime && startTime >= endTime) {
         setError("End time must be after start time");
         return;
@@ -119,14 +123,7 @@ export default function AddSegmentForm({
       referenceLabel: referenceType === "other" ? (referenceLabel.trim() || undefined) : undefined,
     };
 
-    if (type === "travel") {
-      body.departureAirport = departureAirport.trim() || undefined;
-      body.arrivalAirport = arrivalAirport.trim() || undefined;
-      body.departureDatetime = departureDatetime || undefined;
-      body.arrivalDatetime = arrivalDatetime || undefined;
-      body.airline = airline.trim() || undefined;
-      body.flightNumber = flightNumber.trim() || undefined;
-    }
+    // Travel legs are created after the segment is saved — see below.
 
     const res = await fetch(`/api/days/${dayId}/segments`, {
       method: "POST",
@@ -136,12 +133,41 @@ export default function AddSegmentForm({
 
     const data = await res.json();
 
-    if (data.success) {
-      onSaved();
-    } else {
+    if (!data.success) {
       setError(data.error?.message || data.error || "Failed to save");
+      setIsSaving(false);
+      return;
     }
 
+    // For travel segments, create each leg now that we have the segment ID.
+    if (type === "travel" && data.segment?.id) {
+      for (const leg of legs) {
+        const legBody = {
+          travelMode: leg.travelMode,
+          origin: leg.origin.trim() || undefined,
+          destination: leg.destination.trim() || undefined,
+          departureAt: leg.departureAt || undefined,
+          arrivalAt: leg.arrivalAt || undefined,
+          originTimezone: leg.originTimezone || undefined,
+          destinationTimezone: leg.destinationTimezone || undefined,
+          operator: leg.operator.trim() || undefined,
+          identifier: leg.identifier.trim() || undefined,
+          reference: leg.reference.trim() || undefined,
+        };
+        const legRes = await fetch(`/api/segments/${data.segment.id}/legs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(legBody),
+        });
+        if (!legRes.ok) {
+          setError(`Leg save failed`);
+          setIsSaving(false);
+          return;
+        }
+      }
+    }
+
+    onSaved();
     setIsSaving(false);
   }
 
@@ -198,60 +224,33 @@ export default function AddSegmentForm({
           autoFocus
         />
 
-        {/* Travel-specific fields */}
+        {/* Travel-specific fields — repeatable leg list */}
         {type === "travel" ? (
           <>
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="From"
-                value={departureAirport}
-                onChange={(e) => setDepartureAirport(e.target.value)}
-                placeholder="YYZ"
-                helperText="Airport code"
-              />
-              <Input
-                label="To"
-                value={arrivalAirport}
-                onChange={(e) => setArrivalAirport(e.target.value)}
-                placeholder="NRT"
-                helperText="Airport code"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Departure"
-                type="datetime-local"
-            onClick={openPickerOnClick}
-
-                value={departureDatetime}
-                onChange={(e) => setDepartureDatetime(e.target.value)}
-                helperText="Local time at departure"
-                className="cursor-pointer"
-              />
-              <Input
-                label="Arrival"
-                type="datetime-local"
-            onClick={openPickerOnClick}
-
-                value={arrivalDatetime}
-                onChange={(e) => setArrivalDatetime(e.target.value)}
-                helperText="Local time at arrival"
-                className="cursor-pointer"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Airline"
-                value={airline}
-                onChange={(e) => setAirline(e.target.value)}
-                placeholder="Air Canada"
-              />
-              <Input
-                label="Flight #"
-                value={flightNumber}
-                onChange={(e) => setFlightNumber(e.target.value)}
-                placeholder="AC0009"
-              />
+            <div className="space-y-3">
+              {legs.map((leg, idx) => (
+                <TravelLegFields
+                  key={idx}
+                  leg={leg}
+                  index={idx + 1}
+                  onChange={(patch) => {
+                    const next = [...legs];
+                    next[idx] = { ...next[idx], ...patch };
+                    setLegs(next);
+                  }}
+                  onRemove={() => {
+                    setLegs(legs.filter((_, i) => i !== idx));
+                  }}
+                  canRemove={legs.length > 1}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => setLegs([...legs, { ...EMPTY_LEG }])}
+                className="w-full py-2 text-sm border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary"
+              >
+                + Add another leg
+              </button>
             </div>
           </>
         ) : (

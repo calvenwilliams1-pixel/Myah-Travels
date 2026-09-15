@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
-import type { Segment } from "./ItineraryEditor";
+import TravelLegFields, { type TravelLegDraft, type TravelMode } from "./TravelLegFields";
+import type { Segment, TravelLeg } from "./ItineraryEditor";
 
 interface SegmentsEditorProps {
   dayId: number;
@@ -265,5 +266,180 @@ function InstructionsField({
       rows={2}
       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-sm"
     />
+  );
+}
+
+
+// ============================================
+// TRAVEL LEGS LIST (edit mode)
+// ============================================
+
+function TravelLegsList({
+  segmentId,
+  legs,
+  onChanged,
+}: {
+  segmentId: number;
+  legs: TravelLeg[];
+  onChanged: () => void;
+}) {
+  const [showAdd, setShowAdd] = useState(false);
+  const [draft, setDraft] = useState<TravelLegDraft>({
+    travelMode: "flight",
+    origin: "",
+    destination: "",
+    departureAt: "",
+    arrivalAt: "",
+    originTimezone: "",
+    destinationTimezone: "",
+    operator: "",
+    identifier: "",
+    reference: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  async function addLeg() {
+    setError(null);
+    const res = await fetch(`/api/segments/${segmentId}/legs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        travelMode: draft.travelMode,
+        origin: draft.origin.trim() || undefined,
+        destination: draft.destination.trim() || undefined,
+        departureAt: draft.departureAt || undefined,
+        arrivalAt: draft.arrivalAt || undefined,
+        originTimezone: draft.originTimezone || undefined,
+        destinationTimezone: draft.destinationTimezone || undefined,
+        operator: draft.operator.trim() || undefined,
+        identifier: draft.identifier.trim() || undefined,
+        reference: draft.reference.trim() || undefined,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error?.message || data.error || "Failed to add leg");
+      return;
+    }
+    setShowAdd(false);
+    setDraft({
+      travelMode: "flight", origin: "", destination: "", departureAt: "",
+      arrivalAt: "", originTimezone: "", destinationTimezone: "",
+      operator: "", identifier: "", reference: "",
+    });
+    onChanged();
+  }
+
+  return (
+    <div className="space-y-2">
+      {legs.map((leg, idx) => (
+        <TravelLegRow key={leg.id} leg={leg} index={idx + 1} legCount={legs.length} onChanged={onChanged} />
+      ))}
+
+      {showAdd ? (
+        <div className="border border-dashed border-gray-300 rounded-lg p-2">
+          <TravelLegFields
+            leg={draft}
+            onChange={(patch) => setDraft({ ...draft, ...patch })}
+            index={legs.length + 1}
+          />
+          {error && <p className="text-red-600 text-xs mt-2">{error}</p>}
+          <div className="flex gap-2 mt-2">
+            <Button variant="ghost" onClick={() => { setShowAdd(false); setError(null); }}>Cancel</Button>
+            <Button onClick={addLeg}>Add Leg</Button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowAdd(true)}
+          className="w-full py-2 text-sm border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary"
+        >
+          + Add another leg
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TravelLegRow({
+  leg,
+  index,
+  legCount,
+  onChanged,
+}: {
+  leg: TravelLeg;
+  index: number;
+  legCount: number;
+  onChanged: () => void;
+}) {
+  const [draft, setDraft] = useState<TravelLegDraft>({
+    travelMode: (leg.travelMode as TravelMode) || "flight",
+    origin: leg.origin || "",
+    destination: leg.destination || "",
+    departureAt: leg.departureAt || "",
+    arrivalAt: leg.arrivalAt || "",
+    originTimezone: leg.originTimezone || "",
+    destinationTimezone: leg.destinationTimezone || "",
+    operator: leg.operator || "",
+    identifier: leg.identifier || "",
+    reference: leg.reference || "",
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function saveLeg() {
+    setIsSaving(true);
+    setError(null);
+    const res = await fetch(`/api/legs/${leg.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        travelMode: draft.travelMode,
+        origin: draft.origin.trim() || undefined,
+        destination: draft.destination.trim() || undefined,
+        departureAt: draft.departureAt || undefined,
+        arrivalAt: draft.arrivalAt || undefined,
+        originTimezone: draft.originTimezone || undefined,
+        destinationTimezone: draft.destinationTimezone || undefined,
+        operator: draft.operator.trim() || undefined,
+        identifier: draft.identifier.trim() || undefined,
+        reference: draft.reference.trim() || undefined,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error?.message || data.error || "Failed to save leg");
+    }
+    setIsSaving(false);
+  }
+
+  async function removeLeg() {
+    if (!confirm("Delete this leg?")) return;
+    const res = await fetch(`/api/legs/${leg.id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || "Failed to delete leg");
+      return;
+    }
+    onChanged();
+  }
+
+  return (
+    <div>
+      <TravelLegFields
+        leg={draft}
+        index={index}
+        onChange={(patch) => setDraft({ ...draft, ...patch })}
+        onRemove={removeLeg}
+        canRemove={legCount > 1}
+      />
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
+      <div className="flex justify-end mt-2">
+        <Button onClick={saveLeg} disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save Leg"}
+        </Button>
+      </div>
+    </div>
   );
 }
