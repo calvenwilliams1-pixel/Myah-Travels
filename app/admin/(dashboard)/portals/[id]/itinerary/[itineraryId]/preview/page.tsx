@@ -46,7 +46,16 @@ export default async function AdminItineraryPreviewPage({
           ← Back to editor
         </Link>
       </div>
-      <ItineraryView itinerary={itinerary} portalSlug={portal.slug} portalId={portalId} mode="admin-preview" />
+      <ItineraryView
+        itinerary={itinerary}
+        portalSlug={portal.slug}
+        portalId={portalId}
+        mode="admin-preview"
+        sitePalette={{
+          primary: settings.primary_color || "#4a7c59",
+          accent: settings.accent_color || "#6b9ac4",
+        }}
+      />
     </>
   );
 }

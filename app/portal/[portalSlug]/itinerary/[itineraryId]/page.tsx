@@ -41,7 +41,16 @@ export default async function ClientItineraryPage({
     details: `Itinerary viewed by member ${session.memberId}`,
   });
 
-  return <ItineraryView itinerary={itinerary} portalSlug={params.portalSlug} />;
+  return (
+    <ItineraryView
+      itinerary={itinerary}
+      portalSlug={params.portalSlug}
+      sitePalette={{
+        primary: settings.primary_color || "#4a7c59",
+        accent: settings.accent_color || "#6b9ac4",
+      }}
+    />
+  );
 }
 
 function SessionExpired() {
