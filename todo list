@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 8)
+# MyCalTravels — TODO.md (Revision 9)
 
 ## Status
 
-**Portal V1 + V2 backend COMPLETE. Itinerary Builder V1 + Admin Notepad COMPLETE. Autosave infrastructure COMPLETE (48 tests). Phase 7 Bug Fix Pass COMPLETE (all 6 batches). Phase 7.5 Demo Rendering partially complete (Singapore seeded; Japan+Cruise+Singapore pending). Phase 7.6 Waves 1, 2, 3 code-complete. Launch Day section added (Phase 7.7) — email + magic link go-live checklist. Next: Wave 4 styling, Japan demo seed, launch prep.**
+**Portal V1 + V2 backend COMPLETE. Phase 7.6 Waves 1-3 complete; Wave 4 partial (7.6.10 + 7.6.11 done; 7.6.9 deferred; Content Library integration deferred). Template System Audit complete. Testing debt accumulating — see TESTING.md. Launch Day prep documented as Phase 7.7.**
 
 ## Core Principle
 
