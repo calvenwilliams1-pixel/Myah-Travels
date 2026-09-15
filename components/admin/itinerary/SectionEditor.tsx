@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
 import AddStayForm from "./AddStayForm";
+import ThemeSelector from "./ThemeSelector";
 import StaysEditor from "./StaysEditor";
 import AddDayForm from "./AddDayForm";
 import DaysEditor from "./DaysEditor";
@@ -97,6 +98,18 @@ export default function SectionEditor({
         />
       </div>
 
+      {/* Theme override */}
+      <ThemeSelector
+        label="Section Theme (optional)"
+        value={section.themePresetOverride ?? null}
+        onChange={(v) => {
+          updateSection({ themePresetOverride: v });
+          onChanged();
+        }}
+        inheritLabel="Inherit itinerary theme"
+        helperText="Leave on inherit unless this section needs a different look."
+      />
+
       {/* Stays */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -161,6 +174,7 @@ export default function SectionEditor({
           sectionId={section.id}
           days={section.days}
           onChanged={onChanged}
+          itineraryId={section.itineraryId}
         />
       </div>
     </Card>

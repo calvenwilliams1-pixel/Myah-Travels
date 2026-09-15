@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AddSectionForm from "./AddSectionForm";
+import ThemeSelector from "./ThemeSelector";
 import SectionEditor from "./SectionEditor";
 
 // ============================================
@@ -45,7 +46,24 @@ export interface Segment {
   arrivalDatetime: string | null;
   airline: string | null;
   flightNumber: string | null;
+  isHighlighted: boolean | null;
   legs?: TravelLeg[];
+}
+
+export interface ItineraryBlock {
+  id: number;
+  itineraryId: number;
+  sectionId: number | null;
+  dayId: number | null;
+  blockType: string;
+  slot: string;
+  position: number | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  textContent: string | null;
+  variant: string | null;
+  size: string;
+  paletteOverride: string | null;
 }
 
 export interface Day {
@@ -56,6 +74,7 @@ export interface Day {
   title: string | null;
   notes: string | null;
   segments: Segment[];
+  blocks?: ItineraryBlock[];
 }
 
 export interface Stay {
@@ -78,6 +97,7 @@ export interface Section {
   startDate: string | null;
   endDate: string | null;
   position: number;
+  themePresetOverride: string | null;
   days: Day[];
   stays: Stay[];
 }
@@ -86,6 +106,7 @@ export interface Itinerary {
   id: number;
   portalId: number;
   title: string;
+  themePreset: string | null;
   sections: Section[];
 }
 
@@ -140,6 +161,15 @@ export default function ItineraryEditor({
     });
   }
 
+  async function updateTheme(themePreset: string | null) {
+    await fetch(`/api/itineraries/${itineraryId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ themePreset }),
+    });
+    fetchItinerary();
+  }
+
   async function deleteSection(sectionId: number) {
     if (!confirm("Delete this section and all its days/stays?")) return;
     await fetch(`/api/sections/${sectionId}`, { method: "DELETE" });
@@ -179,6 +209,17 @@ export default function ItineraryEditor({
           </Button>
         </div>
       </div>
+
+      {/* Theme selector */}
+      <Card>
+        <ThemeSelector
+          label="Itinerary Theme"
+          value={itinerary.themePreset}
+          onChange={updateTheme}
+          inheritLabel="Inherit site default"
+          helperText="Applied to all sections. Sections can override individually."
+        />
+      </Card>
 
       {/* Add Section Form */}
       {showAddSection && (

@@ -79,6 +79,21 @@ function SegmentRow({
             <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">
               {style.label}
             </span>
+            <label
+              className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer"
+              title="Highlight this segment"
+            >
+              <input
+                type="checkbox"
+                checked={!!segment.isHighlighted}
+                onChange={(e) => {
+                  update({ isHighlighted: e.target.checked } as any);
+                  onChanged();
+                }}
+                className="cursor-pointer"
+              />
+              Highlight
+            </label>
             {segment.type !== "travel" && segment.startTime && (
               <span className="text-xs text-gray-500">
                 {segment.startTime}

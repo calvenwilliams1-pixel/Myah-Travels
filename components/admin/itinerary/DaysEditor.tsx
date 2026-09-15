@@ -5,18 +5,21 @@ import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AddSegmentForm from "./AddSegmentForm";
 import SegmentsEditor from "./SegmentsEditor";
+import BlockList from "./BlockList";
 import type { Day } from "./ItineraryEditor";
 
 interface DaysEditorProps {
   sectionId: number;
   days: Day[];
   onChanged: () => void;
+  itineraryId: number;
 }
 
 export default function DaysEditor({
   sectionId,
   days,
   onChanged,
+  itineraryId,
 }: DaysEditorProps) {
   if (days.length === 0) {
     return (
@@ -29,7 +32,7 @@ export default function DaysEditor({
   return (
     <div className="space-y-3">
       {days.map((day) => (
-        <DayRow key={day.id} day={day} onChanged={onChanged} />
+        <DayRow key={day.id} day={day} onChanged={onChanged} itineraryId={itineraryId} />
       ))}
     </div>
   );
@@ -38,9 +41,11 @@ export default function DaysEditor({
 function DayRow({
   day,
   onChanged,
+  itineraryId,
 }: {
   day: Day;
   onChanged: () => void;
+  itineraryId: number;
 }) {
   const [showAddSegment, setShowAddSegment] = useState(false);
 
@@ -121,6 +126,14 @@ function DayRow({
       <SegmentsEditor
         dayId={day.id}
         segments={day.segments}
+        onChanged={onChanged}
+      />
+
+      {/* Graphic blocks */}
+      <BlockList
+        itineraryId={itineraryId}
+        dayId={day.id}
+        blocks={day.blocks ?? []}
         onChanged={onChanged}
       />
     </div>
