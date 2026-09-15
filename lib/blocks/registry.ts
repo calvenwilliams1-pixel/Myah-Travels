@@ -39,7 +39,7 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockDefinition> = {
     getDefaultData: () => ({
       id: crypto.randomUUID(),
       type: "hero",
-      data: { imageUrl: "", alt: "" },
+      data: { imageUrl: "", alt: "", size: "large" as const },
     }),
   },
   image: {

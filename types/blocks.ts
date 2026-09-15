@@ -23,10 +23,17 @@ export interface BodyData {
   tiptapJson: string;
 }
 
+export type HeroSize = "banner" | "medium" | "large" | "fullscreen";
+
 export interface HeroData {
   imageUrl: string;
   alt: string;
   caption?: string;
+  // Per-block overrides (Phase 7.6.10). Missing = backward compat default.
+  size?: HeroSize;
+  overlayTitle?: string;
+  overlaySubtitle?: string;
+  overlayCaption?: string;
 }
 
 export interface ImageData {

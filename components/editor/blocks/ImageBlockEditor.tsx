@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ImageData } from "@/types/blocks";
+import ImageSourcePicker from "../ImageSourcePicker";
 
 interface ImageBlockEditorProps {
   data: ImageData;
@@ -11,12 +12,11 @@ interface ImageBlockEditorProps {
 export default function ImageBlockEditor({ data, onChange }: ImageBlockEditorProps) {
   return (
     <div className="space-y-2">
-      <input
-        type="text"
+      <ImageSourcePicker
         value={data.imageUrl}
-        onChange={(e) => onChange({ imageUrl: e.target.value })}
-        placeholder="Image URL"
-        className="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+        onChange={(url) => onChange({ imageUrl: url })}
+        folder="posts"
+        label="Image"
       />
       <input
         type="text"
