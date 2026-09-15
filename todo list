@@ -224,19 +224,31 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 
 ### Wave 4 — Content & Styling
 
-#### 7.6.9 Itinerary block styling
-- [ ] Click a block -> curated colour scheme options (no raw pickers)
-- [ ] Insert graphic blocks from library or upload on-the-fly
-- [ ] Drag-and-drop + resize graphics (bounded)
-- [ ] Keep constrained: curated options only
+#### 7.6.9 Itinerary block styling ✅ COMPLETE
+- [x] Curated palette inheritance: site default -> itinerary -> section -> block override
+- [x] Section theme override dropdown (inherit / palette)
+- [x] Standalone graphic blocks (image / callout / notice) with slot-based placement
+- [x] Block palette override (deliberate visual elements only)
+- [x] Highlight flag on segments uses accent colour
+- [x] Slot anchors: before-day, after-morning, after-afternoon, after-evening
+- [x] Content segments stay automated (type + theme; no per-segment palettes)
+- [x] Print rules for blocks + break-after-avoid on section headers
+- [x] Full plan: see ITINERARY-STYLING-PLAN.md
+- [x] Commits: f0cbd60, 1f09a46, b1406f9
 
-#### 7.6.10 Hero / block resizing in post editor
-- [ ] Hero size options: Banner / Medium / Large / Fullscreen
-- [ ] Text overlay inside hero: title / subtitle / caption
+#### 7.6.10 Hero / block resizing in post editor ✅ COMPLETE
+- [x] Hero size options: Banner / Medium / Large / Fullscreen (per-block in HeroData)
+- [x] Text overlay inside hero: title / subtitle / caption (with gradient scrim)
+- [x] Backward compat: existing hero blocks default to "large"
+- [x] Shipped in 9953501
 
-#### 7.6.11 Hero image from Content Library
-- [ ] Hero image picker: choose from Content Library OR upload from PC
-- [ ] Audit other image blocks (Image, Gallery) for the same treatment
+#### 7.6.11 Hero image from Content Library ✅ COMPLETE
+- [x] Hero image picker: upload from PC OR paste URL
+- [x] Content Library integration (image-only filter + modal)
+- [x] Same treatment for Image block
+- [x] Shared component: components/editor/ImageSourcePicker.tsx
+- [x] Library modal: components/editor/LibraryImagePicker.tsx
+- [x] Shipped in 9953501 + f04b9a7
 
 ---
 
@@ -462,7 +474,7 @@ Operational setup for the deployed system. The code is complete; this is everyth
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Wave 4 styling (7.6.9-7.6.11), or Japan+Cruise+Singapore demo seed (Phase 7.5), or launch-day prep (Phase 7.7).
+**Next action:** Local testing of Waves 2-4 + 7.6.9 (see TESTING.md). Then Japan+Cruise+Singapore demo seed (Phase 7.5). Then launch-day prep (Phase 7.7).
 
 ---
 
