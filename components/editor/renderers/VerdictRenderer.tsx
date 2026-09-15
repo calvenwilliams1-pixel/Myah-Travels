@@ -18,6 +18,7 @@ export default function VerdictRenderer({ data, style }: VerdictRendererProps) {
         borderRadius: style.verdictBorderRadius,
         margin: style.verdictMargin,
         fontFamily: style.fontFamily,
+        borderTop: "4px solid var(--color-accent)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>

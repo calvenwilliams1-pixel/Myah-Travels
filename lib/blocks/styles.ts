@@ -62,7 +62,7 @@ export const TEMPLATE_STYLES: Record<ThemeVariant, TemplateStyle> = {
   travel: {
     // Typography
     fontFamily: "Inter",
-    headingColor: "#4a7c59",
+    headingColor: "var(--color-primary)",
     headingFontSize: "24px",
     headingFontWeight: 600,
     headingMargin: "0 0 16px 0",
@@ -87,7 +87,7 @@ export const TEMPLATE_STYLES: Record<ThemeVariant, TemplateStyle> = {
     quickFactsPadding: "24px",
     quickFactsBorderRadius: "16px",
     quickFactsMargin: "20px 0",
-    quickFactsLabelColor: "#4a7c59",
+    quickFactsLabelColor: "var(--color-primary)",
     quickFactsValueColor: "#1a2e1d",
     // Quote
     quoteBackground: "#f0fdf4",
@@ -95,7 +95,7 @@ export const TEMPLATE_STYLES: Record<ThemeVariant, TemplateStyle> = {
     quotePadding: "20px 24px",
     quoteMargin: "20px 0",
     quoteTextColor: "#1a2e1d",
-    quoteAuthorColor: "#4a7c59",
+    quoteAuthorColor: "var(--color-primary)",
     // Callout
     calloutBackground: "#f0fdf4",
     calloutBorder: "#bbf7d0",
@@ -118,7 +118,7 @@ export const TEMPLATE_STYLES: Record<ThemeVariant, TemplateStyle> = {
   review: {
     // Typography
     fontFamily: "Inter",
-    headingColor: "#1e3a8a",
+    headingColor: "var(--color-primary)",
     headingFontSize: "24px",
     headingFontWeight: 600,
     headingMargin: "0 0 16px 0",
@@ -143,7 +143,7 @@ export const TEMPLATE_STYLES: Record<ThemeVariant, TemplateStyle> = {
     quickFactsPadding: "20px",
     quickFactsBorderRadius: "8px",
     quickFactsMargin: "12px 0",
-    quickFactsLabelColor: "#92400e",
+    quickFactsLabelColor: "var(--color-primary)",
     quickFactsValueColor: "#1f2937",
     // Quote
     quoteBackground: "#fffbeb",
@@ -151,7 +151,7 @@ export const TEMPLATE_STYLES: Record<ThemeVariant, TemplateStyle> = {
     quotePadding: "16px 20px",
     quoteMargin: "12px 0",
     quoteTextColor: "#78350f",
-    quoteAuthorColor: "#92400e",
+    quoteAuthorColor: "var(--color-primary)",
     // Callout
     calloutBackground: "#fffbeb",
     calloutBorder: "#fde68a",

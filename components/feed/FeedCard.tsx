@@ -66,7 +66,13 @@ export default function FeedCard({
           </span>
         )}
         {isHighlighted && (
-          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+          <span
+            className="text-xs px-2 py-1 rounded-full"
+            style={{
+              backgroundColor: "color-mix(in srgb, var(--color-accent) 15%, transparent)",
+              color: "var(--color-accent)",
+            }}
+          >
             ⭐ Featured
           </span>
         )}
