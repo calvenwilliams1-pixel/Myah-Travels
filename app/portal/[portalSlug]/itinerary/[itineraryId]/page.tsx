@@ -5,6 +5,7 @@ import { validatePortalSession, getPortalBySlug } from "@/lib/portal";
 import { getFullItinerary } from "@/lib/itineraries";
 import { logActivity } from "@/lib/logging";
 import ItineraryView from "@/components/portal/itinerary/ItineraryView";
+import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function ClientItineraryPage({
     return <AccessDenied />;
   }
 
+  const settings = await getAllSettings();
   const itinerary = await getFullItinerary(Number(params.itineraryId));
   if (!itinerary || itinerary.portalId !== portal.id) {
     notFound();

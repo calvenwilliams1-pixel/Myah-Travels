@@ -9,6 +9,7 @@ import { getFullItinerary } from "@/lib/itineraries";
 import { getPortalById } from "@/lib/portal";
 import { logActivity } from "@/lib/logging";
 import ItineraryView from "@/components/portal/itinerary/ItineraryView";
+import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function AdminItineraryPreviewPage({
   const portal = await getPortalById(portalId);
   if (!portal) notFound();
 
+  const settings = await getAllSettings();
   const itinerary = await getFullItinerary(itineraryId);
   if (!itinerary || itinerary.portalId !== portalId) notFound();
 

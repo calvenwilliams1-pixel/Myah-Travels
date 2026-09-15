@@ -1,5 +1,6 @@
 import React from "react";
 import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
+import { getPalette } from "@/lib/theme/palettes";
 import PrintButton from "./PrintButton";
 
 interface Segment {
@@ -19,6 +20,7 @@ interface Segment {
   arrivalDatetime: string | null;
   airline: string | null;
   flightNumber: string | null;
+  isHighlighted: boolean | null;
   legs?: TravelLeg[];
 }
 
@@ -38,12 +40,29 @@ interface TravelLeg {
   reference: string | null;
 }
 
+interface ItineraryBlock {
+  id: number;
+  itineraryId: number;
+  sectionId: number | null;
+  dayId: number | null;
+  blockType: string;
+  slot: string;
+  position: number | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  textContent: string | null;
+  variant: string | null;
+  size: string;
+  paletteOverride: string | null;
+}
+
 interface Day {
   id: number;
   date: string;
   dayNumber: number;
   title: string | null;
   segments: Segment[];
+  blocks?: ItineraryBlock[];
 }
 
 interface Stay {
@@ -62,6 +81,7 @@ interface Section {
   baseCity: string | null;
   startDate: string | null;
   endDate: string | null;
+  themePresetOverride: string | null;
   days: Day[];
   stays: Stay[];
 }
@@ -69,6 +89,7 @@ interface Section {
 interface Itinerary {
   id: number;
   title: string;
+  themePreset: string | null;
   sections: Section[];
 }
 
@@ -77,6 +98,23 @@ interface ItineraryViewProps {
   portalSlug: string;
   mode?: "client" | "admin-preview";
   portalId?: number;
+  sitePalette: { primary: string; accent: string };
+}
+
+function resolveThemePalette(
+  section: Section,
+  itineraryTheme: string | null,
+  sitePalette: { primary: string; accent: string }
+): { primary: string; accent: string } {
+  if (section.themePresetOverride) {
+    const p = getPalette(section.themePresetOverride);
+    if (p) return { primary: p.primary, accent: p.accent };
+  }
+  if (itineraryTheme) {
+    const p = getPalette(itineraryTheme);
+    if (p) return { primary: p.primary, accent: p.accent };
+  }
+  return sitePalette;
 }
 
 const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string; label: string }> = {
@@ -86,7 +124,7 @@ const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string;
   free_day: { bg: "bg-gray-50", border: "border-gray-200", icon: "🌴", label: "Free Day" },
 };
 
-export default function ItineraryView({ itinerary, portalSlug, mode = "client", portalId }: ItineraryViewProps) {
+export default function ItineraryView({ itinerary, portalSlug, mode = "client", portalId, sitePalette }: ItineraryViewProps) {
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
       {mode === "admin-preview" && (
@@ -133,7 +171,12 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
         </p>
 
         {itinerary.sections.map((section) => (
-          <SectionView key={section.id} section={section} />
+          <SectionView
+            key={section.id}
+            section={section}
+            itineraryTheme={itinerary.themePreset}
+            sitePalette={sitePalette}
+          />
         ))}
       </div>
 
@@ -145,11 +188,30 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
   );
 }
 
-function SectionView({ section }: { section: Section }) {
+function SectionView({
+  section,
+  itineraryTheme,
+  sitePalette,
+}: {
+  section: Section;
+  itineraryTheme: string | null;
+  sitePalette: { primary: string; accent: string };
+}) {
+  const theme = resolveThemePalette(section, itineraryTheme, sitePalette);
+
   return (
-    <section className="mb-12">
+    <section
+      className="mb-12"
+      style={{
+        ["--itinerary-primary" as string]: theme.primary,
+        ["--itinerary-accent" as string]: theme.accent,
+      }}
+    >
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-1">{section.title}</h2>
+        <h2
+          className="text-2xl font-semibold mb-1"
+          style={{ color: "var(--itinerary-primary)" }}
+        >{section.title}</h2>
         {section.baseCity && (
           <p className="text-sm text-gray-500">Base city: {section.baseCity}</p>
         )}
@@ -218,31 +280,62 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
       </div>
 
       <div className="p-4">
-        {day.segments.length === 0 ? (
-          <p className="text-sm text-gray-400 italic text-center py-4">
-            No activities scheduled
-          </p>
-        ) : (
-          <div className="space-y-6">
-            {(["morning", "afternoon", "evening", "unscheduled"] as const).map((slot) => {
-              const segs = grouped[slot];
-              if (segs.length === 0) return null;
+        {(() => {
+          const blocks = day.blocks ?? [];
+          const blocksForSlot = (slot: string) => blocks.filter((b) => b.slot === slot);
 
-              return (
-                <div key={slot}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                    {slotLabel(slot)}
-                  </p>
-                  <div className="space-y-3">
-                    {segs.map((seg) => (
-                      <SegmentCard key={seg.id} segment={seg} />
-                    ))}
-                  </div>
+          const renderSlot = (slot: string) => {
+            const bs = blocksForSlot(slot);
+            if (bs.length === 0) return null;
+            return (
+              <div className="space-y-3">
+                {bs.map((b) => (
+                  <BlockCard key={b.id} block={b} />
+                ))}
+              </div>
+            );
+          };
+
+          const renderTimeGroup = (slot: "morning" | "afternoon" | "evening" | "unscheduled") => {
+            const segs = grouped[slot];
+            if (segs.length === 0) return null;
+            return (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  {slotLabel(slot)}
+                </p>
+                <div className="space-y-3">
+                  {segs.map((seg) => (
+                    <SegmentCard key={seg.id} segment={seg} />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          };
+
+          const hasContent = day.segments.length > 0 || blocks.length > 0;
+
+          if (!hasContent) {
+            return (
+              <p className="text-sm text-gray-400 italic text-center py-4">
+                No activities scheduled
+              </p>
+            );
+          }
+
+          return (
+            <div className="space-y-6">
+              {renderSlot("before-day")}
+              {renderTimeGroup("morning")}
+              {renderSlot("after-morning")}
+              {renderTimeGroup("afternoon")}
+              {renderSlot("after-afternoon")}
+              {renderTimeGroup("evening")}
+              {renderSlot("after-evening")}
+              {renderTimeGroup("unscheduled")}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
@@ -255,8 +348,18 @@ function SegmentCard({ segment }: { segment: Segment }) {
     return <TravelCard segment={segment} />;
   }
 
+  const highlightStyle = segment.isHighlighted
+    ? {
+        borderLeftWidth: "4px",
+        borderLeftColor: "var(--itinerary-accent, var(--color-accent))",
+      }
+    : {};
+
   return (
-    <div className={`${style.bg} ${style.border} border rounded-lg p-3`}>
+    <div
+      className={`${style.bg} ${style.border} border rounded-lg p-3`}
+      style={highlightStyle}
+    >
       <div className="flex items-start gap-3">
         <span className="text-xl">{style.icon}</span>
         <div className="flex-1">
@@ -304,8 +407,18 @@ function TravelCard({ segment }: { segment: Segment }) {
   const sorted = [...legs].sort((a, b) => a.legOrder - b.legOrder);
   const gaps = computeConnectionGaps(sorted);
 
+  const highlightStyle = segment.isHighlighted
+    ? {
+        borderLeftWidth: "4px",
+        borderLeftColor: "var(--itinerary-accent, var(--color-accent))",
+      }
+    : {};
+
   return (
-    <div className={`${style.bg} ${style.border} border rounded-lg p-4`}>
+    <div
+      className={`${style.bg} ${style.border} border rounded-lg p-4`}
+      style={highlightStyle}
+    >
       <p className="font-medium mb-3">{segment.title}</p>
 
       <div className="space-y-2">
@@ -576,4 +689,64 @@ function formatDateTime(dt: string): string {
   } catch {
     return dt;
   }
+}
+
+// ============================================
+// BLOCK CARD (Phase 7.6.9)
+// ============================================
+
+const IMAGE_SIZE_CLASSES: Record<string, string> = {
+  small: "max-w-sm",
+  medium: "max-w-2xl",
+  full: "max-w-full",
+};
+
+function BlockCard({ block }: { block: ItineraryBlock }) {
+  const palette = block.paletteOverride ? getPalette(block.paletteOverride) : null;
+  const accent = palette?.accent ?? "var(--itinerary-accent, var(--color-accent))";
+  const primary = palette?.primary ?? "var(--itinerary-primary, var(--color-primary))";
+
+  if (block.blockType === "image") {
+    const sizeClass = IMAGE_SIZE_CLASSES[block.size] || "max-w-2xl";
+    return (
+      <div className={`${sizeClass} mx-auto print:break-inside-avoid`}>
+        {block.imageUrl && (
+          <img
+            src={block.imageUrl}
+            alt={block.imageAlt || ""}
+            className="w-full rounded-lg border border-gray-200 print:max-h-[50vh] print:object-contain"
+          />
+        )}
+        {block.imageAlt && (
+          <p className="text-xs text-gray-500 mt-1 text-center">{block.imageAlt}</p>
+        )}
+      </div>
+    );
+  }
+
+  const variant = block.variant || "info";
+  const variantBg = variant === "tip"
+    ? `color-mix(in srgb, ${accent} 12%, transparent)`
+    : variant === "warning"
+    ? "color-mix(in srgb, #f59e0b 15%, transparent)"
+    : `color-mix(in srgb, ${primary} 10%, transparent)`;
+  const variantBorder = variant === "tip" ? accent : variant === "warning" ? "#f59e0b" : primary;
+  const variantIcon = variant === "tip" ? "💡" : variant === "warning" ? "⚠️" : "ℹ️";
+
+  return (
+    <div
+      className="rounded-lg p-3 border-l-4 print:break-inside-avoid"
+      style={{
+        backgroundColor: variantBg,
+        borderLeftColor: variantBorder,
+      }}
+    >
+      <div className="flex items-start gap-2">
+        <span className="text-lg">{variantIcon}</span>
+        <p className="text-sm text-gray-800 whitespace-pre-wrap flex-1">
+          {block.textContent}
+        </p>
+      </div>
+    </div>
+  );
 }
