@@ -207,7 +207,7 @@ function SectionView({
         ["--itinerary-accent" as string]: theme.accent,
       }}
     >
-      <div className="mb-6">
+      <div className="mb-6 print:break-after-avoid">
         <h2
           className="text-2xl font-semibold mb-1"
           style={{ color: "var(--itinerary-primary)" }}
