@@ -48,6 +48,10 @@ const requiredColumns = [
   { table: "email_queue", column: "last_attempt_at", type: "TEXT" },
   { table: "itinerary_segments", column: "reference_type", type: "TEXT" },
   { table: "itinerary_segments", column: "reference_label", type: "TEXT" },
+  { table: "portal_members", column: "status", type: "TEXT NOT NULL DEFAULT 'active'" },
+  { table: "portal_members", column: "banned_at", type: "TEXT" },
+  { table: "portal_members", column: "ban_reason", type: "TEXT" },
+  { table: "portal_members", column: "link_revoked_at", type: "TEXT" },
 ];
 
 for (const { table, column, type } of requiredColumns) {

@@ -12,6 +12,13 @@ export const portalMembers = sqliteTable(
     email: text("email").notNull(),
     name: text("name"),
     optOutGlobalAnnouncement: integer("opt_out_global_announcement", { mode: "boolean" }).default(false),
+    // Ban / revoke fields (Phase 7.6.7)
+    // status = "active" (default) | "banned"
+    // banned ≠ deleted: banned members stay visible in admin and are reversible.
+    status: text("status").default("active").notNull(),
+    bannedAt: text("banned_at"),
+    banReason: text("ban_reason"),
+    linkRevokedAt: text("link_revoked_at"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     deletedAt: text("deleted_at"),
   },

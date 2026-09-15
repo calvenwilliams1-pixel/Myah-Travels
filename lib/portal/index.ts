@@ -184,9 +184,64 @@ export async function removePortalMember(memberId: number) {
 
 export async function isMemberOfPortal(memberId: number, portalId: number): Promise<boolean> {
   const result = await db.select().from(portalMembers)
-    .where(and(eq(portalMembers.id, memberId), eq(portalMembers.portalId, portalId), isNull(portalMembers.deletedAt)))
+    .where(and(
+      eq(portalMembers.id, memberId),
+      eq(portalMembers.portalId, portalId),
+      eq(portalMembers.status, "active"),
+      isNull(portalMembers.deletedAt)
+    ))
     .limit(1);
   return result.length > 0;
+}
+
+// ============================================
+// BAN / UNBAN (Phase 7.6.7)
+// ============================================
+
+/**
+ * Ban a member: revoke all live access immediately, block new links.
+ * banned ≠ deleted — the member stays visible in admin and can be unbanned.
+ * Called by banMemberAction.
+ */
+export async function banMember(memberId: number, reason?: string): Promise<void> {
+  const now = new Date().toISOString();
+
+  await db.update(portalMembers)
+    .set({
+      status: "banned",
+      bannedAt: now,
+      banReason: reason ?? null,
+      linkRevokedAt: now,
+    })
+    .where(eq(portalMembers.id, memberId));
+
+  // Kill any live sessions for this member immediately.
+  await db.delete(portalSessions).where(eq(portalSessions.memberId, memberId));
+
+  // Revoke all unused magic links for this member.
+  await db.update(portalMagicLinks)
+    .set({ revokedAt: now })
+    .where(and(
+      eq(portalMagicLinks.memberId, memberId),
+      isNull(portalMagicLinks.usedAt),
+      isNull(portalMagicLinks.revokedAt)
+    ));
+}
+
+/**
+ * Unban a member: restore active status.
+ * Deliberately does NOT resurrect old links or sessions — Myah should
+ * re-send a fresh magic link after unbanning.
+ */
+export async function unbanMember(memberId: number): Promise<void> {
+  await db.update(portalMembers)
+    .set({
+      status: "active",
+      bannedAt: null,
+      banReason: null,
+      linkRevokedAt: null,
+    })
+    .where(eq(portalMembers.id, memberId));
 }
 
 // ============================================
@@ -255,6 +310,11 @@ export async function validateMagicLink(token: string) {
   if (new Date(link.expiresAt) < new Date()) {
     return null;
   }
+
+  // Ban enforcement: even if a link wasn't explicitly revoked (e.g. banned
+  // after issue), reject it if the member is not currently active.
+  const stillMember = await isMemberOfPortal(link.memberId, link.portalId);
+  if (!stillMember) return null;
 
   return link;
 }
@@ -433,6 +493,12 @@ export async function validatePortalSession(sessionId: string) {
   if (new Date(session.expiresAt) < new Date()) {
     return null;
   }
+
+  // Ban enforcement: a lingering cookie stops working the moment the member
+  // is banned. Reads status live so the ban takes effect without waiting for
+  // session cleanup.
+  const stillMember = await isMemberOfPortal(session.memberId, session.portalId);
+  if (!stillMember) return null;
 
   return session;
 }

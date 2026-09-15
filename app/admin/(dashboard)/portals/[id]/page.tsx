@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
-import { addMemberAction, removeMemberAction, sendMagicLinksAction, archivePortalAction, deletePortalAction } from "../actions";
+import { addMemberAction, removeMemberAction, sendMagicLinksAction, archivePortalAction, deletePortalAction, unbanMemberAction } from "../actions";
+import BanMemberButton from "../BanMemberButton";
 
 export const dynamic = "force-dynamic";
 
@@ -73,14 +74,46 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
               { header: "Name", accessor: (m: any) => m.name || "—" },
               { header: "Email", accessor: (m: any) => m.email },
               {
+                header: "Status",
+                accessor: (m: any) => {
+                  const banned = m.status === "banned";
+                  return (
+                    <span
+                      title={banned && m.banReason ? `Reason: ${m.banReason}` : undefined}
+                      className={`text-xs px-2 py-1 rounded ${
+                        banned
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {banned ? "Banned" : "Active"}
+                    </span>
+                  );
+                },
+              },
+              {
                 header: "Actions",
-                accessor: (m: any) => (
-                  <form action={removeMemberAction}>
-                    <input type="hidden" name="portalId" value={portal.id} />
-                    <input type="hidden" name="memberId" value={m.id} />
-                    <Button variant="danger" size="sm" type="submit">Remove</Button>
-                  </form>
-                ),
+                accessor: (m: any) => {
+                  const banned = m.status === "banned";
+                  return (
+                    <div className="flex gap-2">
+                      {banned ? (
+                        <form action={unbanMemberAction}>
+                          <input type="hidden" name="portalId" value={portal.id} />
+                          <input type="hidden" name="memberId" value={m.id} />
+                          <Button variant="secondary" size="sm" type="submit">Unban</Button>
+                        </form>
+                      ) : (
+                        <BanMemberButton portalId={portal.id} memberId={m.id} />
+                      )}
+                      <form action={removeMemberAction}>
+                        <input type="hidden" name="portalId" value={portal.id} />
+                        <input type="hidden" name="memberId" value={m.id} />
+                        <Button variant="danger" size="sm" type="submit">Remove</Button>
+                      </form>
+                    </div>
+                  );
+                },
               },
             ]}
             data={members}

@@ -11,6 +11,8 @@ import {
   addPortalMember,
   removePortalMember,
   sendMagicLinkEmails,
+  banMember,
+  unbanMember,
 } from "@/lib/portal";
 import { logActivity } from "@/lib/logging";
 
@@ -91,6 +93,47 @@ export async function sendMagicLinksAction(formData: FormData) {
     entityType: "portal",
     entityId: portalId,
     details: "Sent magic links to all members",
+  });
+
+  redirect(`/admin/portals/${portalId}`);
+}
+
+export async function banMemberAction(formData: FormData) {
+  const user = await requireAuth();
+  const portalId = Number(formData.get("portalId"));
+  const memberId = Number(formData.get("memberId"));
+  const reason = String(formData.get("reason") || "").trim();
+
+  if (!portalId || !memberId) throw new Error("Portal and member ID required");
+
+  await banMember(memberId, reason || undefined);
+
+  await logActivity({
+    userId: Number(user.id),
+    actionType: "update",
+    entityType: "portal_member",
+    entityId: memberId,
+    details: `Banned member${reason ? `: ${reason}` : ""}`,
+  });
+
+  redirect(`/admin/portals/${portalId}`);
+}
+
+export async function unbanMemberAction(formData: FormData) {
+  const user = await requireAuth();
+  const portalId = Number(formData.get("portalId"));
+  const memberId = Number(formData.get("memberId"));
+
+  if (!portalId || !memberId) throw new Error("Portal and member ID required");
+
+  await unbanMember(memberId);
+
+  await logActivity({
+    userId: Number(user.id),
+    actionType: "update",
+    entityType: "portal_member",
+    entityId: memberId,
+    details: "Unbanned member",
   });
 
   redirect(`/admin/portals/${portalId}`);
