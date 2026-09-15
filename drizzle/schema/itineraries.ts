@@ -10,6 +10,7 @@ export const itineraries = sqliteTable(
       .notNull()
       .references(() => portals.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    themePreset: text("theme_preset"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at"),
     deletedAt: text("deleted_at"),
@@ -32,6 +33,7 @@ export const itinerarySections = sqliteTable(
     startDate: text("start_date"),
     endDate: text("end_date"),
     position: integer("position").default(0),
+    themePresetOverride: text("theme_preset_override"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
@@ -79,6 +81,7 @@ export const itinerarySegments = sqliteTable(
     arrivalDatetime: text("arrival_datetime"),
     airline: text("airline"),
     flightNumber: text("flight_number"),
+    isHighlighted: integer("is_highlighted", { mode: "boolean" }).default(false),
     position: integer("position").default(0),
   },
   (table) => ({
@@ -128,5 +131,35 @@ export const itineraryTravelLegs = sqliteTable(
   (table) => ({
     idxSegmentId: index("idx_travel_legs_segment_id").on(table.segmentId),
     idxLegOrder: index("idx_travel_legs_leg_order").on(table.segmentId, table.legOrder),
+  })
+);
+
+
+export const itineraryBlocks = sqliteTable(
+  "itinerary_blocks",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    itineraryId: integer("itinerary_id")
+      .notNull()
+      .references(() => itineraries.id, { onDelete: "cascade" }),
+    sectionId: integer("section_id")
+      .references(() => itinerarySections.id, { onDelete: "cascade" }),
+    dayId: integer("day_id")
+      .references(() => itineraryDays.id, { onDelete: "cascade" }),
+    blockType: text("block_type").notNull(),
+    slot: text("slot").notNull(),
+    position: integer("position").default(0),
+    imageUrl: text("image_url"),
+    imageAlt: text("image_alt"),
+    textContent: text("text_content"),
+    variant: text("variant"),
+    size: text("size").notNull().default("medium"),
+    paletteOverride: text("palette_override"),
+    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    idxItineraryBlocksItineraryId: index("idx_itinerary_blocks_itinerary_id").on(table.itineraryId),
+    idxItineraryBlocksSectionId: index("idx_itinerary_blocks_section_id").on(table.sectionId),
+    idxItineraryBlocksDayId: index("idx_itinerary_blocks_day_id").on(table.dayId),
   })
 );

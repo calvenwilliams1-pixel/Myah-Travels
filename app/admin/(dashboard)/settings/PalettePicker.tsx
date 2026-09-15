@@ -1,15 +1,10 @@
 "use client";
 
+import { PALETTES } from "@/lib/theme/palettes";
+
 import React from "react";
 
-const PALETTES = [
-  { name: "Coastal", primary: "#0077B6", accent: "#FFB703" },
-  { name: "Desert", primary: "#8B5E3C", accent: "#FF7043" },
-  { name: "Alpine", primary: "#1B4332", accent: "#4CAF50" },
-  { name: "Editorial", primary: "#1D3557", accent: "#E63946" },
-  { name: "Tropical", primary: "#00897B", accent: "#FF6F61" },
-  { name: "Minimal", primary: "#374151", accent: "#2563EB" },
-];
+
 
 export default function PalettePicker() {
   const applyPalette = (primary: string, accent: string) => {

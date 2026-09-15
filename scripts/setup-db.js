@@ -52,6 +52,9 @@ const requiredColumns = [
   { table: "portal_members", column: "banned_at", type: "TEXT" },
   { table: "portal_members", column: "ban_reason", type: "TEXT" },
   { table: "portal_members", column: "link_revoked_at", type: "TEXT" },
+  { table: "itineraries", column: "theme_preset", type: "TEXT" },
+  { table: "itinerary_sections", column: "theme_preset_override", type: "TEXT" },
+  { table: "itinerary_segments", column: "is_highlighted", type: "INTEGER DEFAULT 0" },
 ];
 
 for (const { table, column, type } of requiredColumns) {
@@ -94,6 +97,37 @@ try {
   console.log("  itinerary_travel_legs ready");
 } catch (err) {
   console.error("  itinerary_travel_legs:", err.message);
+}
+
+
+// Ensure itinerary_blocks exists (Phase 7.6.9)
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS itinerary_blocks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      itinerary_id INTEGER NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
+      section_id INTEGER REFERENCES itinerary_sections(id) ON DELETE CASCADE,
+      day_id INTEGER REFERENCES itinerary_days(id) ON DELETE CASCADE,
+      block_type TEXT NOT NULL,
+      slot TEXT NOT NULL,
+      position INTEGER DEFAULT 0,
+      image_url TEXT,
+      image_alt TEXT,
+      text_content TEXT,
+      variant TEXT,
+      size TEXT NOT NULL DEFAULT 'medium',
+      palette_override TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      CHECK (section_id IS NOT NULL OR day_id IS NOT NULL),
+      CHECK (NOT (section_id IS NOT NULL AND day_id IS NOT NULL))
+    );
+    CREATE INDEX IF NOT EXISTS idx_itinerary_blocks_itinerary_id ON itinerary_blocks(itinerary_id);
+    CREATE INDEX IF NOT EXISTS idx_itinerary_blocks_section_id ON itinerary_blocks(section_id);
+    CREATE INDEX IF NOT EXISTS idx_itinerary_blocks_day_id ON itinerary_blocks(day_id);
+  `);
+  console.log("  itinerary_blocks ready");
+} catch (err) {
+  console.error("  itinerary_blocks:", err.message);
 }
 
 db.close();
