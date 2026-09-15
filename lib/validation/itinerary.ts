@@ -9,6 +9,7 @@ export const CreateItinerarySchema = z.object({
 
 export const UpdateItinerarySchema = z.object({
   title: z.string().min(1).optional(),
+  themePreset: z.string().nullable().optional(),
 });
 
 export const CreateSectionSchema = z.object({
@@ -125,4 +126,53 @@ export const UpdateLegSchema = z.object({
   operator: z.string().optional(),
   identifier: z.string().optional(),
   reference: z.string().optional(),
+});
+
+
+const BLOCK_TYPES = ["image", "callout", "notice"] as const;
+const BLOCK_SLOTS = ["before-day", "after-morning", "after-afternoon", "after-evening"] as const;
+const BLOCK_SIZES = ["small", "medium", "full"] as const;
+const BLOCK_VARIANTS = ["tip", "warning", "info"] as const;
+
+export const CreateItineraryBlockSchema = z.object({
+  itineraryId: z.number(),
+  sectionId: z.number().nullable().optional(),
+  dayId: z.number().nullable().optional(),
+  blockType: z.enum(BLOCK_TYPES),
+  slot: z.enum(BLOCK_SLOTS),
+  imageUrl: z.string().optional(),
+  imageAlt: z.string().optional(),
+  textContent: z.string().optional(),
+  variant: z.enum(BLOCK_VARIANTS).optional(),
+  size: z.enum(BLOCK_SIZES).optional(),
+  paletteOverride: z.string().nullable().optional(),
+  position: z.number().optional(),
+})
+.refine((data) => {
+  const hasSection = data.sectionId != null;
+  const hasDay = data.dayId != null;
+  return hasSection !== hasDay;
+}, { message: "Block must belong to exactly one of sectionId or dayId" });
+
+export const UpdateItineraryBlockSchema = z.object({
+  slot: z.enum(BLOCK_SLOTS).optional(),
+  position: z.number().optional(),
+  imageUrl: z.string().optional(),
+  imageAlt: z.string().optional(),
+  textContent: z.string().optional(),
+  variant: z.enum(BLOCK_VARIANTS).optional(),
+  size: z.enum(BLOCK_SIZES).optional(),
+  paletteOverride: z.string().nullable().optional(),
+});
+
+export const PALETTE_NAMES = [
+  "Coastal", "Desert", "Alpine", "Editorial", "Tropical", "Minimal",
+] as const;
+
+export const UpdateItineraryThemeSchema = z.object({
+  themePreset: z.union([z.enum(PALETTE_NAMES), z.null()]).optional(),
+});
+
+export const UpdateSectionThemeOverrideSchema = z.object({
+  themePresetOverride: z.union([z.enum(PALETTE_NAMES), z.null()]).optional(),
 });
