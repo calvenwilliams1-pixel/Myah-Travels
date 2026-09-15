@@ -1,6 +1,12 @@
 # Itinerary Styling — Final Implementation Plan (7.6.9)
 
-**Status:** Approved roadmap for implementation
+**Status:** ✅ SHIPPED — code-complete as of 2026-09-15
+
+**Commits:**
+- f0cbd60 — itinerary blocks API + theme/highlight validation
+- 1f09a46 — itinerary theme rendering + block cards + highlight styling
+- b1406f9 — section header stays with first day in print
+- (schema + palette extraction committed alongside stage 1)
 **Supersedes:** All prior 7.6.9 design discussions
 
 ## 1. Product Summary
