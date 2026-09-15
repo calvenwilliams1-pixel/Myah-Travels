@@ -16,6 +16,25 @@ function generateId() {
 function run() {
   console.log("Seeding Singapore demo itinerary...");
 
+  // Ensure itinerary_travel_legs exists (Phase 7.6.4/7.6.5)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS itinerary_travel_legs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      segment_id INTEGER NOT NULL REFERENCES itinerary_segments(id) ON DELETE CASCADE,
+      leg_order INTEGER NOT NULL,
+      travel_mode TEXT NOT NULL,
+      origin TEXT,
+      destination TEXT,
+      departure_at TEXT,
+      arrival_at TEXT,
+      origin_timezone TEXT,
+      destination_timezone TEXT,
+      operator TEXT,
+      identifier TEXT,
+      reference TEXT
+    );
+  `);
+
   // ─── 1. Create or fetch the demo portal ───
   let portal = db
     .prepare("SELECT * FROM portals WHERE slug = ?")
@@ -120,6 +139,18 @@ function run() {
           location: "Singapore Cruise Port → Oakwood Bencoolen",
           instructions: "Private chartered group motorcoach transfer with Missey of Tour East Singapore.",
           confirmation: null,
+          legs: [
+            {
+              travelMode: "transfer",
+              origin: "Singapore Cruise Port",
+              destination: "Oakwood Hotel & Apartments Bencoolen",
+              departureAt: "2026-10-16T12:00",
+              arrivalAt: "2026-10-16T13:00",
+              operator: "Tour East Singapore",
+              identifier: null,
+              reference: null,
+            },
+          ],
         },
         {
           type: "activity",
@@ -233,6 +264,18 @@ function run() {
           location: "Oakwood Bencoolen → Singapore Changi Airport Terminal 2",
           instructions: "Transfer Partner: World Express Singapore. 04:00 AM sharp departure from the hotel lobby. Arrive SIN Terminal 2 by ~04:45 AM for international check-in and bag drop. Baggage: 1 standard checked bag (up to 23 kg / 50 lbs) included per passenger through to Toronto.",
           confirmation: null,
+          legs: [
+            {
+              travelMode: "transfer",
+              origin: "Oakwood Hotel & Apartments Bencoolen",
+              destination: "Singapore Changi Airport Terminal 2",
+              departureAt: "2026-10-18T04:00",
+              arrivalAt: "2026-10-18T04:45",
+              operator: "World Express Singapore",
+              identifier: null,
+              reference: null,
+            },
+          ],
         },
         {
           type: "travel",
@@ -248,6 +291,20 @@ function run() {
           arrivalDatetime: "2026-10-18T06:25",
           airline: "Air Canada",
           flightNumber: "AC0020",
+          legs: [
+            {
+              travelMode: "flight",
+              origin: "SIN",
+              destination: "YVR",
+              departureAt: "2026-10-18T07:00",
+              arrivalAt: "2026-10-19T06:25",
+              originTimezone: "Asia/Singapore",
+              destinationTimezone: "America/Vancouver",
+              operator: "Air Canada",
+              identifier: "AC0020",
+              reference: "COPNYP",
+            },
+          ],
         },
         {
           type: "travel",
@@ -263,6 +320,20 @@ function run() {
           arrivalDatetime: "2026-10-18T16:29",
           airline: "Air Canada",
           flightNumber: "AC0034",
+          legs: [
+            {
+              travelMode: "flight",
+              origin: "YVR",
+              destination: "YYZ",
+              departureAt: "2026-10-18T09:00",
+              arrivalAt: "2026-10-18T16:29",
+              originTimezone: "America/Vancouver",
+              destinationTimezone: "America/Toronto",
+              operator: "Air Canada",
+              identifier: "AC0034",
+              reference: "COPNYP",
+            },
+          ],
         },
       ],
     },
@@ -280,7 +351,7 @@ function run() {
     let position = 0;
 
     for (const seg of day.segments) {
-      db.prepare(
+      const segResult = db.prepare(
         `INSERT INTO itinerary_segments
          (day_id, type, start_time, end_time, title, location, instructions, confirmation,
           departure_airport, arrival_airport, departure_datetime, arrival_datetime, airline, flight_number, position)
@@ -302,6 +373,34 @@ function run() {
         seg.flightNumber || null,
         position++
       );
+
+      // Insert legs for travel segments (Phase 7.6.4/7.6.5)
+      if (seg.type === "travel" && Array.isArray(seg.legs)) {
+        const segmentId = segResult.lastInsertRowid;
+        let legOrder = 1;
+        for (const leg of seg.legs) {
+          db.prepare(
+            `INSERT INTO itinerary_travel_legs
+             (segment_id, leg_order, travel_mode, origin, destination,
+              departure_at, arrival_at, origin_timezone, destination_timezone,
+              operator, identifier, reference)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ).run(
+            segmentId,
+            legOrder++,
+            leg.travelMode,
+            leg.origin || null,
+            leg.destination || null,
+            leg.departureAt || null,
+            leg.arrivalAt || null,
+            leg.originTimezone || null,
+            leg.destinationTimezone || null,
+            leg.operator || null,
+            leg.identifier || null,
+            leg.reference || null
+          );
+        }
+      }
     }
 
     console.log("  ✓ Day " + day.dayNumber + ": " + day.title + " (" + day.segments.length + " segments)");

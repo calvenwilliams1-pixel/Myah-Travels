@@ -140,9 +140,18 @@ export async function deleteDay(id: number) {
 // ============================================
 
 export async function getSegmentsForDay(dayId: number) {
-  return db.select().from(itinerarySegments)
+  const segments = await db.select().from(itinerarySegments)
     .where(eq(itinerarySegments.dayId, dayId))
     .orderBy(asc(itinerarySegments.startTime), asc(itinerarySegments.position));
+
+  // Attach legs to travel segments (batch-load, no N+1).
+  const travelIds = segments.filter((s) => s.type === "travel").map((s) => s.id);
+  if (travelIds.length === 0) return segments;
+
+  const legsMap = await getLegsForSegments(travelIds);
+  return segments.map((s) =>
+    s.type === "travel" ? { ...s, legs: legsMap.get(s.id) ?? [] } : s
+  );
 }
 
 export async function getSegmentById(id: number) {
