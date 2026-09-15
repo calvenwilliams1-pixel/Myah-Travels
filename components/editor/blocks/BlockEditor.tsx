@@ -16,6 +16,8 @@ import ProsConsBlockEditor from "./ProsConsBlockEditor";
 import VerdictBlockEditor from "./VerdictBlockEditor";
 import TemplatePreview from "./TemplatePreview";
 
+const PREVIEW_MIN_KEY = "myahtravels:preview:minimized";
+
 const IMPLEMENTED_BLOCKS: BlockType[] = [
   "title",
   "body",
@@ -43,6 +45,29 @@ export default function BlockEditor({
   const [blocks, setBlocks] = useState<BlockData[]>(initialBlocks);
   const [templateId, setTemplateId] = useState(initialTemplateId);
   const [isInitialised, setIsInitialised] = useState(false);
+  const [previewMinimized, setPreviewMinimized] = useState(false);
+
+  // Load persisted preview-minimize state on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(PREVIEW_MIN_KEY);
+      if (stored === "1") setPreviewMinimized(true);
+    } catch {
+      // localStorage unavailable — ignore
+    }
+  }, []);
+
+  function togglePreview() {
+    setPreviewMinimized((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(PREVIEW_MIN_KEY, next ? "1" : "0");
+      } catch {
+        // swallow
+      }
+      return next;
+    });
+  }
 
   const loadTemplate = (newTemplateId: string) => {
     const template = getTemplateById(newTemplateId);
@@ -223,7 +248,7 @@ export default function BlockEditor({
   const [showAddMenu, setShowAddMenu] = useState(false);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className={`grid grid-cols-1 gap-6 ${previewMinimized ? "lg:grid-cols-[1fr_auto]" : "lg:grid-cols-2"}`}>
       <div className="space-y-4">
       <div className="flex gap-3 items-center">
         <label className="text-sm font-medium">Template:</label>
@@ -326,12 +351,38 @@ export default function BlockEditor({
       </div>
       </div>
 
-      {/* Preview column */}
+      {/* Preview column — minimizable */}
       <div className="lg:sticky lg:top-4">
-        <TemplatePreview
-          blocks={blocks}
-          template={getTemplateById(templateId)!}
-        />
+        {previewMinimized ? (
+          <button
+            type="button"
+            onClick={togglePreview}
+            aria-label="Expand preview"
+            title="Expand preview"
+            className="hidden lg:flex flex-col items-center gap-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg px-2 py-4 transition-colors"
+          >
+            <span className="text-xs font-medium text-gray-600 [writing-mode:vertical-rl] rotate-180">
+              Show Preview
+            </span>
+            <span className="text-gray-500">‹</span>
+          </button>
+        ) : (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={togglePreview}
+              aria-label="Minimize preview"
+              title="Minimize preview"
+              className="absolute top-2 right-2 z-10 bg-white/90 hover:bg-white border border-gray-300 rounded-md w-7 h-7 flex items-center justify-center text-gray-500 hover:text-gray-800 shadow-sm"
+            >
+              ›
+            </button>
+            <TemplatePreview
+              blocks={blocks}
+              template={getTemplateById(templateId)!}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
