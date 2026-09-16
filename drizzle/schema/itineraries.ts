@@ -83,6 +83,7 @@ export const itinerarySegments = sqliteTable(
     flightNumber: text("flight_number"),
     isHighlighted: integer("is_highlighted", { mode: "boolean" }).default(false),
     position: integer("position").default(0),
+    manualPosition: integer("manual_position"),
   },
   (table) => ({
     idxDayId: index("idx_segments_day_id").on(table.dayId),

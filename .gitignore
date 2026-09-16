@@ -11,6 +11,10 @@ dist/
 
 # Database
 data/
+
+# Data directory — ignore runtime DB but allow static seeds
+!data/airports.json
+!data/airlines.json
 *.db
 *.db-journal
 *.db-wal

@@ -52,6 +52,7 @@ const requiredColumns = [
   { table: "portal_members", column: "banned_at", type: "TEXT" },
   { table: "portal_members", column: "ban_reason", type: "TEXT" },
   { table: "portal_members", column: "link_revoked_at", type: "TEXT" },
+  { table: "itinerary_segments", column: "manual_position", type: "INTEGER" },
   { table: "itineraries", column: "theme_preset", type: "TEXT" },
   { table: "itinerary_sections", column: "theme_preset_override", type: "TEXT" },
   { table: "itinerary_segments", column: "is_highlighted", type: "INTEGER DEFAULT 0" },
@@ -128,6 +129,45 @@ try {
   console.log("  itinerary_blocks ready");
 } catch (err) {
   console.error("  itinerary_blocks:", err.message);
+}
+
+
+// Ensure suggestion tables exist (Phase 7.8)
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS entities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kind TEXT NOT NULL,
+      canonical_name TEXT NOT NULL,
+      identity TEXT NOT NULL,
+      defaults TEXT,
+      source TEXT NOT NULL DEFAULT 'user',
+      use_count INTEGER NOT NULL DEFAULT 1,
+      last_used_at TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS unq_entities_kind_name
+      ON entities(kind, canonical_name);
+    CREATE INDEX IF NOT EXISTS idx_entities_search
+      ON entities(kind, use_count DESC, last_used_at DESC);
+
+    CREATE TABLE IF NOT EXISTS field_values (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      field_key TEXT NOT NULL,
+      value TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'user',
+      use_count INTEGER NOT NULL DEFAULT 1,
+      last_used_at TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS unq_field_values_key_value
+      ON field_values(field_key, value);
+    CREATE INDEX IF NOT EXISTS idx_field_values_search
+      ON field_values(field_key, use_count DESC, last_used_at DESC);
+  `);
+  console.log("  entities + field_values ready");
+} catch (err) {
+  console.error("  suggestions tables:", err.message);
 }
 
 db.close();
