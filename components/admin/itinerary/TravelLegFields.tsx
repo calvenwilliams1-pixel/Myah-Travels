@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import AutocompleteInput from "@/components/ui/AutocompleteInput";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
+import BookingParseForm from "./BookingParseForm";
 import { TIMEZONE_GROUPS } from "@/lib/itineraries/timezones";
 
 export type TravelMode = "flight" | "train" | "bus" | "transfer" | "other";
@@ -73,6 +74,7 @@ export default function TravelLegFields({
   canRemove,
 }: TravelLegFieldsProps) {
   const labels = modeLabels(leg.travelMode);
+  const [showParse, setShowParse] = useState(false);
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 bg-white space-y-3">
@@ -80,6 +82,16 @@ export default function TravelLegFields({
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           {index ? `Leg ${index}` : "Leg"}
         </p>
+        {leg.travelMode === "flight" && (
+          <button
+            type="button"
+            onClick={() => setShowParse(!showParse)}
+            className="text-xs text-gray-500 hover:text-gray-700"
+            title="Paste a flight confirmation to prefill fields"
+          >
+            {showParse ? "Cancel paste" : "Paste booking"}
+          </button>
+        )}
         {onRemove && (
           <button
             type="button"
@@ -92,6 +104,23 @@ export default function TravelLegFields({
           </button>
         )}
       </div>
+
+      {showParse && (
+        <BookingParseForm
+          onApply={(booking) => {
+            const patch: Partial<TravelLegDraft> = {};
+            if (booking.airline) patch.operator = booking.airline;
+            if (booking.flightNumber) patch.identifier = booking.flightNumber;
+            if (booking.origin) patch.origin = booking.origin;
+            if (booking.destination) patch.destination = booking.destination;
+            if (booking.reference) patch.reference = booking.reference;
+            if (booking.departureAt) patch.departureAt = booking.departureAt;
+            if (booking.arrivalAt) patch.arrivalAt = booking.arrivalAt;
+            onChange(patch);
+          }}
+          onClose={() => setShowParse(false)}
+        />
+      )}
 
       {/* Mode selector */}
       <div>

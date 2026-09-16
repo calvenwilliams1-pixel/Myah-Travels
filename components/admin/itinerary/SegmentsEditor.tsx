@@ -6,6 +6,7 @@ import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import CopySegmentModal from "./CopySegmentModal";
+import SnippetPicker from "./SnippetPicker";
 import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
 import TravelLegFields, { type TravelLegDraft, type TravelMode } from "./TravelLegFields";
 import type { Segment, TravelLeg } from "./ItineraryEditor";
@@ -382,9 +383,19 @@ function SegmentRow({
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Instructions
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Instructions
+                  </label>
+                  <SnippetPicker
+                    onInsert={(content) => {
+                      const current = segment.instructions || "";
+                      const next = current ? current + "\n" + content : content;
+                      update({ instructions: next });
+                      onChanged();
+                    }}
+                  />
+                </div>
                 <InstructionsField
                   value={segment.instructions || ""}
                   onSave={(v) => update({ instructions: v })}
