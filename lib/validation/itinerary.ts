@@ -176,3 +176,29 @@ export const UpdateItineraryThemeSchema = z.object({
 export const UpdateSectionThemeOverrideSchema = z.object({
   themePresetOverride: z.union([z.enum(PALETTE_NAMES), z.null()]).optional(),
 });
+
+
+const TRAVEL_MODES_BULK = ["flight", "train", "bus", "transfer", "other"] as const;
+
+export const BulkAddSegmentSchema = z.object({
+  type: z.enum(["activity", "travel", "meal", "free_day"]),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
+  location: z.string().optional(),
+  instructions: z.string().optional(),
+  leg: z.object({
+    travelMode: z.enum(TRAVEL_MODES_BULK),
+    origin: z.string().optional(),
+    destination: z.string().optional(),
+    departureAt: z.string().optional(),
+    arrivalAt: z.string().optional(),
+    operator: z.string().optional(),
+    identifier: z.string().optional(),
+    reference: z.string().optional(),
+  }).optional(),
+});
+
+export const BulkAddRequestSchema = z.object({
+  segments: z.array(BulkAddSegmentSchema).min(1, "At least one segment required"),
+});

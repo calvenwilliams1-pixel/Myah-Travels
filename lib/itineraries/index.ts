@@ -598,3 +598,68 @@ export async function resetSegmentOrder(dayId: number) {
 
   return { ok: true };
 }
+
+
+/**
+ * Bulk-insert segments (and their travel legs) into a day, transactionally.
+ * All-or-nothing: any validation failure rolls back the whole batch.
+ * Called by the bulk-add endpoint.
+ */
+export async function createSegmentsBulk(
+  dayId: number,
+  drafts: Array<{
+    type: "activity" | "travel" | "meal" | "free_day";
+    startTime?: string;
+    endTime?: string;
+    title: string;
+    location?: string;
+    instructions?: string;
+    leg?: {
+      travelMode: string;
+      origin?: string;
+      destination?: string;
+      departureAt?: string;
+      arrivalAt?: string;
+      operator?: string;
+      identifier?: string;
+      reference?: string;
+    };
+  }>
+) {
+  return db.transaction(async (tx) => {
+    const created: number[] = [];
+    let position = 0;
+
+    for (const draft of drafts) {
+      const [seg] = await tx.insert(itinerarySegments).values({
+        dayId,
+        type: draft.type,
+        startTime: draft.startTime ?? null,
+        endTime: draft.endTime ?? null,
+        title: draft.title,
+        location: draft.location ?? null,
+        instructions: draft.instructions ?? null,
+        position: position++,
+      }).returning();
+
+      created.push(seg.id);
+
+      if (draft.leg) {
+        await tx.insert(itineraryTravelLegs).values({
+          segmentId: seg.id,
+          legOrder: 1,
+          travelMode: draft.leg.travelMode,
+          origin: draft.leg.origin ?? null,
+          destination: draft.leg.destination ?? null,
+          departureAt: draft.leg.departureAt ?? null,
+          arrivalAt: draft.leg.arrivalAt ?? null,
+          operator: draft.leg.operator ?? null,
+          identifier: draft.leg.identifier ?? null,
+          reference: draft.leg.reference ?? null,
+        });
+      }
+    }
+
+    return created;
+  });
+}
