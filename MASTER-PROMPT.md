@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 4)
+# MyCalTravels — MASTER-PROMPT.md (Revision 5)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -14,7 +14,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 **Architecture: Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation (suggestion system, duplication, drag-reorder).**
 
-The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation IN PROGRESS — Waves A (suggestion system + autocomplete) and B (duplication + drag-reorder) shipped; Wave C (bulk-add) pending.
+The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE — all four waves shipped (suggestion system, autocomplete, duplication, drag-reorder, bulk-add, backfill, FTS5, snippets, paste-booking, kill switch, telemetry, stale entities page, cross-itinerary modal).
 
 **Core principle:**
 > Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
@@ -324,7 +324,7 @@ npm run test:ui            # Vitest UI
 
 ---
 
-## Current Focus: Phase 7.8 Data Entry Automation
+## Current Focus: Local Testing, then Launch Day Prep
 
 Phase 7.8 is the current focus. Two waves shipped, one pending.
 

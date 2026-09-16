@@ -1,8 +1,8 @@
-# MyCalTravels — CODE-PLAN.md (Revision 4)
+# MyCalTravels — CODE-PLAN.md (Revision 5)
 
 ## Overview
 
-Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation IN PROGRESS — Waves A + B shipped (suggestion system, autocomplete, duplication, drag-reorder); Wave C (bulk-add) pending. Canvas system FROZEN (pending deletion). Production build passes cleanly.
+Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation COMPLETE — all four waves shipped (suggestion system, autocomplete, duplication, drag-reorder, bulk-add, backfill, FTS5, instruction snippets, paste-booking parser, kill switch, telemetry, stale entities page, cross-itinerary copy modal). Canvas system FROZEN (pending deletion). Production build passes cleanly.
 
 ## Tech Stack
 
@@ -247,6 +247,15 @@ ui/
 ├── SuggestionDropdown.tsx     # Shared dropdown UI
 └── autosave/            # Form primitives (see above)
 
+admin/itinerary/
+├── BulkAddForm.tsx            # Bulk-add textarea + preview table + localStorage draft
+├── CopySegmentModal.tsx       # Cross-itinerary segment picker
+├── SnippetPicker.tsx          # Insert / save instruction snippets
+└── BookingParseForm.tsx       # Paste-booking parse + apply
+
+admin/suggestions/
+└── stale-entities/page.tsx    # Entity cleanup admin page
+
 ErrorBoundary.tsx
 admin/FeedAdminControls.tsx
 canvas/PortalElementRenderer.tsx
@@ -402,8 +411,15 @@ notepad/
 
 suggestions/
 ├── entities/route.ts            # GET ?kind=&q= — entity memory
+├── entities/[id]/route.ts       # DELETE
+├── entities/stale/route.ts      # GET — stale entities for cleanup
 ├── field-values/route.ts        # GET ?field=&q= — field value memory
-└── statics/route.ts             # GET ?field=&q= — airports/airlines
+├── statics/route.ts             # GET ?field=&q= — airports/airlines
+├── snippets/route.ts            # GET (list), POST (create)
+├── snippets/[id]/route.ts       # PATCH (bump use), DELETE
+└── telemetry/route.ts           # POST — record suggestion event
+
+portals/route.ts                 # GET — all portals (for copy-segment picker)
 
 segments/[id]/duplicate/route.ts # POST — duplicate segment + legs
 days/[id]/duplicate/route.ts     # POST — duplicate day + contents

@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 12)
+# MyCalTravels — TODO.md (Revision 13)
 
 ## Status
 
-**Phase 7.6 complete (Waves 1-4). Phase 7.8 Data Entry Automation in progress — Waves A and B shipped. Remaining work restructured under the No Deferrals rule: cross-itinerary copy modal, backfill migration, kill switch, telemetry, entity cleanup page, FTS5 on field_values, instruction snippets, and paste-booking parser are all IN SCOPE now, not deferred. Testing debt accumulating — see TESTING.md. Launch Day prep documented as Phase 7.7.**
+**Phase 7.6 complete. Phase 7.8 Data Entry Automation COMPLETE — all four waves shipped under the No Deferrals rule (suggestion system, autocomplete, duplication, drag-reorder, bulk-add, backfill, FTS5, snippets, paste-booking, kill switch, telemetry, stale entities page, cross-itinerary modal). Testing debt accumulating — see TESTING.md. Next: run the full local test pass, then Launch Day prep (Phase 7.7).**
 
 ## Core Principle
 
@@ -329,7 +329,7 @@ Operational setup for the deployed system. The code is complete; this is everyth
 
 ---
 
-## Phase 7.8: Data Entry Automation (IN PROGRESS)
+## Phase 7.8: Data Entry Automation ✅ COMPLETE
 
 Reduces typing on 150-250 segment itineraries via a deterministic two-layer suggestion system, duplication, drag-reorder, and bulk-add. No AI at runtime. See MASTER-PROMPT.md for design rationale and the No Deferrals rule.
 
@@ -362,8 +362,8 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - [x] Commits: 5e5e98c, cf583e1, d1768e3, 8a29583
 
 **Wave A closeout** ⏳ PENDING (pulled forward under No Deferrals)
-- [ ] Kill switch: `AUTOCOMPLETE_ENABLED` env flag. Falls back to plain inputs if off.
-- [ ] Telemetry: log suggestion-accepted vs typed-fresh per field
+- [x] Kill switch: `AUTOCOMPLETE_ENABLED` env flag. Falls back to plain inputs if off.
+- [x] Telemetry: log suggestion-accepted vs typed-fresh per field
 
 ### Wave B — Duplication + drag-reorder ✅ SHIPPED
 
@@ -384,49 +384,49 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - [x] HTML5 DnD, "Manual order" toggle, disagreement indicator
 
 **Wave B closeout** ⏳ PENDING (pulled forward under No Deferrals)
-- [ ] Cross-itinerary "Copy from…" modal UI. Backend `/api/itineraries/[targetId]/copy-segment` already works. Ship the 3-step picker (source itinerary → source day → source segment).
+- [x] Cross-itinerary "Copy from…" modal UI. Backend `/api/itineraries/[targetId]/copy-segment` already works. Ship the 3-step picker (source itinerary → source day → source segment).
 
 ### Wave C — Bulk-add + backfill ⏳ NEXT
 
 **Lump 5 — Bulk-add segments**
-- [ ] `POST /api/days/[id]/segments/bulk` — transactional, all-or-nothing
-- [ ] Pipe + tab delimited parser
-- [ ] Client-side preview table (mandatory before commit)
-- [ ] Inline row editing in preview
-- [ ] localStorage draft for the textarea
-- [ ] Batch endpoint mirrors single-add Zod validation
+- [x] `POST /api/days/[id]/segments/bulk` — transactional, all-or-nothing
+- [x] Pipe + tab delimited parser
+- [x] Client-side preview table (mandatory before commit)
+- [x] Inline row editing in preview
+- [x] localStorage draft for the textarea
+- [x] Batch endpoint mirrors single-add Zod validation
 
 **Lump 6 — Backfill migration** (ships with Wave C, not after)
-- [ ] One-time script walks existing stays/legs/segments
-- [ ] Populates entities + field_values
-- [ ] Trim + collapse-whitespace + title-case normalization
-- [ ] `source = 'migration'` on backfilled rows
-- [ ] `use_count` derived from historical frequency
+- [x] One-time script walks existing stays/legs/segments
+- [x] Populates entities + field_values
+- [x] Trim + collapse-whitespace + title-case normalization
+- [x] `source = 'migration'` on backfilled rows
+- [x] `use_count` derived from historical frequency
 
 ### Wave D — Closing features ⏳ PENDING (pulled forward under No Deferrals)
 
 **Lump 7 — Entity cleanup admin page**
-- [ ] List entities with `use_count = 1` and `created_at > 90 days`
-- [ ] Delete button per row
-- [ ] Small page, ships now so it exists when the data does
+- [x] List entities with `use_count = 1` and `created_at > 90 days`
+- [x] Delete button per row
+- [x] Small page, ships now so it exists when the data does
 
 **Lump 8 — FTS5 on field_values**
-- [ ] Add FTS5 virtual table + triggers to migration 0009 (or new migration)
-- [ ] Swap substring search to FTS5 MATCH query
-- [ ] Removes a future migration; trivial to add now
+- [x] Add FTS5 virtual table + triggers to migration 0009 (or new migration)
+- [x] Swap substring search to FTS5 MATCH query
+- [x] Removes a future migration; trivial to add now
 
 **Lump 9 — Instruction snippets**
-- [ ] Small snippet system scoped to itinerary segment instructions
-- [ ] Save a segment's instructions text as a named snippet
-- [ ] Dropdown to insert a snippet into any segment's instructions field
-- [ ] NOT deferred to Content Library — build the feature
+- [x] Small snippet system scoped to itinerary segment instructions
+- [x] Save a segment's instructions text as a named snippet
+- [x] Dropdown to insert a snippet into any segment's instructions field
+- [x] NOT deferred to Content Library — build the feature
 
 **Lump 10 — Paste-booking parser**
-- [ ] Three parsers covering 90% of Myah's bookings
-- [ ] Air Canada flight confirmation
-- [ ] WestJet flight confirmation
-- [ ] One hotel-chain confirmation (Marriott or similar)
-- [ ] Preview-before-commit (regex parses, user reviews, then saves)
+- [x] Three parsers covering 90% of Myah's bookings
+- [x] Air Canada flight confirmation
+- [x] WestJet flight confirmation
+- [x] One hotel-chain confirmation (Marriott or similar)
+- [x] Preview-before-commit (regex parses, user reviews, then saves)
 
 ### Genuinely Rejected (not deferred — wrong for the product)
 
@@ -442,7 +442,7 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - [x] MASTER-PROMPT.md Rev 4 — design rationale + No Deferrals rule
 - [x] code plan.md Rev 4 — Phase 7.8 file map
 - [x] TESTING.md — Phase 7.8 test cases (Waves A + B)
-- [ ] TESTING.md — Phase 7.8 test cases for Wave C + Wave D (after those ship)
+- [x] TESTING.md — Phase 7.8 test cases for Wave C + Wave D (after those ship)
 
 ---
 
@@ -591,7 +591,7 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Phase 7.8 Wave C (bulk-add + backfill migration). Then Wave A closeout (kill switch, telemetry), Wave B closeout (cross-itinerary modal), then Wave D (entity cleanup, FTS5, snippets, paste-parser). Testing debt accumulates — see TESTING.md. Launch prep still pending (Phase 7.7).
+**Next action:** Run full TESTING.md pass on local PC. Then Launch Day prep (Phase 7.7). Then Phase 7.3 production hardening (Canvas deletion, deployment, global undo/redo).
 
 ---
 

@@ -192,3 +192,71 @@ Segments with manual positions:
 ~~~
 node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare('SELECT id, day_id, title, start_time, manual_position FROM itinerary_segments WHERE manual_position IS NOT NULL ORDER BY day_id, manual_position').all(); console.log(r); db.close();"
 ~~~
+
+---
+
+## Phase 7.8 Wave C — Bulk-Add + Backfill
+
+**Test C1 — Bulk-add parser**
+- [ ] Open a day, click "Bulk add"
+- [ ] Paste: `08:00-09:00 | Test Activity | Test Location`
+- [ ] Preview table shows one row
+- [ ] Paste multi-line with travel sub-syntax: `07:00-08:00 | travel/flight | YYZ -> NRT | AC0020`
+- [ ] Preview shows travel segment with parsed leg
+
+**Test C2 — Bulk-add commit**
+- [ ] Paste 3 valid lines
+- [ ] Click "Add 3 segments"
+- [ ] All 3 land in the day (count increments by 3)
+- [ ] Travel segment has a leg row
+
+**Test C3 — Bulk-add rollback**
+- [ ] Paste a line with a bad format that will fail parse
+- [ ] Error shown, commit button disabled
+- [ ] Fix the error, commit works
+
+**Test C4 — Bulk-add localStorage draft**
+- [ ] Paste content, don't commit
+- [ ] Navigate away
+- [ ] Return to the same day, click "Bulk add"
+- [ ] Textarea content preserved
+
+**Test C5 — Backfill idempotency**
+- [ ] Run `node scripts/backfill-suggestions.js` twice
+- [ ] Entity counts should be identical both times (not doubled)
+
+### Phase 7.8 Wave D — Closing features
+
+**Test D1 — Snippet creation**
+- [ ] Open a segment's instructions field
+- [ ] Click "Snippets" → "+ Create new snippet"
+- [ ] Enter title + content, save
+- [ ] Snippet appears in the dropdown
+
+**Test D2 — Snippet insertion**
+- [ ] In instructions field, click Snippets, pick one
+- [ ] Content appended to instructions
+- [ ] Snippet use_count bumped (check DB)
+
+**Test D3 — Paste booking (Air Canada)**
+- [ ] Open a flight leg, click "Paste booking"
+- [ ] Paste text containing "AC0020", "YYZ to NRT", "Confirmation: ABC123"
+- [ ] Parser detects source = air-canada, shows extracted fields
+- [ ] "Apply to Form" fills operator, identifier, origin, destination, reference
+
+**Test D4 — Paste booking (hotel)**
+- [ ] Paste text containing "Marriott" and an address
+- [ ] Parser detects hotel-generic
+- [ ] Apply fills hotel name + address
+
+**Test D5 — Stale entities admin page**
+- [ ] Navigate to /admin/suggestions/stale-entities
+- [ ] Shows entities used once and not touched in 90+ days (likely empty right now)
+- [ ] Delete button removes entity, it stops appearing in autocomplete
+
+**Test D6 — Kill switch**
+- [ ] Set `NEXT_PUBLIC_AUTOCOMPLETE_ENABLED=false` in .env
+- [ ] Restart dev server
+- [ ] Autocomplete dropdowns no longer appear
+- [ ] Forms still work as plain inputs
+- [ ] Reset to true and restart
