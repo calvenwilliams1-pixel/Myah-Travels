@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
