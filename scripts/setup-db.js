@@ -12,10 +12,21 @@ if (!fs.existsSync(dataDir)) {
 
 const db = new Database(dbPath);
 
-console.log("Creating database from schema.sql...");
-const schema = fs.readFileSync(path.join(__dirname, "..", "schema.sql"), "utf8");
-db.exec(schema);
-console.log("✓ Base schema applied");
+// Only apply base schema on a fresh DB. schema.sql is a full CREATE
+// script and is not idempotent — running it against an existing DB
+// crashes on the first "table already exists".
+const usersTableExists = db
+  .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+  .get();
+
+if (!usersTableExists) {
+  console.log("Creating database from schema.sql...");
+  const schema = fs.readFileSync(path.join(__dirname, "..", "schema.sql"), "utf8");
+  db.exec(schema);
+  console.log("✓ Base schema applied");
+} else {
+  console.log("✓ Base schema already present (skipping schema.sql)");
+}
 
 console.log("Applying migrations...");
 const migrationsDir = path.join(__dirname, "..", "drizzle", "migrations");
