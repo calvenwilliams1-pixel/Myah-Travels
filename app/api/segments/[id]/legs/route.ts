@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getLegsForSegment, createLeg } from "@/lib/itineraries/travelLegs";
 import { CreateLegSchema } from "@/lib/validation/itinerary";
+import { recordLegFields } from "@/lib/suggestions/record";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAuth();
@@ -24,5 +25,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const result = await createLeg(segmentId, parsed.data);
+  void recordLegFields({
+    origin: parsed.data.origin,
+    destination: parsed.data.destination,
+    operator: parsed.data.operator,
+    identifier: parsed.data.identifier,
+  });
   return NextResponse.json({ success: true, leg: result[0] });
 }

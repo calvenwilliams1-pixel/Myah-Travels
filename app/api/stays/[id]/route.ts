@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { updateStay, deleteStay } from "@/lib/itineraries";
+import { recordStayFields } from "@/lib/suggestions/record";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAuth();
@@ -9,6 +10,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const body = await req.json();
   await updateStay(id, body);
+  void recordStayFields({
+    hotelName: body.hotelName,
+    address: body.address,
+    notes: body.notes,
+  });
   return NextResponse.json({ success: true });
 }
 

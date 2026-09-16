@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getStaysForSection, createStay } from "@/lib/itineraries";
 import { CreateStaySchema } from "@/lib/validation/itinerary";
+import { recordStayFields } from "@/lib/suggestions/record";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAuth();
@@ -22,5 +23,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors }, { status: 400 });
 
   const result = await createStay(sectionId, parsed.data);
+  void recordStayFields({
+    hotelName: parsed.data.hotelName,
+    address: parsed.data.address,
+    notes: parsed.data.notes,
+  });
   return NextResponse.json({ success: true, stay: result[0] });
 }
