@@ -193,6 +193,7 @@ function DayRow({
       {/* Segments list */}
       <SegmentsEditor
         dayId={day.id}
+        itineraryId={itineraryId}
         segments={day.segments}
         orderMode={day.orderMode}
         onChanged={onChanged}

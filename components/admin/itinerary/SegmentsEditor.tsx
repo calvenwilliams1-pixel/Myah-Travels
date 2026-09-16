@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
+import CopySegmentModal from "./CopySegmentModal";
 import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
 import TravelLegFields, { type TravelLegDraft, type TravelMode } from "./TravelLegFields";
 import type { Segment, TravelLeg } from "./ItineraryEditor";
 
 interface SegmentsEditorProps {
   dayId: number;
+  itineraryId: number;
   segments: Segment[];
   orderMode: string;
   onChanged: () => void;
@@ -28,10 +30,12 @@ const TYPE_STYLES: Record<
 
 export default function SegmentsEditor({
   dayId,
+  itineraryId,
   segments,
   orderMode,
   onChanged,
 }: SegmentsEditorProps) {
+  const [showCopyModal, setShowCopyModal] = React.useState(false);
   if (segments.length === 0) {
     return (
       <p className="text-xs text-gray-400 pl-2 italic">
@@ -42,6 +46,16 @@ export default function SegmentsEditor({
 
   return (
     <div className="space-y-2">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowCopyModal(true)}
+          className="text-xs text-gray-500 hover:text-gray-700"
+          title="Copy a segment from another itinerary"
+        >
+          Copy from…
+        </button>
+      </div>
       {segments.map((seg, idx) => (
         <SegmentRow
           key={seg.id}
@@ -53,6 +67,15 @@ export default function SegmentsEditor({
           dayId={dayId}
         />
       ))}
+
+      {showCopyModal && (
+        <CopySegmentModal
+          targetItineraryId={itineraryId}
+          targetDayId={dayId}
+          onClose={() => setShowCopyModal(false)}
+          onCopied={onChanged}
+        />
+      )}
     </div>
   );
 }
