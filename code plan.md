@@ -1,8 +1,8 @@
-# MyCalTravels — CODE-PLAN.md (Revision 3)
+# MyCalTravels — CODE-PLAN.md (Revision 4)
 
 ## Overview
 
-Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Canvas system FROZEN (pending deletion). Currently in Phase 7 bug-fix pass. Production build passes cleanly.
+Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation IN PROGRESS — Waves A + B shipped (suggestion system, autocomplete, duplication, drag-reorder); Wave C (bulk-add) pending. Canvas system FROZEN (pending deletion). Production build passes cleanly.
 
 ## Tech Stack
 
@@ -27,8 +27,9 @@ email-suppressions.ts    # Email opt-outs
 guide-tags.ts            # Guide-tag junction
 guides.ts                # Destination guides (mode, isPinned)
 index.ts                 # Schema exports
-itineraries.ts           # Itineraries + sections + days + segments + stays
+itineraries.ts           # Itineraries + sections + days + segments + stays + travel legs + blocks
 media.ts                 # Media library
+suggestions.ts           # entities + field_values (Phase 7.8)
 notepad-entries.ts       # Admin-only notepad
 pages.ts                 # Static pages
 portal-checklist-states.ts # Portal checklist progress (legacy)
@@ -241,6 +242,9 @@ ui/
 ├── ColorPicker.tsx
 ├── Modal.tsx
 ├── Pagination.tsx
+├── AutocompleteField.tsx      # Autosave-backed autocomplete (editor-side)
+├── AutocompleteInput.tsx      # Save-button-friendly autocomplete (add forms)
+├── SuggestionDropdown.tsx     # Shared dropdown UI
 └── autosave/            # Form primitives (see above)
 
 ErrorBoundary.tsx
@@ -396,6 +400,17 @@ stays/
 notepad/
 └── [id]/route.ts                # PATCH, DELETE
 
+suggestions/
+├── entities/route.ts            # GET ?kind=&q= — entity memory
+├── field-values/route.ts        # GET ?field=&q= — field value memory
+└── statics/route.ts             # GET ?field=&q= — airports/airlines
+
+segments/[id]/duplicate/route.ts # POST — duplicate segment + legs
+days/[id]/duplicate/route.ts     # POST — duplicate day + contents
+days/[id]/order/route.ts         # PATCH (reorder) + DELETE (reset)
+itineraries/[targetId]/copy-segment/route.ts # POST — cross-itinerary copy
+sections/[id]/extend-day/route.ts # POST — add empty day at end
+
 canvas/templates/                # FROZEN
 ├── route.ts
 └── [id]/route.ts
@@ -416,7 +431,10 @@ email/
 ```
 scripts/
 ├── seed.ts              # Seed admin user, categories, tags, settings, templates
-└── setup-db.js          # Reproducible DB creation (schema.sql + migrations + missing columns)
+├── setup-db.js          # Reproducible DB creation (schema.sql + migrations + missing columns)
+├── fetch-static-data.js # Regenerate data/airports.json + data/airlines.json
+├── migrate-travel-segments-to-legs.js # Backfill travel legs (Phase 7.6)
+└── send-magic-links.ts  # CLI to trigger magic-link sends for a portal
 ```
 
 ### Tests
@@ -438,7 +456,13 @@ drizzle/migrations/
 ├── 0001_fts5_triggers.sql
 ├── 0002_portal_content_library.sql   # Phase 5
 ├── 0003_itinerary.sql                # Phase 6.2 (incl. portal_items rebuild)
-└── 0004_notepad.sql                  # Phase 6.3
+├── 0004_notepad.sql                  # Phase 6.3
+├── 0005_reference_type.sql           # Phase 7.6.2
+├── 0006_travel_legs.sql              # Phase 7.6.4/7.6.5
+├── 0007_member_ban.sql               # Phase 7.6.7
+├── 0008_itinerary_styling.sql        # Phase 7.6.9
+├── 0009_data_entry_automation.sql    # Phase 7.8 (entities + field_values)
+└── 0010_day_order_mode.sql           # Phase 7.8 Wave B (order_mode on days)
 ```
 
 ### Config
@@ -538,7 +562,16 @@ tsconfig.json            # TypeScript config
 
 ## Remaining Work
 
-### Phase 7.1 — Bug Fix Pass (Current)
+### Phase 7.8 — Data Entry Automation (Current)
+- **Wave A** COMPLETE — suggestion schema, API, autocomplete, client wiring
+- **Wave B** COMPLETE — order_mode + duplication + drag-reorder
+- **Wave C** PENDING — bulk-add (transactional endpoint + preview UI)
+- **Closing lumps** PENDING — backfill migration, telemetry, kill switch, docs
+
+### Phase 7.6 — Refinement Pass (COMPLETE)
+- Waves 1-4 shipped (time picker, reference dropdown, preview minimize, travel modes, multi-leg, ban/revoke, hero sizing, image picker, itinerary styling)
+
+### Phase 7.1 — Bug Fix Pass (COMPLETE)
 - Batch 1: Segment edit revert, admin preview session, date picker `showPicker()`
 - Batch 2: Date constraints, optional field audit
 - Batch 3: Portal manager trash + recovery + preview

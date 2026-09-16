@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 10)
+# MyCalTravels — TODO.md (Revision 11)
 
 ## Status
 
-**Portal V1 + V2 backend COMPLETE. Phase 7.6 Waves 1-4 complete (including 7.6.9 itinerary styling). Template System Audit complete. Testing debt accumulating — see TESTING.md for full checklist. Launch Day prep documented as Phase 7.7.**
+**Phase 7.6 complete (Waves 1-4, including 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation in progress — Waves A and B shipped (suggestion system, autocomplete, duplication, drag-reorder). Wave C (bulk-add) pending. Testing debt accumulating — see TESTING.md. Launch Day prep documented as Phase 7.7.**
 
 ## Core Principle
 
@@ -329,6 +329,123 @@ Operational setup for the deployed system. The code is complete; this is everyth
 
 ---
 
+## Phase 7.8: Data Entry Automation (IN PROGRESS)
+
+Reduces typing on 150-250 segment itineraries via a deterministic two-layer suggestion system, duplication, drag-reorder, and (pending) bulk-add. No AI at runtime. See MASTER-PROMPT.md for full design rationale.
+
+### Wave A — Suggestion system + autocomplete
+
+#### Lump 1 — Foundation ✅ COMPLETE
+- [x] Schema: `entities`, `field_values` tables
+- [x] Migration 0009 + setup-db guards
+- [x] `lib/suggestions/field-keys.ts` (typed constant — single source of field keys)
+- [x] `lib/suggestions/entities.ts` (upsert + search + recent)
+- [x] `lib/suggestions/field-values.ts` (upsert + search)
+- [x] `lib/operations/record.ts` (undo-log-ready stub)
+- [x] `data/airports.json` + `data/airlines.json` (dev seeds, regenerable)
+- [x] `scripts/fetch-static-data.js` (OurAirports + OpenFlights)
+- [x] `ATTRIBUTION.md`
+- [x] Commits: f54048d, 9eedcdc
+
+#### Lump 2 — Suggestion API + AutocompleteField ✅ COMPLETE
+- [x] `lib/suggestions/statics.ts` (in-memory airport/airline loaders)
+- [x] `GET /api/suggestions/entities?kind=&q=`
+- [x] `GET /api/suggestions/field-values?field=&q=`
+- [x] `GET /api/suggestions/statics?field=&q=`
+- [x] `components/ui/AutocompleteField.tsx` (autosave-backed)
+- [x] Commit: c8737b1
+
+#### Lump 3a — Server-side recording ✅ COMPLETE
+- [x] `lib/suggestions/record.ts` (recordSegment/Stay/Leg/Section/Day fields)
+- [x] 6 routes call recording after successful saves
+- [x] Commit: 97080e2
+
+#### Lump 3b — Client wiring ✅ COMPLETE
+- [x] `components/ui/AutocompleteInput.tsx` (save-button-friendly, no autosave)
+- [x] `components/ui/SuggestionDropdown.tsx` (shared dropdown)
+- [x] `lib/suggestions/useSuggestions.ts` (shared fetch/merge/rank hook)
+- [x] AddStayForm: hotel name (with entity hydration) + address
+- [x] AddSectionForm: section title
+- [x] AddDayForm: day title
+- [x] AddSegmentForm: title, location, reference label
+- [x] TravelLegFields: origin, destination, operator, identifier
+- [x] SegmentsEditor (edit): title, location, reference label
+- [x] StaysEditor (edit): hotel name, address
+- [x] SectionEditor (edit): base city
+- [x] Commits: 5e5e98c, cf583e1, d1768e3, 8a29583
+
+### Wave B — Duplication + drag-reorder
+
+#### Lump 4a — order_mode + duplication endpoints ✅ COMPLETE
+- [x] Schema: `itinerary_days.order_mode` ("time" | "manual", default "time")
+- [x] Migration 0010 + setup-db guard
+- [x] `getSegmentsForDay` respects order_mode for sort
+- [x] `duplicateSegment` — copies segment + legs, manualPosition reset
+- [x] `duplicateDay` — copies day + segments + legs + day-anchored blocks, orderMode reset
+- [x] `copySegmentToDay` — cross-itinerary copy, ownership validated
+- [x] `extendSectionByOneDay` — +1 day, empty
+- [x] API: `POST /api/segments/[id]/duplicate`
+- [x] API: `POST /api/days/[id]/duplicate`
+- [x] API: `POST /api/itineraries/[targetId]/copy-segment`
+- [x] API: `POST /api/sections/[id]/extend-day`
+
+#### Lump 4b — Duplication UI ✅ COMPLETE
+- [x] "Duplicate" button on SegmentRow
+- [x] "Duplicate" button on DayRow
+- [x] "Extend by 1 day" button on SectionEditor
+
+#### Lump 4c — Drag-reorder backend ✅ COMPLETE
+- [x] `reorderSegments` (transactional, gapped positions, orderMode flip)
+- [x] `resetSegmentOrder`
+- [x] API: `PATCH /api/days/[id]/order`
+- [x] API: `DELETE /api/days/[id]/order`
+
+#### Lump 4d — Drag-reorder UI ✅ COMPLETE
+- [x] HTML5 native drag-and-drop on SegmentRow
+- [x] "Manual order" toggle on DayRow (seeds positions from current order)
+- [x] "Reset order" button when manual is active
+- [x] Disagreement indicator (⚠ when manual order diverges from time order)
+- [x] Editor-only indicator, not in client-facing render
+
+### Wave C — Bulk-add (PENDING)
+
+#### Lump 5 — Bulk-add segments
+- [ ] `POST /api/days/[id]/segments/bulk` — transactional, all-or-nothing
+- [ ] Pipe + tab delimited parser
+- [ ] Client-side preview table (mandatory before commit)
+- [ ] Inline row editing in preview
+- [ ] localStorage draft for the textarea
+- [ ] Batch endpoint mirrors single-add Zod validation for uniformity
+
+### Closing tasks (PENDING)
+
+#### Lump 6 — Backfill migration
+- [ ] One-time script walks existing stays/legs/segments
+- [ ] Populates entities + field_values
+- [ ] Trim + collapse-whitespace + title-case normalization
+- [ ] `source = 'migration'` on backfilled rows
+- [ ] `use_count` derived from historical frequency (not flat 1)
+
+#### Lump 7 — Telemetry + kill switch
+- [ ] Log suggestion-accepted vs. typed-fresh per field
+- [ ] `AUTOCOMPLETE_ENABLED` env flag
+
+#### Lump 8 — Docs
+- [ ] Update MASTER-PROMPT.md with Phase 7.8 design section
+- [ ] Update code plan.md with Phase 7.8 file map
+- [ ] Update TESTING.md with Phase 7.8 test cases
+
+### Deferred (post-Phase 7.8)
+
+- [ ] Cross-itinerary "Copy from…" modal UI (backend ready at `/api/itineraries/[targetId]/copy-segment`)
+- [ ] Paste booking confirmation (regex parser) — high maintenance, low priority until data shows the value
+- [ ] Instruction snippets — reuse Content Library, not a new system
+- [ ] Inline location picker — redundant once autocomplete proves sufficient
+- [ ] Entity cleanup admin page — not needed until real data exists
+- [ ] FTS5 migration on `field_values` — scale-out when > 100K rows
+
+---
+
 ## Phase 7.2 Loose Ends (Before Phase 8)
 - [x] Attach itinerary UI on admin editor page
 - [x] Admin preview of itinerary
@@ -474,7 +591,7 @@ Operational setup for the deployed system. The code is complete; this is everyth
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Local testing of Waves 2-4 + 7.6.9 (see TESTING.md). Then Japan+Cruise+Singapore demo seed (Phase 7.5). Then launch-day prep (Phase 7.7).
+**Next action:** Phase 7.8 Wave C (bulk-add). Then closing lumps 6-8 (backfill, telemetry, docs). Testing debt accumulates — see TESTING.md for the full checklist. Launch prep still pending (Phase 7.7).
 
 ---
 

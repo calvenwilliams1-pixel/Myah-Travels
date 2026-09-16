@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 3)
+# MyCalTravels — MASTER-PROMPT.md (Revision 4)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -12,9 +12,9 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 ## Current Status (as of September 12, 2026)
 
-**Architecture: Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure.**
+**Architecture: Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation (suggestion system, duplication, drag-reorder).**
 
-The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. We are currently in Phase 7 (bug-fix pass from live testing).
+The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation IN PROGRESS — Waves A (suggestion system + autocomplete) and B (duplication + drag-reorder) shipped; Wave C (bulk-add) pending.
 
 **Core principle:**
 > Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
@@ -44,6 +44,90 @@ The project has fully pivoted from Canvas/design tools to a block-based content 
 - **Itinerary Builder** (sections, days, segments, stays)
 - **Admin Notepad** (per-portal scratchpad with people tagging)
 - **Autosave infrastructure** (draft durability, 48 tests)
+
+---
+
+## Phase 7.8 — Data Entry Automation (Design Rationale)
+
+Purpose: reduce typing on 150-250 segment itineraries. Deterministic only — no AI at runtime, no external APIs.
+
+### The two-layer suggestion system
+
+**Layer 1 — Entity memory** (`entities` table). A named real-world thing: hotel, airline, operator, city. Carries **identity** fields (address, phone, city, country — never change) and **defaults** (check-in 15:00, check-out 11:00 — usually constant, editable). Keyed by `(kind, canonical_name)`. One entity per real-world thing.
+
+**Layer 2 — Field value memory** (`field_values` table). Every input column remembers every distinct value it has seen. Keyed by `(field_key, value)`. Field keys are `{record}.{field}` format (e.g. `stay.hotel_name`, `leg.origin`) and are typed constants in `lib/suggestions/field-keys.ts` — nothing writes a literal string.
+
+**Static supplements.** `data/airports.json` and `data/airlines.json` ship as committed snapshots (dev seeds now, regenerable via `scripts/fetch-static-data.js`). Reason: airports have a slow-converging tail — Myah touches one-off IATA codes that never repeat, so learned memory alone leaves cold-start gaps for months.
+
+### The three field tiers
+
+Protects her from silent overwrites:
+
+| Tier | Behavior | Example |
+|------|----------|---------|
+| Identity | Auto-filled from entity. Bold. | Hotel address |
+| Default | Prefilled, editable. Tagged "suggested". | Check-in time 15:00 |
+| Occurrence | Never auto-filled. | Dates, booking refs |
+
+**Touched protection:** entity accept hydrates only fields that are *currently empty*. If she already typed Address, accepting a hotel does not overwrite it.
+
+### Ranking
+
+Default: entities > statics > field values. Override in `field-keys.ts` for `leg.origin` / `leg.destination` — a field value with `use_count >= 5` outranks statics (personal pattern beats generic list once it is clearly a pattern). Within each source: exact > prefix > substring, then `use_count DESC`, `last_used_at DESC`. Field values filtered to `use_count >= 2` for display only — everything is stored.
+
+### Drag-reorder design
+
+Stakeholder override of the SRS "no manual reordering" guardrail. Ships as opt-in.
+
+- `itinerary_segments.manual_position` (nullable integer)
+- `itinerary_days.order_mode` ("time" | "manual", default "time")
+- Sort: always by `manual_position` when present, fall back to time. `order_mode` is a **UI flag** (show drag handles), not the sort source. This dissolves the "all positions cleared" edge case.
+- Positions gapped by 1000. Scoped to `(day_id, time_bucket)` — dragging reorders within morning/afternoon/evening.
+- Time edits that move a segment to a new bucket **clear its manual_position**.
+- Duplicates and bulk-added segments arrive with `manual_position = null` — fall through to time.
+- Disagreement indicator (⚠) in editor only when manual order diverges from time order.
+- `DELETE /api/days/[id]/order` resets to time order.
+
+### Undo strategy
+
+**Global undo/redo is Phase 7.3.** Phase 7.8 bulk ops are all-or-nothing transactional — the interim substitute. Every bulk op calls `recordOperation(type, affectedIds, metadata)` from `lib/operations/record.ts` (currently a stub logging in dev). When Phase 7.3 ships, the stub becomes the write path to a real undo table — pointer swap, not retrofit.
+
+### Bulk-add (Wave C, pending)
+
+Dedicated transactional endpoint `POST /api/days/[id]/segments/bulk`, all-or-nothing. Pipe-delimited lines with tab-separated accepted. Client-side preview table mandatory before commit. Textarea contents persist to localStorage. Batch endpoint must validate against the same Zod schemas as single-add.
+
+### Rejected outright
+
+| Feature | Reason |
+|---------|--------|
+| Segment grouping | Conflicts with time-derived ordering |
+| Fill-down across multi-selected | Requires multi-select UI that doesn't exist |
+| Diff view for day duplication | Duplication is transactional and deterministic |
+| Undo scoped to bulk ops only | Global undo is Phase 7.3 |
+| AI/LLM at runtime | Unnecessary for bounded data; latency, cost, privacy |
+| Fuzzy matching for entity dedup | False-positive merge silently attaches wrong address to a booking |
+| Learned combinations with occurrence data | Occurrence data changes every trip |
+
+### Deferred
+
+- Cross-itinerary "Copy from…" modal UI (backend ready)
+- Paste booking confirmation regex parser
+- Instruction snippets (reuse Content Library, don't add new system)
+- Inline location picker (redundant once autocomplete proves sufficient)
+- Entity cleanup admin page
+- FTS5 migration on `field_values` (scale-out when > 100K rows)
+
+### Reviewer trail
+
+Two rounds of external review shaped this design. Key decisions attributed:
+
+- **Wave A split into A1 (defaults, validation) and A2 (autocomplete + statics)** — don't let low-risk wins wait on a new client component
+- **`use_count >= 2` filter is display-only** — nothing is lost; typos are stored but not suggested
+- **Drag-reorder design** (nullable position, bucket-scoped, gapped, order_mode as UI flag not sort source) came from the second review
+- **Per-field ranking override** for `leg.origin`/`leg.destination` at `use_count >= 5`
+- **Backfill normalization** (trim + collapse + title-case, `source = 'migration'`, `use_count` from frequency)
+- **Undo-log-ready pattern** — bulk ops record affected row IDs at commit time even before Phase 7.3 exists
+- **Q10 answer was "cut drag-and-drop"** — overridden by stakeholder decision; recorded for the trail
 
 ---
 
@@ -184,6 +268,8 @@ No new Canvas features. Canvas colour migration deferred (39 emerald remain in f
 5. **Segment edits revert on collapse** — Itinerary segment fields lose unsaved edits when collapsed. Fix in Phase 7 (SegmentRow lifecycle).
 
 6. **Background colour fixed white** — Dark mode deferred indefinitely.
+7. **Phase 7.8 code shipped but untested on local** — Waves A + B implemented; full test pass pending (see TESTING.md).
+8. **Cross-itinerary copy backend ready, UI deferred** — `/api/itineraries/[targetId]/copy-segment` works; the 3-step picker modal is not built.
 
 ---
 
@@ -238,40 +324,27 @@ npm run test:ui            # Vitest UI
 
 ---
 
-## Current Focus: Phase 7 Bug Fixes
+## Current Focus: Phase 7.8 Data Entry Automation
 
-Live testing surfaced these issues (prioritized):
+Phase 7.8 is the current focus. Two waves shipped, one pending.
 
-### Batch 1 — Critical
-- **Bug 1:** Segment edits revert when collapsed/re-expanded
-- **Bug 2:** Admin preview → click itinerary → "session expired" (should route to admin preview)
-- **Bug 3:** Date/time inputs highlight instead of opening picker (need `showPicker()`)
+### Wave A — Suggestion system + autocomplete ✅ SHIPPED
+Two SQLite tables (`entities`, `field_values`), three suggestion endpoints, `AutocompleteField` (autosave-backed for editor views) + `AutocompleteInput` (save-button-friendly for add forms). Server-side recording on every save. Wired into ~13 field locations across the itinerary editor.
 
-### Batch 2 — Date Constraints
-- Section date pickers constrained to portal departure/return
-- Segment date pickers constrained to day date
-- Flight datetime buffer allowance
-- Make all non-essential form fields optional
+### Wave B — Duplication + drag-reorder ✅ SHIPPED
+- `itinerary_days.order_mode` + `itinerary_segments.manual_position`
+- Duplicate segment, duplicate day (with contents), cross-itinerary copy, extend by one day
+- Drag-reorder with HTML5 native DnD, per-day manual-mode toggle, disagreement indicator
+- All transactional, all record via `recordOperation`
 
-### Batch 3 — Portal Manager UX
-- Trashcan + confirmation on portal rows
-- Recovery view for soft-deleted portals
-- "Preview Wall" icon in portal manager rows + detail page
+### Wave C — Bulk-add ⏳ PENDING
+Transactional batch endpoint + preview table + localStorage draft.
 
-### Batch 4 — UI Polish
-- Restyle itinerary tile (less empty space)
-- Replace `alert()` with styled toast
-- Explicit Save button (alongside autosave)
-- Custom date/time pickers (bigger, more colorful)
+### Closing lumps ⏳ PENDING
+Backfill migration (walk existing data into entities/field_values), telemetry, kill switch, TESTING.md updates.
 
-### Batch 5 — Segment UX
-- Clarify segment type / day title relationship
-- Fix time picker responsiveness
-- Fix AM/PM switching
-
-### Batch 6 — Download
-- Verify PDF download works
-- Consider admin-side download button
+### Not yet tested on local PC
+Everything since Phase 7.6 Wave 2 has been implemented without local verification. `TESTING.md` holds the full checklist.
 
 ---
 
