@@ -541,3 +541,60 @@ export async function extendSectionByOneDay(sectionId: number) {
 
   return day;
 }
+
+
+/**
+ * Apply a manual order to a day's segments. Accepts an ordered array of
+ * segment IDs; writes gapped manualPosition values (increments of 1000)
+ * so future inserts don't require renumbering. Flips the day's orderMode
+ * to "manual" atomically.
+ *
+ * Any segment in the day not present in the array has manualPosition
+ * cleared, so partial reorder inputs don't leave stale positions behind.
+ */
+export async function reorderSegments(dayId: number, orderedSegmentIds: number[]) {
+  const day = await getDayById(dayId);
+  if (!day) return null;
+
+  const existing = await db.select().from(itinerarySegments)
+    .where(eq(itinerarySegments.dayId, dayId));
+
+  const positionMap = new Map<number, number>();
+  orderedSegmentIds.forEach((id, idx) => {
+    positionMap.set(id, (idx + 1) * 1000);
+  });
+
+  await db.transaction(async (tx) => {
+    for (const seg of existing) {
+      const newPos = positionMap.get(seg.id) ?? null;
+      await tx.update(itinerarySegments)
+        .set({ manualPosition: newPos })
+        .where(eq(itinerarySegments.id, seg.id));
+    }
+    await tx.update(itineraryDays)
+      .set({ orderMode: "manual" })
+      .where(eq(itineraryDays.id, dayId));
+  });
+
+  return { ok: true };
+}
+
+/**
+ * Reset a day to time-derived ordering. Clears manualPosition on all
+ * segments and flips orderMode back to "time".
+ */
+export async function resetSegmentOrder(dayId: number) {
+  const day = await getDayById(dayId);
+  if (!day) return null;
+
+  await db.transaction(async (tx) => {
+    await tx.update(itinerarySegments)
+      .set({ manualPosition: null })
+      .where(eq(itinerarySegments.dayId, dayId));
+    await tx.update(itineraryDays)
+      .set({ orderMode: "time" })
+      .where(eq(itineraryDays.id, dayId));
+  });
+
+  return { ok: true };
+}
