@@ -401,10 +401,25 @@ If context is unclear, ask:
 4. **No time constraints.** Do it once, properly, with the bells and whistles.
 5. **Ultimate goal: convenience and polish for Myah.**
 6. **Use Python heredocs in Codespace** for file edits (`python3 << 'PYEOF' ... PYEOF`).
-7. **Verify after every change** with `npx tsc --noEmit --pretty false 2>&1 | grep "error TS" | wc -l` → expect `0`.
-8. **Commit frequently** with clear messages. Push to GitHub after each phase.
-9. **Verify scripts actually ran** — grep for the expected change in the file to confirm, don't trust success messages.
-10. **Ask for help from reviewers** (365, Claude) when facing architectural decisions.
+7. **BATCH PATTERN — do not verify after every command.**
+   - Give commands in batches (numbered, one after another).
+   - The user runs the whole batch without pasting back intermediate output.
+   - Then run **one blanket verification pass** at the end of the batch.
+   - Then commit.
+   - Do NOT ask the user to paste output for each individual command. It slows everything down.
+   - If a command in the batch fails silently, the blanket verify catches it.
+8. **Verify with:** `npx tsc --noEmit --pretty false 2>&1 | grep "error TS" | wc -l` → expect `0`, plus `npm test 2>&1 | grep -E "Test Files|Tests"` → expect `48 passed (48)`.
+9. **Commit frequently** with clear messages. Push to GitHub after each lump.
+10. **Verify scripts actually ran** — grep for the expected change in the file to confirm, don't trust success messages.
+11. **Ask for help from reviewers** (365, Claude) when facing architectural decisions.
+
+### Heredoc hygiene (learned the hard way)
+
+- **Long Python heredocs with many string literals corrupt on paste.** Prefer smaller batches or write the script to `/tmp/x.py` first, then run it.
+- **Never embed triple-backticks inside a Python heredoc whose target file contains markdown code fences.** The shell sees the inner ` ``` ` as the end of the heredoc. Use `~~~` in the markdown content instead, or placeholder tokens swapped after reading.
+- **`str.replace()` fails silently.** Always print `[OK]` / `[FAIL]` per replacement so a batch verify can catch missed anchors.
+- **`count()` counts occurrences, not lines.** For "remove import lines" tasks, operate on `readlines()` and filter by substring, not `str.count()`.
+- **Git push occasionally reports a false rejection** (race condition on ref lock) when the push actually succeeded. Check `git log origin/main --oneline -2` before retrying.
 
 ---
 
