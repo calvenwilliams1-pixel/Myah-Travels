@@ -5,9 +5,11 @@ import {
   itineraryDays,
   itinerarySegments,
   itineraryStays,
+  itineraryTravelLegs,
+  itineraryBlocks,
 } from "@/drizzle/schema";
 import { eq, and, isNull, desc, asc } from "drizzle-orm";
-import { getLegsForSegments } from "./travelLegs";
+import { getLegsForSegments, getLegsForSegment } from "./travelLegs";
 import { getBlocksForDays } from "./blocks";
 
 // ============================================
@@ -146,9 +148,21 @@ export async function deleteDay(id: number) {
 // ============================================
 
 export async function getSegmentsForDay(dayId: number) {
+  // Sort respects the day's order_mode: "manual" orders by manualPosition
+  // (nulls fall through to time), "time" orders by startTime. position is
+  // the legacy tiebreaker; manualPosition is the new explicit ordering.
+  const day = await getDayById(dayId);
+  const mode = day?.orderMode ?? "time";
+
   const segments = await db.select().from(itinerarySegments)
     .where(eq(itinerarySegments.dayId, dayId))
-    .orderBy(asc(itinerarySegments.startTime), asc(itinerarySegments.position));
+    .orderBy(
+      mode === "manual"
+        ? asc(itinerarySegments.manualPosition)
+        : asc(itinerarySegments.startTime),
+      asc(itinerarySegments.startTime),
+      asc(itinerarySegments.position)
+    );
 
   // Attach legs to travel segments (batch-load, no N+1).
   const travelIds = segments.filter((s) => s.type === "travel").map((s) => s.id);
@@ -373,4 +387,157 @@ export function detectOverlappingSegments(
   }
 
   return warnings;
+}
+
+
+// ============================================
+// DUPLICATION (Phase 7.8 Wave B)
+// ============================================
+
+/**
+ * Duplicate a segment within the same day. Copies travel legs when present.
+ * manualPosition is reset to null — manual ordering belongs to the
+ * destination context, not the source.
+ */
+export async function duplicateSegment(segmentId: number) {
+  const original = await getSegmentById(segmentId);
+  if (!original) return null;
+
+  const { id, ...rest } = original;
+  const [copy] = await db.insert(itinerarySegments).values({
+    ...rest,
+    manualPosition: null,
+  }).returning();
+
+  // Copy travel legs if present
+  const legs = await getLegsForSegment(segmentId);
+  for (const leg of legs) {
+    const { id: legId, ...legRest } = leg;
+    await db.insert(itineraryTravelLegs).values({
+      ...legRest,
+      segmentId: copy.id,
+    });
+  }
+
+  return copy;
+}
+
+/**
+ * Duplicate a day and all its contents (segments + legs + day-anchored blocks).
+ * The new day gets orderMode = "time" and manualPosition reset on all copies.
+ * Caller supplies the new date and dayNumber.
+ */
+export async function duplicateDay(
+  dayId: number,
+  newDate: string,
+  newDayNumber: number
+) {
+  const original = await getDayById(dayId);
+  if (!original) return null;
+
+  const [dayCopy] = await db.insert(itineraryDays).values({
+    sectionId: original.sectionId,
+    date: newDate,
+    dayNumber: newDayNumber,
+    title: original.title,
+    notes: original.notes,
+    orderMode: "time",
+    position: original.position,
+  }).returning();
+
+  const segments = await db.select().from(itinerarySegments)
+    .where(eq(itinerarySegments.dayId, dayId))
+    .orderBy(asc(itinerarySegments.position));
+
+  for (const seg of segments) {
+    const { id: segId, dayId: srcDayId, ...segRest } = seg;
+    const [segCopy] = await db.insert(itinerarySegments).values({
+      ...segRest,
+      dayId: dayCopy.id,
+      manualPosition: null,
+    }).returning();
+
+    const legs = await getLegsForSegment(segId);
+    for (const leg of legs) {
+      const { id: legId, ...legRest } = leg;
+      await db.insert(itineraryTravelLegs).values({
+        ...legRest,
+        segmentId: segCopy.id,
+      });
+    }
+  }
+
+  // Copy day-anchored blocks (skip section-anchored — those live on the section)
+  const blocks = await db.select().from(itineraryBlocks)
+    .where(eq(itineraryBlocks.dayId, dayId));
+
+  for (const block of blocks) {
+    const { id: blockId, ...blockRest } = block;
+    await db.insert(itineraryBlocks).values({
+      ...blockRest,
+      dayId: dayCopy.id,
+    });
+  }
+
+  return dayCopy;
+}
+
+/**
+ * Copy a segment (and its legs) into a different day, potentially in a
+ * different itinerary. manualPosition is reset.
+ */
+export async function copySegmentToDay(segmentId: number, targetDayId: number) {
+  const original = await getSegmentById(segmentId);
+  if (!original) return null;
+
+  const { id, dayId: srcDayId, ...rest } = original;
+  const [copy] = await db.insert(itinerarySegments).values({
+    ...rest,
+    dayId: targetDayId,
+    manualPosition: null,
+  }).returning();
+
+  const legs = await getLegsForSegment(segmentId);
+  for (const leg of legs) {
+    const { id: legId, ...legRest } = leg;
+    await db.insert(itineraryTravelLegs).values({
+      ...legRest,
+      segmentId: copy.id,
+    });
+  }
+
+  return copy;
+}
+
+/**
+ * Extend a section by adding a new empty day at the end, +1 day from the
+ * latest existing day.
+ */
+export async function extendSectionByOneDay(sectionId: number) {
+  const existing = await db.select().from(itineraryDays)
+    .where(eq(itineraryDays.sectionId, sectionId))
+    .orderBy(desc(itineraryDays.date));
+
+  const last = existing[0];
+  let newDate: string;
+  let newNumber: number;
+
+  if (last) {
+    const d = new Date(last.date + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    newDate = d.toISOString().slice(0, 10);
+    newNumber = (last.dayNumber ?? 0) + 1;
+  } else {
+    newDate = new Date().toISOString().slice(0, 10);
+    newNumber = 1;
+  }
+
+  const [day] = await db.insert(itineraryDays).values({
+    sectionId,
+    date: newDate,
+    dayNumber: newNumber,
+    orderMode: "time",
+  }).returning();
+
+  return day;
 }

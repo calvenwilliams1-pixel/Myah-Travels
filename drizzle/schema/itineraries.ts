@@ -52,6 +52,7 @@ export const itineraryDays = sqliteTable(
     dayNumber: integer("day_number").notNull(),
     title: text("title"),
     notes: text("notes"),
+    orderMode: text("order_mode").notNull().default("time"),
     position: integer("position").default(0),
   },
   (table) => ({

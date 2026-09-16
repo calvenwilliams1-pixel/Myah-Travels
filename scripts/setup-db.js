@@ -52,6 +52,7 @@ const requiredColumns = [
   { table: "portal_members", column: "banned_at", type: "TEXT" },
   { table: "portal_members", column: "ban_reason", type: "TEXT" },
   { table: "portal_members", column: "link_revoked_at", type: "TEXT" },
+  { table: "itinerary_days", column: "order_mode", type: "TEXT NOT NULL DEFAULT 'time'" },
   { table: "itinerary_segments", column: "manual_position", type: "INTEGER" },
   { table: "itineraries", column: "theme_preset", type: "TEXT" },
   { table: "itinerary_sections", column: "theme_preset_override", type: "TEXT" },
