@@ -5,6 +5,7 @@ import SaveIndicator from "@/components/admin/SaveIndicator";
 import SuggestionDropdown, { type SuggestionItem } from "@/components/ui/SuggestionDropdown";
 import { useAutosaveField } from "@/lib/hooks/useAutosaveField";
 import { useSuggestions } from "@/lib/suggestions/useSuggestions";
+import { logSuggestionEvent } from "@/lib/suggestions/telemetry";
 
 // ============================================================
 // AUTOCOMPLETE FIELD (Phase 7.8)
@@ -38,6 +39,9 @@ export default function AutocompleteField({
   entityKind,
   onEntityAccept,
 }: AutocompleteFieldProps) {
+  // Kill switch: when disabled, render a plain input with no suggestions.
+  const enabled = process.env.NEXT_PUBLIC_AUTOCOMPLETE_ENABLED !== "false";
+
   const field = useAutosaveField<string>({ value, onSave, draftKey });
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -72,6 +76,7 @@ export default function AutocompleteField({
   }
 
   function handleChange(next: string) {
+    if (next.trim()) logSuggestionEvent(fieldKey, "typed_fresh", next);
     field.setValue(next);
     setIsOpen(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -91,6 +96,7 @@ export default function AutocompleteField({
     field.setValue(finalValue);
     field.flush();
     if (item.payload && onEntityAccept) onEntityAccept(item.payload);
+    logSuggestionEvent(fieldKey, "accepted", finalValue);
     setIsOpen(false);
     setSuggestions([]);
   }
@@ -150,7 +156,7 @@ export default function AutocompleteField({
             <SaveIndicator state={field.saveState} showText={false} />
           </div>
         )}
-        {isOpen && (
+        {enabled && isOpen && (
           <SuggestionDropdown
             suggestions={suggestions}
             highlightIndex={highlightIndex}

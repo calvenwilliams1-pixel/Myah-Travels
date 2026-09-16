@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import SuggestionDropdown, { type SuggestionItem } from "@/components/ui/SuggestionDropdown";
 import { useSuggestions } from "@/lib/suggestions/useSuggestions";
+import { logSuggestionEvent } from "@/lib/suggestions/telemetry";
 
 interface AutocompleteInputProps {
   label?: string;
@@ -33,6 +34,9 @@ export default function AutocompleteInput({
   autoFocus,
   onKeyDown,
 }: AutocompleteInputProps) {
+  // Kill switch: when disabled, render a plain input with no suggestions.
+  const enabled = process.env.NEXT_PUBLIC_AUTOCOMPLETE_ENABLED !== "false";
+
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
@@ -58,6 +62,7 @@ export default function AutocompleteInput({
   }
 
   function handleChange(next: string) {
+    if (next.trim()) logSuggestionEvent(fieldKey, "typed_fresh", next);
     onChange(next);
     setIsOpen(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -76,6 +81,7 @@ export default function AutocompleteInput({
         : item.value;
     onChange(finalValue);
     if (item.payload && onEntityAccept) onEntityAccept(item.payload);
+    logSuggestionEvent(fieldKey, "accepted", finalValue);
     setIsOpen(false);
     setSuggestions([]);
   }
@@ -130,7 +136,7 @@ export default function AutocompleteInput({
           autoComplete="off"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
         />
-        {isOpen && (
+        {enabled && isOpen && (
           <SuggestionDropdown
             suggestions={suggestions}
             highlightIndex={highlightIndex}
