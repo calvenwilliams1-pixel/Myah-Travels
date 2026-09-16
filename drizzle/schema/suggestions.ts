@@ -68,3 +68,18 @@ export const fieldValuesFts = sqliteTable(
     value: text("value"),
   }
 );
+
+export const instructionSnippets = sqliteTable(
+  "instruction_snippets",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+    useCount: integer("use_count").notNull().default(0),
+    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at"),
+  },
+  (table) => ({
+    unqTitle: uniqueIndex("unq_instruction_snippets_title").on(table.title),
+  })
+);

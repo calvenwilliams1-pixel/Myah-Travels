@@ -219,6 +219,25 @@ try {
   console.warn("  field_values_fts unavailable:", err.message);
 }
 
+
+// Ensure instruction_snippets exists (Phase 7.8)
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS instruction_snippets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      use_count INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS unq_instruction_snippets_title ON instruction_snippets(title);
+  `);
+  console.log("  instruction_snippets ready");
+} catch (err) {
+  console.error("  instruction_snippets:", err.message);
+}
+
 db.close();
 console.log("\n✅ Database setup complete: data/site.db");
 console.log("Next: run npm run seed");
