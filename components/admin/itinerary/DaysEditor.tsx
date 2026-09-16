@@ -6,6 +6,7 @@ import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AddSegmentForm from "./AddSegmentForm";
 import SegmentsEditor from "./SegmentsEditor";
 import BlockList from "./BlockList";
+import BulkAddForm from "./BulkAddForm";
 import type { Day } from "./ItineraryEditor";
 
 interface DaysEditorProps {
@@ -48,6 +49,7 @@ function DayRow({
   itineraryId: number;
 }) {
   const [showAddSegment, setShowAddSegment] = useState(false);
+  const [showBulkAdd, setShowBulkAdd] = useState(false);
 
   async function update(data: Partial<Day>) {
     await fetch(`/api/days/${day.id}`, {
@@ -96,9 +98,22 @@ function DayRow({
         <Button
           size="sm"
           variant="ghost"
-          onClick={() => setShowAddSegment(!showAddSegment)}
+          onClick={() => {
+            setShowAddSegment(!showAddSegment);
+            if (showBulkAdd) setShowBulkAdd(false);
+          }}
         >
           {showAddSegment ? "Cancel" : "+ Segment"}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setShowBulkAdd(!showBulkAdd);
+            if (showAddSegment) setShowAddSegment(false);
+          }}
+        >
+          {showBulkAdd ? "Cancel" : "Bulk add"}
         </Button>
         <button
           onClick={async () => {
@@ -159,6 +174,19 @@ function DayRow({
             onChanged();
           }}
           onCancel={() => setShowAddSegment(false)}
+        />
+      )}
+
+      {/* Bulk add form */}
+      {showBulkAdd && (
+        <BulkAddForm
+          dayId={day.id}
+          dayDate={day.date}
+          onSaved={() => {
+            setShowBulkAdd(false);
+            onChanged();
+          }}
+          onCancel={() => setShowBulkAdd(false)}
         />
       )}
 
