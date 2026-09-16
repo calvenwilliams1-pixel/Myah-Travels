@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { suggestionEvents } from "@/drizzle/schema";
 
 // ============================================================
 // TELEMETRY (Phase 7.8)
-// Logs suggestion-accepted vs typed-fresh events. Currently writes to
-// the console — a real sink (table, file, or external) can be swapped
-// in later without changing the client call sites.
+// Records whether a field value was typed fresh or accepted from a
+// suggestion. Powers the "did autocomplete actually help?" question
+// after a few weeks of real usage.
 // ============================================================
 
 export async function POST(req: NextRequest) {
@@ -23,14 +25,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "fieldKey and event required" }, { status: 400 });
   }
 
-  // Placeholder sink — dev only
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[suggestion-telemetry]", JSON.stringify({
+  const valuePreview = typeof value === "string" ? value.slice(0, 60) : null;
+
+  try {
+    await db.insert(suggestionEvents).values({
       fieldKey,
       event,
-      valuePreview: typeof value === "string" ? value.slice(0, 40) : undefined,
-      at: new Date().toISOString(),
-    }));
+      valuePreview,
+    });
+  } catch (err) {
+    console.warn("[suggestion-telemetry] insert failed:", (err as Error).message);
+    // Do not surface failure to the client — telemetry is best-effort.
   }
 
   return NextResponse.json({ success: true });

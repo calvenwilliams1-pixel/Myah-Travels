@@ -182,6 +182,26 @@ try {
   console.error("  suggestions tables:", err.message);
 }
 
+
+// Ensure suggestion_events exists (Phase 7.8)
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS suggestion_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      field_key TEXT NOT NULL,
+      event TEXT NOT NULL,
+      value_preview TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_suggestion_events_field_key ON suggestion_events(field_key);
+    CREATE INDEX IF NOT EXISTS idx_suggestion_events_event ON suggestion_events(event);
+    CREATE INDEX IF NOT EXISTS idx_suggestion_events_created_at ON suggestion_events(created_at);
+  `);
+  console.log("  suggestion_events ready");
+} catch (err) {
+  console.error("  suggestion_events:", err.message);
+}
+
 db.close();
 console.log("\n✅ Database setup complete: data/site.db");
 console.log("Next: run npm run seed");

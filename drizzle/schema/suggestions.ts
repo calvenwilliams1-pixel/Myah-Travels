@@ -40,3 +40,19 @@ export const fieldValues = sqliteTable(
     idxSearch: index("idx_field_values_search").on(table.fieldKey, table.useCount, table.lastUsedAt),
   })
 );
+
+export const suggestionEvents = sqliteTable(
+  "suggestion_events",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    fieldKey: text("field_key").notNull(),
+    event: text("event").notNull(),
+    valuePreview: text("value_preview"),
+    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    idxFieldKey: index("idx_suggestion_events_field_key").on(table.fieldKey),
+    idxEvent: index("idx_suggestion_events_event").on(table.event),
+    idxCreatedAt: index("idx_suggestion_events_created_at").on(table.createdAt),
+  })
+);
