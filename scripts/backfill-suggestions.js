@@ -131,13 +131,20 @@ function backfillSegments() {
 }
 
 function backfillLegs() {
-  const rows = db.prepare("SELECT origin, destination, operator, identifier FROM itinerary_travel_legs").all();
+  const rows = db.prepare("SELECT origin, destination, operator, identifier, travel_mode FROM itinerary_travel_legs").all();
   for (const r of rows) {
     recordField(FIELD_KEYS.LEG_ORIGIN, r.origin);
     recordField(FIELD_KEYS.LEG_DESTINATION, r.destination);
     recordField(FIELD_KEYS.LEG_OPERATOR, r.operator);
     recordField(FIELD_KEYS.LEG_IDENTIFIER, r.identifier);
-    if (r.operator) recordEntity("airline", norm.operator(r.operator), {});
+
+    // Classify the operator entity by travel_mode:
+    //   flight  -> airline
+    //   anything else -> operator (transfer, train, bus)
+    if (r.operator) {
+      const kind = r.travel_mode === "flight" ? "airline" : "operator";
+      recordEntity(kind, norm.operator(r.operator), {});
+    }
   }
   return rows.length;
 }
