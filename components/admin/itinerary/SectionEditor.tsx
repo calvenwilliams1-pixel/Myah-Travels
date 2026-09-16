@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
+import AutocompleteField from "@/components/ui/AutocompleteField";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
 import AddStayForm from "./AddStayForm";
 import ThemeSelector from "./ThemeSelector";
@@ -59,13 +61,15 @@ export default function SectionEditor({
       </div>
 
       {/* Base city */}
-      <AutosaveTextField
+      <AutocompleteField
         label="Base City"
         value={section.baseCity || ""}
         onSave={(v) => updateSection({ baseCity: v })}
         draftKey={`section:${section.id}:baseCity`}
         placeholder="Yokohama"
         helperText="The main city you're staying in for this part of the trip"
+        fieldKey={FIELD_KEYS.SECTION_BASE_CITY}
+        entityKind="city"
       />
 
       {/* Dates */}

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
+import AutocompleteField from "@/components/ui/AutocompleteField";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import { REFERENCE_TYPES } from "@/lib/itineraries/referenceTypes";
 import TravelLegFields, { type TravelLegDraft, type TravelMode } from "./TravelLegFields";
 import type { Segment, TravelLeg } from "./ItineraryEditor";
@@ -124,11 +126,12 @@ function SegmentRow({
 
           {/* Title always visible */}
           <div className="mt-2">
-            <AutosaveTextField
+            <AutocompleteField
               value={segment.title}
               onSave={(v) => update({ title: v })}
               draftKey={`segment:${segment.id}:title`}
               placeholder="Segment title"
+              fieldKey={FIELD_KEYS.SEGMENT_TITLE}
             />
           </div>
 
@@ -191,12 +194,13 @@ function SegmentRow({
                       placeholder="16:30"
                     />
                   </div>
-                  <AutosaveTextField
+                  <AutocompleteField
                     label="Location"
                     value={segment.location || ""}
                     onSave={(v) => update({ location: v })}
                     draftKey={`segment:${segment.id}:location`}
                     placeholder="Sumida, Tokyo"
+                    fieldKey={FIELD_KEYS.SEGMENT_LOCATION}
                   />
                 </>
               )}
@@ -220,12 +224,13 @@ function SegmentRow({
               </div>
 
               {segment.referenceType === "other" && (
-                <AutosaveTextField
+                <AutocompleteField
                   label="Custom Label"
                   value={segment.referenceLabel || ""}
                   onSave={(v) => update({ referenceLabel: v })}
                   draftKey={`segment:${segment.id}:referenceLabel`}
                   placeholder="Ticket Number"
+                  fieldKey={FIELD_KEYS.SEGMENT_REFERENCE_LABEL}
                 />
               )}
 
