@@ -47,6 +47,7 @@ export interface Segment {
   airline: string | null;
   flightNumber: string | null;
   isHighlighted: boolean | null;
+  manualPosition: number | null;
   legs?: TravelLeg[];
 }
 
@@ -73,6 +74,7 @@ export interface Day {
   dayNumber: number;
   title: string | null;
   notes: string | null;
+  orderMode: string;
   segments: Segment[];
   blocks?: ItineraryBlock[];
 }

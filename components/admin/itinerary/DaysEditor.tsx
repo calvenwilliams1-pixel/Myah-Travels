@@ -110,6 +110,36 @@ function DayRow({
         >
           Duplicate
         </button>
+        {day.orderMode === "manual" ? (
+          <button
+            onClick={async () => {
+              await fetch(`/api/days/${day.id}/order`, { method: "DELETE" });
+              onChanged();
+            }}
+            className="text-xs text-amber-600 hover:text-amber-800 px-2"
+            title="Reset segments to time-derived order"
+          >
+            Reset order
+          </button>
+        ) : (
+          <button
+            onClick={async () => {
+              // Enabling manual: seed positions from current order by sending
+              // the current ID sequence.
+              const ids = day.segments.map((s) => s.id);
+              await fetch(`/api/days/${day.id}/order`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ segmentIds: ids }),
+              });
+              onChanged();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2"
+            title="Enable manual ordering for this day's segments"
+          >
+            Manual order
+          </button>
+        )}
         <button
           onClick={remove}
           className="text-red-500 hover:text-red-700 text-sm"
@@ -136,6 +166,7 @@ function DayRow({
       <SegmentsEditor
         dayId={day.id}
         segments={day.segments}
+        orderMode={day.orderMode}
         onChanged={onChanged}
       />
 

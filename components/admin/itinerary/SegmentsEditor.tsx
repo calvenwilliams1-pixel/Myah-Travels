@@ -12,6 +12,7 @@ import type { Segment, TravelLeg } from "./ItineraryEditor";
 interface SegmentsEditorProps {
   dayId: number;
   segments: Segment[];
+  orderMode: string;
   onChanged: () => void;
 }
 
@@ -28,6 +29,7 @@ const TYPE_STYLES: Record<
 export default function SegmentsEditor({
   dayId,
   segments,
+  orderMode,
   onChanged,
 }: SegmentsEditorProps) {
   if (segments.length === 0) {
@@ -40,8 +42,16 @@ export default function SegmentsEditor({
 
   return (
     <div className="space-y-2">
-      {segments.map((seg) => (
-        <SegmentRow key={seg.id} segment={seg} onChanged={onChanged} />
+      {segments.map((seg, idx) => (
+        <SegmentRow
+          key={seg.id}
+          segment={seg}
+          onChanged={onChanged}
+          orderMode={orderMode}
+          index={idx}
+          allSegments={segments}
+          dayId={dayId}
+        />
       ))}
     </div>
   );
@@ -50,11 +60,21 @@ export default function SegmentsEditor({
 function SegmentRow({
   segment,
   onChanged,
+  orderMode,
+  index,
+  allSegments,
+  dayId,
 }: {
   segment: Segment;
   onChanged: () => void;
+  orderMode: string;
+  index: number;
+  allSegments: Segment[];
+  dayId: number;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDropTarget, setIsDropTarget] = useState(false);
   const style = TYPE_STYLES[segment.type] || TYPE_STYLES.activity;
 
   async function update(data: Partial<Segment>) {
@@ -71,9 +91,84 @@ function SegmentRow({
     onChanged();
   }
 
+  async function commitOrder(newOrderIds: number[]) {
+    await fetch(`/api/days/${dayId}/order`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ segmentIds: newOrderIds }),
+    });
+    onChanged();
+  }
+
+  function handleDragStart(e: React.DragEvent<HTMLDivElement>) {
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(segment.id));
+  }
+
+  function handleDragEnd() {
+    setIsDragging(false);
+    setIsDropTarget(false);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    if (orderMode !== "manual") return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (!isDragging) setIsDropTarget(true);
+  }
+
+  function handleDragLeave() {
+    setIsDropTarget(false);
+  }
+
+  async function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    setIsDropTarget(false);
+    if (orderMode !== "manual") return;
+    e.preventDefault();
+    const draggedId = Number(e.dataTransfer.getData("text/plain"));
+    if (!draggedId || draggedId === segment.id) return;
+
+    const ids = allSegments.map((s) => s.id);
+    const fromIdx = ids.indexOf(draggedId);
+    const toIdx = ids.indexOf(segment.id);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    ids.splice(fromIdx, 1);
+    ids.splice(toIdx, 0, draggedId);
+    await commitOrder(ids);
+  }
+
+  // Disagreement indicator: manual position order diverges from time order
+  const prev = allSegments[index - 1];
+  const timeDisagrees =
+    orderMode === "manual" &&
+    prev &&
+    segment.startTime &&
+    prev.startTime &&
+    segment.startTime < prev.startTime;
+
   return (
-    <div className={`${style.bg} ${style.border} border rounded-lg p-2`}>
+    <div
+      className={`${style.bg} ${style.border} border rounded-lg p-2 ${
+        isDragging ? "opacity-40" : ""
+      } ${isDropTarget ? "ring-2 ring-primary" : ""}`}
+      draggable={orderMode === "manual"}
+      onDragStart={orderMode === "manual" ? handleDragStart : undefined}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="flex items-start gap-2">
+        {orderMode === "manual" && (
+          <span
+            className="text-base text-gray-400 cursor-grab active:cursor-grabbing select-none"
+            title="Drag to reorder"
+          >
+            ⋮⋮
+          </span>
+        )}
         <span className="text-base mt-0.5">{style.icon}</span>
         <div className="flex-1 min-w-0">
           {/* Collapsed header row */}
@@ -81,6 +176,14 @@ function SegmentRow({
             <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">
               {style.label}
             </span>
+            {timeDisagrees && (
+              <span
+                className="text-xs text-amber-600"
+                title="This segment's position disagrees with its time order"
+              >
+                ⚠
+              </span>
+            )}
             <label
               className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer"
               title="Highlight this segment"
