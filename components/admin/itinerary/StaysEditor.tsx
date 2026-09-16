@@ -2,6 +2,8 @@
 
 import React from "react";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
+import AutocompleteField from "@/components/ui/AutocompleteField";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
 import AutosaveTimeField from "@/components/ui/autosave/AutosaveTimeField";
 import type { Stay } from "./ItineraryEditor";
@@ -59,11 +61,13 @@ function StayRow({
     <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
-          <AutosaveTextField
+          <AutocompleteField
             value={stay.hotelName}
             onSave={(v) => update({ hotelName: v })}
             draftKey={`stay:${stay.id}:hotelName`}
             placeholder="Hotel name"
+            fieldKey={FIELD_KEYS.STAY_HOTEL_NAME}
+            entityKind="hotel"
           />
         </div>
         <button
@@ -75,13 +79,14 @@ function StayRow({
         </button>
       </div>
 
-      <AutosaveTextField
+      <AutocompleteField
         label="Address"
         value={stay.address || ""}
         onSave={(v) => update({ address: v })}
         draftKey={`stay:${stay.id}:address`}
         placeholder="Full address"
         helperText="Useful for taxi drivers"
+        fieldKey={FIELD_KEYS.STAY_ADDRESS}
       />
 
       <div className="grid grid-cols-2 gap-3">
