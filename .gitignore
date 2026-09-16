@@ -10,7 +10,7 @@ build/
 dist/
 
 # Database
-data/
+data/*
 
 # Data directory — ignore runtime DB but allow static seeds
 !data/airports.json

@@ -1,0 +1,277 @@
+{
+  "_generated": false,
+  "_purpose": "development-seed",
+  "_note": "Replace with full dataset via scripts/fetch-static-data.js",
+  "items": [
+    {
+      "iata": "AC",
+      "icao": "ACA",
+      "name": "Air Canada",
+      "country": "Canada"
+    },
+    {
+      "iata": "WS",
+      "icao": "WJA",
+      "name": "WestJet",
+      "country": "Canada"
+    },
+    {
+      "iata": "PD",
+      "icao": "POE",
+      "name": "Porter Airlines",
+      "country": "Canada"
+    },
+    {
+      "iata": "TS",
+      "icao": "TSC",
+      "name": "Air Transat",
+      "country": "Canada"
+    },
+    {
+      "iata": "AA",
+      "icao": "AAL",
+      "name": "American Airlines",
+      "country": "United States"
+    },
+    {
+      "iata": "UA",
+      "icao": "UAL",
+      "name": "United Airlines",
+      "country": "United States"
+    },
+    {
+      "iata": "DL",
+      "icao": "DAL",
+      "name": "Delta Air Lines",
+      "country": "United States"
+    },
+    {
+      "iata": "WN",
+      "icao": "SWA",
+      "name": "Southwest Airlines",
+      "country": "United States"
+    },
+    {
+      "iata": "B6",
+      "icao": "JBU",
+      "name": "JetBlue Airways",
+      "country": "United States"
+    },
+    {
+      "iata": "AS",
+      "icao": "ASA",
+      "name": "Alaska Airlines",
+      "country": "United States"
+    },
+    {
+      "iata": "BA",
+      "icao": "BAW",
+      "name": "British Airways",
+      "country": "United Kingdom"
+    },
+    {
+      "iata": "VS",
+      "icao": "VIR",
+      "name": "Virgin Atlantic",
+      "country": "United Kingdom"
+    },
+    {
+      "iata": "AF",
+      "icao": "AFR",
+      "name": "Air France",
+      "country": "France"
+    },
+    {
+      "iata": "KL",
+      "icao": "KLM",
+      "name": "KLM Royal Dutch Airlines",
+      "country": "Netherlands"
+    },
+    {
+      "iata": "LH",
+      "icao": "DLH",
+      "name": "Lufthansa",
+      "country": "Germany"
+    },
+    {
+      "iata": "LX",
+      "icao": "SWR",
+      "name": "Swiss International Air Lines",
+      "country": "Switzerland"
+    },
+    {
+      "iata": "OS",
+      "icao": "AUA",
+      "name": "Austrian Airlines",
+      "country": "Austria"
+    },
+    {
+      "iata": "IB",
+      "icao": "IBE",
+      "name": "Iberia",
+      "country": "Spain"
+    },
+    {
+      "iata": "AZ",
+      "icao": "ITY",
+      "name": "ITA Airways",
+      "country": "Italy"
+    },
+    {
+      "iata": "TP",
+      "icao": "TAP",
+      "name": "TAP Air Portugal",
+      "country": "Portugal"
+    },
+    {
+      "iata": "AY",
+      "icao": "FIN",
+      "name": "Finnair",
+      "country": "Finland"
+    },
+    {
+      "iata": "SK",
+      "icao": "SAS",
+      "name": "Scandinavian Airlines",
+      "country": "Sweden"
+    },
+    {
+      "iata": "EI",
+      "icao": "EIN",
+      "name": "Aer Lingus",
+      "country": "Ireland"
+    },
+    {
+      "iata": "TK",
+      "icao": "THY",
+      "name": "Turkish Airlines",
+      "country": "Turkey"
+    },
+    {
+      "iata": "EK",
+      "icao": "UAE",
+      "name": "Emirates",
+      "country": "United Arab Emirates"
+    },
+    {
+      "iata": "QR",
+      "icao": "QTR",
+      "name": "Qatar Airways",
+      "country": "Qatar"
+    },
+    {
+      "iata": "EY",
+      "icao": "ETD",
+      "name": "Etihad Airways",
+      "country": "United Arab Emirates"
+    },
+    {
+      "iata": "SQ",
+      "icao": "SIA",
+      "name": "Singapore Airlines",
+      "country": "Singapore"
+    },
+    {
+      "iata": "CX",
+      "icao": "CPA",
+      "name": "Cathay Pacific",
+      "country": "Hong Kong"
+    },
+    {
+      "iata": "JL",
+      "icao": "JAL",
+      "name": "Japan Airlines",
+      "country": "Japan"
+    },
+    {
+      "iata": "NH",
+      "icao": "ANA",
+      "name": "All Nippon Airways",
+      "country": "Japan"
+    },
+    {
+      "iata": "KE",
+      "icao": "KAL",
+      "name": "Korean Air",
+      "country": "South Korea"
+    },
+    {
+      "iata": "OZ",
+      "icao": "AAR",
+      "name": "Asiana Airlines",
+      "country": "South Korea"
+    },
+    {
+      "iata": "CI",
+      "icao": "CAL",
+      "name": "China Airlines",
+      "country": "Taiwan"
+    },
+    {
+      "iata": "BR",
+      "icao": "EVA",
+      "name": "EVA Air",
+      "country": "Taiwan"
+    },
+    {
+      "iata": "TG",
+      "icao": "THA",
+      "name": "Thai Airways",
+      "country": "Thailand"
+    },
+    {
+      "iata": "MH",
+      "icao": "MAS",
+      "name": "Malaysia Airlines",
+      "country": "Malaysia"
+    },
+    {
+      "iata": "GA",
+      "icao": "GIA",
+      "name": "Garuda Indonesia",
+      "country": "Indonesia"
+    },
+    {
+      "iata": "QF",
+      "icao": "QFA",
+      "name": "Qantas",
+      "country": "Australia"
+    },
+    {
+      "iata": "NZ",
+      "icao": "ANZ",
+      "name": "Air New Zealand",
+      "country": "New Zealand"
+    },
+    {
+      "iata": "SA",
+      "icao": "SAA",
+      "name": "South African Airways",
+      "country": "South Africa"
+    },
+    {
+      "iata": "MS",
+      "icao": "MSR",
+      "name": "EgyptAir",
+      "country": "Egypt"
+    },
+    {
+      "iata": "ET",
+      "icao": "ETH",
+      "name": "Ethiopian Airlines",
+      "country": "Ethiopia"
+    },
+    {
+      "iata": "LA",
+      "icao": "LAN",
+      "name": "LATAM Airlines",
+      "country": "Chile"
+    },
+    {
+      "iata": "AM",
+      "icao": "AMX",
+      "name": "Aerom\u00e9xico",
+      "country": "Mexico"
+    }
+  ]
+}
