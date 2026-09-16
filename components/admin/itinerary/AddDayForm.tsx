@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import AutocompleteInput from "@/components/ui/AutocompleteInput";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
 interface AddDayFormProps {
   sectionId: number;
@@ -80,12 +82,13 @@ export default function AddDayForm({
           autoFocus
         />
 
-        <Input
+        <AutocompleteInput
           label="Day Title (optional)"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={setTitle}
           placeholder="Arrival & Transfer"
           helperText="A short nickname for this day (e.g., 'Arrival Day', 'Cruise Day', 'Museum Day'). The details of each activity go into Segments."
+          fieldKey={FIELD_KEYS.DAY_TITLE}
         />
 
         {error && <p className="text-red-600 text-sm">{error}</p>}

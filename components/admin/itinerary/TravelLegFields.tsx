@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Input } from "@/components/ui/Input";
+import AutocompleteInput from "@/components/ui/AutocompleteInput";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import { TIMEZONE_GROUPS } from "@/lib/itineraries/timezones";
 
 export type TravelMode = "flight" | "train" | "bus" | "transfer" | "other";
@@ -114,17 +116,19 @@ export default function TravelLegFields({
 
       {/* Origin / Destination */}
       <div className="grid grid-cols-2 gap-2">
-        <Input
+        <AutocompleteInput
           label={labels.origin}
           value={leg.origin}
-          onChange={(e) => onChange({ origin: e.target.value })}
+          onChange={(v) => onChange({ origin: v })}
           placeholder={labels.originPh}
+          fieldKey={FIELD_KEYS.LEG_ORIGIN}
         />
-        <Input
+        <AutocompleteInput
           label={labels.destination}
           value={leg.destination}
-          onChange={(e) => onChange({ destination: e.target.value })}
+          onChange={(v) => onChange({ destination: v })}
           placeholder={labels.destPh}
+          fieldKey={FIELD_KEYS.LEG_DESTINATION}
         />
       </div>
 
@@ -186,16 +190,18 @@ export default function TravelLegFields({
 
       {/* Operator / Identifier */}
       <div className="grid grid-cols-2 gap-2">
-        <Input
+        <AutocompleteInput
           label={labels.operator}
           value={leg.operator}
-          onChange={(e) => onChange({ operator: e.target.value })}
+          onChange={(v) => onChange({ operator: v })}
+          fieldKey={FIELD_KEYS.LEG_OPERATOR}
         />
-        <Input
+        <AutocompleteInput
           label={labels.identifier}
           value={leg.identifier}
-          onChange={(e) => onChange({ identifier: e.target.value })}
+          onChange={(v) => onChange({ identifier: v })}
           placeholder={labels.identifierPh}
+          fieldKey={FIELD_KEYS.LEG_IDENTIFIER}
         />
       </div>
 

@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import AutocompleteInput from "@/components/ui/AutocompleteInput";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
 interface AddSectionFormProps {
   itineraryId: number;
@@ -36,12 +38,13 @@ export default function AddSectionForm({
   return (
     <Card>
       <h3 className="font-semibold mb-3">New Section</h3>
-      <Input
+      <AutocompleteInput
         label="Section Title"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={setTitle}
         placeholder="Japan Pre-Cruise"
         helperText="A short name for this part of the trip (e.g., Japan, Cruise, Singapore)"
+        fieldKey={FIELD_KEYS.SECTION_TITLE}
         autoFocus
         onKeyDown={(e) => {
           if (e.key === "Enter") handleSave();

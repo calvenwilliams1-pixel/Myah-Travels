@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import AutocompleteInput from "@/components/ui/AutocompleteInput";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
 interface AddStayFormProps {
   sectionId: number;
@@ -80,21 +82,29 @@ export default function AddStayForm({
     <Card className="mb-3 bg-gray-50">
       <h4 className="font-semibold text-sm mb-3">New Stay</h4>
       <div className="space-y-3">
-        <Input
+        <AutocompleteInput
           label="Hotel Name"
           value={hotelName}
-          onChange={(e) => setHotelName(e.target.value)}
+          onChange={setHotelName}
           placeholder="The Yokohama Bay Hotel Tokyu"
           helperText="Full hotel name as it appears on the booking"
+          fieldKey={FIELD_KEYS.STAY_HOTEL_NAME}
+          entityKind="hotel"
           autoFocus
+          onEntityAccept={(payload) => {
+            if (payload.address && !address.trim()) setAddress(payload.address);
+            if (payload.check_in_time && !checkInTime) setCheckInTime(payload.check_in_time);
+            if (payload.check_out_time && !checkOutTime) setCheckOutTime(payload.check_out_time);
+          }}
         />
 
-        <Input
+        <AutocompleteInput
           label="Address (optional)"
           value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          onChange={setAddress}
           placeholder="2 Chome-3-7 Minatomirai, Nishi Ward, Yokohama"
           helperText="Useful for taxi drivers and navigation"
+          fieldKey={FIELD_KEYS.STAY_ADDRESS}
         />
 
         <div className="grid grid-cols-2 gap-3">

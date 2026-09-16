@@ -7,6 +7,8 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import AutocompleteInput from "@/components/ui/AutocompleteInput";
+import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
 interface AddSegmentFormProps {
   dayId: number;
@@ -209,10 +211,10 @@ export default function AddSegmentForm({
         </div>
 
         {/* Title */}
-        <Input
+        <AutocompleteInput
           label="Title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={setTitle}
           placeholder={
             type === "travel"
               ? "Air Canada AC0009 to Tokyo"
@@ -221,6 +223,7 @@ export default function AddSegmentForm({
               : "Tokyo Skytree visit"
           }
           helperText="Short and descriptive"
+          fieldKey={FIELD_KEYS.SEGMENT_TITLE}
           autoFocus
         />
 
@@ -277,12 +280,13 @@ export default function AddSegmentForm({
                 className="cursor-pointer"
               />
             </div>
-            <Input
+            <AutocompleteInput
               label="Location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={setLocation}
               placeholder="Sumida, Tokyo"
               helperText="Where it happens"
+              fieldKey={FIELD_KEYS.SEGMENT_LOCATION}
             />
           </>
         )}
@@ -323,12 +327,13 @@ export default function AddSegmentForm({
         </div>
 
         {referenceType === "other" && (
-          <Input
+          <AutocompleteInput
             label="Custom Label"
             value={referenceLabel}
-            onChange={(e) => setReferenceLabel(e.target.value)}
+            onChange={setReferenceLabel}
             placeholder="Ticket Number"
             helperText="What should the client see before the value?"
+            fieldKey={FIELD_KEYS.SEGMENT_REFERENCE_LABEL}
           />
         )}
 
