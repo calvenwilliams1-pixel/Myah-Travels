@@ -48,3 +48,147 @@ npm run dev
 - [ ] Client itinerary preview works
 - [ ] Print / Save PDF works
 - [ ] No console errors
+
+---
+
+## Phase 7.8 — Data Entry Automation
+
+### Setup
+
+~~~
+git pull origin main
+node scripts/setup-db.js      # adds entities + field_values + order_mode + manual_position
+npm run dev
+~~~
+
+Note: Phase 7.8 schema lands automatically via setup-db.js — no separate migration script.
+
+### Wave A — Suggestion system
+
+**Test A1 — Entity memory: hotel**
+- [ ] Open an itinerary editor, add a stay
+- [ ] Type "Oakwood" in Hotel Name
+- [ ] Dropdown shows matching entities (★ prefix = entity)
+- [ ] Select the entity → Address field auto-fills (only if it was empty)
+- [ ] Save. Re-open the itinerary. Edit the same stay
+- [ ] Type "Oak" again → same entity appears at top of dropdown
+
+**Test A2 — Entity hydration is touched-safe**
+- [ ] Add a new stay
+- [ ] Type "Oakwood" and accept the entity (Address fills)
+- [ ] Manually change Address to something else
+- [ ] Type "Oak" again and accept the entity a second time
+- [ ] Confirm: Address keeps the manual value, does not get overwritten
+
+**Test A3 — Field value memory**
+- [ ] Add several segments with locations like "Shibuya", "Shinjuku", "Shibuya"
+- [ ] Save each
+- [ ] Add another segment, start typing "Shi" in Location
+- [ ] Both "Shibuya" and "Shinjuku" appear (○ prefix = field value)
+- [ ] "Shibuya" appears above "Shinjuku" (higher use_count)
+
+**Test A4 — Static airports**
+- [ ] Add a travel segment, mode=flight
+- [ ] Type "YYZ" in From field
+- [ ] Dropdown shows "YYZ · Toronto Pearson International" (◆ prefix = static)
+- [ ] Accept → field saves just "YYZ" (the code, not the full string)
+
+**Test A5 — Static airlines**
+- [ ] In the Operator field, type "Air C"
+- [ ] Dropdown shows "Air Canada" from statics
+
+**Test A6 — Per-field ranking override (leg.origin)**
+- [ ] Fly from YYZ three separate times (three different segments)
+- [ ] Type "YYZ" — should still show static first until use_count >= 5
+- [ ] After 5 uses, field value should outrank the static entry
+
+**Test A7 — Field value filter**
+- [ ] Type a typo once ("Shibuyaa") in a location
+- [ ] Save
+- [ ] Start typing "Shib" — typo should NOT appear (use_count < 2)
+- [ ] Use the typo again (or manually fix and re-save)
+- [ ] After use_count >= 2, typo appears
+
+### Wave B — Duplication
+
+**Test B1 — Duplicate segment**
+- [ ] Open a day with a segment
+- [ ] Click "Duplicate" on the segment row
+- [ ] A copy appears (verify by segment count in the day)
+- [ ] Travel legs copied if the source was a travel segment
+- [ ] Copy has manual_position = null (open dev tools / check DB)
+
+**Test B2 — Duplicate day**
+- [ ] Open a section with a populated day (multiple segments + maybe blocks)
+- [ ] Click "Duplicate" on the day row
+- [ ] New day appears at date +1 with dayNumber +1
+- [ ] All segments copied, all legs copied, day-anchored blocks copied
+- [ ] orderMode on the new day = "time" (manual order not carried)
+- [ ] Section-anchored blocks are NOT copied (only day-anchored)
+
+**Test B3 — Extend by one day**
+- [ ] Open a section, click "Extend by 1 day"
+- [ ] New empty day appears with date +1 from the latest day
+
+### Wave B — Drag-reorder
+
+**Test B4 — Toggle manual order**
+- [ ] Open a day with 3+ segments. Default: no drag handles
+- [ ] Click "Manual order" on the day row
+- [ ] Drag handles (⋮⋮) appear on segments
+- [ ] "Manual order" button is replaced by "Reset order"
+
+**Test B5 — Drag to reorder**
+- [ ] Drag segment 3 above segment 1
+- [ ] On drop, order persists (refresh page → order kept)
+- [ ] Server received `PATCH /api/days/[id]/order` with the reordered ID array
+
+**Test B6 — Disagreement indicator**
+- [ ] Set manual order so a segment with later startTime is above one with earlier startTime
+- [ ] ⚠ appears next to the type label on the out-of-order segment
+- [ ] Editor-only — client-facing render does NOT show it
+
+**Test B7 — Reset to time order**
+- [ ] With manual order active, click "Reset order"
+- [ ] Segments re-sort by startTime
+- [ ] Drag handles disappear, "Manual order" button returns
+
+**Test B8 — New segment defaults to time order in manual day**
+- [ ] In a manual-ordered day, add a new segment
+- [ ] New segment arrives with manual_position = null
+- [ ] It sorts by its startTime within the day, not at the end
+
+### Regression checks (Phase 7.8 additions)
+
+- [ ] Duplication of a day with blocks does NOT double-count section blocks
+- [ ] Cross-itinerary copy still requires target itinerary to exist (403 if not)
+- [ ] Recording doesn't slow down saves noticeably (each save should still feel instant)
+- [ ] After many saves, `entities` and `field_values` grow, no duplicates (unique constraint holds)
+- [ ] Autocomplete dropdown closes on outside click and on Esc
+- [ ] Autosave indicator still shows on AutocompleteField (editor views) but not AutocompleteInput (add forms)
+
+### Handy SQL queries (Phase 7.8)
+
+Check what's been learned:
+
+~~~
+node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare('SELECT kind, canonical_name, use_count FROM entities ORDER BY use_count DESC LIMIT 10').all(); console.log(r); db.close();"
+~~~
+
+Field values by use:
+
+~~~
+node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare('SELECT field_key, value, use_count FROM field_values ORDER BY use_count DESC LIMIT 15').all(); console.log(r); db.close();"
+~~~
+
+Manual-order state:
+
+~~~
+node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare('SELECT id, date, order_mode FROM itinerary_days WHERE order_mode = \'manual\'').all(); console.log(r); db.close();"
+~~~
+
+Segments with manual positions:
+
+~~~
+node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare('SELECT id, day_id, title, start_time, manual_position FROM itinerary_segments WHERE manual_position IS NOT NULL ORDER BY day_id, manual_position').all(); console.log(r); db.close();"
+~~~
