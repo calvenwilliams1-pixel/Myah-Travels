@@ -101,6 +101,16 @@ function DayRow({
           {showAddSegment ? "Cancel" : "+ Segment"}
         </Button>
         <button
+          onClick={async () => {
+            const res = await fetch(`/api/days/${day.id}/duplicate`, { method: "POST" });
+            if (res.ok) onChanged();
+          }}
+          className="text-xs text-gray-500 hover:text-gray-700 px-2"
+          title="Duplicate this day and its contents"
+        >
+          Duplicate
+        </button>
+        <button
           onClick={remove}
           className="text-red-500 hover:text-red-700 text-sm"
           aria-label="Delete day"

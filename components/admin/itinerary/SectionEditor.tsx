@@ -151,13 +151,26 @@ export default function SectionEditor({
       <div>
         <div className="flex items-center justify-between mb-2">
           <h4 className="font-medium text-sm text-gray-700">Days</h4>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowAddDay(!showAddDay)}
-          >
-            {showAddDay ? "Cancel" : "+ Add Day"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={async () => {
+                const res = await fetch(`/api/sections/${section.id}/extend-day`, { method: "POST" });
+                if (res.ok) onChanged();
+              }}
+              title="Add a new day at the end of this section"
+            >
+              Extend by 1 day
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowAddDay(!showAddDay)}
+            >
+              {showAddDay ? "Cancel" : "+ Add Day"}
+            </Button>
+          </div>
         </div>
 
         {showAddDay && (

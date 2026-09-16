@@ -109,8 +109,19 @@ function SegmentRow({
             )}
             <button
               type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={async () => {
+                const res = await fetch(`/api/segments/${segment.id}/duplicate`, { method: "POST" });
+                if (res.ok) onChanged();
+              }}
               className="ml-auto text-xs text-gray-500 hover:text-gray-700"
+              title="Duplicate segment"
+            >
+              Duplicate
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-xs text-gray-500 hover:text-gray-700"
             >
               {isExpanded ? "Collapse" : "Edit"}
             </button>
