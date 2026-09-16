@@ -1,44 +1,38 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import SaveIndicator from "@/components/admin/SaveIndicator";
 import SuggestionDropdown, { type SuggestionItem } from "@/components/ui/SuggestionDropdown";
-import { useAutosaveField } from "@/lib/hooks/useAutosaveField";
 import { useSuggestions } from "@/lib/suggestions/useSuggestions";
 
-// ============================================================
-// AUTOCOMPLETE FIELD (Phase 7.8)
-// Autosave-backed input with suggestion dropdown. Editor-side.
-// ============================================================
-
-interface AutocompleteFieldProps {
+interface AutocompleteInputProps {
   label?: string;
   value: string;
-  onSave: (value: string) => Promise<void>;
-  draftKey?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
   helperText?: string;
   disabled?: boolean;
-  placeholder?: string;
   fieldKey: string;
   entityKind?: string;
   onEntityAccept?: (payload: Record<string, string>) => void;
+  autoFocus?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const DEBOUNCE_MS = 150;
 
-export default function AutocompleteField({
+export default function AutocompleteInput({
   label,
   value,
-  onSave,
-  draftKey,
+  onChange,
+  placeholder,
   helperText,
   disabled,
-  placeholder,
   fieldKey,
   entityKind,
   onEntityAccept,
-}: AutocompleteFieldProps) {
-  const field = useAutosaveField<string>({ value, onSave, draftKey });
+  autoFocus,
+  onKeyDown,
+}: AutocompleteInputProps) {
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
@@ -46,14 +40,6 @@ export default function AutocompleteField({
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<number | null>(null);
   const { fetchSuggestions } = useSuggestions();
-
-  const lastExternalValueRef = useRef(value);
-  useEffect(() => {
-    if (value !== lastExternalValueRef.current) {
-      lastExternalValueRef.current = value;
-      if (field.value !== value) field.setValue(value);
-    }
-  }, [value, field]);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -72,7 +58,7 @@ export default function AutocompleteField({
   }
 
   function handleChange(next: string) {
-    field.setValue(next);
+    onChange(next);
     setIsOpen(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => run(next), DEBOUNCE_MS);
@@ -80,7 +66,7 @@ export default function AutocompleteField({
 
   function handleFocus() {
     setIsOpen(true);
-    run(field.value);
+    run(value);
   }
 
   function accept(item: SuggestionItem) {
@@ -88,8 +74,7 @@ export default function AutocompleteField({
       item.source === "static" && item.value.includes(" · ")
         ? item.value.split(" · ")[0]
         : item.value;
-    field.setValue(finalValue);
-    field.flush();
+    onChange(finalValue);
     if (item.payload && onEntityAccept) onEntityAccept(item.payload);
     setIsOpen(false);
     setSuggestions([]);
@@ -117,11 +102,11 @@ export default function AutocompleteField({
         return;
       }
     }
-    if (e.key === "Enter") field.flush();
+    if (onKeyDown) onKeyDown(e);
   }
 
   const inputId = label
-    ? "ac-" + label.toLowerCase().replace(/\s+/g, "-")
+    ? "ac-input-" + label.toLowerCase().replace(/\s+/g, "-")
     : undefined;
 
   return (
@@ -135,21 +120,16 @@ export default function AutocompleteField({
         <input
           id={inputId}
           type="text"
-          value={field.value}
+          value={value}
           onChange={(e) => handleChange(e.target.value)}
           onFocus={handleFocus}
-          onBlur={() => field.flush()}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={placeholder}
+          autoFocus={autoFocus}
           autoComplete="off"
-          className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
         />
-        {field.dirty && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <SaveIndicator state={field.saveState} showText={false} />
-          </div>
-        )}
         {isOpen && (
           <SuggestionDropdown
             suggestions={suggestions}
