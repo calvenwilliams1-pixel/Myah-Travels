@@ -56,3 +56,15 @@ export const suggestionEvents = sqliteTable(
     idxCreatedAt: index("idx_suggestion_events_created_at").on(table.createdAt),
   })
 );
+
+// FTS5 virtual table shadowing field_values. Kept in sync via triggers
+// in the migration. Queries switch to MATCH when > ~50K rows; below that,
+// the existing LIKE + index is faster.
+export const fieldValuesFts = sqliteTable(
+  "field_values_fts",
+  {
+    rowid: integer("rowid"),
+    fieldKey: text("field_key"),
+    value: text("value"),
+  }
+);

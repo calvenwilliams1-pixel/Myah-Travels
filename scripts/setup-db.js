@@ -202,6 +202,23 @@ try {
   console.error("  suggestion_events:", err.message);
 }
 
+
+// Ensure FTS5 on field_values exists (Phase 7.8)
+try {
+  db.exec(`
+    CREATE VIRTUAL TABLE IF NOT EXISTS field_values_fts USING fts5(
+      field_key,
+      value,
+      content='field_values',
+      content_rowid='id'
+    );
+  `);
+  console.log("  field_values_fts ready");
+} catch (err) {
+  // FTS5 may not be compiled into every SQLite build — tolerate failure.
+  console.warn("  field_values_fts unavailable:", err.message);
+}
+
 db.close();
 console.log("\n✅ Database setup complete: data/site.db");
 console.log("Next: run npm run seed");
