@@ -6,6 +6,15 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import FontFamily from "@tiptap/extension-font-family";
+import TextAlign from "@tiptap/extension-text-align";
+import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import CharacterCount from "@tiptap/extension-character-count";
+import FontSize from "@/lib/editor/font-size-extension";
 import Toolbar from "./Toolbar";
 import { CanvasBlockNode } from "./CanvasBlockNode";
 
@@ -39,7 +48,9 @@ export default function TipTapEditor({
   const editor = useEditor({
     immediatelyRender: false,
       extensions: [
-      StarterKit,
+      StarterKit.configure({
+        horizontalRule: false, // replaced by explicit HorizontalRule extension
+      }),
       CanvasBlockNode,
       Image.configure({
         HTMLAttributes: {
@@ -52,6 +63,15 @@ export default function TipTapEditor({
           class: "text-primary underline",
         },
       }),
+      Underline,
+      TextStyle,
+      FontSize,
+      FontFamily,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      HorizontalRule,
+      CharacterCount,
       Placeholder.configure({
         placeholder,
       }),
