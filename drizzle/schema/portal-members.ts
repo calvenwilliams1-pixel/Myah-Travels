@@ -19,6 +19,7 @@ export const portalMembers = sqliteTable(
     bannedAt: text("banned_at"),
     banReason: text("ban_reason"),
     linkRevokedAt: text("link_revoked_at"),
+    personId: integer("person_id"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     deletedAt: text("deleted_at"),
   },

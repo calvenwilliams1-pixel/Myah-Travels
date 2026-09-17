@@ -17,6 +17,7 @@ export const portals = sqliteTable(
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     archivedAt: text("archived_at"),
     deletedAt: text("deleted_at"),
+    keepUntil: text("keep_until"),
   },
   (table) => ({
     idxPortalsDeletedAt: index("idx_portals_deleted_at").on(table.deletedAt),

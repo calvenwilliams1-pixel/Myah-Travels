@@ -7,10 +7,10 @@ export const itineraries = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     portalId: integer("portal_id")
-      .notNull()
-      .references(() => portals.id, { onDelete: "cascade" }),
+      .references(() => portals.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     themePreset: text("theme_preset"),
+    isArchived: integer("is_archived", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at"),
     deletedAt: text("deleted_at"),
