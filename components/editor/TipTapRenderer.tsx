@@ -1,3 +1,4 @@
+import DOMPurify from "isomorphic-dompurify";
 import React from "react";
 import { generateHTML } from "@tiptap/html";
 import StarterKit from "@tiptap/starter-kit";
@@ -70,7 +71,7 @@ export default function TipTapRenderer({ content }: TipTapRendererProps) {
             <div
               key={index}
               className="prose prose-sm sm:prose-base max-w-none"
-              dangerouslySetInnerHTML={{ __html: html }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
             />
           );
         })}
@@ -85,7 +86,7 @@ export default function TipTapRenderer({ content }: TipTapRendererProps) {
     return (
       <div
         className="prose prose-sm sm:prose-base max-w-none whitespace-pre-line"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
       />
     );
   }

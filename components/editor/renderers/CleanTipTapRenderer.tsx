@@ -1,3 +1,4 @@
+import DOMPurify from "isomorphic-dompurify";
 import React from "react";
 import { generateHTML } from "@tiptap/html";
 import StarterKit from "@tiptap/starter-kit";
@@ -21,7 +22,7 @@ export default function CleanTipTapRenderer({ content }: CleanTipTapRendererProp
   return (
     <div
       className="prose prose-sm sm:prose-base max-w-none"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
     />
   );
 }

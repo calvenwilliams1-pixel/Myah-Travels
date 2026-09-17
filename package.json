@@ -41,6 +41,7 @@
     "dompurify": "^3.4.14",
     "drizzle-orm": "^0.33.0",
     "file-type": "^19.0.0",
+    "isomorphic-dompurify": "^4.2.0",
     "lodash.debounce": "^4.0.8",
     "lucia": "^3.2.0",
     "nanoid": "^5.0.7",

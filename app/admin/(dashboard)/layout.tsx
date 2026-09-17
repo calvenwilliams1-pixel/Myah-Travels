@@ -1,7 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser, destroySession } from "@/lib/auth";
+import { getCurrentUser, destroySession, getUserTotpStatus } from "@/lib/auth";
 import ThemeProvider from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 
@@ -14,6 +14,14 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect("/admin/login");
+  }
+
+  // SECURITY: enforce TOTP enrollment. If the admin has not enabled 2FA,
+  // redirect to the enrollment page. This is the single most important
+  // auth control on the platform — a password alone is not sufficient.
+  const totpStatus = await getUserTotpStatus(Number(user.id));
+  if (!totpStatus.totpEnabled) {
+    redirect("/admin/enroll-2fa");
   }
 
   async function handleLogout() {
@@ -45,9 +53,6 @@ export default async function DashboardLayout({
 
               <Link href="/admin/media" className="text-sm text-gray-600 hover:text-primary">
                 Media
-              </Link>
-              <Link href="/admin/content-library" className="text-sm text-gray-600 hover:text-primary">
-                Content Library
               </Link>
               <Link href="/admin/content-library" className="text-sm text-gray-600 hover:text-primary">
                 Content Library

@@ -57,6 +57,26 @@ export function verifyTotp(token: string, secret: string): boolean {
   }
 }
 
+/**
+ * Reads the admin user's TOTP status. Returns { totpEnabled, totpSecret }.
+ * Used by the TOTP enforcement check in the admin dashboard layout.
+ */
+export async function getUserTotpStatus(userId: number): Promise<{
+  totpEnabled: boolean;
+  totpSecret: string | null;
+}> {
+  const { db } = await import("@/lib/db");
+  const { users } = await import("@/drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const row = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  if (row.length === 0) return { totpEnabled: false, totpSecret: null };
+  return {
+    totpEnabled: !!row[0].totpEnabled,
+    totpSecret: row[0].totpSecret ?? null,
+  };
+}
+
 export async function createSession(userId: number): Promise<string> {
   const stringUserId = userId.toString();
   await lucia.invalidateUserSessions(stringUserId);
