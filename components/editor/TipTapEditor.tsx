@@ -16,6 +16,7 @@ import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import CharacterCount from "@tiptap/extension-character-count";
 import FontSize from "@/lib/editor/font-size-extension";
 import Toolbar from "./Toolbar";
+import EditorContextMenu from "./EditorContextMenu";
 import { CanvasBlockNode } from "./CanvasBlockNode";
 
 interface TipTapEditorProps {
@@ -94,8 +95,14 @@ export default function TipTapEditor({
     return <div className="h-[400px] bg-gray-50 rounded-lg animate-pulse" />;
   }
 
+  // Ref used to scope the context menu to this editor instance
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative border border-gray-200 rounded-lg overflow-hidden"
+    >
       {!readOnly && (
         <Toolbar
           editor={editor}
@@ -103,6 +110,7 @@ export default function TipTapEditor({
         />
       )}
       <EditorContent editor={editor} />
+      {!readOnly && <EditorContextMenu editor={editor} containerRef={containerRef} />}
     </div>
   );
 }
