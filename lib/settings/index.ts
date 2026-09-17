@@ -83,6 +83,8 @@ export const DEFAULT_SETTINGS = {
   footer_text: "",
   logo_path: "",
   bio_text: "Black mom of three and wife to the mushroom king, I've always loved to travel almost as much as I love to create a new world through writing. I'm at this beautiful point in my life where I want to combine my love for both and share that with you all.",
-  instagram_url: "https://instagram.com",
-  youtube_url: "https://youtube.com",
+  instagram_url: "",
+  tiktok_url: "",
+  facebook_url: "",
+  youtube_url: "",
 };

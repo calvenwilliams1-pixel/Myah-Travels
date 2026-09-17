@@ -27,6 +27,10 @@ export async function saveSettingsAction(formData: FormData) {
     "admin_email",
     "footer_text",
     "logo_path",
+    "instagram_url",
+    "tiktok_url",
+    "facebook_url",
+    "youtube_url",
   ];
 
   for (const key of keys) {

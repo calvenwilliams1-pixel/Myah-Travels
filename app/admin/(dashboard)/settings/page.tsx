@@ -110,6 +110,39 @@ export default async function SettingsPage() {
           </div>
         </Card>
 
+        <Card>
+          <h3 className="font-semibold mb-4">Social Handles</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Full URLs. Leave blank to omit a platform. These are for linking only — no auto-posting.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Instagram"
+              name="instagram_url"
+              defaultValue={settings.instagram_url || ""}
+              placeholder="https://instagram.com/yourhandle"
+            />
+            <Input
+              label="TikTok"
+              name="tiktok_url"
+              defaultValue={settings.tiktok_url || ""}
+              placeholder="https://tiktok.com/@yourhandle"
+            />
+            <Input
+              label="Facebook"
+              name="facebook_url"
+              defaultValue={settings.facebook_url || ""}
+              placeholder="https://facebook.com/yourpage"
+            />
+            <Input
+              label="YouTube"
+              name="youtube_url"
+              defaultValue={settings.youtube_url || ""}
+              placeholder="https://youtube.com/@yourchannel"
+            />
+          </div>
+        </Card>
+
         <Button type="submit">Save Settings</Button>
       </form>
 
