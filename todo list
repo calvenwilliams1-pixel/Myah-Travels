@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 14)
+# MyCalTravels — TODO.md (Revision 15)
 
 ## Status
 
-**Phase 7.6 + 7.8 complete. Phase 7.9 (Post Editor and Writing Tools) and Phase 9 (Client Memory System) plans locked — see PHASES-7.9-AND-9-PLAN.md. Testing debt accumulating — see TESTING.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed (Canvas deletion and better-sqlite3 mini-PC dropped; publish validation, error boundaries, responsive preview retained). Launch Day prep documented as Phase 7.7. Security audit flagged for launch prep.**
+**Phase 7.6 + 7.8 + 7.9 complete. Phase 9 (Client Memory System) plan locked — see PHASES-7.9-AND-9-PLAN.md. Testing debt accumulating — see TESTING.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed (Canvas deletion and better-sqlite3 mini-PC dropped; publish validation, error boundaries, responsive preview retained). Launch Day prep documented as Phase 7.7. Security audit flagged for launch prep.**
 
 ## Core Principle
 
@@ -452,34 +452,34 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 
 ---
 
-## Phase 7.9: Post Editor and Writing Tools (NEXT — plan locked)
+## Phase 7.9: Post Editor and Writing Tools ✅ COMPLETE
 
 Scope: transform the post editor from typewriter to stylized writing tool. Full plan in PHASES-7.9-AND-9-PLAN.md.
 
 ### Wave 7.9-A — Editor toolbar overhaul
-- [ ] Rich text toolbar: bold, italic, underline, colour (semantic tokens + raw picker), highlight (curated), font family (~20 curated), font size (presets + fine-tune), alignment, lists, links, blockquote, horizontal rule, clear formatting
-- [ ] Sticky toolbar, grouped (Text style / Structure / Insert), collapsible on narrow viewports
-- [ ] Keyboard shortcuts (Cmd+B, Cmd+I, Cmd+U, Cmd+K)
-- [ ] Word count + reading time estimate
-- [ ] Paste sanitization — strip inline styles from pasted content
+- [x] Rich text toolbar: bold, italic, underline, colour (semantic tokens + raw picker), highlight (curated), font family (~20 curated), font size (presets + fine-tune), alignment, lists, links, blockquote, horizontal rule, clear formatting
+- [x] Sticky toolbar, grouped (Text style / Structure / Insert), collapsible on narrow viewports
+- [x] Keyboard shortcuts (Cmd+B, Cmd+I, Cmd+U, Cmd+K)
+- [x] Word count + reading time estimate
+- [x] Paste sanitization — strip inline styles from pasted content
 
 ### Wave 7.9-B — Colour presets system
-- [ ] color_presets table: named presets with hex values
-- [ ] Curated defaults seeded on first run
-- [ ] Myah can create new presets and overwrite curated defaults
-- [ ] Presets are global (site-wide), not per-post
-- [ ] Text colour and highlight colour both draw from this library
+- [x] color_presets table: named presets with hex values
+- [x] Curated defaults seeded on first run
+- [x] Myah can create new presets and overwrite curated defaults
+- [x] Presets are global (site-wide), not per-post
+- [x] Text colour and highlight colour both draw from this library
 
 ### Wave 7.9-C — Pop-up preview
-- [ ] Pop-out preview (floating, resizable, movable)
-- [ ] Fullscreen preview mode (button inside pop-out)
-- [ ] No modal — redundant with floating
-- [ ] Retire the fixed right-side pane in favour of pop-out as default
+- [x] Pop-out preview (floating, resizable, movable)
+- [x] Fullscreen preview mode (button inside pop-out)
+- [x] No modal — redundant with floating
+- [x] Retire the fixed right-side pane in favour of pop-out as default
 
 ### Wave 7.9-D — YouTube auto-embed + social handles
-- [ ] Detect YouTube URLs in Body blocks, render inline embed
-- [ ] Settings page for social handles (Instagram, TikTok, Facebook, YouTube)
-- [ ] No publishing — linking only
+- [x] Detect YouTube URLs in Body blocks, render inline embed
+- [x] Settings page for social handles (Instagram, TikTok, Facebook, YouTube)
+- [x] No publishing — linking only
 
 ### Reviewer overrides recorded
 - Stakeholder overrode both reviewers on font family (kept, curated ~20) and raw colour picker (kept, with presets system). Rationale: optional does not mean harmful; guardrails hold; automatic entity colouring keeps daily decisions minimal.
@@ -679,7 +679,7 @@ Scope: canonical client records that persist across portals, with nested notepad
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Write PHASES-7.9-AND-9-PLAN.md (full plan doc), update SRS, then begin Phase 7.9 Wave A (editor toolbar overhaul). Testing debt still pending — see TESTING.md.
+**Next action:** Phase 9 (Client Memory System) — Waves 9A-9F. Testing debt accumulated across 7.6 + 7.8 + 7.9 — needs a full local pass. See TESTING.md.
 
 ---
 

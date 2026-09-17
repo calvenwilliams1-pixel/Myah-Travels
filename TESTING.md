@@ -263,7 +263,7 @@ node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare(
 
 ---
 
-## Phase 7.9 — Post Editor and Writing Tools (PENDING)
+## Phase 7.9 — Post Editor and Writing Tools (CODE-COMPLETE — needs local test)
 
 Tests written as each wave ships.
 

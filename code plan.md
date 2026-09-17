@@ -1,8 +1,8 @@
-# MyCalTravels — CODE-PLAN.md (Revision 6)
+# MyCalTravels — CODE-PLAN.md (Revision 7)
 
 ## Overview
 
-Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) and Phase 9 (Client Memory System) plans locked. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed to publish validation, error boundaries, and responsive preview only. See PHASES-7.9-AND-9-PLAN.md for the roadmap. Canvas system FROZEN (pending deletion). Production build passes cleanly.
+Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) COMPLETE. Phase 9 (Client Memory System) plan locked. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed to publish validation, error boundaries, and responsive preview only. See PHASES-7.9-AND-9-PLAN.md for the roadmap. Canvas system FROZEN (pending deletion). Production build passes cleanly.
 
 ## Tech Stack
 

@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 6)
+# MyCalTravels — MASTER-PROMPT.md (Revision 7)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -14,7 +14,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 **Architecture: Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation (suggestion system, duplication, drag-reorder).**
 
-The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) and Phase 9 (Client Memory System) plans locked — see PHASES-7.9-AND-9-PLAN.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed. Security audit flagged for launch prep.
+The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) COMPLETE. Phase 9 (Client Memory System) plan locked — see PHASES-7.9-AND-9-PLAN.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed. Security audit flagged for launch prep.
 
 **Core principle:**
 > Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
@@ -324,25 +324,20 @@ npm run test:ui            # Vitest UI
 
 ---
 
-## Current Focus: Phase 7.9 Post Editor, then Phase 9 Client Memory
+## Current Focus: Phase 9 Client Memory, then Local Testing
 
-Phase 7.9 is next. Phase 9 follows. Both plans are locked in PHASES-7.9-AND-9-PLAN.md.
+Phase 9 is next. Phase 7.9 (editor + writing tools) is fully shipped.
 
-### Phase 7.9 — Post Editor and Writing Tools
-Rich text toolbar (bold, italic, underline, colour with presets + picker, highlight, font family ~20 curated, font size presets + fine-tune, alignment, lists, links, blockquote, HR, clear formatting), sticky grouped toolbar, keyboard shortcuts, word count + reading time, paste sanitization, colour presets system (global, create/overwrite), pop-out preview + fullscreen (no modal), YouTube auto-embed, social handles settings page.
+### Phase 7.9 — COMPLETE
+Rich text toolbar (bold, italic, underline, colour with presets + raw picker, highlight, font family 12 curated, font size presets + fine-tune, alignment, lists, links, blockquote, HR, clear formatting), sticky grouped toolbar, keyboard shortcuts, word count + reading time, right-click context menu, paste sanitization, colour presets system (global, create/overwrite), pop-out preview + fullscreen, YouTube paste auto-embed, social handles settings page.
+
+Commits: A1-A3 + B1-B2, all in main.
 
 ### Phase 9 — Client Memory System
 people table (canonical, email unique, optional inquiry link), person_notes (global or trip-scoped via nullable portal_id), person_trip_history (survives portal purge), portal member add with autocomplete from people, /admin/clients/[personId] person page with global notes + trip history tabs, /admin/clients search dashboard, Forget this client action (PIPEDA). Automatic portal purge at return_date + 90 days (configurable, per-portal override via keep_until). Itinerary Library: archived itineraries stay editable, reusable as templates, filterable live/archived/template.
 
-### Sensitive data rule (updated)
-Store: preferences, dietary restrictions, allergies, travel habits, family situations, personal notes.
-Do not store: payment information, government-issued ID numbers, passport numbers, home addresses as structured fields.
-
-### Reviewer trail
-Phase 7.9 and Phase 9 both received two rounds of external review. Stakeholder overrode both reviewers on: font family (kept, curated ~20), raw colour picker (kept, with presets system). Rationale: optional does not mean harmful; guardrails hold; automatic entity colouring keeps daily decisions minimal. Overrides recorded honestly in the plan document.
-
 ### Testing debt
-Everything since Phase 7.6 Wave 2 is untested in a browser. TESTING.md has the full checklist.
+Everything since Phase 7.6 Wave 2 is untested in a browser. TESTING.md has the full checklist covering 7.6, 7.8, 7.9, and 9 when it ships.
 ## Future Work (Prioritised)
 
 ### Phase 7.3 — Production Hardening
