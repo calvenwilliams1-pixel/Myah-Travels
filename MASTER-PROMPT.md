@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 8)
+# MyCalTravels — MASTER-PROMPT.md (Revision 9)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -14,7 +14,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 **Architecture: Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation (suggestion system, duplication, drag-reorder).**
 
-The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) COMPLETE. Phase 9 (Client Memory System) COMPLETE — see PHASES-7.9-AND-9-PLAN.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed. Security audit flagged for launch prep.
+The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) COMPLETE. Phase 9 (Client Memory System) COMPLETE. Phase 9.5 (Polish Pass) COMPLETE. Security Audit COMPLETE — TOTP mandatory, DOMPurify wraps rich text renderers — see PHASES-7.9-AND-9-PLAN.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed. Security audit flagged for launch prep.
 
 **Core principle:**
 > Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
@@ -326,21 +326,26 @@ npm run test:ui            # Vitest UI
 
 ## Current Focus: Local Testing (all phases), then Launch Day Prep
 
-Phase 9 is fully shipped. All planned Phase 7.6, 7.8, 7.9, and 9 work is code-complete.
+All planned phases 7.6, 7.8, 7.9, and 9 are code-complete. Phase 9.5 (Polish Pass) and the Security Audit shipped.
 
-### Phase 9 — Client Memory System COMPLETE
-people table (canonical, email unique, optional inquiry link), person_notes (global + trip-scoped via nullable portal_id, ON DELETE SET NULL so notes survive purge), person_trip_history (written at link time, carries trip_title + dates so history survives portal purge), portal member add with autocomplete from people, /admin/clients/[personId] person page with global notes + trip history tabs, /admin/clients?tab=people client search dashboard, Forget this client action (PIPEDA). Automatic portal purge at keep_until override OR return_date + 90 days (whichever is later unless overridden earlier). Itinerary Library: /admin/itineraries with live/archived filter, search, use-as-template flow.
+### Phase 9.5 — Polish Pass COMPLETE
+Functional fixes: person-page link from portal member list, portal-independent itinerary preview route (for archived itineraries), visible failure signal for `statics.ts` load errors, YouTube invalid-ID fallback. Accessibility: aria-label sweep across editor toolbar/pickers/context menu/PreviewPopout, `useFocusRestore` hook wired into modals + pickers, EditorContextMenu keyboard open (Shift+F10) + arrow nav + Enter select, extended ARIA to Phase 7.8/9 admin modals.
 
-Key rule: **Portal data may be purged. People data must survive.** Every schema decision reinforces this.
+### Security Audit COMPLETE
+**TOTP enrollment is now mandatory.** Admin dashboard layout redirects unenrolled users to `/admin/enroll-2fa`. First login after this change will require an authenticator app.
+
+DOMPurify wraps both `TipTapRenderer` and `CleanTipTapRenderer` — the XSS class is closed for rich text rendering.
+
+Verified clean: upload magic-byte validation, SVG not allowed, bcrypt cost 12, rate limits adequate, no SQL injection in itinerary repo, no CSRF exposure. Documented deferral: TipTap moderate-severity advisory (prototype pollution) affects admin-authored content only.
 
 ### What's next
-1. **Local testing pass** — everything since Phase 7.6 Wave 2 is untested in a browser. TESTING.md has the full checklist covering 7.6 + 7.8 + 7.9 + 9.
-2. **Phase 7.7 Launch Day** — email + magic link go-live, security audit, cron entries (email queue every 1 min, portal purge daily at 3 AM)
+1. **Local testing pass** — the accumulated debt from 7.6 Wave 2 onward. TESTING.md has the full checklist.
+2. **Phase 7.7 Launch Day** — email + magic link config, cron entries, first TOTP setup, security verify
 3. **Phase 7.3 (trimmed)** — publish validation, error boundaries, responsive preview
-4. **Phase 8** — social publishing, YouTube auto-populate (deferred to post-launch)
+4. **Phase 8** — social publishing (post-launch)
 
 ### Testing debt
-Everything since Phase 7.6 Wave 2 has been verified only via `tsc` + `npm test` + DB smoke tests. No UI has been clicked. The scope of untested work now spans four phases and dozens of new surfaces.
+Everything since Phase 7.6 Wave 2 is untested in a browser. `tsc` + `npm test` + DB smoke tests have caught real bugs (async transactions, null-safe lookups, classification logic). The remaining unknowns are UI rendering: toolbar, pickers, pop-out preview, autocomplete dropdowns, modals, accessibility flows.
 ## Future Work (Prioritised)
 
 ### Phase 7.3 — Production Hardening

@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 16)
+# MyCalTravels — TODO.md (Revision 17)
 
 ## Status
 
@@ -257,6 +257,12 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 Operational setup for the deployed system. The code is complete; this is everything needed to make emails actually send, links arrive, and the cron processor run on the mini PC.
 
 ### Pre-Launch (before deploy day)
+
+**TOTP setup (required on first login):**
+- [ ] Install an authenticator app (Google Authenticator, Authy, 1Password, etc.)
+- [ ] First login redirects to `/admin/enroll-2fa` — scan secret / otpauth URL
+- [ ] Enter 6-digit code to confirm
+- [ ] Subsequent logins require TOTP code after password
 
 **Cron entries (mini PC crontab):**
 - [ ] Email queue processor — every 1 minute
@@ -540,6 +546,31 @@ Scope: canonical client records that persist across portals, with nested notepad
 
 ---
 
+## Phase 9.5: Polish Pass ✅ COMPLETE
+
+Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
+
+### Functional bugs (items 1-4) ✅
+- [x] Person page link from portal member list
+- [x] Portal-independent itinerary preview route (for archived itineraries)
+- [x] `statics.ts` visible failure signal (`hasStaticLoadError`)
+- [x] YouTube embed invalid-ID fallback
+
+### Accessibility (items 5-7) ✅
+- [x] aria-label sweep across editor pickers, toolbar, PreviewPopout
+- [x] Focus restoration hook (`useFocusRestore`) wired into modals + pickers
+- [x] EditorContextMenu keyboard open (Shift+F10) + arrow nav + Enter select
+- [x] Extended ARIA + focus to Phase 7.8/9 admin modals (UseAsTemplateButton, CopySegmentModal, AddBlockForm, etc.)
+
+### Security Audit ✅
+- [x] TOTP enrollment now mandatory — layout redirects unenrolled admin to `/admin/enroll-2fa`
+- [x] DOMPurify wraps `TipTapRenderer` + `CleanTipTapRenderer`
+- [x] Duplicate Content Library nav link removed
+- [x] Verified: upload magic-byte validation is solid; SVG not allowed; bcrypt cost 12; rate limits adequate; no SQL injection in itinerary repo; no CSRF exposure (SameSite=Lax + fetch)
+- [x] Documented: TipTap moderate severity advisory (prototype pollution, npm audit) — deferred, admin-authored content only
+
+---
+
 ## Phase 7.2 Loose Ends (Before Phase 8)
 - [x] Attach itinerary UI on admin editor page
 - [x] Admin preview of itinerary
@@ -685,7 +716,7 @@ Scope: canonical client records that persist across portals, with nested notepad
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Local testing pass across all shipped phases (7.6 + 7.8 + 7.9 + 9). Then Launch Day prep (Phase 7.7). Then Phase 7.3 (trimmed) — publish validation, error boundaries, responsive preview.
+**Next action:** Local testing pass across all shipped phases (7.6 + 7.8 + 7.9 + 9). Then Launch Day prep (Phase 7.7). Then Phase 7.3 (trimmed). Phase 9.5 + Security Audit both complete.
 
 ---
 

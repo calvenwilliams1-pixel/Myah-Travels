@@ -289,3 +289,36 @@ Tests written as each wave ships.
 - Test F7 — Per-portal keep_until override prevents purge
 - Test F8 — Itinerary Library: filter live/archived/template, preview, use-as-template flow
 - Test F9 — Reused itinerary as template: sections/days/segments copied, occurrence data cleared
+
+---
+
+## Security — TOTP Enrollment (PENDING — new enforcement)
+
+**Test S1 — First login after enforcement**
+- [ ] Log in with admin credentials
+- [ ] Automatically redirected to `/admin/enroll-2fa`
+- [ ] Secret is displayed for manual entry
+- [ ] otpauth URL is displayed as an alternative
+- [ ] QR code (if implemented as image) renders correctly
+
+**Test S2 — Enrollment confirmation**
+- [ ] Add the secret to an authenticator app
+- [ ] Enter the 6-digit code
+- [ ] Redirected to `/admin` on success
+- [ ] Invalid code shows error and stays on enrollment page
+- [ ] Expired code (older than 30s) shows error
+
+**Test S3 — Subsequent login**
+- [ ] Log out and log back in
+- [ ] Login now requires both password and TOTP code
+- [ ] Correct code grants access
+- [ ] Incorrect code rejected
+- [ ] Rate limit still applies (5 attempts / 15 min)
+
+**Test S4 — Forced redirect edge case**
+- [ ] While enrolled, navigating to `/admin/enroll-2fa` redirects to `/admin`
+- [ ] While NOT enrolled, navigating to any `/admin/*` route (except `/admin/login` and `/admin/enroll-2fa`) redirects to enrollment
+
+**Test S5 — TOTP recovery**
+- [ ] If authenticator app is lost, recovery requires DB-level intervention
+  (Document this as a known limitation — recovery codes deferred to Phase 8+)
