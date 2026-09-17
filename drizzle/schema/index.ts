@@ -40,3 +40,4 @@ export * from "./itineraries";
 
 export * from "./notepad-entries";
 export * from "./suggestions";
+export * from "./color-presets";
