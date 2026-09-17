@@ -286,6 +286,42 @@ Operational setup for the deployed system. The code is complete; this is everyth
 - [ ] Decide `EMAIL_FROM` — must be at verified domain (e.g., `Myah <hello@myahtravels.com>`)
 - [ ] Decide `EMAIL_ADMIN_TO` — Myah's real inbox for admin notifications
 
+### OS + Hardware Hardening (do FIRST, before anything else)
+
+**Disk encryption (do this at OS install time):**
+- [ ] Install Ubuntu Server LTS with **LUKS full-disk encryption enabled at install**
+- [ ] Choose a strong passphrase for LUKS (not the same as any other password)
+- [ ] Store the LUKS passphrase in a password manager (1Password, Bitwarden) — losing it means losing the drive
+- [ ] Confirm `lsblk` shows `crypt` on the root partition after install
+
+**User + access setup:**
+- [ ] Create a dedicated non-root app user (e.g., `myahtravels`) — this app does NOT run as root
+- [ ] Disable root SSH login (`PermitRootLogin no` in `/etc/ssh/sshd_config`)
+- [ ] Disable password SSH login (`PasswordAuthentication no`)
+- [ ] Add SSH public key to `~myahtravels/.ssh/authorized_keys`
+- [ ] Test SSH key-only login BEFORE closing the current session (don't lock yourself out)
+- [ ] Change SSH port from 22 if desired (optional, but reduces bot noise)
+
+**Firewall:**
+- [ ] `sudo ufw default deny incoming`
+- [ ] `sudo ufw default allow outgoing`
+- [ ] `sudo ufw allow from <your LAN subnet> to any port 22` (SSH from home network only)
+- [ ] `sudo ufw enable`
+- [ ] No inbound rules for HTTP/HTTPS — Cloudflare Tunnel handles that (no ports opened to the internet)
+- [ ] Verify: `sudo ufw status verbose`
+
+**OS updates + hardening:**
+- [ ] `sudo apt update && sudo apt upgrade -y`
+- [ ] `sudo apt install unattended-upgrades`
+- [ ] `sudo dpkg-reconfigure --priority=low unattended-upgrades` — enable automatic security updates
+- [ ] `sudo apt install fail2ban` — with default config, protects SSH
+- [ ] `sudo apt install ufw` if not already present
+
+**Network isolation (protects your other devices):**
+- [ ] Do NOT put the mini PC on the same VLAN/subnet as your daily-driver devices (if your router supports it)
+- [ ] If no VLAN available: at minimum, ensure the mini PC user has no SSH keys to other machines on your LAN
+- [ ] Verify: from the mini PC, `ping <your-nas-or-other-device>` — if it responds, note it and add a firewall rule to block
+
 ### Environment Setup (on mini PC)
 
 - [ ] Add to `.env` on mini PC:
@@ -299,6 +335,90 @@ Operational setup for the deployed system. The code is complete; this is everyth
   - `ADMIN_USERNAME`, `ADMIN_PASSWORD`
 - [ ] Verify `.env` is in `.gitignore` (never committed)
 - [ ] Verify `data/site.db` path is correct for deploy target
+- [ ] Verify `NODE_ENV=production` is set (this enables `secure: true` on session cookies)
+- [ ] `chmod 600 .env` — only the app user can read it
+- [ ] Confirm the app runs as the `myahtravels` user, not root, not your personal user
+
+### Database File Security
+
+- [ ] `chmod 700 data/` — only the app user can access the folder
+- [ ] `chmod 600 data/site.db` — only the app user can read/write the DB
+- [ ] `chown -R myahtravels:myahtravels data/`
+- [ ] Verify: `ls -la data/` shows `myahtravels` owns everything, no world-readable
+- [ ] Confirm `data/` is NOT served by the web app (Next.js doesn't serve it by default; verify no `public/` symlink)
+- [ ] Confirm `data/` is NOT in the tunnel-exposed path
+
+### Backups (CRITICAL — this is the #1 real risk)
+
+**One-time encryption setup (mini PC):**
+- [ ] `sudo apt install age sqlite3 rsync`
+- [ ] `sudo mkdir -p /root/.age && sudo chmod 700 /root/.age`
+- [ ] `sudo age-keygen -o /root/.age/backup-key.txt` — copy the printed public key (age1...)
+- [ ] `sudo chmod 600 /root/.age/backup-key.txt`
+- [ ] `sudo mkdir -p /etc/myahtravels`
+- [ ] Create `/etc/myahtravels/backup.env` containing: `BACKUP_AGE_PUBLIC_KEY=age1...`
+- [ ] `sudo chmod 600 /etc/myahtravels/backup.env`
+- [ ] **Copy `/root/.age/backup-key.txt` to your password manager NOW.** Losing this key means every encrypted backup is unrecoverable.
+- [ ] Verify: the private key is stored in TWO places — the mini PC and the password manager.
+
+**Setup:**
+- [ ] Edit `scripts/backup.sh` to write to an external location (USB drive, another machine on the LAN, or offsite via rclone to Backblaze/S3)
+- [ ] **Encrypt backups** — pipe the SQLite dump through `age` or `gpg` before writing:
+  - `sqlite3 data/site.db .dump | gzip | age -r <public-key> > backup-$(date +%F).sql.gz.age`
+- [ ] Schedule daily: `0 2 * * * /var/www/site/scripts/backup.sh`
+- [ ] Verify the backup runs — check the target directory after the first cron cycle
+- [ ] Keep at least 7 daily + 4 weekly + 3 monthly backups
+- [ ] **Test a restore** on a scratch machine BEFORE launch — extract, decrypt, load into a fresh DB, verify client records exist
+
+**What must be backed up:**
+- [ ] `data/site.db` (the DB)
+- [ ] `public/uploads/` (uploaded files)
+- [ ] `.env` (all secrets — store encrypted separately)
+
+**Do NOT back up to:**
+- [ ] Anywhere unencrypted
+- [ ] Any cloud folder with your personal account unless encrypted first
+- [ ] Same physical drive as the live DB
+
+### Cloudflare Tunnel Configuration
+
+- [ ] Tunnel points ONLY to `http://localhost:3000` (the app) — no other local services exposed
+- [ ] Cloudflare Access is NOT used (breaks magic links — clients need direct URL access)
+- [ ] Verify: `cloudflared tunnel info <tunnel-id>` shows only the app hostname mapped
+- [ ] Check DNS: `dig <your-domain>` — should point to Cloudflare IPs, not your home IP
+- [ ] **Lock origin to Cloudflare only:** firewall rule allowing inbound TCP from Cloudflare IP ranges only (or rely on tunnel-only mode, which does this by default)
+- [ ] Verify: `curl -I http://<your-home-ip>` from outside the network → should be nothing/timed out. Only through Cloudflare works.
+
+### First Login + TOTP Setup
+
+- [ ] Navigate to `https://<your-domain>/admin/login`
+- [ ] Log in with credentials from `.env`
+- [ ] Redirected to `/admin/enroll-2fa`
+- [ ] Open authenticator app on your phone
+- [ ] Either scan the otpauth URL (if a QR renderer exists) or manually enter the secret
+- [ ] Enter the 6-digit code to confirm
+- [ ] Log out, log back in — verify TOTP prompt appears
+- [ ] **Store the TOTP secret in your password manager as a backup** (in case phone is lost)
+- [ ] Re-enroll on a second device if you want redundancy (same secret, different app)
+
+### Monitoring + Health
+
+- [ ] Set up a simple uptime check — Cloudflare's built-in monitor, or UptimeRobot free tier, or a simple `curl` cron from another machine
+- [ ] Set up log rotation for `/var/log/syslog` and app logs (`/etc/logrotate.d/`)
+- [ ] Verify disk space: `df -h` — set up an alert if free space drops below 10%
+- [ ] Check email queue is draining (after first magic link test — see Launch Day email section)
+
+### Pre-Launch Security Verification (final pass)
+
+- [ ] From outside your home network: `curl -I http://<home-ip>` returns nothing (no direct exposure)
+- [ ] `sudo ss -tlnp` — only expected ports listening (3000 for app, 22 for SSH)
+- [ ] Session cookie flags verified in browser dev tools: `HttpOnly` + `Secure` + `SameSite=Lax` on `portal_session`
+- [ ] Admin session cookie also `HttpOnly` + `Secure`
+- [ ] TOTP enforced: unenrolled admin is redirected on every `/admin/*` request
+- [ ] Rate limiting works: 6 rapid login attempts → 6th is rejected with 429
+- [ ] `/admin/portals/[id]/preview` renders correctly without magic link
+- [ ] `/portal/[slug]` without a session shows "Session Expired" (not a redirect loop, not the wall)
+- [ ] Verify `robots.txt` disallows `/admin/*`, `/portal/*`, `/api/*` (if any exist) — prevents accidental search engine indexing of admin/portal routes
 
 ### Database Setup
 
