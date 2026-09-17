@@ -671,3 +671,121 @@ export async function createSegmentsBulk(
     return created;
   });
 }
+
+/**
+ * Deep-copy an itinerary into a target portal as a fresh template.
+ * Sections, days, segments, stays, travel legs copied. Occurrence
+ * data (dates, references, confirmations, booking numbers) is NOT
+ * carried — those are per-trip. Structure and titles carry.
+ *
+ * Called by the Itinerary Library's "Use as template" flow.
+ */
+export async function duplicateItineraryAsTemplate(
+  sourceId: number,
+  targetPortalId: number,
+  newTitle: string
+) {
+  const source = await getFullItinerary(sourceId);
+  if (!source) return null;
+
+  return db.transaction((tx) => {
+    const createdItinerary = tx
+      .insert(itineraries)
+      .values({
+        portalId: targetPortalId,
+        title: newTitle,
+        themePreset: source.themePreset,
+        isArchived: false,
+      })
+      .returning()
+      .get();
+
+    const itineraryId = createdItinerary.id;
+
+    for (const section of source.sections) {
+      const sectionRow = tx
+        .insert(itinerarySections)
+        .values({
+          itineraryId,
+          title: section.title,
+          baseCity: section.baseCity,
+          startDate: null,
+          endDate: null,
+          themePresetOverride: section.themePresetOverride,
+          position: section.position,
+        })
+        .returning()
+        .get();
+
+      for (const stay of section.stays) {
+        tx.insert(itineraryStays).values({
+          sectionId: sectionRow.id,
+          hotelName: stay.hotelName,
+          address: stay.address,
+          checkInDate: "",
+          checkOutDate: "",
+          checkInTime: stay.checkInTime,
+          checkOutTime: stay.checkOutTime,
+          notes: stay.notes,
+        }).run();
+      }
+
+      for (const day of section.days) {
+        const dayRow = tx
+          .insert(itineraryDays)
+          .values({
+            sectionId: sectionRow.id,
+            date: "",
+            dayNumber: day.dayNumber,
+            title: day.title,
+            notes: day.notes,
+            orderMode: "time",
+            position: 0,
+          })
+          .returning()
+          .get();
+
+        for (const segment of day.segments) {
+          const segRow = tx
+            .insert(itinerarySegments)
+            .values({
+              dayId: dayRow.id,
+              type: segment.type,
+              startTime: segment.startTime,
+              endTime: segment.endTime,
+              title: segment.title,
+              location: segment.location,
+              instructions: segment.instructions,
+              confirmation: null,
+              referenceType: segment.referenceType,
+              referenceLabel: segment.referenceLabel,
+              isHighlighted: segment.isHighlighted ?? false,
+              position: segment.position ?? 0,
+            })
+            .returning()
+            .get();
+
+          const legs = (segment as any).legs || [];
+          for (const leg of legs) {
+            tx.insert(itineraryTravelLegs).values({
+              segmentId: segRow.id,
+              legOrder: leg.legOrder,
+              travelMode: leg.travelMode,
+              origin: leg.origin,
+              destination: leg.destination,
+              departureAt: null,
+              arrivalAt: null,
+              originTimezone: leg.originTimezone,
+              destinationTimezone: leg.destinationTimezone,
+              operator: leg.operator,
+              identifier: leg.identifier,
+              reference: null,
+            }).run();
+          }
+        }
+      }
+    }
+
+    return createdItinerary;
+  });
+}
