@@ -62,7 +62,9 @@ export default function BlockEditor({
 
     const newBlocks: BlockData[] = [];
 
-    template.sections.forEach((section) => {
+    // Defensive: some legacy rows may have sections undefined.
+    const sections = Array.isArray(template.sections) ? template.sections : [];
+    sections.forEach((section) => {
       if (section.state === "required") {
         const def = getBlockDefinition(section.type);
         newBlocks.push(def.getDefaultData());
