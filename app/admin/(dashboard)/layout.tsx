@@ -66,6 +66,9 @@ export default async function DashboardLayout({
               <Link href="/admin/portals" className="text-sm text-gray-600 hover:text-primary">
                 Portals
               </Link>
+              <Link href="/admin/itineraries" className="text-sm text-gray-600 hover:text-primary">
+                Itinerary Library
+              </Link>
               <Link href="/admin/settings" className="text-sm text-gray-600 hover:text-primary">
                 Settings
               </Link>
