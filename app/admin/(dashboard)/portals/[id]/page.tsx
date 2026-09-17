@@ -67,7 +67,21 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
         {members.length > 0 && (
           <Table
             columns={[
-              { header: "Name", accessor: (m: any) => m.name || "—" },
+              {
+                header: "Name",
+                accessor: (m: any) =>
+                  m.personId ? (
+                    <a
+                      href={`/admin/clients/${m.personId}`}
+                      className="hover:text-primary hover:underline"
+                      title="Open client page"
+                    >
+                      {m.name || "—"}
+                    </a>
+                  ) : (
+                    m.name || "—"
+                  ),
+              },
               { header: "Email", accessor: (m: any) => m.email },
               {
                 header: "Status",

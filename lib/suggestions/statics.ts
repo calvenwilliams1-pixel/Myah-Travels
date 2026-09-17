@@ -33,6 +33,21 @@ interface StaticFile<T> {
 
 let airportsCache: Airport[] | null = null;
 let airlinesCache: Airline[] | null = null;
+let lastLoadError: string | null = null;
+
+/**
+ * Returns true when the static dataset failed to load. The suggestion
+ * endpoint surfaces this to the client so autocomplete can degrade
+ * visibly (shows "static suggestions unavailable") rather than silently
+ * returning an empty list.
+ */
+export function hasStaticLoadError(): boolean {
+  return lastLoadError !== null;
+}
+
+export function getStaticLoadError(): string | null {
+  return lastLoadError;
+}
 
 function loadFile<T>(filename: string): T[] {
   try {
@@ -41,7 +56,8 @@ function loadFile<T>(filename: string): T[] {
     const parsed = JSON.parse(raw) as StaticFile<T>;
     return parsed.items ?? [];
   } catch (err) {
-    console.warn("[suggestions] failed to load " + filename + ":", (err as Error).message);
+    lastLoadError = (err as Error).message;
+    console.warn("[suggestions] failed to load " + filename + ":", lastLoadError);
     return [];
   }
 }

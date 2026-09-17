@@ -111,15 +111,13 @@ export default async function ItineraryLibraryPage({
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {r.portalId && (
-                    <Link
-                      href={"/admin/portals/" + r.portalId + "/itinerary/" + r.id + "/preview"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button variant="ghost" size="sm">Preview ↗</Button>
-                    </Link>
-                  )}
+                  <Link
+                    href={"/admin/itineraries/" + r.id + "/preview"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm">Preview ↗</Button>
+                  </Link>
                   <UseAsTemplateButton
                     itineraryId={r.id}
                     itineraryTitle={r.title}
