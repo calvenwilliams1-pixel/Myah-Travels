@@ -271,5 +271,13 @@ try {
   console.error("  seed-color-presets failed:", err.message);
 }
 
+// Seed block templates on fresh install (Phase 7.9.6)
+try {
+  const { execSync } = require("child_process");
+  execSync("npx tsx scripts/seed-templates.ts", { stdio: "inherit" });
+} catch (err) {
+  console.error("  seed-templates failed:", err.message);
+}
+
 console.log("\n✅ Database setup complete: data/site.db");
 console.log("Next: run npm run seed");
