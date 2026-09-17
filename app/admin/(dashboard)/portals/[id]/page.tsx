@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
 import { addMemberAction, removeMemberAction, sendMagicLinksAction, archivePortalAction, deletePortalAction, unbanMemberAction } from "../actions";
 import BanMemberButton from "../BanMemberButton";
+import AddMemberForm from "@/components/admin/portals/AddMemberForm";
 
 export const dynamic = "force-dynamic";
 
@@ -58,12 +59,7 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
 
       <Card>
         <h3 className="font-semibold mb-4">Members ({members.length})</h3>
-        <form action={addMemberAction} className="flex gap-3 mb-4">
-          <input type="hidden" name="portalId" value={portal.id} />
-          <Input name="email" type="email" placeholder="member@email.com" required />
-          <Input name="name" placeholder="Name (optional)" />
-          <Button type="submit" variant="secondary">Add</Button>
-        </form>
+        <AddMemberForm portalId={portal.id} action={addMemberAction} />
         <form action={sendMagicLinksAction} className="mb-4">
           <input type="hidden" name="portalId" value={portal.id} />
           <Button type="submit">Send Magic Links</Button>

@@ -13,6 +13,7 @@ import crypto from "crypto";
 import { queueEmail, queueBulkEmails } from "@/lib/email";
 import { magicLinkEmail, portalNoticeEmail, globalAnnouncementEmail } from "@/lib/email/templates";
 import { logActivity } from "@/lib/logging";
+import { upsertPersonByEmail, recordTrip } from "@/lib/clients/people";
 
 // ============================================
 // PORTAL CRUD
@@ -145,25 +146,58 @@ export async function getPortalMembers(portalId: number) {
 export async function addPortalMember(portalId: number, email: string, name?: string) {
   const normalizedEmail = email.toLowerCase().trim();
 
+  // Upsert the person record (canonical, persists across portals)
+  const person = await upsertPersonByEmail(normalizedEmail, name);
+
   const existing = await db.select().from(portalMembers)
     .where(and(eq(portalMembers.portalId, portalId), eq(portalMembers.email, normalizedEmail)))
     .limit(1);
 
   if (existing.length > 0) {
-    if (existing[0].deletedAt || existing[0].name !== (name ?? existing[0].name)) {
+    if (existing[0].deletedAt || existing[0].name !== (name ?? existing[0].name) || existing[0].personId !== person.id) {
       await db.update(portalMembers)
-        .set({ deletedAt: null, name: name ?? existing[0].name })
+        .set({
+          deletedAt: null,
+          name: name ?? existing[0].name,
+          personId: person.id,
+        })
         .where(eq(portalMembers.id, existing[0].id));
+      // Ensure trip history exists
+      await ensureTripHistory(portalId, person.id);
       return db.select().from(portalMembers).where(eq(portalMembers.id, existing[0].id)).limit(1);
     }
     return existing;
   }
 
-  return db.insert(portalMembers).values({
+  const inserted = await db.insert(portalMembers).values({
     portalId,
     email: normalizedEmail,
     name: name ?? null,
+    personId: person.id,
   }).returning();
+
+  // Record the trip in the person's history
+  await ensureTripHistory(portalId, person.id);
+
+  return inserted;
+}
+
+/**
+ * Helper: ensure a person_trip_history row exists for (person, portal).
+ * Carries the portal's name + dates so the history survives purge.
+ */
+async function ensureTripHistory(portalId: number, personId: number): Promise<void> {
+  const portal = await getPortalById(portalId);
+  if (!portal) return;
+  await recordTrip(
+    personId,
+    portal.id,
+    portal.name,
+    portal.departureDate,
+    portal.returnDate,
+    null,
+    null
+  );
 }
 
 export async function removePortalMember(memberId: number) {
