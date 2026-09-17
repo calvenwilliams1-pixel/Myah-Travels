@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { useFocusRestore } from "@/lib/hooks/useFocusRestore";
 
 interface UseAsTemplateButtonProps {
   itineraryId: number;
@@ -21,6 +22,7 @@ export default function UseAsTemplateButton({
   const [newTitle, setNewTitle] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useFocusRestore(isOpen);
 
   function open() {
     setIsOpen(true);
@@ -69,9 +71,14 @@ export default function UseAsTemplateButton({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="use-as-template-title"
+    >
       <div className="bg-white rounded-lg p-5 max-w-md w-full">
-        <h3 className="font-semibold mb-3">Use as template</h3>
+        <h3 id="use-as-template-title" className="font-semibold mb-3">Use as template</h3>
         <p className="text-sm text-gray-500 mb-4">
           Creates a fresh copy in the target portal. Structure, segments, and stays carry over. Dates and booking references do not.
         </p>

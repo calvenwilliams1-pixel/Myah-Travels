@@ -76,6 +76,8 @@ export default function SnippetPicker({ onInsert }: SnippetPickerProps) {
         onClick={open}
         className="text-xs text-gray-500 hover:text-gray-700"
         title="Insert a reusable snippet"
+        aria-label="Insert instruction snippet"
+        aria-haspopup="menu"
       >
         Snippets
       </button>

@@ -65,12 +65,14 @@ export default function AddMemberForm({ portalId, action }: AddMemberFormProps) 
         />
         <Button type="submit" variant="secondary">Add</Button>
       </div>
-      {lookupPending && <p className="text-xs text-gray-400">Looking up...</p>}
-      {!lookupPending && lookupMessage && (
-        <p className={"text-xs " + (lookupMessage.startsWith("Returning") ? "text-primary" : "text-gray-500")}>
-          {lookupMessage}
-        </p>
-      )}
+      <div aria-live="polite" className="text-xs">
+        {lookupPending && <p className="text-gray-400">Looking up...</p>}
+        {!lookupPending && lookupMessage && (
+          <p className={lookupMessage.startsWith("Returning") ? "text-primary" : "text-gray-500"}>
+            {lookupMessage}
+          </p>
+        )}
+      </div>
     </form>
   );
 }

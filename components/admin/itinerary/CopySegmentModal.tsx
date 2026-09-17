@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useFocusRestore } from "@/lib/hooks/useFocusRestore";
 
 interface CopySegmentModalProps {
   targetItineraryId: number;
@@ -45,6 +46,7 @@ export default function CopySegmentModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCopying, setIsCopying] = useState(false);
+  useFocusRestore(true);
 
   // Load portals
   useEffect(() => {
@@ -134,10 +136,15 @@ export default function CopySegmentModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="copy-segment-title"
+    >
       <div className="bg-white rounded-lg p-5 max-w-xl w-full max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Copy a segment from another itinerary</h3>
+          <h3 id="copy-segment-title" className="font-semibold">Copy a segment from another itinerary</h3>
           <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
         </div>
 

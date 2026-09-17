@@ -127,6 +127,7 @@ export default function BulkAddForm({ dayId, dayDate, onSaved, onCancel }: BulkA
           onClick={clearDraft}
           className="text-xs text-gray-500 hover:text-gray-700"
           title="Clear the textarea and any saved draft"
+          aria-label="Clear draft"
         >
           Clear draft
         </button>
