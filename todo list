@@ -258,6 +258,12 @@ Operational setup for the deployed system. The code is complete; this is everyth
 
 ### Pre-Launch (before deploy day)
 
+**Dependency refresh on deploy:**
+- [ ] `npm ci` on the mini PC (installs exact versions from package-lock.json — includes all Phase 7.9 additions)
+- [ ] Verify `@tiptap/extension-*` packages present in `node_modules`
+- [ ] Run `node scripts/setup-db.js` to apply any pending migrations and trigger seeds (including `color_presets`)
+
+
 - [ ] Register Resend account (resend.com)
 - [ ] Add production domain to Resend
 - [ ] Add DNS records at registrar: SPF, DKIM, DMARC (provided by Resend)
