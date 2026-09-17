@@ -15,6 +15,8 @@ import TextAlign from "@tiptap/extension-text-align";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import CharacterCount from "@tiptap/extension-character-count";
 import FontSize from "@/lib/editor/font-size-extension";
+import { YouTubeEmbedNode } from "@/lib/editor/youtube-node";
+import { isBareYouTubeUrl, extractYouTubeId } from "@/lib/editor/youtube";
 import Toolbar from "./Toolbar";
 import EditorContextMenu from "./EditorContextMenu";
 import { CanvasBlockNode } from "./CanvasBlockNode";
@@ -73,6 +75,7 @@ export default function TipTapEditor({
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       HorizontalRule,
       CharacterCount,
+      YouTubeEmbedNode,
       Placeholder.configure({
         placeholder,
       }),
@@ -82,6 +85,23 @@ export default function TipTapEditor({
     editorProps: {
       attributes: {
         class: "prose prose-sm sm:prose-base max-w-none min-h-[400px] px-4 py-3 focus:outline-none",
+      },
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData("text/plain");
+        if (!text) return false;
+        if (!isBareYouTubeUrl(text)) return false;
+        const videoId = extractYouTubeId(text);
+        if (!videoId) return false;
+
+        // Insert YouTube embed at cursor
+        event.preventDefault();
+        const { state, dispatch } = view;
+        const nodeType = state.schema.nodes.youtubeEmbed;
+        if (!nodeType) return false;
+        const node = nodeType.create({ videoId });
+        const tr = state.tr.replaceSelectionWith(node);
+        dispatch(tr);
+        return true;
       },
     },
     onUpdate: ({ editor }) => {
