@@ -33,26 +33,35 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
             Departure: {portal.departureDate || "—"} · Return: {portal.returnDate || "—"}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Navigation group */}
           <Link href={`/admin/portals/${portal.id}/itinerary`}>
-            <Button variant="secondary">Itinerary</Button>
+            <Button variant="secondary" size="sm">Itinerary</Button>
           </Link>
           <Link href={`/admin/portals/${portal.id}/notepad`}>
-            <Button variant="secondary">Notepad</Button>
+            <Button variant="secondary" size="sm">Notepad</Button>
           </Link>
           <Link href={`/admin/portals/${portal.id}/preview`} target="_blank" rel="noopener noreferrer">
-            <Button variant="ghost">Preview Wall ↗</Button>
+            <Button variant="secondary" size="sm">Preview Wall ↗</Button>
           </Link>
+
+          <span className="w-px h-6 bg-gray-200 mx-2" />
+
+          {/* Primary action */}
           <Link href={`/admin/portals/${portal.id}/edit`}>
-            <Button>Edit Wall</Button>
+            <Button size="sm">Edit Wall</Button>
           </Link>
+
+          <span className="w-px h-6 bg-gray-200 mx-2" />
+
+          {/* Danger group */}
           <form action={archivePortalAction}>
             <input type="hidden" name="portalId" value={portal.id} />
-            <Button variant="ghost" type="submit">Archive</Button>
+            <Button variant="secondary" size="sm" type="submit">Archive</Button>
           </form>
           <form action={deletePortalAction}>
             <input type="hidden" name="portalId" value={portal.id} />
-            <Button variant="danger" type="submit">Delete</Button>
+            <Button variant="danger" size="sm" type="submit">Delete</Button>
           </form>
         </div>
       </div>
@@ -72,7 +81,7 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
                 accessor: (m: any) =>
                   m.personId ? (
                     <a
-                      href={`/admin/clients/${m.personId}`}
+                      href={`/admin/clients/people/${m.personId}`}
                       className="hover:text-primary hover:underline"
                       title="Open client page"
                     >

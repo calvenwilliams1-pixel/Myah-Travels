@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { getAllSettings, getCertifications } from "@/lib/settings";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -145,6 +146,24 @@ export default async function SettingsPage() {
 
         <Button type="submit">Save Settings</Button>
       </form>
+
+      <Card>
+        <h3 className="font-semibold mb-4">Maintenance</h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Background tools and cleanup utilities. These run periodically or on-demand.
+        </p>
+        <div className="space-y-2">
+          <Link
+            href="/admin/suggestions/stale-entities"
+            className="block px-3 py-2 rounded border border-gray-200 hover:border-primary hover:bg-primary/5"
+          >
+            <p className="font-medium text-sm">Stale entities</p>
+            <p className="text-xs text-gray-500">
+              Entities used once and untouched for 90+ days. Safe to prune.
+            </p>
+          </Link>
+        </div>
+      </Card>
 
       <Card>
         <h3 className="font-semibold mb-4">Certifications</h3>

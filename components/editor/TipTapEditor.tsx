@@ -111,12 +111,13 @@ export default function TipTapEditor({
     },
   });
 
+  // Ref used to scope the context menu to this editor instance.
+  // Declared before any early return so hooks are called unconditionally.
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   if (!editor) {
     return <div className="h-[400px] bg-gray-50 rounded-lg animate-pulse" />;
   }
-
-  // Ref used to scope the context menu to this editor instance
-  const containerRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <div
