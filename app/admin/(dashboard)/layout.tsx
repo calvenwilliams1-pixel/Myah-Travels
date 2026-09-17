@@ -44,9 +44,15 @@ export default async function DashboardLayout({
               <Link href="/admin" className="text-sm text-gray-600 hover:text-primary">
                 Dashboard
               </Link>
-              <Link href="/admin/homepage" className="text-sm text-gray-600 hover:text-primary">
-                Homepage
-              </Link>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-600 hover:text-primary"
+                title="View the live public site in a new tab"
+              >
+                View Site ↗
+              </a>
               <Link href="/admin/posts" className="text-sm text-gray-600 hover:text-primary">
                 Posts
               </Link>
