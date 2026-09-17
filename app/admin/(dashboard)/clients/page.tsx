@@ -5,13 +5,14 @@ import { requireAuth } from "@/lib/auth";
 import { Table } from "@/components/ui/Table";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import ClientsPeopleList from "@/components/admin/clients/ClientsPeopleList";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams?: { sort?: string; search?: string };
+  searchParams?: { sort?: string; search?: string; tab?: string };
 }) {
   await requireAuth();
 
@@ -19,10 +20,53 @@ export default async function ClientsPage({
     search: searchParams?.search,
   });
 
+  const activeTab = searchParams?.tab === "people" ? "people" : "inquiries";
+
+  if (activeTab === "people") {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-4">
+            <a
+              href="/admin/clients"
+              className="text-sm text-gray-500 hover:text-primary font-medium pb-1"
+            >
+              Inquiries
+            </a>
+            <a
+              href="/admin/clients?tab=people"
+              className="text-sm text-primary font-medium border-b-2 border-primary pb-1"
+            >
+              Clients
+            </a>
+          </div>
+        </div>
+        <p className="text-sm text-gray-500">
+          Client records persist across portals. Notes and trip history live here.
+        </p>
+        <ClientsPeopleList />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Client Inquiries</h2>
+        <div className="flex gap-4">
+          <a
+            href="/admin/clients"
+            className="text-sm text-primary font-medium border-b-2 border-primary pb-1"
+          >
+            Inquiries
+          </a>
+          <a
+            href="/admin/clients?tab=people"
+            className="text-sm text-gray-500 hover:text-primary font-medium pb-1"
+          >
+            Clients
+          </a>
+        </div>
+        <h2 className="sr-only">Client Inquiries</h2>
         <div className="flex gap-3 items-center">
           <a href="/api/clients/export">
             <Button variant="ghost">Export CSV</Button>
