@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 7)
+# MyCalTravels — MASTER-PROMPT.md (Revision 8)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -14,7 +14,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 **Architecture: Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation (suggestion system, duplication, drag-reorder).**
 
-The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) COMPLETE. Phase 9 (Client Memory System) plan locked — see PHASES-7.9-AND-9-PLAN.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed. Security audit flagged for launch prep.
+The project has fully pivoted from Canvas/design tools to a block-based content system. Portal V1 and V2 backends are complete. Autosave infrastructure is complete with 48 passing tests. Phase 7.6 refinement pass COMPLETE (Waves 1-4). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) COMPLETE. Phase 9 (Client Memory System) COMPLETE — see PHASES-7.9-AND-9-PLAN.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed. Security audit flagged for launch prep.
 
 **Core principle:**
 > Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
@@ -324,20 +324,23 @@ npm run test:ui            # Vitest UI
 
 ---
 
-## Current Focus: Phase 9 Client Memory, then Local Testing
+## Current Focus: Local Testing (all phases), then Launch Day Prep
 
-Phase 9 is next. Phase 7.9 (editor + writing tools) is fully shipped.
+Phase 9 is fully shipped. All planned Phase 7.6, 7.8, 7.9, and 9 work is code-complete.
 
-### Phase 7.9 — COMPLETE
-Rich text toolbar (bold, italic, underline, colour with presets + raw picker, highlight, font family 12 curated, font size presets + fine-tune, alignment, lists, links, blockquote, HR, clear formatting), sticky grouped toolbar, keyboard shortcuts, word count + reading time, right-click context menu, paste sanitization, colour presets system (global, create/overwrite), pop-out preview + fullscreen, YouTube paste auto-embed, social handles settings page.
+### Phase 9 — Client Memory System COMPLETE
+people table (canonical, email unique, optional inquiry link), person_notes (global + trip-scoped via nullable portal_id, ON DELETE SET NULL so notes survive purge), person_trip_history (written at link time, carries trip_title + dates so history survives portal purge), portal member add with autocomplete from people, /admin/clients/[personId] person page with global notes + trip history tabs, /admin/clients?tab=people client search dashboard, Forget this client action (PIPEDA). Automatic portal purge at keep_until override OR return_date + 90 days (whichever is later unless overridden earlier). Itinerary Library: /admin/itineraries with live/archived filter, search, use-as-template flow.
 
-Commits: A1-A3 + B1-B2, all in main.
+Key rule: **Portal data may be purged. People data must survive.** Every schema decision reinforces this.
 
-### Phase 9 — Client Memory System
-people table (canonical, email unique, optional inquiry link), person_notes (global or trip-scoped via nullable portal_id), person_trip_history (survives portal purge), portal member add with autocomplete from people, /admin/clients/[personId] person page with global notes + trip history tabs, /admin/clients search dashboard, Forget this client action (PIPEDA). Automatic portal purge at return_date + 90 days (configurable, per-portal override via keep_until). Itinerary Library: archived itineraries stay editable, reusable as templates, filterable live/archived/template.
+### What's next
+1. **Local testing pass** — everything since Phase 7.6 Wave 2 is untested in a browser. TESTING.md has the full checklist covering 7.6 + 7.8 + 7.9 + 9.
+2. **Phase 7.7 Launch Day** — email + magic link go-live, security audit, cron entries (email queue every 1 min, portal purge daily at 3 AM)
+3. **Phase 7.3 (trimmed)** — publish validation, error boundaries, responsive preview
+4. **Phase 8** — social publishing, YouTube auto-populate (deferred to post-launch)
 
 ### Testing debt
-Everything since Phase 7.6 Wave 2 is untested in a browser. TESTING.md has the full checklist covering 7.6, 7.8, 7.9, and 9 when it ships.
+Everything since Phase 7.6 Wave 2 has been verified only via `tsc` + `npm test` + DB smoke tests. No UI has been clicked. The scope of untested work now spans four phases and dozens of new surfaces.
 ## Future Work (Prioritised)
 
 ### Phase 7.3 — Production Hardening

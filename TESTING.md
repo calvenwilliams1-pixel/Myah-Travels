@@ -276,7 +276,7 @@ Tests written as each wave ships.
 
 ---
 
-## Phase 9 — Client Memory System (PENDING)
+## Phase 9 — Client Memory System (CODE-COMPLETE — needs local test)
 
 Tests written as each wave ships.
 

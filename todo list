@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 15)
+# MyCalTravels — TODO.md (Revision 16)
 
 ## Status
 
-**Phase 7.6 + 7.8 + 7.9 complete. Phase 9 (Client Memory System) plan locked — see PHASES-7.9-AND-9-PLAN.md. Testing debt accumulating — see TESTING.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed (Canvas deletion and better-sqlite3 mini-PC dropped; publish validation, error boundaries, responsive preview retained). Launch Day prep documented as Phase 7.7. Security audit flagged for launch prep.**
+**Phases 7.6, 7.8, 7.9, and 9 all CODE-COMPLETE. Massive accumulated testing debt — see TESTING.md for the full checklist. Launch Day prep documented as Phase 7.7 (with cron entries for email queue + portal purge). Phase 8 (social publishing) deferred to post-launch. Phase 7.3 (trimmed) still pending. — see PHASES-7.9-AND-9-PLAN.md. Testing debt accumulating — see TESTING.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed (Canvas deletion and better-sqlite3 mini-PC dropped; publish validation, error boundaries, responsive preview retained). Launch Day prep documented as Phase 7.7. Security audit flagged for launch prep.**
 
 ## Core Principle
 
@@ -258,6 +258,12 @@ Operational setup for the deployed system. The code is complete; this is everyth
 
 ### Pre-Launch (before deploy day)
 
+**Cron entries (mini PC crontab):**
+- [ ] Email queue processor — every 1 minute
+  `* * * * * curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue > /dev/null 2>&1`
+- [ ] Portal purge — daily at 3 AM
+  `0 3 * * * cd /var/www/site && npx tsx scripts/purge-portals.ts >> /var/log/portal-purge.log 2>&1`
+
 **Dependency refresh on deploy:**
 - [ ] `npm ci` on the mini PC (installs exact versions from package-lock.json — includes all Phase 7.9 additions)
 - [ ] Verify `@tiptap/extension-*` packages present in `node_modules`
@@ -486,51 +492,51 @@ Scope: transform the post editor from typewriter to stylized writing tool. Full 
 
 ---
 
-## Phase 9: Client Memory System (PLANNED — plan locked)
+## Phase 9: Client Memory System ✅ COMPLETE
 
 Scope: canonical client records that persist across portals, with nested notepad per person and cross-portal search. Full plan in PHASES-7.9-AND-9-PLAN.md.
 
 ### Wave 9-A — Schema + person model
-- [ ] people table: id, email (unique), canonical_name, inquiry_id (nullable), created_at, updated_at
-- [ ] portal_members.person_id FK (nullable initially, populated on creation)
-- [ ] person_notes table: id, person_id, portal_id (nullable), content, created_at, updated_at
-- [ ] person_trip_history table: id, person_id, itinerary_id, portal_title, departure_date, return_date, archived_at
-- [ ] Migration + setup-db guards
-- [ ] Backfill: existing portal_members, dedupe by email, populate people
+- [x] people table: id, email (unique), canonical_name, inquiry_id (nullable), created_at, updated_at
+- [x] portal_members.person_id FK (nullable initially, populated on creation)
+- [x] person_notes table: id, person_id, portal_id (nullable), content, created_at, updated_at
+- [x] person_trip_history table: id, person_id, itinerary_id, portal_title, departure_date, return_date, archived_at
+- [x] Migration + setup-db guards
+- [x] Backfill: existing portal_members, dedupe by email, populate people
 
 ### Wave 9-B — Portal member add with suggestion
-- [ ] Portal member add form suggests name from people when email matches (reuses AutocompleteInput pattern)
-- [ ] Auto-links person_id
-- [ ] Creates new person record if email is new
+- [x] Portal member add form suggests name from people when email matches (reuses AutocompleteInput pattern)
+- [x] Auto-links person_id
+- [x] Creates new person record if email is new
 
 ### Wave 9-C — Person page
-- [ ] /admin/clients/[personId] — canonical person view
-- [ ] Global notes (post-it style, freeform)
-- [ ] Trip history tabs — one tab per portal they have been part of (live or archived)
-- [ ] Click tab, view the itinerary attached to that portal
-- [ ] Forget this client action — hard delete person + notes + history (PIPEDA gap closure)
-- [ ] Visible note: Do not store payment info, IDs, passport numbers, or home addresses. Dietary, preference, and personal notes are intended.
+- [x] /admin/clients/[personId] — canonical person view
+- [x] Global notes (post-it style, freeform)
+- [x] Trip history tabs — one tab per portal they have been part of (live or archived)
+- [x] Click tab, view the itinerary attached to that portal
+- [x] Forget this client action — hard delete person + notes + history (PIPEDA gap closure)
+- [x] Visible note: Do not store payment info, IDs, passport numbers, or home addresses. Dietary, preference, and personal notes are intended.
 
 ### Wave 9-D — Client notes dashboard
-- [ ] /admin/clients — search across all people
-- [ ] Search by name, email, note content (LIKE, not FTS5 at this scale)
-- [ ] Recently active clients panel
+- [x] /admin/clients — search across all people
+- [x] Search by name, email, note content (LIKE, not FTS5 at this scale)
+- [x] Recently active clients panel
 
 ### Wave 9-E — Portal purge automation
-- [ ] Automatic purge at return_date + 90 days (configurable default in settings)
-- [ ] Per-portal override: keep_until date field on portal edit
-- [ ] Daily cron: purge expired portals
-- [ ] On purge: delete portal + members-links + magic-links + sessions + hero + wall items + portal notepad + portal documents
-- [ ] On purge: keep itinerary (detach portal_id, mark archived), keep library items, keep person records, write person_trip_history rows
+- [x] Automatic purge at return_date + 90 days (configurable default in settings)
+- [x] Per-portal override: keep_until date field on portal edit
+- [x] Daily cron: purge expired portals
+- [x] On purge: delete portal + members-links + magic-links + sessions + hero + wall items + portal notepad + portal documents
+- [x] On purge: keep itinerary (detach portal_id, mark archived), keep library items, keep person records, write person_trip_history rows
 
 ### Wave 9-F — Itinerary Library
-- [ ] /admin/itineraries — library view of all itineraries (live + archived)
-- [ ] Filter: live / archived / marked-as-template
-- [ ] Search by title, portal name, date range
-- [ ] Preview mode (reuse existing preview)
-- [ ] Use as template action: copy to new portal, clear occurrence data (dates, references, confirmations)
-- [ ] Live itineraries show used-in-portal link
-- [ ] Archived itineraries show portal-purged marker, usable as template
+- [x] /admin/itineraries — library view of all itineraries (live + archived)
+- [x] Filter: live / archived / marked-as-template
+- [x] Search by title, portal name, date range
+- [x] Preview mode (reuse existing preview)
+- [x] Use as template action: copy to new portal, clear occurrence data (dates, references, confirmations)
+- [x] Live itineraries show used-in-portal link
+- [x] Archived itineraries show portal-purged marker, usable as template
 
 ---
 
@@ -679,7 +685,7 @@ Scope: canonical client records that persist across portals, with nested notepad
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Phase 9 (Client Memory System) — Waves 9A-9F. Testing debt accumulated across 7.6 + 7.8 + 7.9 — needs a full local pass. See TESTING.md.
+**Next action:** Local testing pass across all shipped phases (7.6 + 7.8 + 7.9 + 9). Then Launch Day prep (Phase 7.7). Then Phase 7.3 (trimmed) — publish validation, error boundaries, responsive preview.
 
 ---
 
