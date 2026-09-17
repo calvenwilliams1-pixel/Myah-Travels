@@ -1,5 +1,7 @@
 # MyCalTravels — SRS v5.0
 
+**Revision:** Phase 7.9 + 9 amendments (2026-09-17). See Part 1 of PHASES-7.9-AND-9-PLAN.md for the full list of amendments.
+
 ## Software Requirements Specification
 
 **Version:** 5.0 (Block-Based Content + Portal Wall + Itinerary Builder + Admin Notepad)
@@ -169,7 +171,8 @@ Posts, guides, and reviews are composed of ordered **content blocks**. Each bloc
 
 ### 4.3 Guardrails
 
-- No raw colour pickers for writers
+- No raw colour pickers for writers (surface colours — themes, hero banners, backgrounds)
+  - Exception: inline text and highlight colours in the Body block may use a raw colour picker, augmented by a curated preset library the writer can extend or overwrite. See Phase 7.9 plan for details.
 - Status colours never themeable
 - Background always white (professional)
 - Hero presets are named options only
@@ -322,7 +325,20 @@ Private, admin-only scratchpad per portal for logistics that aren't part of the 
 
 ### 8.4 Data Guardrail
 
-Logistics notes only (dietary needs, mobility, preferences). No diagnostic detail, treatment information, or medical history.
+Notes are practical client memory. Safe and intended to store:
+- Preferences (seat, room, timing, pace)
+- Dietary restrictions and allergies
+- Travel habits (early riser, dislikes transfers, prefers trains)
+- Family situations (travels with grandchildren, honeymoon, solo)
+- Personal notes (likes, dislikes, anniversaries, celebrations)
+
+Do not store:
+- Payment information (credit cards, bank details)
+- Government-issued ID numbers (SIN, SSN, national insurance)
+- Passport numbers
+- Home addresses as structured fields (freeform in notes is acceptable if context requires it)
+
+The distinction: sensitive data means credentials and identifiers. Practical client memory is the whole point of the system.
 
 ---
 
@@ -555,6 +571,8 @@ npm run test:ui
 ---
 
 ## Section 19: Explicit Non-Goals
+
+**Amendment (2026-09-17):** The "no raw colour pickers" rule below applies to surface colours — themes, hero banners, backgrounds — and stays in force for those. Inline text and highlight colours in the Body block are exempt; see Section 4.3 and the Phase 7.9 plan.
 
 - No multi-admin support (deferred)
 - No Canvas for writers (frozen)
