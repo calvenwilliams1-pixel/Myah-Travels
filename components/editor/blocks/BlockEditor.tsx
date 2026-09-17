@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { BlockData, BlockType } from "@/types/blocks";
 import { getBlockDefinition, getAllBlockDefinitions } from "@/lib/blocks/registry";
-import { getTemplateById, getAllTemplates } from "@/lib/blocks/templates";
+import { getTemplateById as getStaticTemplateById, getAllTemplates as getStaticAllTemplates } from "@/lib/blocks/templates";
 import TitleBlockEditor from "./TitleBlockEditor";
 import BodyBlockEditor from "./BodyBlockEditor";
 import CalloutBlockEditor from "./CalloutBlockEditor";
@@ -33,21 +33,31 @@ interface BlockEditorProps {
   initialBlocks?: BlockData[];
   initialTemplateId?: string;
   onChange?: (blocks: BlockData[], templateId: string) => void;
+  templates?: import("@/types/blocks").Template[];
 }
 
 export default function BlockEditor({
   initialBlocks = [],
   initialTemplateId = "story",
   onChange,
+  templates,
 }: BlockEditorProps) {
   const [blocks, setBlocks] = useState<BlockData[]>(initialBlocks);
   const [templateId, setTemplateId] = useState(initialTemplateId);
   const [isInitialised, setIsInitialised] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  // Template resolution: prefer DB-loaded templates (from parent), fall
+  // back to static starters so this component works regardless of
+  // whether the caller has migrated.
+  const resolveTemplate = (id: string) =>
+    templates?.find((t) => t.id === id) ?? getStaticTemplateById(id);
+  const listTemplates = () =>
+    templates ?? getStaticAllTemplates();
+
 
   const loadTemplate = (newTemplateId: string) => {
-    const template = getTemplateById(newTemplateId);
+    const template = resolveTemplate(newTemplateId);
     if (!template) return;
 
     const newBlocks: BlockData[] = [];
@@ -84,7 +94,7 @@ export default function BlockEditor({
     const block = blocks.find((b) => b.id === blockId);
     if (!block) return false;
 
-    const template = getTemplateById(templateId);
+    const template = resolveTemplate(templateId);
     if (!template) return true;
 
     const section = template.sections.find((s) => s.type === block.type);
@@ -92,7 +102,7 @@ export default function BlockEditor({
   };
 
   const canAddBlock = (type: BlockType): boolean => {
-    const template = getTemplateById(templateId);
+    const template = resolveTemplate(templateId);
     if (!template) return true;
 
     const section = template.sections.find((s) => s.type === type);
@@ -242,7 +252,7 @@ export default function BlockEditor({
           onChange={(e) => handleTemplateChange(e.target.value)}
           className="px-3 py-2 border border-gray-300 rounded text-sm"
         >
-          {getAllTemplates().map((t) => (
+          {listTemplates().map((t) => (
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
         </select>

@@ -1,5 +1,4 @@
 import React from "react";
-import { getAllTemplates } from "@/lib/blocks/templates";
 import { saveTemplateToDb, deleteTemplateFromDb, loadTemplatesFromDb } from "@/lib/blocks/template-store";
 import TemplateCreator from "@/components/editor/TemplateCreator";
 import { Template } from "@/types/blocks";

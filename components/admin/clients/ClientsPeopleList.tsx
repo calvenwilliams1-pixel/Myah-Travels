@@ -81,7 +81,7 @@ export default function ClientsPeopleList() {
           {people.map((p) => (
             <Link
               key={p.id}
-              href={"/admin/clients/" + p.id}
+              href={"/admin/clients/people/" + p.id}
               className="block"
             >
               <Card className="hover:border-primary transition-colors">

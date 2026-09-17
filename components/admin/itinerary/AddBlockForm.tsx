@@ -107,11 +107,13 @@ export default function AddBlockForm({
       {/* Type selector */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Block type">
           {(["image", "callout", "notice"] as BlockType[]).map((t) => (
             <button
               key={t}
               type="button"
+              role="radio"
+              aria-checked={blockType === t}
               onClick={() => setBlockType(t)}
               className={`p-2 rounded text-xs capitalize transition-colors ${
                 blockType === t

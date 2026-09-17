@@ -9,9 +9,14 @@ import {
 } from "@/lib/itineraries";
 import { recordOperation, OPERATION_TYPES } from "@/lib/operations/record";
 
-export async function POST(req: NextRequest, { params }: { params: { targetId: string } }) {
+// SECURITY: Single-admin system — requireAuth() only.
+// Note: the [id] param is the target itinerary ID. Copying happens
+// from sourceSegmentId (in body) into targetDayId (in body), both of
+// which are validated against the target itinerary below.
+
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAuth();
-  const targetItineraryId = Number(params.targetId);
+  const targetItineraryId = Number(params.id);
   if (!targetItineraryId) return NextResponse.json({ error: "Invalid target ID" }, { status: 400 });
 
   const body = await req.json();
