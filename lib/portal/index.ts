@@ -100,6 +100,7 @@ export async function updatePortal(
     name: string;
     departureDate: string;
     returnDate: string;
+    keepUntil: string | null;
     heroTitle: string;
     heroSubtitle: string;
     heroImage: string;

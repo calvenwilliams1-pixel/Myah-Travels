@@ -29,6 +29,7 @@ export default function PortalEditPage() {
   const [name, setName] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
+  const [keepUntil, setKeepUntil] = useState("");
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroImage, setHeroImage] = useState("");
@@ -50,6 +51,7 @@ export default function PortalEditPage() {
       setName(data.portal.name || "");
       setDepartureDate(data.portal.departureDate || "");
       setReturnDate(data.portal.returnDate || "");
+      setKeepUntil(data.portal.keepUntil || "");
       setHeroTitle(data.portal.heroTitle || "");
       setHeroSubtitle(data.portal.heroSubtitle || "");
       setHeroImage(data.portal.heroImage || "");
@@ -95,6 +97,7 @@ export default function PortalEditPage() {
 
       <form action={updatePortalAction}>
         <input type="hidden" name="portalId" value={portalId} />
+        <input type="hidden" name="keepUntil" value={keepUntil} />
         <input type="hidden" name="heroTitle" value={heroTitle} />
         <input type="hidden" name="heroSubtitle" value={heroSubtitle} />
         <input type="hidden" name="heroImage" value={heroImage} />
@@ -130,6 +133,16 @@ export default function PortalEditPage() {
                   onChange={(e) => setReturnDate(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div>
+              <Input
+                label="Keep until (optional)"
+                type="date"
+                value={keepUntil}
+                onChange={(e) => setKeepUntil(e.target.value)}
+                helperText="Overrides the default 90-day purge window. Portal deletes on this date, or the default (return date + 90 days) if left blank."
+              />
             </div>
           </div>
         </Card>

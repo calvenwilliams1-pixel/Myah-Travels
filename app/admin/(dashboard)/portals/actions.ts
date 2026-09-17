@@ -154,11 +154,13 @@ export async function updatePortalAction(formData: FormData) {
   const heroSubtitle = String(formData.get("heroSubtitle") || "");
   const heroImage = String(formData.get("heroImage") || "");
   const heroPreset = String(formData.get("heroPreset") || "minimal");
+  const keepUntil = String(formData.get("keepUntil") || "");
 
   await updatePortal(portalId, {
     name,
     departureDate: departureDate || undefined,
     returnDate: returnDate || undefined,
+    keepUntil: keepUntil || undefined,
     heroTitle: heroTitle || undefined,
     heroSubtitle: heroSubtitle || undefined,
     heroImage: heroImage || undefined,
