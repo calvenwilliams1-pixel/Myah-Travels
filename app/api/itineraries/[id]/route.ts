@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const itinerary = await getFullItinerary(id);
   if (!itinerary) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const portal = await getPortalById(itinerary.portalId);
+  const portal = itinerary.portalId ? await getPortalById(itinerary.portalId) : null;
 
   return NextResponse.json({
     itinerary,
