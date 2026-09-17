@@ -16,12 +16,15 @@ export default async function DashboardLayout({
     redirect("/admin/login");
   }
 
-  // SECURITY: enforce TOTP enrollment. If the admin has not enabled 2FA,
-  // redirect to the enrollment page. This is the single most important
-  // auth control on the platform — a password alone is not sufficient.
-  const totpStatus = await getUserTotpStatus(Number(user.id));
-  if (!totpStatus.totpEnabled) {
-    redirect("/admin/enroll-2fa");
+  // TOTP enforcement is gated behind an env var so development and
+  // testing can proceed without an authenticator app. At launch,
+  // set TOTP_ENFORCEMENT=true on the mini PC — the Launch Day checklist
+  // includes this step. See the Security section of the TODO.
+  if (process.env.TOTP_ENFORCEMENT === "true") {
+    const totpStatus = await getUserTotpStatus(Number(user.id));
+    if (!totpStatus.totpEnabled) {
+      redirect("/admin/enroll-2fa");
+    }
   }
 
   async function handleLogout() {

@@ -258,11 +258,17 @@ Operational setup for the deployed system. The code is complete; this is everyth
 
 ### Pre-Launch (before deploy day)
 
-**TOTP setup (required on first login):**
+**TOTP enforcement (env-gated):**
 - [ ] Install an authenticator app (Google Authenticator, Authy, 1Password, etc.)
-- [ ] First login redirects to `/admin/enroll-2fa` — scan secret / otpauth URL
-- [ ] Enter 6-digit code to confirm
+- [ ] Set `TOTP_ENFORCEMENT=true` in the mini PC's `.env` (this is the go-live switch)
+- [ ] Verify: unenrolled admin hitting `/admin/*` → redirected to `/admin/enroll-2fa`
+- [ ] First production login: redirected to `/admin/enroll-2fa`
+- [ ] Scan the otpauth URL or manually enter the secret in your authenticator app
+- [ ] Enter the 6-digit code to confirm enrollment
 - [ ] Subsequent logins require TOTP code after password
+- [ ] **Store the TOTP secret in your password manager as a backup** (in case phone is lost)
+- [ ] Re-enroll on a second device if you want redundancy (same secret, different app)
+- [ ] **Note:** in dev / Codespace, leave `TOTP_ENFORCEMENT` unset or `false` to skip enrollment during testing
 
 **Cron entries (mini PC crontab):**
 - [ ] Email queue processor — every 1 minute
@@ -683,7 +689,7 @@ Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
 - [x] Extended ARIA + focus to Phase 7.8/9 admin modals (UseAsTemplateButton, CopySegmentModal, AddBlockForm, etc.)
 
 ### Security Audit ✅
-- [x] TOTP enrollment now mandatory — layout redirects unenrolled admin to `/admin/enroll-2fa`
+- [x] TOTP enrollment enforced via `TOTP_ENFORCEMENT=true` env flag — off in dev, on in production
 - [x] DOMPurify wraps `TipTapRenderer` + `CleanTipTapRenderer`
 - [x] Duplicate Content Library nav link removed
 - [x] Verified: upload magic-byte validation is solid; SVG not allowed; bcrypt cost 12; rate limits adequate; no SQL injection in itinerary repo; no CSRF exposure (SameSite=Lax + fetch)
