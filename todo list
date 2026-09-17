@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 13)
+# MyCalTravels — TODO.md (Revision 14)
 
 ## Status
 
-**Phase 7.6 complete. Phase 7.8 Data Entry Automation COMPLETE — all four waves shipped under the No Deferrals rule (suggestion system, autocomplete, duplication, drag-reorder, bulk-add, backfill, FTS5, snippets, paste-booking, kill switch, telemetry, stale entities page, cross-itinerary modal). Testing debt accumulating — see TESTING.md. Next: run the full local test pass, then Launch Day prep (Phase 7.7).**
+**Phase 7.6 + 7.8 complete. Phase 7.9 (Post Editor and Writing Tools) and Phase 9 (Client Memory System) plans locked — see PHASES-7.9-AND-9-PLAN.md. Testing debt accumulating — see TESTING.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed (Canvas deletion and better-sqlite3 mini-PC dropped; publish validation, error boundaries, responsive preview retained). Launch Day prep documented as Phase 7.7. Security audit flagged for launch prep.**
 
 ## Core Principle
 
@@ -446,6 +446,88 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 
 ---
 
+## Phase 7.9: Post Editor and Writing Tools (NEXT — plan locked)
+
+Scope: transform the post editor from typewriter to stylized writing tool. Full plan in PHASES-7.9-AND-9-PLAN.md.
+
+### Wave 7.9-A — Editor toolbar overhaul
+- [ ] Rich text toolbar: bold, italic, underline, colour (semantic tokens + raw picker), highlight (curated), font family (~20 curated), font size (presets + fine-tune), alignment, lists, links, blockquote, horizontal rule, clear formatting
+- [ ] Sticky toolbar, grouped (Text style / Structure / Insert), collapsible on narrow viewports
+- [ ] Keyboard shortcuts (Cmd+B, Cmd+I, Cmd+U, Cmd+K)
+- [ ] Word count + reading time estimate
+- [ ] Paste sanitization — strip inline styles from pasted content
+
+### Wave 7.9-B — Colour presets system
+- [ ] color_presets table: named presets with hex values
+- [ ] Curated defaults seeded on first run
+- [ ] Myah can create new presets and overwrite curated defaults
+- [ ] Presets are global (site-wide), not per-post
+- [ ] Text colour and highlight colour both draw from this library
+
+### Wave 7.9-C — Pop-up preview
+- [ ] Pop-out preview (floating, resizable, movable)
+- [ ] Fullscreen preview mode (button inside pop-out)
+- [ ] No modal — redundant with floating
+- [ ] Retire the fixed right-side pane in favour of pop-out as default
+
+### Wave 7.9-D — YouTube auto-embed + social handles
+- [ ] Detect YouTube URLs in Body blocks, render inline embed
+- [ ] Settings page for social handles (Instagram, TikTok, Facebook, YouTube)
+- [ ] No publishing — linking only
+
+### Reviewer overrides recorded
+- Stakeholder overrode both reviewers on font family (kept, curated ~20) and raw colour picker (kept, with presets system). Rationale: optional does not mean harmful; guardrails hold; automatic entity colouring keeps daily decisions minimal.
+
+---
+
+## Phase 9: Client Memory System (PLANNED — plan locked)
+
+Scope: canonical client records that persist across portals, with nested notepad per person and cross-portal search. Full plan in PHASES-7.9-AND-9-PLAN.md.
+
+### Wave 9-A — Schema + person model
+- [ ] people table: id, email (unique), canonical_name, inquiry_id (nullable), created_at, updated_at
+- [ ] portal_members.person_id FK (nullable initially, populated on creation)
+- [ ] person_notes table: id, person_id, portal_id (nullable), content, created_at, updated_at
+- [ ] person_trip_history table: id, person_id, itinerary_id, portal_title, departure_date, return_date, archived_at
+- [ ] Migration + setup-db guards
+- [ ] Backfill: existing portal_members, dedupe by email, populate people
+
+### Wave 9-B — Portal member add with suggestion
+- [ ] Portal member add form suggests name from people when email matches (reuses AutocompleteInput pattern)
+- [ ] Auto-links person_id
+- [ ] Creates new person record if email is new
+
+### Wave 9-C — Person page
+- [ ] /admin/clients/[personId] — canonical person view
+- [ ] Global notes (post-it style, freeform)
+- [ ] Trip history tabs — one tab per portal they have been part of (live or archived)
+- [ ] Click tab, view the itinerary attached to that portal
+- [ ] Forget this client action — hard delete person + notes + history (PIPEDA gap closure)
+- [ ] Visible note: Do not store payment info, IDs, passport numbers, or home addresses. Dietary, preference, and personal notes are intended.
+
+### Wave 9-D — Client notes dashboard
+- [ ] /admin/clients — search across all people
+- [ ] Search by name, email, note content (LIKE, not FTS5 at this scale)
+- [ ] Recently active clients panel
+
+### Wave 9-E — Portal purge automation
+- [ ] Automatic purge at return_date + 90 days (configurable default in settings)
+- [ ] Per-portal override: keep_until date field on portal edit
+- [ ] Daily cron: purge expired portals
+- [ ] On purge: delete portal + members-links + magic-links + sessions + hero + wall items + portal notepad + portal documents
+- [ ] On purge: keep itinerary (detach portal_id, mark archived), keep library items, keep person records, write person_trip_history rows
+
+### Wave 9-F — Itinerary Library
+- [ ] /admin/itineraries — library view of all itineraries (live + archived)
+- [ ] Filter: live / archived / marked-as-template
+- [ ] Search by title, portal name, date range
+- [ ] Preview mode (reuse existing preview)
+- [ ] Use as template action: copy to new portal, clear occurrence data (dates, references, confirmations)
+- [ ] Live itineraries show used-in-portal link
+- [ ] Archived itineraries show portal-purged marker, usable as template
+
+---
+
 ## Phase 7.2 Loose Ends (Before Phase 8)
 - [x] Attach itinerary UI on admin editor page
 - [x] Admin preview of itinerary
@@ -591,7 +673,7 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
 - **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
 
-**Next action:** Run full TESTING.md pass on local PC. Then Launch Day prep (Phase 7.7). Then Phase 7.3 production hardening (Canvas deletion, deployment, global undo/redo).
+**Next action:** Write PHASES-7.9-AND-9-PLAN.md (full plan doc), update SRS, then begin Phase 7.9 Wave A (editor toolbar overhaul). Testing debt still pending — see TESTING.md.
 
 ---
 

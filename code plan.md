@@ -1,8 +1,8 @@
-# MyCalTravels — CODE-PLAN.md (Revision 5)
+# MyCalTravels — CODE-PLAN.md (Revision 6)
 
 ## Overview
 
-Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation COMPLETE — all four waves shipped (suggestion system, autocomplete, duplication, drag-reorder, bulk-add, backfill, FTS5, instruction snippets, paste-booking parser, kill switch, telemetry, stale entities page, cross-itinerary copy modal). Canvas system FROZEN (pending deletion). Production build passes cleanly.
+Block System (10 blocks) COMPLETE. Template Creator COMPLETE. Theme System COMPLETE. Portal V1 COMPLETE. Itinerary Builder V1 COMPLETE. Admin Notepad COMPLETE. Autosave Infrastructure COMPLETE (48 tests). Form Primitives COMPLETE. Phase 7.6 refinement COMPLETE (Waves 1-4, incl. 7.6.9 itinerary styling). Phase 7.8 Data Entry Automation COMPLETE. Phase 7.9 (Post Editor and Writing Tools) and Phase 9 (Client Memory System) plans locked. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed to publish validation, error boundaries, and responsive preview only. See PHASES-7.9-AND-9-PLAN.md for the roadmap. Canvas system FROZEN (pending deletion). Production build passes cleanly.
 
 ## Tech Stack
 
@@ -576,9 +576,48 @@ tsconfig.json            # TypeScript config
 
 ---
 
+## Planned — Phase 7.9 (Post Editor)
+
+components/editor/ — Toolbar.tsx (REWRITTEN grouped/sticky/collapsible), ColourPicker.tsx (NEW presets + picker), FontFamilyPicker.tsx (NEW curated ~20), FontSizePicker.tsx (NEW presets + fine-tune), PreviewPopout.tsx (NEW floating + fullscreen)
+
+lib/settings/color-presets.ts — CRUD for color_presets
+
+drizzle/schema/color-presets.ts — color_presets table
+
+## Planned — Phase 9 (Client Memory)
+
+drizzle/schema/people.ts — people, person_notes, person_trip_history
+
+lib/clients/people.ts — people CRUD, notes, trip history
+
+app/admin/(dashboard)/clients/page.tsx — search dashboard
+
+app/admin/(dashboard)/clients/[personId]/page.tsx — person view with trip tabs
+
+app/admin/(dashboard)/itineraries/page.tsx — itinerary library
+
+lib/jobs/portal-purge.ts — automatic purge at return_date + 90
+
+app/api/people/route.ts + [id]/route.ts — CRUD
+
+## Planned migrations
+
+0014_color_presets.sql
+0015_people.sql
+0016_portal_keep_until.sql
+0017_itinerary_orphan.sql
+
 ## Remaining Work
 
-### Phase 7.8 — Data Entry Automation (Current)
+### Phase 7.9 — Post Editor and Writing Tools (NEXT)
+- Editor toolbar overhaul, colour presets, pop-out preview, YouTube auto-embed
+- Plan locked in PHASES-7.9-AND-9-PLAN.md
+
+### Phase 9 — Client Memory System (PLANNED)
+- People table, person notes, trip history, client search, portal purge, itinerary library
+- Plan locked in PHASES-7.9-AND-9-PLAN.md
+
+### Phase 7.8 — Data Entry Automation (COMPLETE)
 - **Wave A** COMPLETE — suggestion schema, API, autocomplete, client wiring
 - **Wave B** COMPLETE — order_mode + duplication + drag-reorder
 - **Wave C** PENDING — bulk-add (transactional endpoint + preview UI)

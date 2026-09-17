@@ -260,3 +260,32 @@ node -e "const db=require('better-sqlite3')('data/site.db'); const r=db.prepare(
 - [ ] Autocomplete dropdowns no longer appear
 - [ ] Forms still work as plain inputs
 - [ ] Reset to true and restart
+
+---
+
+## Phase 7.9 — Post Editor and Writing Tools (PENDING)
+
+Tests written as each wave ships.
+
+- Test E1-E5 — Toolbar: bold/italic/underline, colour presets, highlight, font family, size
+- Test E6-E8 — Pop-out preview, fullscreen, no-modal
+- Test E9 — Paste sanitization (paste from Word/Gmail, confirm no inline styles leak)
+- Test E10 — Word count + reading time
+- Test E11 — YouTube URL auto-embed
+- Test E12 — Colour preset create / overwrite / apply
+
+---
+
+## Phase 9 — Client Memory System (PENDING)
+
+Tests written as each wave ships.
+
+- Test F1 — Add portal member with existing email, suggests name from people, links person_id
+- Test F2 — Add portal member with new email, creates person record
+- Test F3 — Person page: global notes, trip tabs, itinerary per tab
+- Test F4 — Client notes dashboard: search by name, email, note content
+- Test F5 — Forget this client: hard delete person + notes + history, portal_members.person_id nulled
+- Test F6 — Portal purge at return_date + 90: portal deleted, itinerary kept, person_trip_history written
+- Test F7 — Per-portal keep_until override prevents purge
+- Test F8 — Itinerary Library: filter live/archived/template, preview, use-as-template flow
+- Test F9 — Reused itinerary as template: sections/days/segments copied, occurrence data cleared
