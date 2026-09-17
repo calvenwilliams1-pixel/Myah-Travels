@@ -58,6 +58,8 @@ export default function FontSizePicker({ editor, onClose }: FontSizePickerProps)
                 : "border border-gray-200 hover:border-primary")
             }
             title={size.label}
+            aria-label={"Set size to " + size.label}
+            aria-pressed={currentSize === size.value}
           >
             {size.label.slice(0, 2)}
           </button>
@@ -78,6 +80,7 @@ export default function FontSizePicker({ editor, onClose }: FontSizePickerProps)
             applyFine(v);
           }}
           className="flex-1"
+          aria-label="Fine-tune font size"
         />
         <span className="text-xs text-gray-500 w-10 text-right">{finePx}px</span>
       </div>

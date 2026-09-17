@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BlockData, Template } from "@/types/blocks";
 import TemplatePreview from "./blocks/TemplatePreview";
+import { useFocusRestore } from "@/lib/hooks/useFocusRestore";
 
 interface PreviewPopoutProps {
   blocks: BlockData[];
@@ -30,6 +31,7 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
   const [dragOffset, setDragOffset] = useState<Position | null>(null);
   const [resizeStart, setResizeStart] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  useFocusRestore(true);
 
   // Drag the header
   useEffect(() => {
@@ -124,6 +126,7 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
             title={isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
+            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             {isFullscreen ? "⤢ Exit" : "⤢"}
           </button>
@@ -132,6 +135,7 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
             onClick={onClose}
             className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
             title="Close preview (Esc)"
+            aria-label="Close preview"
           >
             ✕
           </button>

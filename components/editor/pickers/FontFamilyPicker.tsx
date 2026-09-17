@@ -48,6 +48,8 @@ export default function FontFamilyPicker({ editor, onClose }: FontFamilyPickerPr
             (current === font.value ? "bg-primary/5 text-primary" : "")
           }
           style={{ fontFamily: font.value }}
+          aria-label={"Use font " + font.label}
+          aria-pressed={current === font.value}
         >
           {font.label}
         </button>

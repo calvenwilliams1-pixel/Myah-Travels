@@ -74,6 +74,9 @@ export default function Toolbar({ editor, contentType = "post" }: ToolbarProps) 
             onClick={() => setOpenPicker(openPicker === "font" ? null : "font")}
             className="px-2 py-1 rounded text-sm text-gray-600 hover:bg-gray-100"
             title="Font family"
+            aria-label="Font family"
+            aria-haspopup="true"
+            aria-expanded={openPicker === "font"}
           >
             Aa
           </button>
@@ -86,6 +89,9 @@ export default function Toolbar({ editor, contentType = "post" }: ToolbarProps) 
             onClick={() => setOpenPicker(openPicker === "size" ? null : "size")}
             className="px-2 py-1 rounded text-sm text-gray-600 hover:bg-gray-100"
             title="Font size"
+            aria-label="Font size"
+            aria-haspopup="true"
+            aria-expanded={openPicker === "size"}
           >
             Size
           </button>
@@ -100,6 +106,9 @@ export default function Toolbar({ editor, contentType = "post" }: ToolbarProps) 
             onClick={() => setOpenPicker(openPicker === "colour-text" ? null : "colour-text")}
             className="px-2 py-1 rounded text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-1"
             title="Text colour"
+            aria-label="Text colour"
+            aria-haspopup="true"
+            aria-expanded={openPicker === "colour-text"}
           >
             <span
               className="w-4 h-4 rounded border border-gray-300"
@@ -116,6 +125,9 @@ export default function Toolbar({ editor, contentType = "post" }: ToolbarProps) 
             onClick={() => setOpenPicker(openPicker === "colour-highlight" ? null : "colour-highlight")}
             className="px-2 py-1 rounded text-sm text-gray-600 hover:bg-gray-100"
             title="Highlight"
+            aria-label="Highlight"
+            aria-haspopup="true"
+            aria-expanded={openPicker === "colour-highlight"}
           >
             <span className="px-1 rounded bg-yellow-200">H</span>
           </button>

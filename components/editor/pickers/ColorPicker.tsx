@@ -110,6 +110,7 @@ export default function ColorPicker({ editor, kind, onClose }: ColorPickerProps)
             className="w-7 h-7 rounded border border-gray-200 hover:ring-2 hover:ring-primary/40 transition-all"
             style={{ backgroundColor: p.hex }}
             title={p.name + " (" + p.hex + ")"}
+            aria-label={p.name}
           />
         ))}
       </div>
@@ -139,6 +140,7 @@ export default function ColorPicker({ editor, kind, onClose }: ColorPickerProps)
                 value={rawHex}
                 onChange={(e) => handleRawChange(e.target.value)}
                 className="w-8 h-8 rounded cursor-pointer"
+                aria-label="Pick custom colour"
               />
               <input
                 type="text"
