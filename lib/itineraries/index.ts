@@ -564,16 +564,20 @@ export async function reorderSegments(dayId: number, orderedSegmentIds: number[]
     positionMap.set(id, (idx + 1) * 1000);
   });
 
-  await db.transaction(async (tx) => {
+  // better-sqlite3 + Drizzle: transaction callbacks must be synchronous.
+  // Using an async callback causes "Transaction function cannot return a promise".
+  db.transaction((tx) => {
     for (const seg of existing) {
       const newPos = positionMap.get(seg.id) ?? null;
-      await tx.update(itinerarySegments)
+      tx.update(itinerarySegments)
         .set({ manualPosition: newPos })
-        .where(eq(itinerarySegments.id, seg.id));
+        .where(eq(itinerarySegments.id, seg.id))
+        .run();
     }
-    await tx.update(itineraryDays)
+    tx.update(itineraryDays)
       .set({ orderMode: "manual" })
-      .where(eq(itineraryDays.id, dayId));
+      .where(eq(itineraryDays.id, dayId))
+      .run();
   });
 
   return { ok: true };
@@ -587,13 +591,16 @@ export async function resetSegmentOrder(dayId: number) {
   const day = await getDayById(dayId);
   if (!day) return null;
 
-  await db.transaction(async (tx) => {
-    await tx.update(itinerarySegments)
+  // Synchronous transaction callback (see reorderSegments comment).
+  db.transaction((tx) => {
+    tx.update(itinerarySegments)
       .set({ manualPosition: null })
-      .where(eq(itinerarySegments.dayId, dayId));
-    await tx.update(itineraryDays)
+      .where(eq(itinerarySegments.dayId, dayId))
+      .run();
+    tx.update(itineraryDays)
       .set({ orderMode: "time" })
-      .where(eq(itineraryDays.id, dayId));
+      .where(eq(itineraryDays.id, dayId))
+      .run();
   });
 
   return { ok: true };
@@ -626,12 +633,13 @@ export async function createSegmentsBulk(
     };
   }>
 ) {
-  return db.transaction(async (tx) => {
+  // Synchronous transaction callback (see reorderSegments comment).
+  return db.transaction((tx) => {
     const created: number[] = [];
     let position = 0;
 
     for (const draft of drafts) {
-      const [seg] = await tx.insert(itinerarySegments).values({
+      const seg = tx.insert(itinerarySegments).values({
         dayId,
         type: draft.type,
         startTime: draft.startTime ?? null,
@@ -640,12 +648,12 @@ export async function createSegmentsBulk(
         location: draft.location ?? null,
         instructions: draft.instructions ?? null,
         position: position++,
-      }).returning();
+      }).returning().get();
 
       created.push(seg.id);
 
       if (draft.leg) {
-        await tx.insert(itineraryTravelLegs).values({
+        tx.insert(itineraryTravelLegs).values({
           segmentId: seg.id,
           legOrder: 1,
           travelMode: draft.leg.travelMode,
@@ -656,7 +664,7 @@ export async function createSegmentsBulk(
           operator: draft.leg.operator ?? null,
           identifier: draft.leg.identifier ?? null,
           reference: draft.leg.reference ?? null,
-        });
+        }).run();
       }
     }
 
