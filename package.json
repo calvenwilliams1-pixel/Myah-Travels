@@ -17,7 +17,8 @@
     "health": "bash scripts/health-check.sh",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "smoke": "tsx scripts/smoke/auth.ts && tsx scripts/smoke/integration.ts && tsx scripts/smoke/content.ts && tsx scripts/smoke/search.ts && tsx scripts/smoke/portal.ts && tsx scripts/smoke/clients.ts"
   },
   "dependencies": {
     "@lucia-auth/adapter-drizzle": "^1.1.0",

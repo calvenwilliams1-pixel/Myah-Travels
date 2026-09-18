@@ -6,7 +6,6 @@ import { isBareYouTubeUrl, extractYouTubeId } from "@/lib/editor/youtube";
 import { buildExtensions } from "@/lib/editor/extensions";
 import Toolbar from "./Toolbar";
 import EditorContextMenu from "./EditorContextMenu";
-import { CanvasBlockNode } from "./CanvasBlockNode";
 
 interface TipTapEditorProps {
   initialContent?: string;
@@ -40,8 +39,6 @@ export default function TipTapEditor({
     extensions: buildExtensions({
       forEditor: true,
       placeholder,
-      includeCanvasBlock: true,
-      CanvasBlockNode,
     }),
     content: safeParseContent(initialContent),
     editable: !readOnly,

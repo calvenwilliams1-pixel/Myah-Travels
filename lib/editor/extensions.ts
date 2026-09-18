@@ -31,27 +31,16 @@ interface BuildOptions {
    * Renderers should pass false to keep the schema minimal.
    */
   forEditor?: boolean;
-  /**
-   * Include CanvasBlockNode. Needed by both the editor and
-   * TipTapRenderer (which renders the interleaved chunks) until
-   * Canvas is fully removed. Pass false from CleanTipTapRenderer.
-   */
-  includeCanvasBlock?: boolean;
-  /** CanvasBlockNode reference — required when includeCanvasBlock is true. */
-  CanvasBlockNode?: any;
 }
 
 /**
- * Build the TipTap extension array. Consumers that need the full
- * shared set (editor, TipTapRenderer) call with sensible defaults.
- * CleanTipTapRenderer calls with includeCanvasBlock: false.
+ * Build the TipTap extension array. The editor calls with
+ * forEditor: true + placeholder; renderers call with defaults.
  */
 export function buildExtensions(opts: BuildOptions = {}) {
   const {
     placeholder,
     forEditor = false,
-    includeCanvasBlock = false,
-    CanvasBlockNode,
   } = opts;
 
   const extensions: any[] = [
@@ -79,10 +68,6 @@ export function buildExtensions(opts: BuildOptions = {}) {
     HorizontalRule,
     YouTubeEmbedNode,
   ];
-
-  if (includeCanvasBlock && CanvasBlockNode) {
-    extensions.push(CanvasBlockNode);
-  }
 
   if (forEditor) {
     if (placeholder) {

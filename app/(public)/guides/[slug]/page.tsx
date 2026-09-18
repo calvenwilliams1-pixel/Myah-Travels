@@ -2,7 +2,7 @@ import React from "react";
 import { getGuideBySlug } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import TipTapRenderer from "@/components/editor/TipTapRenderer";
+import TipTapRenderer from "@/components/editor/renderers/CleanTipTapRenderer";
 
 export const revalidate = 3600;
 

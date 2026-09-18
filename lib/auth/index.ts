@@ -5,7 +5,6 @@ import { users, sessions } from "@/drizzle/schema";
 import { hash, compare } from "bcryptjs";
 import { authenticator } from "otplib";
 import { cookies } from "next/headers";
-import { cache } from "react";
 
 const adapter = new DrizzleSQLiteAdapter(db, sessions as any, users as any);
 
@@ -93,10 +92,26 @@ export async function destroySession(): Promise<void> {
   cookieStore.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
 }
 
-export const getCurrentUser = cache(async () => {
-  const result = await db.select().from(users).limit(1);
-  return result[0] ?? null;
-});
+// Request-scoped memo for getCurrentUser. Replaces React.cache so this
+// module has no Next.js coupling and can be imported by tests and CLI
+// scripts. The memo is reset per call site via `resetCurrentUserCache()`
+// at the top of request handlers — or simply not used if the caller
+// wants the fresh DB read each time.
+let currentUserPromise: Promise<any> | null = null;
+
+export function resetCurrentUserCache(): void {
+  currentUserPromise = null;
+}
+
+export async function getCurrentUser(): Promise<any | null> {
+  if (!currentUserPromise) {
+    currentUserPromise = (async () => {
+      const result = await db.select().from(users).limit(1);
+      return result[0] ?? null;
+    })();
+  }
+  return currentUserPromise;
+}
 
 export async function requireAuth() {
   const result = await db.select().from(users).limit(1);

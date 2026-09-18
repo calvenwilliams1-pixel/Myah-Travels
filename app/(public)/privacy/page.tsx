@@ -2,7 +2,7 @@ import React from "react";
 import { db } from "@/lib/db";
 import { pages } from "@/drizzle/schema";
 import { eq, and, isNull } from "drizzle-orm";
-import TipTapRenderer from "@/components/editor/TipTapRenderer";
+import TipTapRenderer from "@/components/editor/renderers/CleanTipTapRenderer";
 
 export const revalidate = 3600;
 
