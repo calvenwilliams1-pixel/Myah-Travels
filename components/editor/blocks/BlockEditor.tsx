@@ -65,10 +65,18 @@ export default function BlockEditor({
     // Defensive: some legacy rows may have sections undefined.
     const sections = Array.isArray(template.sections) ? template.sections : [];
     sections.forEach((section) => {
-      if (section.state === "required") {
-        const def = getBlockDefinition(section.type);
-        newBlocks.push(def.getDefaultData());
+      if (section.state !== "required") return;
+      const def = getBlockDefinition(section.type);
+      if (!def || typeof def.getDefaultData !== "function") {
+        // Malformed section type — skip it rather than crashing the
+        // whole editor. Log so it's diagnosable if it happens again.
+        console.warn(
+          "[BlockEditor] unknown block type in template " + template.id + ":",
+          section.type
+        );
+        return;
       }
+      newBlocks.push(def.getDefaultData());
     });
 
     setBlocks(newBlocks);
