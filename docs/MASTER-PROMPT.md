@@ -6,7 +6,7 @@
 
 I am building a website called **MyCalTravels** for a travel writer/agent (Myah). This document tells you where the project is, what we've decided, and what to do next.
 
-**Read this first. Then read `CODE-PLAN.md` for the full file map.**
+**Read this first. Then read `docs/CODE-PLAN.md` for the full file map.**
 
 ---
 
@@ -372,7 +372,7 @@ Everything since Phase 7.6 Wave 2 is untested in a browser. `tsc` + `npm test` +
 ## What to Do When Resuming
 
 1. **Read this document** (MASTER-PROMPT.md)
-2. **Read `CODE-PLAN.md`** for the complete file map
+2. **Read `docs/CODE-PLAN.md`** for the complete file map
 3. **Read `TODO.md`** for the current checklist
 4. **Read `SRS Plan`** for the full specification
 5. **Check git log** to see the most recent commits and current branch state

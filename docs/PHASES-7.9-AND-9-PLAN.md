@@ -3,7 +3,7 @@
 **Status:** Locked. Ready to build.
 **Last updated:** 2026-09-17
 
-This document is the roadmap for the next two phases. It records decisions, reviewer input, and the specific overrides made by the stakeholder. Read alongside MASTER-PROMPT.md (project overview) and code plan.md (file map).
+This document is the roadmap for the next two phases. It records decisions, reviewer input, and the specific overrides made by the stakeholder. Read alongside docs/MASTER-PROMPT.md (project overview) and docs/CODE-PLAN.md (file map).
 
 ---
 
@@ -328,8 +328,8 @@ Rewritten to match practical reality. Store preferences, dietary restrictions, a
 If context is lost:
 
 1. Read todo list (Revision 14) — has the current phase structure and status
-2. Read MASTER-PROMPT.md (Revision 6) — project overview + current focus
-3. Read code plan.md (Revision 6) — file map + planned files
+2. Read docs/MASTER-PROMPT.md — project overview + current focus
+3. Read docs/CODE-PLAN.md — file map + planned files
 4. Read this document — Phase 7.9 and Phase 9 plan
 5. Read TESTING.md — pending test checklists
 6. Check git log --oneline -20 — recent commits

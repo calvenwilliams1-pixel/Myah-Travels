@@ -276,7 +276,7 @@ npm run test:ui            # Vitest UI
 
 - [SRS](./SRS%20Plan) — Full specification (v5.0)
 - [Code Plan](./code%20plan.md) — Full file map (Revision 3)
-- [Master Prompt](./MASTER-PROMPT.md) — Context restoration (Revision 2)
+- [Master Prompt](./docs/MASTER-PROMPT.md) — Context restoration (Revision 2)
 - [Todo](./todo%20list) — Progress tracker (Revision 4)
 
 ## Scripts
