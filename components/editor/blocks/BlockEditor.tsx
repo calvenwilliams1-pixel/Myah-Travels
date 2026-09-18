@@ -348,6 +348,17 @@ export default function BlockEditor({
       </div>
       </div>
 
+      {previewOpen && (() => {
+        const currentTemplate = resolveTemplate(templateId) ?? listTemplates()[0];
+        if (!currentTemplate) return null;
+        return (
+          <PreviewPopout
+            blocks={blocks}
+            template={currentTemplate}
+            onClose={() => setPreviewOpen(false)}
+          />
+        );
+      })()}
     </div>
   );
 }
