@@ -9,17 +9,22 @@ import { useEffect, useRef } from "react";
  *   useFocusRestore(isOpen);
  *
  * Pass `isOpen` as the boolean that controls visibility.
+ *
+ * Focus is restored in two cases:
+ *   1. `isOpen` transitions from true to false while mounted.
+ *   2. The component unmounts while `isOpen` is still true (e.g. the
+ *      parent closes the popover by unmounting it).
  */
 export function useFocusRestore(isOpen: boolean): void {
   const triggerRef = useRef<HTMLElement | null>(null);
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
 
   useEffect(() => {
     if (isOpen) {
-      triggerRef.current = (typeof document !== "undefined"
-        ? (document.activeElement as HTMLElement)
-        : null);
+      triggerRef.current =
+        typeof document !== "undefined" ? (document.activeElement as HTMLElement) : null;
     } else if (triggerRef.current) {
-      // Defer restore to next tick so the closing render finishes first
       const el = triggerRef.current;
       triggerRef.current = null;
       requestAnimationFrame(() => {
@@ -27,4 +32,16 @@ export function useFocusRestore(isOpen: boolean): void {
       });
     }
   }, [isOpen]);
+
+  // Restore on unmount if the component is being torn down while still
+  // considered open. Covers the "parent closes by unmounting" pattern.
+  useEffect(() => {
+    return () => {
+      if (isOpenRef.current && triggerRef.current) {
+        const el = triggerRef.current;
+        triggerRef.current = null;
+        el.focus?.();
+      }
+    };
+  }, []);
 }
