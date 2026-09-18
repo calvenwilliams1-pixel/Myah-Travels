@@ -4,7 +4,34 @@ import { generateHTML } from "@tiptap/html";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
+import Underline from "@tiptap/extension-underline";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import FontFamily from "@tiptap/extension-font-family";
+import TextAlign from "@tiptap/extension-text-align";
+import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import FontSize from "@/lib/editor/font-size-extension";
+import { YouTubeEmbedNode } from "@/lib/editor/youtube-node";
 import CanvasBlockRenderer from "./CanvasBlockRenderer";
+
+// Registered extensions MUST match the editor's set in TipTapEditor.tsx.
+// Any node or mark the editor can produce has to be renderable here,
+// otherwise generateHTML throws and the fallback leaks raw content.
+const RENDER_EXTENSIONS = [
+  StarterKit.configure({ horizontalRule: false }),
+  Image,
+  Link,
+  Underline,
+  TextStyle,
+  FontSize,
+  FontFamily,
+  Color,
+  Highlight.configure({ multicolor: true }),
+  TextAlign.configure({ types: ["heading", "paragraph"] }),
+  HorizontalRule,
+  YouTubeEmbedNode,
+];
 
 interface TipTapRendererProps {
   content: string;
@@ -64,7 +91,7 @@ export default function TipTapRenderer({ content }: TipTapRendererProps) {
 
           const html = generateHTML(
             { type: "doc", content: chunk.nodes },
-            [StarterKit, Image, Link]
+            RENDER_EXTENSIONS
           );
 
           return (
