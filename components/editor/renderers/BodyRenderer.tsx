@@ -1,6 +1,7 @@
 import React from "react";
 import { BodyData, TemplateStyle } from "@/types/blocks";
 import CleanTipTapRenderer from "./CleanTipTapRenderer";
+import { deserializeBodyContent } from "@/lib/editor/body-content";
 
 interface BodyRendererProps {
   data: BodyData;
@@ -16,7 +17,7 @@ export default function BodyRenderer({ data, style }: BodyRendererProps) {
         lineHeight: style.bodyLineHeight,
       }}
     >
-      <CleanTipTapRenderer content={data.tiptapJson} />
+      <CleanTipTapRenderer content={deserializeBodyContent(data.tiptapJson)} />
     </div>
   );
 }

@@ -128,7 +128,7 @@ describe("CleanTipTapRenderer", () => {
 
     it("returns null for valid JSON that is not a TipTap doc", () => {
       const { container } = render(
-        <CleanTipTapRenderer content={JSON.stringify({ some: "object" })} />
+        <CleanTipTapRenderer content={{ some: "object" }} />
       );
       expect(container.innerHTML).toBe("");
       expect(errorSpy).toHaveBeenCalled();

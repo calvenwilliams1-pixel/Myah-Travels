@@ -5,7 +5,13 @@ import { DOMSerializer, Node as PMNode } from "prosemirror-model";
 import { buildExtensions, PURIFY_CONFIG } from "@/lib/editor/extensions";
 
 interface CleanTipTapRendererProps {
-  content: string;
+  /**
+   * TipTap JSON — already parsed, not a string. The caller is
+   * responsible for any storage unwrapping (see
+   * `lib/editor/body-content.ts`). This component's only job is to
+   * turn TipTap JSON into HTML.
+   */
+  content: unknown;
 }
 
 // Build schema + serializer once at module load. These are pure data
@@ -27,8 +33,8 @@ function getDocument(): Document {
   return dom.window.document;
 }
 
-function serializeJsonToHtml(json: any): string {
-  const pmDoc = PMNode.fromJSON(RENDER_SCHEMA, json);
+function serializeJsonToHtml(json: unknown): string {
+  const pmDoc = PMNode.fromJSON(RENDER_SCHEMA, json as any);
   const doc = getDocument();
   const fragment = RENDER_SERIALIZER.serializeFragment(pmDoc.content, {
     document: doc,
@@ -46,9 +52,10 @@ export default function CleanTipTapRenderer({ content }: CleanTipTapRendererProp
   let html = "";
 
   try {
-    const json = typeof content === "string" ? JSON.parse(content) : content;
-    html = serializeJsonToHtml(json);
+    html = serializeJsonToHtml(content);
   } catch (err) {
+    // Log server-side too — a silent failure here is exactly the class
+    // of bug that leaks raw content into the DOM.
     console.error("[CleanTipTapRenderer] render failed:", err);
     html = "";
   }
