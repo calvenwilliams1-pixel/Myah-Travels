@@ -75,6 +75,7 @@ export const YouTubeEmbedNode = Node.create({
           frameborder: "0",
           allowfullscreen: "true",
           allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+          sandbox: "allow-scripts allow-same-origin allow-presentation allow-popups",
         },
       ],
     ];
