@@ -167,11 +167,20 @@ export const cmdLink: EditorCommand = {
     const previous = e.getAttributes("link").href as string | undefined;
     const url = window.prompt("Link URL", previous || "https://");
     if (url === null) return;
-    if (url === "") {
-      e.chain().focus().extendMarkRange("link").unsetLink().run();
+    if (url.trim() === "") {
+      // Only unset if a link mark already exists.
+      if (e.isActive("link")) {
+        e.chain().focus().extendMarkRange("link").unsetLink().run();
+      }
       return;
     }
-    e.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    // If selection already has a link, replace its range. Otherwise
+    // just apply the link mark to the current selection.
+    if (e.isActive("link")) {
+      e.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    } else {
+      e.chain().focus().setLink({ href: url }).run();
+    }
   },
   isActive: (e) => e.isActive("link"),
 };
