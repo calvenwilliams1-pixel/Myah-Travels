@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BlockData, Template } from "@/types/blocks";
 import TemplatePreview from "./blocks/TemplatePreview";
 import { useFocusRestore } from "@/lib/hooks/useFocusRestore";
+import { useDocumentPiP } from "@/lib/hooks/useDocumentPiP";
 
 interface PreviewPopoutProps {
   blocks: BlockData[];
@@ -32,6 +34,9 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
   const [resizeStart, setResizeStart] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   useFocusRestore(true);
+
+  const pip = useDocumentPiP();
+  const { isOpen: isPiPOpen, close: closePiP } = pip;
 
   // Drag the header
   useEffect(() => {
@@ -72,17 +77,23 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
     };
   }, [resizeStart]);
 
-  // Esc closes; fullscreen handled by CSS
+  // Esc closes; fullscreen handled by CSS. Destructure stable pieces of
+  // the PiP handle so effect deps are primitives/functions.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        if (isFullscreen) setIsFullscreen(false);
-        else onClose();
+        if (isPiPOpen) {
+          closePiP();
+        } else if (isFullscreen) {
+          setIsFullscreen(false);
+        } else {
+          onClose();
+        }
       }
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [isFullscreen, onClose]);
+  }, [isFullscreen, onClose, isPiPOpen, closePiP]);
 
   const headerStartDrag = (e: React.MouseEvent) => {
     if (isFullscreen) return;
@@ -96,6 +107,21 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
     setResizeStart({ x: e.clientX, y: e.clientY, w: size.width, h: size.height });
   };
 
+  const handleOpenPiP = async () => {
+    await pip.open({ width: size.width, height: size.height });
+  };
+
+  // Render the same preview content into the PiP window via portal.
+  const pipContent =
+    isPiPOpen && pip.container
+      ? createPortal(
+          <div className="bg-white min-h-full">
+            <TemplatePreview blocks={blocks} template={template} />
+          </div>,
+          pip.container
+        )
+      : null;
+
   const style = isFullscreen
     ? { position: "fixed" as const, inset: 0, width: "100vw", height: "100vh" }
     : {
@@ -107,58 +133,73 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
       };
 
   return (
-    <div
-      ref={containerRef}
-      className="z-50 bg-white border border-gray-300 rounded-lg shadow-2xl flex flex-col overflow-hidden"
-      style={style}
-    >
-      {/* Header (drag handle) */}
+    <>
       <div
-        className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 cursor-move select-none"
-        onMouseDown={headerStartDrag}
+        ref={containerRef}
+        className="z-50 bg-white border border-gray-300 rounded-lg shadow-2xl flex flex-col overflow-hidden"
+        style={style}
       >
-        <span className="text-xs font-medium text-gray-600">
-          Preview — {template.name}
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
-            title={isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
-            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {isFullscreen ? "⤢ Exit" : "⤢"}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
-            title="Close preview (Esc)"
-            aria-label="Close preview"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-
-      {/* Body — scrollable preview */}
-      <div className="flex-1 overflow-auto">
-        <TemplatePreview blocks={blocks} template={template} />
-      </div>
-
-      {/* Resize handle */}
-      {!isFullscreen && (
         <div
-          className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize"
-          onMouseDown={handleStartResize}
-          style={{
-            background:
-              "linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.15) 50%)",
-          }}
-          title="Resize"
-        />
-      )}
-    </div>
+          className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 cursor-move select-none"
+          onMouseDown={headerStartDrag}
+        >
+          <span className="text-xs font-medium text-gray-600">
+            Preview — {template.name}
+          </span>
+          <div className="flex items-center gap-1">
+            {pip.isSupported && (
+              <button
+                type="button"
+                onClick={isPiPOpen ? closePiP : handleOpenPiP}
+                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                title={
+                  isPiPOpen
+                    ? "Close picture-in-picture"
+                    : "Pop out to a floating window (drag to any monitor)"
+                }
+                aria-label={isPiPOpen ? "Close picture-in-picture" : "Pop out to picture-in-picture"}
+              >
+                {isPiPOpen ? "\u29C9 Close PiP" : "\u29C9 PiP"}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+              title={isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
+              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            >
+              {isFullscreen ? "\u2922 Exit" : "\u2922"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+              title="Close preview (Esc)"
+              aria-label="Close preview"
+            >
+              \u2715
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto preview-body">
+          <TemplatePreview blocks={blocks} template={template} />
+        </div>
+
+        {!isFullscreen && (
+          <div
+            className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize"
+            onMouseDown={handleStartResize}
+            style={{
+              background:
+                "linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.15) 50%)",
+            }}
+            title="Resize"
+          />
+        )}
+      </div>
+      {pipContent}
+    </>
   );
 }
