@@ -38,7 +38,7 @@ describe("CleanTipTapRenderer", () => {
       { name: "bullet list", json: doc([{ type: "bulletList", content: [{ type: "listItem", content: [para("one")] }, { type: "listItem", content: [para("two")] }] }]), expectTag: "<ul>" },
       { name: "ordered list", json: doc([{ type: "orderedList", content: [{ type: "listItem", content: [para("one")] }] }]), expectTag: "<ol>" },
       { name: "blockquote", json: doc([{ type: "blockquote", content: [para("quoted")] }]), expectTag: "<blockquote>" },
-      { name: "horizontal rule", json: doc([{ type: "horizontalRule" }]), expectTag: "<hr>" },
+      { name: "horizontal rule", json: doc([{ type: "horizontalRule" }]), expectTag: "<hr" },
       { name: "bold mark", json: doc([para("bold", [{ type: "bold" }])]), expectTag: "<strong>" },
       { name: "italic mark", json: doc([para("italic", [{ type: "italic" }])]), expectTag: "<em>" },
       { name: "underline mark", json: doc([para("underline", [{ type: "underline" }])]), expectTag: "<u>" },

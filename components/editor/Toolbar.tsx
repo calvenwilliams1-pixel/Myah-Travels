@@ -5,6 +5,7 @@ import type { Editor } from "@tiptap/react";
 import ColorPicker from "./pickers/ColorPicker";
 import FontFamilyPicker from "./pickers/FontFamilyPicker";
 import FontSizePicker from "./pickers/FontSizePicker";
+import DividerConfig from "./pickers/DividerConfig";
 import WordCount from "./pickers/WordCount";
 import {
   COMMAND_GROUPS,
@@ -25,7 +26,7 @@ interface ToolbarProps {
   contentType?: string;
 }
 
-type OpenPicker = null | "colour-text" | "colour-highlight" | "font" | "size";
+type OpenPicker = null | "colour-text" | "colour-highlight" | "font" | "size" | "divider";
 
 export default function Toolbar({ editor }: ToolbarProps) {
   const [openPicker, setOpenPicker] = useState<OpenPicker>(null);
@@ -260,10 +261,25 @@ export default function Toolbar({ editor }: ToolbarProps) {
             label: "Blockquote",
             children: <span className="text-xs">" "</span>,
           })}
-          {btn("hr", () => editor.chain().focus().setHorizontalRule().run(), {
-            label: "Divider",
-            children: <span className="text-xs">—</span>,
-          })}
+          <div className="relative">
+            {btn("hr", () => {
+              if (editor.isActive("horizontalRule")) {
+                setOpenPicker(openPicker === "divider" ? null : "divider");
+              } else {
+                editor.chain().focus().insertContent({
+                  type: "horizontalRule",
+                  attrs: { thickness: 2, colour: null },
+                }).run();
+              }
+            }, {
+              active: editor.isActive("horizontalRule") || openPicker === "divider",
+              label: editor.isActive("horizontalRule") ? "Configure divider" : "Insert divider",
+              children: <span className="text-xs">—</span>,
+            })}
+            {openPicker === "divider" && editor.isActive("horizontalRule") && (
+              <DividerConfig editor={editor} onClose={() => setOpenPicker(null)} />
+            )}
+          </div>
 
           {divider}
 

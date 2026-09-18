@@ -4,6 +4,9 @@ import React, { useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { CONTEXT_MENU_COMMANDS } from "@/lib/editor/commands";
 import { useFocusRestore } from "@/lib/hooks/useFocusRestore";
+import ColorPicker from "./pickers/ColorPicker";
+import FontFamilyPicker from "./pickers/FontFamilyPicker";
+import FontSizePicker from "./pickers/FontSizePicker";
 
 interface EditorContextMenuProps {
   editor: Editor;
@@ -15,20 +18,17 @@ interface MenuPosition {
   y: number;
 }
 
-/**
- * Right-click menu for the editor. Also opens via the keyboard using
- * Shift+F10 or the Menu key (both fire a synthetic `contextmenu` event).
- * Supports arrow-key navigation and Enter/Space to select.
- */
+type SubmenuKind = null | "colour-text" | "colour-highlight" | "font" | "size";
+
 export default function EditorContextMenu({ editor, containerRef }: EditorContextMenuProps) {
   const [position, setPosition] = useState<MenuPosition | null>(null);
   const [highlightIndex, setHighlightIndex] = useState(0);
+  const [submenu, setSubmenu] = useState<SubmenuKind>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const isOpen = position !== null;
 
   useFocusRestore(isOpen);
 
-  // Open on contextmenu (mouse or keyboard)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -36,73 +36,69 @@ export default function EditorContextMenu({ editor, containerRef }: EditorContex
     function onContextMenu(e: MouseEvent) {
       const target = e.target as HTMLElement;
       if (!target.closest(".ProseMirror")) return;
-
       e.preventDefault();
-
-      // Synthetic keyboard-triggered contextmenu events report clientX/Y
-      // as 0 in most browsers. Fall back to anchoring to the selection
-      // (or the container) instead.
       const rect = el!.getBoundingClientRect();
       const isKeyboardTriggered = e.clientX === 0 && e.clientY === 0;
-
       if (isKeyboardTriggered) {
-        // Anchor near the selection start, or container top-left as fallback
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
           const r = sel.getRangeAt(0).getBoundingClientRect();
-          setPosition({
-            x: r.left - rect.left,
-            y: r.bottom - rect.top + 4,
-          });
+          setPosition({ x: r.left - rect.left, y: r.bottom - rect.top + 4 });
         } else {
           setPosition({ x: 20, y: 20 });
         }
       } else {
-        setPosition({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        });
+        setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
       }
       setHighlightIndex(0);
+      setSubmenu(null);
     }
 
     el.addEventListener("contextmenu", onContextMenu);
     return () => el.removeEventListener("contextmenu", onContextMenu);
   }, [containerRef]);
 
-  // Close on outside click, Esc, or scroll. Handle arrow keys + Enter.
   useEffect(() => {
     if (!position) return;
 
     function onDocClick(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setPosition(null);
+        setSubmenu(null);
       }
     }
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        setPosition(null);
+        if (submenu) {
+          setSubmenu(null);
+        } else {
+          setPosition(null);
+        }
         return;
       }
+      const total = CONTEXT_MENU_COMMANDS.length + 4; // +4 for the 4 submenu rows
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHighlightIndex((i) => Math.min(i + 1, CONTEXT_MENU_COMMANDS.length - 1));
+        setHighlightIndex((i) => Math.min(i + 1, total - 1));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setHighlightIndex((i) => Math.max(i - 1, 0));
       } else if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        const cmd = CONTEXT_MENU_COMMANDS[highlightIndex];
-        if (cmd) {
-          cmd.run(editor);
-          setPosition(null);
+        if (highlightIndex < CONTEXT_MENU_COMMANDS.length) {
+          const cmd = CONTEXT_MENU_COMMANDS[highlightIndex];
+          if (cmd) {
+            cmd.run(editor);
+            setPosition(null);
+          }
         }
       }
     }
 
     function onScroll() {
       setPosition(null);
+      setSubmenu(null);
     }
 
     document.addEventListener("mousedown", onDocClick);
@@ -114,9 +110,8 @@ export default function EditorContextMenu({ editor, containerRef }: EditorContex
       document.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("scroll", onScroll, true);
     };
-  }, [position, editor, highlightIndex]);
+  }, [position, editor, highlightIndex, submenu]);
 
-  // Auto-focus the menu when it opens so keyboard events land
   useEffect(() => {
     if (isOpen && menuRef.current) {
       menuRef.current.focus();
@@ -125,12 +120,19 @@ export default function EditorContextMenu({ editor, containerRef }: EditorContex
 
   if (!position) return null;
 
+  const SUBMENUS: { id: SubmenuKind; label: string }[] = [
+    { id: "colour-text", label: "Text colour..." },
+    { id: "colour-highlight", label: "Highlight..." },
+    { id: "font", label: "Font..." },
+    { id: "size", label: "Size..." },
+  ];
+
   return (
     <div
       ref={menuRef}
       role="menu"
       tabIndex={-1}
-      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[180px] focus:outline-none"
+      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px] focus:outline-none"
       style={{ left: position.x, top: position.y }}
       onContextMenu={(e) => e.preventDefault()}
     >
@@ -159,6 +161,40 @@ export default function EditorContextMenu({ editor, containerRef }: EditorContex
             <span>{cmd.label}</span>
             {cmd.shortcut && <span className="text-xs text-gray-400 ml-3">{cmd.shortcut}</span>}
           </button>
+        );
+      })}
+
+      <div className="border-t border-gray-100 my-1" />
+
+      {SUBMENUS.map((sub, i) => {
+        const idx = CONTEXT_MENU_COMMANDS.length + i;
+        const highlighted = idx === highlightIndex;
+        const active = submenu === sub.id;
+        return (
+          <div key={sub.id} className="relative">
+            <button
+              type="button"
+              role="menuitem"
+              onMouseEnter={() => setHighlightIndex(idx)}
+              onClick={() => setSubmenu(active ? null : sub.id)}
+              className={
+                "w-full text-left px-3 py-1.5 text-sm flex items-center justify-between " +
+                (active ? "bg-primary/10 text-primary " : "") +
+                (highlighted ? "bg-gray-100 " : "hover:bg-gray-50")
+              }
+            >
+              <span>{sub.label}</span>
+              <span className="text-xs text-gray-400 ml-3">▸</span>
+            </button>
+            {active && (
+              <div className="absolute left-full top-0 ml-1 z-50">
+                {sub.id === "colour-text" && <ColorPicker editor={editor} kind="text" onClose={() => { setPosition(null); setSubmenu(null); }} />}
+                {sub.id === "colour-highlight" && <ColorPicker editor={editor} kind="highlight" onClose={() => { setPosition(null); setSubmenu(null); }} />}
+                {sub.id === "font" && <FontFamilyPicker editor={editor} onClose={() => { setPosition(null); setSubmenu(null); }} />}
+                {sub.id === "size" && <FontSizePicker editor={editor} onClose={() => { setPosition(null); setSubmenu(null); }} />}
+              </div>
+            )}
+          </div>
         );
       })}
     </div>

@@ -65,7 +65,10 @@ export default function DividerConfig({ editor, onClose }: DividerConfigProps) {
   }
 
   function handleDelete() {
-    editor.chain().focus().deleteSelection().run();
+    // Delete the divider the cursor is currently inside. deleteNode
+    // targets the node by type, which is more reliable than
+    // deleteSelection (which requires the node to actually be selected).
+    editor.chain().focus().deleteNode("horizontalRule").run();
     onClose();
   }
 
