@@ -1,136 +1,3 @@
-# README Revision — Yes, Substantially
-
-Here's what's outdated and what needs to change:
-
-## What's Wrong
-
-### 1. Project Name
-- Currently: "Myah Travels"
-- Should be: "MyCalTravels"
-- The rename happened across the codebase but not in docs
-
-### 2. Canvas System References
-- The README implicitly suggests Canvas is current
-- Canvas is FROZEN, pending deletion
-- Features list mentions "Post Canvas" system - not accurate anymore
-
-### 3. Missing Features
-The README doesn't mention:
-- Content Library
-- Portal Wall (Travel Information Wall)
-- Itinerary Builder
-- Admin Notepad
-- Block-based content system
-- Autosave infrastructure
-- Theme system (semantic tokens, curated palettes)
-
-### 4. Database Setup Instructions Are Wrong
-
-**Current README says:**
-```bash
-mkdir data
-npm run db:migrate
-npm run seed
-```
-
-**Reality:**
-- `npm run db:migrate` doesn't work (migrations folder missing journal file)
-- `schema.sql` is outdated
-- `scripts/setup-db.js` is the correct path
-- The README doesn't mention `setup-db.js`
-
-### 5. Missing Environment Variables
-
-**Current README has:**
-- DATABASE_URL, ADMIN_USERNAME, ADMIN_PASSWORD
-- RESEND_API_KEY, EMAIL_FROM, EMAIL_ADMIN_TO
-- CRON_SECRET, RESEND_WEBHOOK_SECRET
-- SITE_URL, TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY
-
-**Missing:**
-- `PORTAL_MAGIC_LINK_EXPIRY_DAYS`
-
-**Also missing from the README's example:**
-- Note that `RESEND_API_KEY=re_dummy_key_for_dev` is needed for admin pages to work in dev (we hit this repeatedly)
-
-### 6. Features List is Outdated
-
-**Current says:**
-> Client Portal — Magic link access, Trip dates, Notices with email notifications, Document sharing, FAQ per portal, Global announcements, Session management
-
-**Reality:**
-- Notices were REMOVED (redundant with Alert category)
-- Document sharing and FAQs are legacy (not rendered)
-- Portal Wall is the actual client interface now
-- Itinerary + Admin Notepad are new
-
-**Current says:**
-> Public Site — Blog with rich text editor, Destination guides, Reviews with ratings and pros/cons
-
-**Reality:**
-- Blog now uses block system (10 blocks)
-- Guides/reviews same
-- Feed homepage with filters
-- Content Library
-
-### 7. Documentation Links Are Wrong
-
-**Current:**
-```
-[SRS](./docs/SRS.md)
-[Code Plan](./docs/CODE-PLAN.md)
-[Master Prompt](./docs/MASTER-PROMPT.md)
-[Todo](./docs/TODO.md)
-```
-
-**Reality:**
-- Docs are at repo root, not `./docs/`
-- Filenames have spaces: `SRS Plan`, `code plan.md`, `MASTER-PROMPT.md`, `todo list`
-- Should reference the new versions we just wrote (SRS v5.0, CODE-PLAN Revision 3, TODO Revision 4, MASTER-PROMPT Revision 2)
-
-### 8. Scripts Table Needs Updates
-
-**Current scripts listed:**
-- `db:migrate` — doesn't work as-is
-- `backup`, `restore`, `cleanup`, `health` — may or may not exist
-
-**Should add:**
-- `setup-db.js` (the working DB setup path)
-- `test:watch`, `test:ui` (we added these)
-- Correct the DB setup command
-
-### 9. Missing "Known Issues" Section
-
-Should include:
-- better-sqlite3 crash in Codespace (environment-specific)
-- Canvas system frozen (39 emerald references remain)
-- Native date/time picker limitations (Phase 7 bug fix)
-- schema.sql outdated
-
-### 10. Testing Section Is Underspecified
-
-**Current:**
-> Run tests: `npm run test`
-
-**Reality:**
-- 48 tests across 3 suites
-- Vitest + Testing Library
-- Specific commands for watch/UI modes
-
-### 11. Deployment Section
-
-The deployment section looks mostly correct but could be improved:
-- No mention of `scripts/setup-db.js`
-- Doesn't mention backup of `data/` folder
-- Doesn't note that `RESEND_API_KEY` must be real in production
-
----
-
-## Recommended Revision
-
-Here's a full rewrite of the README that matches current reality:
-
-```markdown
 # MyCalTravels
 
 Personal website and client portal platform for Myah, a travel writer and agent. Built with Next.js, self-hosted on a mini PC.
@@ -141,11 +8,11 @@ Personal website and client portal platform for Myah, a travel writer and agent.
 - **Database:** SQLite (better-sqlite3, WAL mode)
 - **ORM:** Drizzle
 - **Auth:** Lucia Auth (admin with TOTP 2FA) + Magic Links (portal clients)
-- **Rich Text:** TipTap
+- **Rich Text:** TipTap 2.27 (block editor + renderers)
 - **Email:** Resend (with queue)
-- **Styling:** Tailwind CSS (semantic theme tokens)
+- **Styling:** Tailwind CSS (semantic theme tokens, typography plugin)
 - **Search:** SQLite FTS5
-- **Testing:** Vitest + Testing Library
+- **Testing:** Vitest + Testing Library (87 tests)
 - **Deployment:** Self-hosted (Ubuntu Server + Cloudflare Tunnel)
 
 ## Core Architecture
@@ -158,19 +25,19 @@ Personal website and client portal platform for Myah, a travel writer and agent.
 
 **Admin Notepad** — Private per-portal scratchpad for logistics with people tagging and search.
 
-**Theme System** — Semantic colour tokens (primary, accent, status colours) driven by admin settings. Curated palettes; no free-form colour pickers.
+**Theme System** — Semantic colour tokens (primary, accent, status colours) driven by admin settings. Curated palettes; surface colours use named presets.
 
 ## Getting Started (Local Development)
 
 ### Prerequisites
 
-- Node.js 18+ (Node 20 recommended)
+- Node.js 22 LTS (recommended; Node 20 fails on `isomorphic-dompurify@4` / `jsdom@30`)
 - Git
 
 ### Installation
 
 ```bash
-git clone [your-repo-url]
+git clone <your-repo-url>
 cd Myah-Travels
 npm install
 ```
@@ -180,6 +47,7 @@ npm install
 Copy `.env.example` to `.env` and fill in values (see Environment Variables below).
 
 For local dev, at minimum:
+
 ```
 DATABASE_URL=./data/site.db
 ADMIN_USERNAME=myah
@@ -193,9 +61,11 @@ SITE_URL=http://localhost:3000
 ### Database Setup
 
 ```bash
-node scripts/setup-db.js   # Create DB (schema + migrations + missing columns)
-npm run seed               # Seed admin user, categories, tags, settings, templates
+node scripts/setup-db.js   # Create DB (schema + migrations + missing columns + seeds)
+npm run seed               # Seed admin user, categories, tags, settings
 ```
+
+`setup-db.js` handles all known schema drift. Do not use `npm run db:migrate` — that path is stale.
 
 ### Run Development Server
 
@@ -210,12 +80,15 @@ Open http://localhost:3000
 - Username: `myah`
 - Password: `changeme` (change immediately!)
 
+TOTP enrollment is gated by the `TOTP_ENFORCEMENT` env var. Leave it unset or `false` in dev — first production login will require an authenticator app.
+
 ### Run Tests
 
 ```bash
-npm test                   # Run all tests (48 passing)
+npm test                   # Run all tests (87 passing)
 npm run test:watch         # Watch mode
 npm run test:ui            # Vitest UI
+npm run smoke              # Operational smoke scripts (needs a populated DB)
 ```
 
 ## Environment Variables
@@ -232,6 +105,7 @@ npm run test:ui            # Vitest UI
 | `RESEND_WEBHOOK_SECRET` | For email | Verifies Resend webhooks |
 | `SITE_URL` | Yes | Full site URL |
 | `PORTAL_MAGIC_LINK_EXPIRY_DAYS` | Optional | Magic link expiry (default 7) |
+| `TOTP_ENFORCEMENT` | Production | `true` enables mandatory 2FA enrollment |
 | `TURNSTILE_SITE_KEY` | For forms | Cloudflare Turnstile |
 | `TURNSTILE_SECRET_KEY` | For forms | Cloudflare Turnstile |
 
@@ -246,15 +120,18 @@ npm run test:ui            # Vitest UI
 - Contact/inquiry form
 
 ### Admin Dashboard
-- Secure login with TOTP 2FA
+- Secure login with TOTP 2FA (env-gated)
 - Block-based editor for posts/guides/reviews
+- Rich text toolbar with font family, size, colour, highlight
 - Template Creator (structural templates)
 - Content Library (reusable PDFs, images, text)
 - Portal management (create, edit, preview, archive)
-- Itinerary Builder (sections, days, segments, stays)
+- Itinerary Builder (sections, days, segments, stays, travel legs)
 - Admin Notepad (per-portal, tag search)
 - Media library
 - Client inquiry database with CSV export
+- Client Memory System (person pages, trip history, notes)
+- Itinerary Library (live + archived, use-as-template)
 - Site settings (theme, hero presets, curated palettes)
 
 ### Client Portal Wall
@@ -265,19 +142,30 @@ npm run test:ui            # Vitest UI
 - Print / Save PDF export
 - Mobile-responsive
 
-### Autosave Infrastructure
-- Debounced save (500ms)
-- localStorage draft durability (survives crashes)
-- Save status indicator
-- Flush on blur, unmount, tab close
-- Retry on error
+### Editor
+- Block-based vertical editor with 10 content types
+- TipTap rich text with font, colour, highlight, size
+- Toolbar with gradient tile styling (theme-driven)
+- Right-click context menu with submenus (colour, size, font, align)
+- Divider with configurable thickness and colour
+- Picture-in-Picture preview (Chrome/Edge, draggable across monitors)
+- Autosave (500ms debounce) + localStorage draft durability
+- Save indicator with retry
+
+### Content Schema Versioning
+- Body content stored in a versioned envelope
+- Backwards compatible with legacy bare-doc rows
+- `deserializeBodyContent` handles both shapes transparently
 
 ## Documentation
 
-- [SRS](./SRS%20Plan) — Full specification (v5.0)
-- [Code Plan](./code%20plan.md) — Full file map (Revision 3)
-- [Master Prompt](./docs/MASTER-PROMPT.md) — Context restoration (Revision 2)
-- [Todo](./todo%20list) — Progress tracker (Revision 4)
+- [Code Plan](./docs/CODE-PLAN.md) — Full file map
+- [Master Prompt](./docs/MASTER-PROMPT.md) — Context restoration
+- [Testing](./docs/TESTING.md) — Full testing checklist
+- [Phase 7.9 + 9 Plan](./docs/PHASES-7.9-AND-9-PLAN.md) — Roadmap for client memory + post editor work
+- [Itinerary Styling Plan](./docs/ITINERARY-STYLING-PLAN.md) — Phase 7.6.9 design notes
+- [Audit](./docs/AUDIT.md) — Earlier findings
+- [Attribution](./docs/ATTRIBUTION.md) — Static data sources (airports, airlines)
 
 ## Scripts
 
@@ -286,21 +174,20 @@ npm run test:ui            # Vitest UI
 | `npm run dev` | Start development server |
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
-| `npm test` | Run all vitest tests (48 passing) |
+| `npm test` | Run all vitest tests (87 passing) |
 | `npm run test:watch` | Vitest watch mode |
 | `npm run test:ui` | Vitest UI |
+| `npm run smoke` | Operational smoke tests against a populated DB |
 | `npm run seed` | Seed default data |
 | `node scripts/setup-db.js` | Create/rebuild database |
 
 ## Known Issues
 
-1. **better-sqlite3 crash in Codespace** — Environment-specific. Not present on local PC or mini PC deployment. Workaround: restart dev server.
+1. **better-sqlite3 crash in Codespace** — Environment-specific. Not present on local PC (Node 22) or mini PC deployment. Workaround: restart dev server, or test on local.
 
-2. **Canvas system frozen** — Legacy Canvas editor files remain in `components/editor/canvas/` with 39 hardcoded emerald references. Pending deletion.
+2. **Canvas system frozen** — Legacy Canvas editor files remain in `components/editor/canvas/`. Unwired from nav and from TipTap. Not reachable from any live path. Will be deleted when confirmed unnecessary.
 
-3. **Native date/time pickers** — Chromium date/time inputs highlight text instead of opening the picker. Fix in progress (Phase 7).
-
-4. **Segment edits revert on collapse** — Itinerary segment fields lose unsaved edits when collapsed. Fix in progress (Phase 7).
+3. **`schema.sql` outdated** — Missing newer columns. `scripts/setup-db.js` handles all known cases; use that instead.
 
 ## Development Workflow
 
@@ -315,23 +202,21 @@ npm run test:ui            # Vitest UI
 1. Install Ubuntu Server LTS (with LUKS encryption)
 2. Configure UFW firewall (default deny)
 3. SSH key authentication only
-4. Install Node.js 20+
-5. Install nginx (reverse proxy)
-6. Install fail2ban
-7. Enable unattended-upgrades
+4. Install Node.js 22 LTS
+5. Install fail2ban
+6. Enable unattended-upgrades
 
 ### Cloudflare Setup
 
 1. Register domain
 2. Add to Cloudflare
-3. Set up Cloudflare Tunnel
+3. Set up Cloudflare Tunnel pointing at `http://localhost:3000`
 4. Configure Turnstile
-5. Enable Web Analytics
 
 ### Email Setup
 
 1. Create Resend account
-2. Verify domain
+2. Verify domain (SPF, DKIM, DMARC)
 3. Get API key (real key required in production)
 4. Configure webhook
 
@@ -349,37 +234,23 @@ systemctl restart mycaltravels
 ### Cron Jobs
 
 ```
-# Daily backups (2:00 AM)
+# Email queue processor — every 1 minute
+* * * * * curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue > /dev/null 2>&1
+
+# Portal purge — daily at 3 AM
+0 3 * * * cd /var/www/site && npx tsx scripts/purge-portals.ts >> /var/log/portal-purge.log 2>&1
+
+# Daily backups — 2 AM
 0 2 * * * /var/www/site/scripts/backup.sh
-
-# Daily cleanup (3:00 AM)
-0 3 * * * /var/www/site/scripts/cleanup-daily.sh
-
-# Email queue processor (every 5 minutes)
-*/5 * * * * curl -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue
 ```
+
+### Backups
+
+- Encrypted with `age` before writing
+- Minimum 7 daily + 4 weekly + 3 monthly
+- Back up `data/site.db`, `public/uploads/`, `.env` (encrypted)
+- Test a restore before launch
 
 ---
 
-**Last Updated:** September 12, 2026
-```
-
----
-
-## Summary of Changes
-
-| Section | Change |
-|---------|--------|
-| Title | Myah Travels → MyCalTravels |
-| Tech Stack | Added Vitest + Testing Library |
-| Architecture | New section explaining block system, portal wall, itinerary, notepad |
-| Database Setup | `db:migrate` → `node scripts/setup-db.js` |
-| Env Vars | Added `PORTAL_MAGIC_LINK_EXPIRY_DAYS`, clarified `RESEND_API_KEY` dummy note |
-| Features | Rewrote to match current reality (block system, portal wall, itinerary, notepad, autosave) |
-| Documentation Links | Fixed paths (files at root with spaces) |
-| Scripts Table | Removed nonexistent scripts, added test commands, `setup-db.js` |
-| Known Issues | New section: Codespace crash, frozen Canvas, picker bugs, segment revert |
-| Development Workflow | New section |
-| Production Deployment | Corrected deploy sequence |
-
-**Shall I write this revised README to the repo?** Just confirm and I'll produce the Python command.
+**Last Updated:** September 18, 2026
