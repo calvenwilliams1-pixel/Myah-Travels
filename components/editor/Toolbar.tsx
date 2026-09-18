@@ -44,26 +44,34 @@ export default function Toolbar({ editor }: ToolbarProps) {
       shortcut?: string;
       children: React.ReactNode;
     }
-  ) => (
-    <button
-      key={key}
-      type="button"
-      onClick={run}
-      disabled={opts.disabled}
-      title={opts.shortcut ? opts.label + " (" + opts.shortcut + ")" : opts.label}
-      aria-label={opts.label}
-      aria-pressed={opts.active}
-      className={
-        "px-2 py-1 rounded text-sm font-medium transition-colors min-w-[28px] " +
-        (opts.active ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100") +
-        (opts.disabled ? " opacity-40 cursor-not-allowed" : "")
-      }
-    >
-      {opts.children}
-    </button>
-  );
+  ) => {
+    // Tile-style button. Gradients are derived from theme CSS vars so
+    // the toolbar picks up primary/secondary colours automatically.
+    // No hardcoded hues — all built on top of `--color-primary-rgb`.
+    const base =
+      "w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium " +
+      "transition-all duration-150 select-none border border-transparent ";
+    const look = opts.active
+      ? "bg-primary/15 text-primary border-primary/30 shadow-inner"
+      : "text-gray-600 bg-gradient-to-b from-white to-primary/5 hover:to-primary/15 hover:border-primary/20";
+    const disabled = opts.disabled ? " opacity-40 cursor-not-allowed" : "";
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={run}
+        disabled={opts.disabled}
+        title={opts.shortcut ? opts.label + " (" + opts.shortcut + ")" : opts.label}
+        aria-label={opts.label}
+        aria-pressed={opts.active}
+        className={base + look + disabled}
+      >
+        {opts.children}
+      </button>
+    );
+  };
 
-  const divider = <span className="w-px h-6 bg-gray-300 mx-1" />;
+  const divider = <span className="w-px h-6 bg-gray-200 mx-1 opacity-60" />;
 
   const currentTextColour = editor.getAttributes("textStyle").color as string | undefined;
 
