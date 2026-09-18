@@ -3,8 +3,8 @@ import { render } from "@testing-library/react";
 import React from "react";
 import CleanTipTapRenderer from "./CleanTipTapRenderer";
 
-function doc(nodes: any[]): string {
-  return JSON.stringify({ type: "doc", content: nodes });
+function doc(nodes: any[]): unknown {
+  return { type: "doc", content: nodes };
 }
 
 function para(text: string, marks?: any[]): any {
