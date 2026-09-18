@@ -18,7 +18,7 @@ import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import FontFamily from "@tiptap/extension-font-family";
 import TextAlign from "@tiptap/extension-text-align";
-import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import Divider from "@/lib/editor/divider-extension";
 import CharacterCount from "@tiptap/extension-character-count";
 import FontSize from "@/lib/editor/font-size-extension";
 import { YouTubeEmbedNode } from "@/lib/editor/youtube-node";
@@ -45,7 +45,7 @@ export function buildExtensions(opts: BuildOptions = {}) {
 
   const extensions: any[] = [
     StarterKit.configure({
-      horizontalRule: false, // replaced by explicit HorizontalRule below
+      horizontalRule: false, // replaced by Divider extension below
     }),
     Image.configure({
       HTMLAttributes: {
@@ -65,7 +65,7 @@ export function buildExtensions(opts: BuildOptions = {}) {
     Color,
     Highlight.configure({ multicolor: true }),
     TextAlign.configure({ types: ["heading", "paragraph"] }),
-    HorizontalRule,
+    Divider,
     YouTubeEmbedNode,
   ];
 
