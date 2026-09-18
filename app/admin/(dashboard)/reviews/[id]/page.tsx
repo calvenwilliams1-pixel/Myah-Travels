@@ -237,7 +237,7 @@ export default function EditReviewPage() {
         {mode === "story" ? (
           <TipTapEditor
             initialContent={content}
-            onChange={(_html, json) => setContent(JSON.stringify(json))}
+            onChange={(_html, json) => setContent(json)}
             contentType="review"
           />
         ) : (

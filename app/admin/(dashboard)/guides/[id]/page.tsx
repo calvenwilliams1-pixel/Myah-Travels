@@ -152,7 +152,7 @@ export default function EditGuidePage() {
         {mode === "story" ? (
           <TipTapEditor
             initialContent={content}
-            onChange={(_html, json) => setContent(JSON.stringify(json))}
+            onChange={(_html, json) => setContent(json)}
             contentType="guide"
           />
         ) : (
