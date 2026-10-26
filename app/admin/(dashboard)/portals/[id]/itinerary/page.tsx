@@ -70,7 +70,7 @@ export default function ItineraryListPage() {
     });
     if (res.status === 409) {
       showToast("This itinerary is already attached with that view type", {
-        variant: "warning",
+        variant: "info",
       });
       return;
     }
