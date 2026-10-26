@@ -9,6 +9,7 @@ interface PortalItem {
   resolvedType: string;
   resolvedCategory: string | null;
   position: number;
+  isVisible?: boolean;
 }
 
 interface PortalItemsListProps {
@@ -47,6 +48,22 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
     if (!confirm("Remove this item from the portal?")) return;
 
     await fetch(`/api/portal/${portalId}/items/${itemId}`, { method: "DELETE" });
+    onChanged();
+  }
+
+  async function updateVisibility(itemId: number, isVisible: boolean) {
+    const res = await fetch(
+      `/api/portal/${portalId}/items/${itemId}/visibility`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isVisible }),
+      }
+    );
+    if (!res.ok) {
+      console.error("Failed to update visibility", await res.text());
+      return;
+    }
     onChanged();
   }
 
@@ -95,6 +112,17 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
                       : "Portal-specific"}
             </p>
           </div>
+
+          <label className="flex items-center gap-1 cursor-pointer text-xs text-gray-600">
+            <input
+              type="checkbox"
+              checked={item.isVisible !== false}
+              onChange={(e) => updateVisibility(item.id, e.target.checked)}
+              className="w-3.5 h-3.5"
+              aria-label="Visible to clients"
+            />
+            Visible
+          </label>
 
           <button
             onClick={() => removeItem(item.id)}
