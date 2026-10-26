@@ -617,3 +617,55 @@ Tab in the Body block editor now indents list items (`sinkListItem`) instead of 
 - `DayByDayView` renderer
 - `PortalWall` day-by-day branch
 - Print CSS for day-by-day
+
+## Batch D-a layout revision — sidebar, banner slot, visibility flag
+
+**Commits:** 000e6ac, ed230d6, 01f3aa1, 542009d
+
+### What changed from the original D-a
+
+The initial D-a shipped Glance as an inline full-width tile. That was the wrong layout. This revision corrects it to match the actual design:
+
+- **Glance** → sidebar on desktop (right, sticky), inline above grid on mobile
+- **Day by Day** → banner slot above the grid, reserved for D-b (renders nothing until D-b)
+- **Full Itinerary** → normal grid tile, click to open (unchanged)
+- **Other tiles** → normal grid items (unchanged)
+- **Visibility flag** → per-item `is_visible` column; admin toggle; client wall filters hidden items; admin preview shows all with "Hidden" badge
+
+### Test cases — layout
+
+- [ ] Portal wall with glance attached, desktop → glance renders as sticky sidebar on the right, grid shrinks to accommodate
+- [ ] Portal wall with glance attached, mobile → glance renders inline above the grid (below hero), no sidebar
+- [ ] Portal wall without glance, desktop → grid is full width, no sidebar slot
+- [ ] Portal wall without glance, mobile → grid full width, no inline glance
+- [ ] Glance sidebar stays visible while scrolling the grid (sticky behaviour)
+- [ ] Glance sidebar does not overlap tiles when grid has few items
+- [ ] Multiple grid tiles render correctly alongside glance sidebar
+- [ ] Full itinerary tile opens the full page on click (unchanged behaviour)
+
+### Test cases — visibility flag
+
+- [ ] Admin portal edit page shows a "Visible" checkbox on every attached item
+- [ ] New items default to visible (checkbox checked)
+- [ ] Uncheck "Visible" → item remains in admin list, checkbox unchecked
+- [ ] Uncheck "Visible" → item does NOT appear on client portal wall
+- [ ] Uncheck "Visible" → item DOES appear in admin preview, with "Hidden" badge overlay
+- [ ] Re-check "Visible" → item reappears on client wall
+- [ ] Uncheck "Visible" on glance item → glance sidebar disappears for client, admin preview shows "Hidden" badge on the sidebar
+- [ ] Uncheck "Visible" on full itinerary tile → tile hidden from client grid, "Hidden" badge in admin preview
+- [ ] Visibility toggle persists across page reload (DB write confirmed)
+- [ ] Removing an item entirely (✕) is distinct from hiding it (visibility toggle) — remove deletes, hide keeps
+
+### Migration verification
+
+- [ ] Migration 0020 applied: `portal_items.is_visible INTEGER NOT NULL DEFAULT 1`
+- [ ] Existing items defaulted to `is_visible = 1` after migration
+- [ ] `PRAGMA table_info(portal_items)` shows `is_visible` column
+
+### API verification (manual)
+
+- [ ] `PATCH /api/portal/[id]/items/[itemId]/visibility` with `{ isVisible: false }` → 200, DB updates
+- [ ] Same with `{ isVisible: true }` → 200, DB updates
+- [ ] Same with `{ isVisible: "true" }` (string, not boolean) → 400
+- [ ] Same with a non-existent item → 404
+- [ ] Same without auth → redirect/401
