@@ -104,6 +104,23 @@ export async function removePortalItem(itemId: number) {
   return db.delete(portalItems).where(eq(portalItems.id, itemId));
 }
 
+export async function updatePortalItemVisibility(
+  itemId: number,
+  portalId: number,
+  isVisible: boolean
+) {
+  const rows = await db
+    .select()
+    .from(portalItems)
+    .where(and(eq(portalItems.id, itemId), eq(portalItems.portalId, portalId)))
+    .limit(1);
+
+  if (!rows[0]) return { ok: false, error: "not_found" as const };
+
+  await db.update(portalItems).set({ isVisible }).where(eq(portalItems.id, itemId));
+  return { ok: true as const };
+}
+
 export async function reorderPortalItems(portalId: number, orderedIds: number[]) {
   for (let i = 0; i < orderedIds.length; i++) {
     await db.update(portalItems)
