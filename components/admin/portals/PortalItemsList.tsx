@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { PortalItemVariant } from "@/types/portal-items";
 
 interface PortalItem {
@@ -21,6 +21,13 @@ interface PortalItemsListProps {
 
 export default function PortalItemsList({ portalId, items, onChanged }: PortalItemsListProps) {
   const [orderedItems, setOrderedItems] = useState(items);
+
+  // Sync local state when the parent passes new items (e.g. after onChanged()
+  // refetches following a PATCH). Without this, the component keeps rendering
+  // the stale initial props.
+  useEffect(() => {
+    setOrderedItems(items);
+  }, [items]);
 
   async function moveItem(index: number, direction: "up" | "down") {
     const newIndex = direction === "up" ? index - 1 : index + 1;
