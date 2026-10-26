@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 11)
+# MyCalTravels — MASTER-PROMPT.md (Revision 12)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -10,13 +10,15 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 ---
 
-## Current Status (as of September 18, 2026)
+## Current Status (as of October 26, 2026)
 
 **Architecture:** Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation + Client Memory System + Picture-in-Picture preview.
 
 All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
 
 Two client-facing features are **specced but unbuilt** — the Itinerary Client Experience (Glance + Today's Plan card). Both derive from existing itinerary data, no authoring surface. Full spec in `docs/TODO.md`.
+
+**Three outstanding bugs** from the last testing session (PreviewPopout bounds, Body Tab handler, Gallery block upload) are documented in `docs/TODO.md` under "Outstanding bugs from testing pass".
 
 **Recently completed (September 18 session):**
 - TipTap rendering bug closed: replaced `@tiptap/html` (zeed-dom drops inline styles) with `getSchema` + `DOMSerializer` + jsdom on server, browser `document` on client
@@ -61,7 +63,7 @@ Two client-facing features are **specced but unbuilt** — the Itinerary Client 
 - **Unified wall pipeline** via `portal_items`
 - **Itinerary Builder** (sections, days, segments, stays)
 - **Admin Notepad** (per-portal scratchpad with people tagging)
-- **Autosave infrastructure** (draft durability, 48 tests)
+- **Autosave infrastructure** (draft durability + form primitives)
 - **Data Entry Automation** (suggestion system, duplication, drag-reorder)
 - **Client Memory System** (people, notes, trip history, portal purge)
 - **Picture-in-Picture preview** (real OS window, draggable across monitors)
@@ -146,8 +148,6 @@ Purpose: reduce typing on 150-250 segment itineraries. Deterministic only — no
 | Fill-down across multi-selected | Requires multi-select UI that doesn't exist |
 | AI/LLM at runtime | Unnecessary for bounded data |
 | Fuzzy matching for entity dedup | False-positive merge silently attaches wrong address |
-
----
 
 ---
 
@@ -314,13 +314,13 @@ Canvas-in-TipTap was fully removed (CanvasBlockNode, CanvasBlockRenderer, Canvas
 - `people`, `person_notes`, `person_trip_history` — client memory (9)
 - `settings`, `media`, `clients`, `activity_log`, `email_queue` — system
 
-**Migrations:** 0001-0010 in `drizzle/migrations/`
+**Migrations:** 0001-0015 in `drizzle/migrations/` (0016+ reserved for specced features)
 
 ---
 
 ## Known Issues
 
-1. **better-sqlite3 crash in Codespace** — Environment-specific. Not present on local PC (Node 22) or mini PC deployment. Workflow: edit in Codespace, test locally.
+1. **better-sqlite3 crash in Codespace (historical)** — Environment-specific, reported in early sessions. Not reproduced recently; Codespace has been used successfully for doc edits and builds throughout recent sessions. Not present on local PC (Node 22) or mini PC deployment. If it recurs, edit in Codespace, test locally.
 
 2. **Canvas system frozen** — Legacy files in `components/editor/canvas/`. Unwired from nav and TipTap. Not reachable. Pending deletion when confirmed unnecessary.
 
@@ -328,15 +328,15 @@ Canvas-in-TipTap was fully removed (CanvasBlockNode, CanvasBlockRenderer, Canvas
 
 4. **Codespace Node version** — Codespace runs Node 24; local runs Node 22 LTS. Minor drift; both work. Local is the deployment-target version.
 
-5. **`TESTING.md` is partial** — predates the September 18 break session. PiP, divider config popover, context menu submenus, gradient tiles, and body content versioning are not yet covered. Block system beyond Body, client-facing post rendering, Content Library, and admin dashboard are also uncovered. Coverage map in `docs/TODO.md`.
+5. **`TESTING.md` coverage gaps** — break-session features (PiP, divider config popover, context menu submenus, gradient tiles, body content versioning) were added at commit `65f857f`. Still uncovered: block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Coverage map in `docs/TODO.md`.
 
 ---
 
 ## Development Workflow
 
-- **Editing:** Codespace (VS Code, Python heredocs, Copilot)
-- **Testing:** Local PC (Node 22, no better-sqlite3 crash, real browser at localhost:3000)
-- **Sync:** `git push` from Codespace → `git pull` on local → test → report bugs
+- **Editing:** Codespace (VS Code, Copilot) OR Steam Deck (Konsole + VS Code web) OR local PC. `python3 - <<'PYEOF'` heredocs work reliably in Codespace and Konsole; Windows terminals (PowerShell, cmd, Git Bash via ConPTY) are unreliable for large pastes — use the editor for file edits, terminal only for git.
+- **Testing:** local PC, Steam Deck browser, or Codespace browser view. The mini PC is the eventual deploy target (Node 22 LTS).
+- **Sync:** `git push` from wherever you edited → `git pull` on whichever machine will test → test → report bugs.
 
 ## Testing Commands
 
@@ -450,19 +450,18 @@ If context is unclear, ask:
 11. **Ask for help from reviewers** (Claude, Copilot) when facing architectural decisions.
 12. **No deferrals by the assistant.** The user defers, not the assistant. If something needs doing, do it.
 13. **Clipboard-wrap all command output.** Never ask the user to manually select and copy terminal text.
+14. **Prefer file-based edits over piped heredocs for scripts >50 lines.** Write to `/tmp/script.py` (or equivalent), verify with `wc -l`, then `python /tmp/script.py`. Piped heredocs (`python3 - <<'PYEOF'`) can hang in some terminal environments and can't be inspected before execution. In Codespace and Konsole the piped form works; in Windows terminals it does not.
 
 ### Heredoc hygiene (learned the hard way)
 
 - **Use ````` as a placeholder for triple-backtick fences** in Python heredocs, then `.replace("```", "\`\`\`")` before writing. Literal triple-backticks inside heredocs corrupt on paste.
 - **Long Python heredocs with many string literals corrupt on paste.** Prefer smaller batches or write the script to `/tmp/x.py` first, then run it.
 - **`str.replace()` fails silently.** Always print `[OK]` / `[FAIL]` per replacement so a batch verify can catch missed anchors.
-- **Never write `"\\n"` in a Python heredoc** passed through bash — it becomes a literal `
-` in the file, breaking JSON. Use `"
-"` (single backslash).
+- **Never write `"\\\\n"` in a Python heredoc** passed through bash — it becomes a literal two-character sequence backslash-n in the file, breaking JSON. Use `"\\n"` (single backslash) in the source, which Python interprets as a real newline at runtime.
 - **Git push occasionally reports a false rejection** (race condition on ref lock) when the push actually succeeded. Check `git log origin/main --oneline -2` before retrying.
 - **Check verification output before committing.** Green tests + green tsc are necessary but not sufficient — grep the file for the expected new code.
-- **The `cat > file <<'EOF'` heredoc pattern fails at ~50+ lines with high frequency in Codespace.** Use Python heredocs for full-file writes instead.
+- **Long heredocs (`cat > file <<'EOF'` or `python3 - <<'PYEOF'`) fail at ~50+ lines in Windows terminals** (PowerShell, cmd, Git Bash via ConPTY) due to paste chunking. In Codespace and Konsole (Linux) they work reliably. On Windows: write the script via the editor, then run `python script.py`.
 
 ---
 
-**Last Updated:** October 25, 2026
+**Last Updated:** October 26, 2026
