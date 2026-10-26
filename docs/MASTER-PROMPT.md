@@ -16,6 +16,8 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
 
+Two client-facing features are **specced but unbuilt** — the Itinerary Client Experience (Glance + Today's Plan card). Both derive from existing itinerary data, no authoring surface. Full spec in `docs/TODO.md`.
+
 **Recently completed (September 18 session):**
 - TipTap rendering bug closed: replaced `@tiptap/html` (zeed-dom drops inline styles) with `getSchema` + `DOMSerializer` + jsdom on server, browser `document` on client
 - Shared extension module `lib/editor/extensions.ts` — single source of truth, no more editor/renderer drift
@@ -144,6 +146,50 @@ Purpose: reduce typing on 150-250 segment itineraries. Deterministic only — no
 | Fill-down across multi-selected | Requires multi-select UI that doesn't exist |
 | AI/LLM at runtime | Unnecessary for bounded data |
 | Fuzzy matching for entity dedup | False-positive merge silently attaches wrong address |
+
+---
+
+---
+
+## Itinerary Client Experience (SPECCED — not built)
+
+Two client-facing views derived entirely from existing itinerary data. **No authoring surface.** Myah builds the detailed itinerary once; the Glance and Today's Plan fall out automatically. Zero marginal work.
+
+### Itinerary at a Glance
+
+Per-day point form, printable via existing print stylesheet. Shows: day number + date, where you're sleeping (hotel name only), how you're getting there (airline + flight number / train line / "Transfer"), optionally one anchor activity line. Hides: times, booking references, addresses, phone numbers, segment instructions, fine detail.
+
+Missing-stay behaviour: omit the sleeping line. Reflect what's there; never invent.
+
+Attachment: `portal_items` row with `source_type='itinerary'` plus a new `variant` column (`full` | `glance`). Default `full` for backward compatibility.
+
+### Today's Plan card
+
+Auto top-of-wall card showing the client's current context. Same derivation principle. Three states:
+
+- **Pre-trip:** collapsed countdown ("Today" / "Tomorrow" / "N days until [destination]"); expanded full trip summary (Glance content); share (copy link / native share); download full itinerary PDF.
+- **During trip:** collapsed today's date + one-line summary; expanded full day view (reuses `ItineraryView` day rendering); share; download today's plan PDF.
+- **Post-trip:** hidden, or "Trip complete" with download only.
+
+Wall renderer checks: itinerary attached? departure date set? today in window? If yes, render. If no, render nothing — no placeholder, no "no trip" message.
+
+Expansion: modal (consistent with existing admin patterns), reuses `ItineraryView`. Download: print stylesheet PDF (respects the no-PDF-pipeline guardrail). Share: copy portal wall link / native share sheet — recipient still needs their own magic link. No public bypass.
+
+### Locked decisions
+
+- Timezone: itinerary-level IANA field (`itineraries.timezone`). Fallback to first travel leg, else null.
+- Ordering: Today's Plan first, then Glance.
+- Placeholder: never. Absent context = absent card.
+
+### Anticipated files (when built)
+
+- `components/portal/TodayCard.tsx`
+- `components/portal/glance/ItineraryGlanceView.tsx`
+- `lib/itineraries/derive.ts`
+- `app/api/itineraries/[id]/glance/route.ts`
+- Migration `0016_itinerary_timezone.sql`
+- Migration `0017_portal_items_variant.sql`
+- `components/portal/PortalWall.tsx` updated to render TodayCard above tiles
 
 ---
 
