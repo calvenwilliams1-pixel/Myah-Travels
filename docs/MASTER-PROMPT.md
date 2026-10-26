@@ -1,4 +1,4 @@
-# MyCalTravels — MASTER-PROMPT.md (Revision 10)
+# MyCalTravels — MASTER-PROMPT.md (Revision 11)
 
 **Purpose:** Restore context for a new AI assistant when conversation history is lost. This is the single-source-of-truth overview of the project.
 
@@ -104,6 +104,8 @@ const html = container.innerHTML;
 - New writes go through `serializeBodyContent` in `BodyBlockEditor`
 
 Read via `deserializeBodyContent(data.tiptapJson)` in `BodyRenderer`. `getBodyContentVersion` exists for future migrations.
+
+As of commit `4b32d7c`, the editor also unwraps the envelope on load and re-wraps on save, so `BodyBlockEditor` no longer round-trips a wrapped envelope into TipTap.
 
 ---
 
@@ -219,11 +221,13 @@ Purpose: reduce typing on 150-250 segment itineraries. Deterministic only — no
 | 6.1-6.4D | ✅ Complete | Quick wins, Itinerary V1, Notepad, Autosave |
 | 7 | ✅ Complete | All 6 bug-fix batches |
 | 7.5 | Partial | Singapore Demo seeded; Japan+Cruise+Singapore pending |
-| 7.6 | ✅ Complete | Waves 1-4 |
+| 7.6 | ✅ Complete | Waves 1-4 (7.6.8 Notepad tag behaviour never built — decision needed) |
+| 7.6.8 | ⏳ Never built | Notepad tag auto-populate/remove on portal member changes — decide if still wanted |
 | 7.8 | ✅ Complete | Data Entry Automation |
 | 7.9 | ✅ Complete | Post Editor and Writing Tools |
 | 9 | ✅ Complete | Client Memory System |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
+| Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface. See `docs/TODO.md` |
 | **Testing pass** | **🔄 Current** | **Browser verification of everything since 7.6 Wave 2** |
 | 7.3 | ⏳ Pending | Publish validation, error boundaries, responsive preview |
 | 8 | ⏳ Future | Options segments, cruise mode, People table |
@@ -278,6 +282,8 @@ Canvas-in-TipTap was fully removed (CanvasBlockNode, CanvasBlockRenderer, Canvas
 
 4. **Codespace Node version** — Codespace runs Node 24; local runs Node 22 LTS. Minor drift; both work. Local is the deployment-target version.
 
+5. **`TESTING.md` is partial** — predates the September 18 break session. PiP, divider config popover, context menu submenus, gradient tiles, and body content versioning are not yet covered. Block system beyond Body, client-facing post rendering, Content Library, and admin dashboard are also uncovered. Coverage map in `docs/TODO.md`.
+
 ---
 
 ## Development Workflow
@@ -328,6 +334,7 @@ npm run smoke              # Operational smoke scripts (needs populated DB)
 | Autosave never blocks editing | localStorage failures swallowed |
 | React state gated by mount | Refs + localStorage always update |
 | **All renderers import `buildExtensions`** | No parallel extension lists |
+| Itinerary client views are derived | No authoring surface for glance or today's plan |
 | **Never use `@tiptap/html`'s `generateHTML`** | zeed-dom drops inline styles |
 
 ---
@@ -396,6 +403,7 @@ If context is unclear, ask:
 10. **Verify scripts actually ran** — grep for the expected change in the file to confirm, don't trust success messages.
 11. **Ask for help from reviewers** (Claude, Copilot) when facing architectural decisions.
 12. **No deferrals by the assistant.** The user defers, not the assistant. If something needs doing, do it.
+13. **Clipboard-wrap all command output.** Never ask the user to manually select and copy terminal text.
 
 ### Heredoc hygiene (learned the hard way)
 
@@ -411,4 +419,4 @@ If context is unclear, ask:
 
 ---
 
-**Last Updated:** September 18, 2026
+**Last Updated:** October 25, 2026
