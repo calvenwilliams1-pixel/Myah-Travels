@@ -1,11 +1,11 @@
 # MyCalTravels — SRS v5.0
 
-**Revision:** Phase 7.9 + 9 amendments (2026-09-17). See Part 1 of PHASES-7.9-AND-9-PLAN.md for the full list of amendments.
+**Revision:** v5.1 — Itinerary Client Experience amendments (2026-10-25). See Section 7a for the new client-facing views. Previous amendments: Phase 7.9 + 9 (2026-09-17, see Part 1 of PHASES-7.9-AND-9-PLAN.md).
 
 ## Software Requirements Specification
 
-**Version:** 5.0 (Block-Based Content + Portal Wall + Itinerary Builder + Admin Notepad)
-**Date:** September 12, 2026
+**Version:** 5.1 (Block-Based Content + Portal Wall + Itinerary Builder + Admin Notepad + Itinerary Client Experience)
+**Date:** October 25, 2026
 **Status:** Portal V1 + Portal V2 backends complete. Phase 7 bug-fix pass in progress.
 **Stakeholder:** Myah (Travel Writer & Agent)
 
@@ -20,6 +20,7 @@
 | 3.0 | Aug 18, 2026 | Blocking fixes, 2FA, retention policy, final decisions |
 | 4.0 | Aug 25, 2026 | Canvas Design System, Feed System, Theme System, Dual-Mode Editor |
 | **5.0** | **Sep 12, 2026** | **Major architecture pivot: Block-based content system replaces Canvas. Portal Wall + Itinerary Builder + Admin Notepad added. Autosave infrastructure. Theme system simplified.** |
+| **5.1** | **Oct 25, 2026** | **Itinerary Client Experience: Itinerary at a Glance + Today's Plan card. Both derived from existing itinerary data, no authoring surface. New Section 7a. Non-Goals extended.** |
 
 ---
 
@@ -299,6 +300,62 @@ itineraries (soft delete)
 - Overlapping stays
 - Group splits
 - Attendees on segments
+
+---
+
+## Section 7a: Itinerary Client Experience
+
+### 7a.1 Overview
+
+Two client-facing views derived entirely from existing itinerary data. **No authoring surface.** The detailed itinerary is authored once; the Glance and Today's Plan are derived automatically.
+
+**Requirement (derivation principle):** The system shall derive client-facing views from itinerary data with no separate authoring surface. There is no second document for the admin to maintain; edits to the itinerary propagate to both derived views.
+
+### 7a.2 Itinerary at a Glance
+
+**Requirement:** The system shall provide a per-day point-form summary of the itinerary, printable via the existing print stylesheet.
+
+Per day, the Glance shall show:
+- Day number + date
+- Where you're sleeping (hotel name only)
+- How you're getting there (airline + flight number, or train line, or "Transfer")
+- Optionally: first anchor activity, one line
+
+The Glance shall hide: times, booking references, addresses, phone numbers, segment instructions, fine detail.
+
+**Missing-stay behaviour:** if a day has no stay, the sleeping line shall be omitted. The view shall reflect what is present; it shall not invent content.
+
+**Attachment:** a `portal_items` row with `source_type='itinerary'` plus a new `variant` column (`full` | `glance`). Default `full` for backward compatibility.
+
+### 7a.3 Today's Plan card
+
+**Requirement:** The system shall render an auto top-of-wall card showing the client's current trip context, derived from the itinerary and the current date.
+
+**Three states:**
+
+- **Pre-trip (countdown):** collapsed — "N days until [destination]" with smart labels ("Today", "Tomorrow", "N days"). Expanded — full trip summary (Glance content). Share (copy link / native share). Download full itinerary PDF.
+- **During trip (today's plan):** collapsed — today's date + one-line summary. Expanded — full day view, reusing the existing `ItineraryView` day rendering. Share. Download today's plan PDF.
+- **Post-trip:** hidden, or "Trip complete" state with download only.
+
+**Wall placement:** auto top-of-wall. The wall renderer shall check: itinerary attached? departure date set? today in window? If yes, render the card. If no, render nothing — no placeholder, no "no trip" message.
+
+**Expansion:** modal (consistent with existing admin patterns), reusing `ItineraryView`.
+
+**Download:** print stylesheet PDF. Respects the no-PDF-pipeline guardrail (Section 19).
+
+**Share behaviour:** copy portal wall link to clipboard (desktop) / native share sheet (mobile). The link points at the portal wall; the recipient needs their own magic link if not already a member. No public bypass link.
+
+### 7a.4 Locked decisions
+
+- **Timezone:** itinerary-level IANA field (`itineraries.timezone`). Fallback to first travel leg, else null.
+- **Ordering:** Today's Plan first, then Glance. Today's Plan is smaller, more visible, ships faster.
+- **Placeholder:** never. Absent context = absent card.
+
+### 7a.5 Scope boundaries (excluded)
+
+- No public sharing bypass (would require magic-link bypass — out of scope).
+- No PDF generation pipeline (print stylesheet only — see Section 19).
+- No authoring UI for Glance or Today's Plan (derivation-only — see 7a.1).
 
 ---
 
@@ -584,7 +641,10 @@ npm run test:ui
 - No cross-device draft sync
 - No collaborative editing
 - No multi-tab autosave sync
+- No public sharing bypass for client views (recipient needs their own magic link)
+- No PDF generation pipeline for Glance or Today's Plan (print stylesheet only)
+- No authoring UI for Glance or Today's Plan (both are derived, not authored)
 
 ---
 
-**End of SRS v5.0**
+**End of SRS v5.1** — October 25, 2026
