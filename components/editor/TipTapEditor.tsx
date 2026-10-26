@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { sinkListItem, liftListItem } from "@tiptap/pm/schema-list";
 import { isBareYouTubeUrl, extractYouTubeId } from "@/lib/editor/youtube";
 import { buildExtensions } from "@/lib/editor/extensions";
 import Toolbar from "./Toolbar";
@@ -61,6 +62,34 @@ export default function TipTapEditor({
         const node = nodeType.create({ videoId });
         const tr = state.tr.replaceSelectionWith(node);
         dispatch(tr);
+        return true;
+      },
+      handleKeyDown: (view, event) => {
+        if (event.key !== "Tab") return false;
+        const { state } = view;
+        const { $from } = state.selection;
+
+        // Check whether the cursor is inside a list item.
+        let inList = false;
+        for (let d = $from.depth; d > 0; d--) {
+          if ($from.node(d).type.name === "listItem") {
+            inList = true;
+            break;
+          }
+        }
+
+        if (inList) {
+          const listItemType = state.schema.nodes.listItem;
+          if (!listItemType) return false;
+          if (event.shiftKey) {
+            return liftListItem(listItemType)(state, view.dispatch);
+          } else {
+            return sinkListItem(listItemType)(state, view.dispatch);
+          }
+        }
+
+        // Not in a list — consume Tab so it doesn't move focus out of the editor.
+        event.preventDefault();
         return true;
       },
     },

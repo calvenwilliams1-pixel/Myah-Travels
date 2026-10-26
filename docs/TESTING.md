@@ -473,3 +473,30 @@ Gallery block now uses `ImageSourcePicker` per image slot, matching Hero and Ima
 ### Known limitations
 - Gallery images do not yet have `alt` text (Image and Hero blocks have it). Adding alt is a separate batch — needs `GalleryData` type change and `GalleryRenderer.tsx` update.
 - Library picker is provided by `ImageSourcePicker` as currently implemented — this batch wires the picker in, but does not extend the picker's library integration beyond what Hero and Image already have.
+
+## Batch B — Body editor Tab handler
+
+**Commit:** (pending)
+
+### What was built
+Tab in the Body block editor now indents list items (`sinkListItem`) instead of indenting the whole block. Shift+Tab outdents (`liftListItem`). Tab outside a list is consumed (preventDefault, no-op) so it no longer moves focus out of the editor. Handler is `editorProps.handleKeyDown` on `TipTapEditor` — editor-only, no changes to `buildExtensions`, no effect on renderers.
+
+### Test cases
+- [ ] In a Body block, create a bulleted list with two items
+- [ ] Place cursor in the second item, press Tab → second item indents under the first
+- [ ] Press Tab again → item indents further (nested level 3)
+- [ ] Press Shift+Tab → item outdents one level
+- [ ] Press Shift+Tab again → item returns to flat list
+- [ ] Numbered list — same Tab / Shift+Tab behaviour
+- [ ] Cursor in a paragraph (not a list), press Tab → nothing happens, cursor stays in editor, focus does not move to next input
+- [ ] Cursor in a heading, press Tab → nothing happens
+- [ ] Cursor in a blockquote, press Tab → nothing happens, focus stays in editor
+- [ ] In a list item with existing content, Tab preserves the text (doesn't drop it)
+- [ ] In a list item at the first position, Shift+Tab → item stays a list item at top level (no lift-out to paragraph — ProseMirror handles this gracefully)
+- [ ] Multi-line selection in a list, Tab → both items indent together (ProseMirror's standard behaviour)
+- [ ] Verify: Tab key does not tab you out of the editor to the toolbar or next field
+- [ ] Verify: Shift+Tab does not tab you backwards out of the editor
+
+### Known limitations
+- Tab is consumed globally inside the editor when not in a list. If a future feature needs Tab-to-navigate within the editor (e.g. table cells), the handler will need a table-aware branch.
+- Code block Tab insertion is out of scope for this batch — ProseMirror's default code block behaviour is unchanged.
