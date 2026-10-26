@@ -1,8 +1,4 @@
 import type { getFullItinerary } from "./index";
-import type { PortalItemVariant } from "@/types/portal-items";
-
-// Re-export the type so callers can import it from either location.
-export type { PortalItemVariant };
 
 type FullItinerary = NonNullable<Awaited<ReturnType<typeof getFullItinerary>>>;
 

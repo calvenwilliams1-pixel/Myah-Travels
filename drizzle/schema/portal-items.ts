@@ -25,7 +25,6 @@ export const portalItems = sqliteTable(
     filePath: text("file_path"),
     textContent: text("text_content"),
     position: integer("position").default(0),
-    variant: text("variant").notNull().default("full"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({

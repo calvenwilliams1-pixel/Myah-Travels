@@ -7,7 +7,6 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/auth";
 import { getPortalById } from "@/lib/portal";
 import { getPortalItemsWithContent } from "@/lib/portal-items";
-import { attachGlancesToItems } from "@/lib/itineraries/attach-glances";
 import { logActivity } from "@/lib/logging";
 import PortalWall from "@/components/portal/PortalWall";
 
@@ -69,12 +68,11 @@ export default async function AdminPreviewPage({ params }: { params: { id: strin
   });
 
   const items = await getPortalItemsWithContent(portal.id);
-  const itemsWithGlances = await attachGlancesToItems(items);
 
   return (
     <AdminPreviewShell>
       <PreviewBanner variant="info">Preview mode — this is what your client sees.</PreviewBanner>
-      <PortalWall portal={portal} items={itemsWithGlances} mode="admin-preview" />
+      <PortalWall portal={portal} items={items} mode="admin-preview" />
     </AdminPreviewShell>
   );
 }
