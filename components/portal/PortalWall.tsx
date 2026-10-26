@@ -27,6 +27,7 @@ export interface PortalWallItem {
   resolvedFilePath: string | null;
   resolvedTextContent: string | null;
   itineraryId?: number | null;
+  isVisible?: boolean;
   glance?: GlanceData;
   derivedError?: boolean;
 }
@@ -42,9 +43,21 @@ export default function PortalWall({
   items,
   mode = "client",
 }: PortalWallProps) {
-  const hasInlineDerivedTile = items.some(
+  const isClient = mode === "client";
+  const visibleItems = isClient ? items.filter((i) => i.isVisible !== false) : items;
+
+  const glanceItem = visibleItems.find(
     (i) => i.sourceType === "itinerary_glance" && i.glance && !i.derivedError
   );
+  const glanceBroken = visibleItems.some(
+    (i) => i.sourceType === "itinerary_glance" && (!i.glance || i.derivedError)
+  );
+
+  // Grid items = everything except itinerary_glance (which is the sidebar)
+  const gridItems = visibleItems.filter((i) => i.sourceType !== "itinerary_glance");
+
+  const hasGlance = !!glanceItem || glanceBroken;
+  const hasInlineDerivedTile = hasGlance;
 
   const subtitle =
     portal.heroSubtitle ||
@@ -58,6 +71,7 @@ export default function PortalWall({
       data-has-inline-tile={hasInlineDerivedTile ? "true" : "false"}
     >
       <PortalPrintSetup enabled={hasInlineDerivedTile} />
+
       <div data-portal-chrome>
         <HeroBanner
           title={portal.heroTitle || portal.name}
@@ -67,63 +81,95 @@ export default function PortalWall({
         />
       </div>
 
-      <div className="max-w-4xl mx-auto py-8 px-4">
-        {items.length === 0 ? (
+      {/* Day by Day banner slot — D-b fills this with DayByDayView */}
+      {/* Currently renders nothing; slot reserved for D-b */}
+
+      <div className="max-w-6xl mx-auto py-8 px-4">
+        {visibleItems.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-2xl mb-2">📝</p>
             <p className="text-gray-500">No content yet. Check back soon!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {items.map((item) => {
-              const isGlance = item.sourceType === "itinerary_glance";
-
-              if (isGlance) {
-                if (!item.glance || item.derivedError) {
-                  return (
-                    <div
-                      key={item.id}
-                      data-wall-item
-                      data-variant="glance"
-                      className="md:col-span-2 p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500"
-                    >
+          <div className="lg:grid lg:grid-cols-[1fr,320px] lg:gap-6">
+            {/* Grid column */}
+            <div>
+              {/* Mobile: glance renders inline above grid */}
+              {hasGlance && (
+                <div className="lg:hidden mb-6" data-wall-item data-variant="glance">
+                  {glanceItem ? (
+                    <ItineraryGlanceView glance={glanceItem.glance!} />
+                  ) : (
+                    <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500">
                       Summary unavailable
                     </div>
-                  );
-                }
-                return (
-                  <div
-                    key={item.id}
-                    data-wall-item
-                    data-variant="glance"
-                    className="md:col-span-2"
-                  >
-                    <ItineraryGlanceView glance={item.glance} />
-                  </div>
-                );
-              }
-
-              if (
-                item.sourceType !== "itinerary" &&
-                item.sourceType !== "library" &&
-                item.sourceType !== "portal_specific"
-              ) {
-                console.warn(
-                  `[PortalWall] unknown sourceType "${item.sourceType}" for item ${item.id} — skipping`
-                );
-                return null;
-              }
-
-              return (
-                <div key={item.id} data-wall-item data-variant="full">
-                  <WallItemRenderer
-                    item={{ ...item, portalSlug: portal.slug }}
-                    mode={mode}
-                    portalId={portal.id}
-                  />
+                  )}
                 </div>
-              );
-            })}
+              )}
+
+              {/* Grid */}
+              {gridItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No tiles yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {gridItems.map((item) => {
+                    if (
+                      item.sourceType !== "itinerary" &&
+                      item.sourceType !== "library" &&
+                      item.sourceType !== "portal_specific"
+                    ) {
+                      console.warn(
+                        `[PortalWall] unknown sourceType "${item.sourceType}" for item ${item.id} — skipping`
+                      );
+                      return null;
+                    }
+
+                    const hiddenInAdmin = !isClient && item.isVisible === false;
+
+                    return (
+                      <div
+                        key={item.id}
+                        data-wall-item
+                        data-variant="full"
+                        className={hiddenInAdmin ? "opacity-40 relative" : "relative"}
+                      >
+                        {hiddenInAdmin && (
+                          <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
+                            Hidden
+                          </span>
+                        )}
+                        <WallItemRenderer
+                          item={{ ...item, portalSlug: portal.slug }}
+                          mode={mode}
+                          portalId={portal.id}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop: glance sidebar sticky right */}
+            {hasGlance && (
+              <aside
+                className="hidden lg:block"
+                data-wall-item
+                data-variant="glance"
+              >
+                <div className="sticky top-4">
+                  {glanceItem ? (
+                    <ItineraryGlanceView glance={glanceItem.glance!} />
+                  ) : (
+                    <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500">
+                      Summary unavailable
+                    </div>
+                  )}
+                </div>
+              </aside>
+            )}
           </div>
         )}
       </div>
