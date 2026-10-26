@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { portalItems, contentLibrary, itineraries } from "@/drizzle/schema";
 import { eq, and, isNull } from "drizzle-orm";
+import { ITINERARY_SOURCE_TYPES } from "@/types/portal-items";
 
 export interface PortalSpecificItemData {
   title: string;
@@ -39,7 +40,7 @@ export async function getPortalItemsWithContent(portalId: number) {
         };
       }
 
-      if (item.sourceType === "itinerary" && item.itineraryId) {
+      if (ITINERARY_SOURCE_TYPES.includes(item.sourceType as any) && item.itineraryId) {
         const itineraryId = item.itineraryId;
         const itinerary = await db.select().from(itineraries)
           .where(and(eq(itineraries.id, itineraryId), isNull(itineraries.deletedAt)))
