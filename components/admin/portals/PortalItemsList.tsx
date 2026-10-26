@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { PortalItemVariant } from "@/types/portal-items";
 
 interface PortalItem {
   id: number;
@@ -10,7 +9,6 @@ interface PortalItem {
   resolvedType: string;
   resolvedCategory: string | null;
   position: number;
-  variant?: string | null;
 }
 
 interface PortalItemsListProps {
@@ -52,22 +50,6 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
     onChanged();
   }
 
-  async function updateVariant(itemId: number, variant: PortalItemVariant) {
-    const res = await fetch(
-      `/api/portal/${portalId}/items/${itemId}/variant`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variant }),
-      }
-    );
-    if (!res.ok) {
-      console.error("Failed to update variant", await res.text());
-      return;
-    }
-    onChanged();
-  }
-
   if (orderedItems.length === 0) {
     return <p className="text-gray-500 text-center py-8">No content attached yet.</p>;
   }
@@ -102,25 +84,8 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
             <p className="font-medium">{item.resolvedTitle}</p>
             <p className="text-xs text-gray-500">
               {item.resolvedType} · {item.resolvedCategory || "no category"} ·{" "}
-              {item.sourceType === "library"
-                ? "Library"
-                : item.sourceType === "itinerary"
-                  ? "Itinerary"
-                  : "Portal-specific"}
+              {item.sourceType === "library" ? "Library" : "Portal-specific"}
             </p>
-            {item.sourceType === "itinerary" && (
-              <select
-                value={item.variant ?? "full"}
-                onChange={(e) =>
-                  updateVariant(item.id, e.target.value as PortalItemVariant)
-                }
-                className="mt-1 text-xs border border-gray-200 rounded px-2 py-1"
-                aria-label="Itinerary display variant"
-              >
-                <option value="full">Full itinerary</option>
-                <option value="glance">At a Glance</option>
-              </select>
-            )}
           </div>
 
           <button
