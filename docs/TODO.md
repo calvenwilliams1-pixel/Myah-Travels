@@ -2,7 +2,17 @@
 
 ## Status
 
-**Phases 7.6, 7.8, 7.9, and 9 all CODE-COMPLETE. Massive accumulated testing debt — see TESTING.md for the full checklist. Launch Day prep documented as Phase 7.7 (with cron entries for email queue + portal purge). Phase 8 (social publishing) deferred to post-launch. Phase 7.3 (trimmed) still pending. — see PHASES-7.9-AND-9-PLAN.md. Testing debt accumulating — see TESTING.md. Phase 8 (social publishing) deferred to post-launch. Phase 7.3 trimmed (Canvas deletion and better-sqlite3 mini-PC dropped; publish validation, error boundaries, responsive preview retained). Launch Day prep documented as Phase 7.7. Security audit flagged for launch prep.**
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 87 vitest tests passing, `tsc` clean.
+
+**Current work: accumulated testing pass.** Browser verification of features shipped since Phase 7.6 Wave 2 — nothing is broken, nothing is mid-edit, the code is done. Coverage map below. Full checklist in `docs/TESTING.md` (which is itself partial — see Known Issues #5).
+
+**Two features are SPECCED but unbuilt:** the Itinerary Client Experience — Itinerary at a Glance + Today's Plan card. Both derive entirely from existing itinerary data, no authoring surface. Full spec in the "Itinerary Client Experience (SPECCED — not built)" section below.
+
+**Three outstanding bugs** from the last testing session, documented in "Outstanding bugs from testing pass" below.
+
+**Phase 7.6.8 (Notepad tag behaviour) was never built** — decision needed on whether it's still wanted. See its standalone section below.
+
+**Upcoming:** Phase 7.7 Launch Day (email + magic link go-live, TOTP enforcement, cron entries, backups, OS hardening). Then Phase 7.3 (trimmed — publish validation, error boundaries, responsive preview; Canvas deletion and better-sqlite3 mini-PC fix dropped). Phase 8 (social publishing) deferred to post-launch. See `docs/PHASES-7.9-AND-9-PLAN.md`.
 
 ## Core Principle
 
@@ -33,7 +43,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - **Autosave hook with durability layer** (localStorage draft persistence)
 - **Form primitives** (AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField)
 - **Inline forms replace `prompt()` dialogs**
-- **Test framework: vitest + testing library** (48 tests passing)
+- **Test framework: vitest + testing library** (87 tests passing)
 
 ### REJECTED
 - CanvasElement for writers
@@ -218,9 +228,7 @@ Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 
 - [x] Ban side-effects: destroy all live sessions, revoke all unused links
 - [x] Unban: clears ban fields; old links/sessions stay dead (deliberate — fresh link required)
 
-#### 7.6.8 Confirm notepad tag behavior
-- [ ] Member names auto-populate as notepad tags on portal creation
-- [ ] Removing a member removes their tag from autocomplete (old notes keep the tag text)
+#### 7.6.8 Notepad tag behaviour — NEVER BUILT (see standalone section above)
 
 ### Wave 4 — Content & Styling
 
@@ -697,6 +705,79 @@ Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
 
 ---
 
+## Itinerary Client Experience (SPECCED — not built)
+
+Two client-facing views derived entirely from existing itinerary data. **No authoring surface.** Myah builds the detailed itinerary once; the Glance and Today's Plan fall out automatically. Zero marginal work.
+
+### Itinerary at a Glance
+
+Per-day point form, printable via existing print stylesheet. Shows: day number + date, where you're sleeping (hotel name only), how you're getting there (airline + flight number / train line / "Transfer"), optionally one anchor activity line. Hides: times, booking references, addresses, phone numbers, segment instructions, fine detail.
+
+Missing-stay behaviour: omit the sleeping line. Reflect what's there; never invent.
+
+Attachment: `portal_items` row with `source_type='itinerary'` plus a new `variant` column (`full` | `glance`). Default `full` for backward compatibility.
+
+### Today's Plan card
+
+Auto top-of-wall card showing the client's current context. Same derivation principle. Three states:
+
+- **Pre-trip:** collapsed countdown ("Today" / "Tomorrow" / "N days until [destination]"); expanded full trip summary (Glance content); share (copy link / native share); download full itinerary PDF.
+- **During trip:** collapsed today's date + one-line summary; expanded full day view (reuses `ItineraryView` day rendering); share; download today's plan PDF.
+- **Post-trip:** hidden, or "Trip complete" with download only.
+
+Wall renderer checks: itinerary attached? departure date set? today in window? If yes, render. If no, render nothing — no placeholder, no "no trip" message.
+
+Expansion: modal (consistent with existing admin patterns), reuses `ItineraryView`. Download: print stylesheet PDF (respects the no-PDF-pipeline guardrail). Share: copy portal wall link / native share sheet — recipient still needs their own magic link. No public bypass.
+
+### Locked decisions
+
+- Timezone: itinerary-level IANA field (`itineraries.timezone`). Fallback to first travel leg, else null.
+- Ordering: Today's Plan first, then Glance.
+- Placeholder: never. Absent context = absent card.
+
+### Anticipated files (when built)
+
+- `components/portal/TodayCard.tsx`
+- `components/portal/glance/ItineraryGlanceView.tsx`
+- `lib/itineraries/derive.ts`
+- `app/api/itineraries/[id]/glance/route.ts`
+- Migration `0016_itinerary_timezone.sql`
+- Migration `0017_portal_items_variant.sql`
+- `components/portal/PortalWall.tsx` updated to render TodayCard above tiles
+
+---
+
+## Outstanding bugs from testing pass
+
+Three bugs found in the last testing session, not fixed.
+
+### 1. PreviewPopout bounds clamping
+
+The in-page popout can be dragged off-screen top and becomes unrecoverable. PiP exists as the preferred mode, but the fallback popout is still reachable and this bug persists. Fix: clamp `top` and `left` on drag so the popout title bar stays within the viewport.
+
+### 2. Body block Tab handler
+
+Tab in the Body editor indents the whole block instead of the list item (when in a list) or doing nothing (when not). Fix: add a Tab keyboard handler in `TipTapEditor` that calls `sinkListItem` when in a list, and `preventDefault` (no-op) otherwise.
+
+### 3. Gallery block upload/library
+
+The Gallery block still uses URL-only inputs. Should reuse `ImageSourcePicker` (upload / paste URL / library picker) like the Hero and Image blocks. Fix: swap the Gallery block's image input for `ImageSourcePicker`, same wiring as `HeroBlockEditor` and `ImageBlockEditor`.
+
+---
+
+## Phase 7.6.8 — Notepad tag behaviour (NEVER BUILT — decision needed)
+
+The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
+
+- [ ] Member names auto-populate as notepad tags on portal creation
+- [ ] Removing a member removes their tag from autocomplete (old notes keep the tag text)
+
+**Decision needed:** is this behaviour still wanted, or superseded by the current comma-separated tag model? The notepad uses free-text comma-separated tags with autocomplete from portal members + previously-used tags. Auto-populating every member name on portal creation may create noise. Auto-removing on member removal is also questionable — old notes referencing a removed member should keep their tag text (they do today; the spec agrees).
+
+**Recommendation if revisited:** keep the current manual-tag model. Skip auto-populate. The autocomplete from portal members already covers the discoverability need without the noise.
+
+---
+
 ## Phase 7.2 Loose Ends (Before Phase 8)
 - [x] Attach itinerary UI on admin editor page
 - [x] Admin preview of itinerary
@@ -799,6 +880,7 @@ Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
 2. **Canvas system frozen** - 39 emerald remain
 3. **`schema.sql` outdated** - use Drizzle schema + `scripts/setup-db.js` + seed
 4. **Missing DB columns on fresh setup** - `scripts/setup-db.js` handles known cases
+5. **`TESTING.md` is partial** - predates the September 18 break session. Break-session features (PiP, divider config, context menu submenus, gradient tiles, body content versioning) are not yet covered. Block system beyond Body, client-facing post rendering, Content Library, and admin dashboard are also uncovered. See Testing Debt coverage map above.
 
 ---
 
@@ -822,27 +904,49 @@ Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
     npm start                  # Production server
 
     # Tests
-    npm test                   # Run all vitest tests (48 passing)
+    npm test                   # Run all vitest tests (87 passing)
     npm run test:watch         # Watch mode
     npm run test:ui            # Vitest UI
 
 ---
 
-## Current Session State
+## Testing Debt — Coverage Map
 
-**Recently completed:**
+**What `docs/TESTING.md` covers (as of Rev 17):**
+- Phase 7.6 Waves 2–4 (multi-leg travel, ban/revoke, hero styling)
+- Phase 7.8 Waves A–D (suggestions, duplication, drag-reorder, bulk-add, snippets, paste-booking, stale entities, kill switch)
+- Phase 7.9 stubs (E1–E12)
+- Phase 9 stubs (F1–F9)
+- TOTP enrollment (S1–S5)
+
+**What `docs/TESTING.md` does NOT cover (break-session features, Sept 18):**
+- Picture-in-Picture preview (`useDocumentPiP`, `PreviewPopout`)
+- Divider config popover (thickness + colour)
+- Context menu submenus (colour / size / font)
+- Toolbar gradient tiles + icon labels + key props
+- Body content versioning envelope round-trip (`serializeBodyContent` / `deserializeBodyContent`)
+
+**What else is missing:**
+- Block system beyond Body — Title, Hero, Image, Gallery, Callout, ProsCons, Verdict, QuickFacts, Quote have no browser test
+- Template selection in editor (which template, switching templates, template-driven block order)
+- Client-facing post rendering — `/blog/[slug]`, `/guides/[slug]`, `/reviews/[slug]`
+- Content Library — admin list, add PDF/image/text, attach to portal
+- Admin dashboard — widgets, storage usage, recent activity
+
+**Known Issue #5:** `docs/TESTING.md` is partial — it predates the September 18 break session. It needs a new section covering the break-session additions before the testing pass is complete.
+
+**Recent completions (for context):**
 - Phase 6.4A: Notepad verified + admin itinerary preview
-- Phase 6.4B: Autosave hook + 48 tests passing
+- Phase 6.4B: Autosave hook + durability (87 tests total across 5 files)
 - Phase 6.4C: 4 form primitives
 - Phase 6.4D: Replaced all `prompt()` with inline forms (580 -> 17 lines)
-- **Phase 7: All 6 batches complete** (critical bugs, date constraints, portal manager UX, UI polish, segment UX, download verification)
-- **Phase 7.5: Singapore Demo seeded** (portal id 4, itinerary id 3)
-- **Phase 7.6 Wave 1**: 7.6.1 time picker `:00` default, 7.6.2 reference dropdown, 7.6.3 preview minimize
-- **Phase 7.6 Wave 2**: 7.6.4 travel modes (flight/train/bus/transfer/other), 7.6.5 multi-leg + layovers + connection gaps + date badges
-- **Phase 7.6 Wave 3**: 7.6.6 per-member magic links (already in schema), 7.6.7 ban/revoke/unban
-- **Email queue correctness**: atomic claim (`UPDATE ... RETURNING`), RESEND guard, CLI script
+- Phase 7: All 6 batches complete
+- Phase 7.5: Singapore Demo seeded (portal id 4, itinerary id 3); Japan+Cruise+Singapore pending
+- Phase 7.6: Waves 1–4 complete (7.6.8 never built — see standalone section)
+- Phase 7.8, 7.9, 9, 9.5: Complete
+- Email queue correctness: atomic claim, RESEND guard, CLI script
 
-**Next action:** Local testing pass across all shipped phases (7.6 + 7.8 + 7.9 + 9). Then Launch Day prep (Phase 7.7). Then Phase 7.3 (trimmed). Phase 9.5 + Security Audit both complete.
+**Next action:** TODO Rev 18 (this revision) → SRS v5.1 → TESTING.md coverage additions → browser testing pass → Phase 7.7 Launch Day → Phase 7.3 (trimmed).
 
 ---
 
@@ -867,3 +971,7 @@ Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
 4. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
 5. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
 6. **Phase 8+** - Post-launch (dark mode, versioning, block expansion)
+
+---
+
+**Last Updated:** October 25, 2026
