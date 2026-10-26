@@ -5,3 +5,29 @@
 .canvas-wrapper {
   transform-origin: top left;
 }
+
+/* Portal wall print rules — only active when a glance is present. */
+@media print {
+  body[data-portal-print="glance"] header {
+    display: none !important;
+  }
+  body[data-portal-print="glance"] main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  [data-has-glance="true"] [data-portal-chrome] {
+    display: none !important;
+  }
+  [data-has-glance="true"] [data-wall-item]:not([data-variant="glance"]) {
+    display: none !important;
+  }
+  [data-has-glance="true"] [data-variant="glance"] {
+    width: 100% !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  [data-has-glance="true"] .glance-day {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

@@ -68,6 +68,7 @@ const requiredColumns = [
   { table: "itineraries", column: "theme_preset", type: "TEXT" },
   { table: "itinerary_sections", column: "theme_preset_override", type: "TEXT" },
   { table: "itinerary_segments", column: "is_highlighted", type: "INTEGER DEFAULT 0" },
+  { table: "portal_items", column: "variant", type: "TEXT NOT NULL DEFAULT 'full'" },
 ];
 
 for (const { table, column, type } of requiredColumns) {
