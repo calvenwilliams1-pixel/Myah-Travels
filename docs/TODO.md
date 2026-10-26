@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 17)
+# MyCalTravels — TODO.md (Revision 19)
 
 ## Status
 
@@ -143,7 +143,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 
 ---
 
-## Phase 7.5: Demo Rendering & Visual Review (CURRENT)
+## Phase 7.5: Demo Rendering & Visual Review (PARTIAL)
 
 Goal: Seed real itineraries into the DB and render them through the builder to see what a fully-realised, curated document looks like.
 
@@ -157,7 +157,7 @@ Goal: Seed real itineraries into the DB and render them through the builder to s
 
 ---
 
-## Phase 7.6: Refinement Pass (CURRENT)
+## Phase 7.6: Refinement Pass
 
 Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 2 share a code pass (both touch itinerary forms/schema).
 
@@ -513,7 +513,7 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - [x] SegmentsEditor, StaysEditor, SectionEditor wired
 - [x] Commits: 5e5e98c, cf583e1, d1768e3, 8a29583
 
-**Wave A closeout** ⏳ PENDING (pulled forward under No Deferrals)
+**Wave A closeout** ✅ COMPLETE
 - [x] Kill switch: `AUTOCOMPLETE_ENABLED` env flag. Falls back to plain inputs if off.
 - [x] Telemetry: log suggestion-accepted vs typed-fresh per field
 
@@ -535,10 +535,10 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 **Lump 4d — Drag-reorder UI** ✅ COMPLETE
 - [x] HTML5 DnD, "Manual order" toggle, disagreement indicator
 
-**Wave B closeout** ⏳ PENDING (pulled forward under No Deferrals)
+**Wave B closeout** ✅ COMPLETE
 - [x] Cross-itinerary "Copy from…" modal UI. Backend `/api/itineraries/[targetId]/copy-segment` already works. Ship the 3-step picker (source itinerary → source day → source segment).
 
-### Wave C — Bulk-add + backfill ⏳ NEXT
+### Wave C — Bulk-add + backfill ✅ COMPLETE
 
 **Lump 5 — Bulk-add segments**
 - [x] `POST /api/days/[id]/segments/bulk` — transactional, all-or-nothing
@@ -555,7 +555,7 @@ Reduces typing on 150-250 segment itineraries via a deterministic two-layer sugg
 - [x] `source = 'migration'` on backfilled rows
 - [x] `use_count` derived from historical frequency
 
-### Wave D — Closing features ⏳ PENDING (pulled forward under No Deferrals)
+### Wave D — Closing features ✅ COMPLETE
 
 **Lump 7 — Entity cleanup admin page**
 - [x] List entities with `use_count = 1` and `created_at > 90 days`
@@ -786,7 +786,7 @@ The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
 
 ## Phase 7.3 Production Hardening
 - [ ] Fix better-sqlite3 crash on mini PC deployment
-- [ ] Delete Canvas system (39 emerald remain)
+- [ ] Delete Canvas system (frozen — safe to leave; delete when confirmed unnecessary)
 - [ ] Preview popup (modal -> floating -> fullscreen)
 - [ ] Target surface token conversion (~20-30 `bg-gray-50/100`)
 - [ ] Undo / Redo (global stack, capped 50)
@@ -965,8 +965,8 @@ The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
 
 ## What's Left After Phase 7
 
-1. **Phase 7.5** - Demo rendering (Singapore done; Japan+Cruise+Singapore seed pending)
-2. **Phase 7.6** - Refinement pass (Waves 1, 2, 3 complete; Wave 4 styling next)
+1. **Phase 7.5** - Demo rendering (Singapore done; Japan+Cruise+Singapore seed pending — PARTIAL)
+2. **Phase 7.6** - Refinement pass (all waves complete except 7.6.8, never built)
 3. **Phase 7.7** - Launch Day (email + magic link go-live)
 4. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
 5. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
@@ -974,4 +974,4 @@ The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
 
 ---
 
-**Last Updated:** October 25, 2026
+**Last Updated:** October 26, 2026
