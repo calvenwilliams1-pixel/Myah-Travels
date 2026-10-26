@@ -84,7 +84,15 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
             <p className="font-medium">{item.resolvedTitle}</p>
             <p className="text-xs text-gray-500">
               {item.resolvedType} · {item.resolvedCategory || "no category"} ·{" "}
-              {item.sourceType === "library" ? "Library" : "Portal-specific"}
+              {item.sourceType === "library"
+                ? "Library"
+                : item.sourceType === "itinerary"
+                  ? "Itinerary"
+                  : item.sourceType === "itinerary_glance"
+                    ? "At a Glance"
+                    : item.sourceType === "itinerary_today"
+                      ? "Day by Day"
+                      : "Portal-specific"}
             </p>
           </div>
 
