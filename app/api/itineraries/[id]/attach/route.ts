@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     );
   }
 
-  const sourceType = SOURCE_TYPE_MAP[viewType];
+  const sourceType = SOURCE_TYPE_MAP[viewType as ViewType];
 
   // Block duplicate: same (portalId, itineraryId, sourceType) → 409
   const existing = await db
