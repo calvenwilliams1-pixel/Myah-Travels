@@ -1,18 +1,18 @@
-# MyCalTravels — TODO.md (Revision 19)
+# MyCalTravels — TODO.md (Revision 20)
 
 ## Status
 
 **All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 87 vitest tests passing, `tsc` clean.
 
-**Current work: accumulated testing pass.** Browser verification of features shipped since Phase 7.6 Wave 2 — nothing is broken, nothing is mid-edit, the code is done. Coverage map below. Full checklist in `docs/TESTING.md` (which is itself partial — see Known Issues #5).
+**Current work: batch build then accumulated testing pass.** Features are being shipped in batches; each batch appends its test cases to `docs/TESTING.md`. Testing happens later, in one pass, against the accumulated doc. Full coverage map below.
 
-**Two features are SPECCED but unbuilt:** the Itinerary Client Experience — Itinerary at a Glance + Today's Plan card. Both derive entirely from existing itinerary data, no authoring surface. Full spec in the "Itinerary Client Experience (SPECCED — not built)" section below.
+**Two features are SPECCED but unbuilt:** the Itinerary Client Experience — Itinerary at a Glance + Today's Plan card. Both derive entirely from existing itinerary data, no authoring surface. Spec below; build order in the Batch Plan.
 
-**Three outstanding bugs** from the last testing session, documented in "Outstanding bugs from testing pass" below.
+**Three outstanding bugs** from the last testing session, documented below. They are Batch A, B, C in the Batch Plan.
 
-**Phase 7.6.8 (Notepad tag behaviour) was never built** — decision needed on whether it's still wanted. See its standalone section below.
+**Phase 7.6.8 (Notepad tag behaviour) is REJECTED** — see its section below for rationale. Not deferred, not scheduled.
 
-**Upcoming:** Phase 7.7 Launch Day (email + magic link go-live, TOTP enforcement, cron entries, backups, OS hardening). Then Phase 7.3 (trimmed — publish validation, error boundaries, responsive preview; Canvas deletion and better-sqlite3 mini-PC fix dropped). Phase 8 (social publishing) deferred to post-launch. See `docs/PHASES-7.9-AND-9-PLAN.md`.
+**Upcoming:** Phase 7.7 Launch Day (email + magic link go-live, TOTP enforcement, cron entries, backups, OS hardening). Then Phase 7.3 sweep. Phase 8 (social publishing) deferred to post-launch.
 
 ## Core Principle
 
@@ -40,10 +40,11 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - Notepad is admin-only
 - Print stylesheet for itinerary export
 - Empty days render placeholder
-- **Autosave hook with durability layer** (localStorage draft persistence)
-- **Form primitives** (AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField)
-- **Inline forms replace `prompt()` dialogs**
-- **Test framework: vitest + testing library** (87 tests passing)
+- Autosave hook with durability layer (localStorage draft persistence)
+- Form primitives (AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField)
+- Inline forms replace `prompt()` dialogs
+- Test framework: vitest + testing library (87 tests)
+- Itinerary client views (Glance, Today's Plan) derive from itinerary data — no authoring surface
 
 ### REJECTED
 - CanvasElement for writers
@@ -63,645 +64,101 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - Merging data sources on the wall
 - Notices feature
 - TagInput post-tag backend coupling
+- **Phase 7.6.8 Notepad tag auto-populate** (see decision section below)
 
 ---
 
-## Phase 1: Block Foundation ✅
-## Phase 2: Content Blocks ✅
-## Phase 3: Template Creator ✅
-## Phase 4: Theme System ✅
-## Phase 5: Portal V1 ✅
-## Phase 6.1: Quick Wins ✅
-## Phase 6.2: Itinerary Builder V1 ✅
-## Phase 6.3: Admin Notepad ✅
-## Phase 6.4A: Autosave Hook (A1-A2) ✅
-- [x] Notepad verified clean (cache issue)
-- [x] Admin itinerary preview route
+## Phase Status
 
-## Phase 6.4B: Autosave Infrastructure (A3a/A3b) ✅
-- [x] `useAutosaveField` hook
-- [x] 15 autosave tests (A1-A15)
-- [x] Storage layer (`lib/drafts`)
-- [x] 19 storage-layer tests
-- [x] 14 durability tests (D1-D14)
-- [x] Save indicator component
-- [x] `aggregateSaveState` helper
-- [x] 48 total tests passing
-
-## Phase 6.4C: Form Primitives (B0) ✅
-- [x] AutosaveTextField
-- [x] AutosaveDateField
-- [x] AutosaveTimeField
-- [x] AutosaveSelectField
-
-## Phase 6.4D: Replace prompt() (B1) ✅
-- [x] 580-line page extracted into 9 focused components
-- [x] Inline add forms for section, stay, day, segment
-- [x] Segment type selector with icons
-- [x] Travel segments reveal flight-specific fields
-- [x] Section date constraints on stays and days
-- [x] "Use section dates" quick-select
-- [x] Helper text on every field
-- [x] Page reduced to 17-line thin wrapper
+| Phase | Status | What |
+|-------|--------|------|
+| 1-5 | ✅ Complete | Block foundation through Portal V1 |
+| 6.1-6.4D | ✅ Complete | Quick wins, Itinerary V1, Notepad, Autosave + form primitives |
+| 7 | ✅ Complete | All 6 bug-fix batches |
+| 7.5 | Partial | Singapore Demo seeded; Japan+Cruise+Singapore pending |
+| 7.6 | ✅ Complete | Waves 1-4 complete; 7.6.8 rejected (see below) |
+| 7.8 | ✅ Complete | Data Entry Automation (suggestions, duplication, drag-reorder, bulk-add, snippets, paste-booking, stale entities, kill switch) |
+| 7.9 | ✅ Complete | Post Editor and Writing Tools (toolbar, colour presets, pop-out preview, YouTube embed, social handles) |
+| 9 | ✅ Complete | Client Memory System (people, notes, trip history, portal purge, itinerary library) |
+| 9.5 | ✅ Complete | Polish Pass + Security Audit |
+| Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
+| **Batch build** | **🔄 Current** | **Three bugs, then Glance, then Today's Plan (see Batch Plan below)** |
+| 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
+| 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
+| 8 | ⏳ Future | Options segments, cruise mode, People table — post-launch |
 
 ---
 
-## Phase 7: Bug Fix Pass ✅ COMPLETE (all 6 batches)
-
-### Batch 1: Critical Bugs ✅
-- [x] **Bug 1:** Segment edits revert when collapsed/re-expanded
-- [x] **Bug 2:** Admin preview -> click itinerary -> "session expired"
-- [x] **Bug 3:** Date/time inputs highlight instead of opening picker (`showPicker()`)
-
-### Batch 2: Date Constraint Improvements ✅
-- [x] Section date pickers constrained to portal departure/return
-- [x] Segment date pickers constrained to day date
-- [x] Flight datetime buffer allowance (soft constraints)
-- [x] Make all non-essential fields optional (audit forms)
-
-### Batch 3: Portal Manager UX ✅
-- [x] Trashcan + confirmation on portal rows
-- [x] Recovery view for soft-deleted portals
-- [x] "Preview Wall" icon in portal manager rows
-- [x] "Preview Wall" button on `/admin/portals/[id]`
-
-### Batch 4: UI Polish ✅
-- [x] Restyle itinerary tile (less empty space)
-- [x] Replace `alert()` with styled toast
-- [x] Add explicit Save button (alongside autosave)
-- [x] Make date/time pickers bigger, more colorful (custom pickers)
-
-### Batch 5: Segment UX Refinement ✅
-- [x] Clarify segment type / day title relationship
-- [x] Improve segment collapse behavior
-- [x] Fix time picker responsiveness (multiple clicks)
-- [x] Fix AM/PM switching (multiple clicks)
-
-### Batch 6: Download/Export ✅
-- [x] Verify PDF download works from client view
-- [x] Consider admin-side download button
-
----
-
-## Phase 7.5: Demo Rendering & Visual Review (PARTIAL)
-
-Goal: Seed real itineraries into the DB and render them through the builder to see what a fully-realised, curated document looks like.
-
-- [x] **Singapore Demo** - portal "Singapore Demo" (id 4) + itinerary "Singapore - 3-Day Journey" (id 3) seeded, attached to wall
-- [ ] **Full Japan + Cruise + Singapore itinerary** - pending seed script
-  - [ ] Confirm portal strategy (A: fresh portal / B: rename existing)
-  - [ ] Confirm cruise section handling (A: V1 render / B: skip / C: V1 render + flag as compromise)
-  - [ ] Write `scripts/seed-japan-singapore-demo.js`
-  - [ ] Run on local PC, view at `/admin/portals/[id]/itinerary/[itineraryId]/preview`
-  - [ ] Capture feedback (layout, time grouping, stay banner, flight cards, print)
-
----
-
-## Phase 7.6: Refinement Pass
-
-Post-walkthrough feedback from Myah. Four waves, executed in order. Waves 1 and 2 share a code pass (both touch itinerary forms/schema).
-
-### Wave 1 — Quick Wins & Critical UX (IN PROGRESS)
-
-#### 7.6.1 Time picker default minute = 00 ✅ COMPLETE
-- [x] Time inputs open at `:00` instead of `:49`
-- [x] Fix across Segment, Stay, Day forms
-- [x] Verify AM/PM default behavior
-
-#### 7.6.2 Confirmation field -> Reference dropdown ✅ COMPLETE
-- [x] Replace free-text "Confirmation" with dropdown: Record Locator / Booking Number / Confirmation / Other
-- [x] "Other" reveals a free-text field for a custom label
-- [x] Render the correct label on the client itinerary card
-- [x] Schema: added `reference_type` + `reference_label` to `itinerary_segments`
-
-#### 7.6.3 Preview panel minimize ✅ COMPLETE
-- [x] Minimize button on the live preview pane in post editor
-- [x] Remember minimized state (localStorage)
-- [x] Shipped in b0d8a73
-
-### Wave 2 Loose Ends (discovered during build)
-
-#### 7.6.4a Seed script update for legs ✅ COMPLETE
-- [x] `scripts/seed-singapore-demo.js` inserts travel segments the old way
-- [x] Update to insert into `itinerary_travel_legs` after each travel segment
-- [x] Shipped in da1553f
-
-#### 7.6.4b `getSegmentsForDay` returns no legs ✅ COMPLETE
-- [x] Called by `GET /api/days/[id]/segments` without batch-loading legs
-- [x] Extended to batch-load legs for travel segments
-- [x] Shipped in da1553f
-
-### Wave 2 — Travel Segments Overhaul (same pass as Wave 1)
-
-#### 7.6.4 Travel modes beyond flights ✅ COMPLETE
-- [x] Travel segments support: Flight / Train / Bus / Transfer / Other
-- [x] Per-mode fields shown contextually (train line, bus number, station names, etc.)
-- [x] All travel modes get the Reference field (7.6.2)
-- [x] Schema: `itinerary_travel_legs` table with `travel_mode`
-
-#### 7.6.5 Multi-leg / layover support ✅ COMPLETE
-- [x] Support layovers within a trip (e.g., Toronto -> Calgary -> Tokyo)
-- [x] Travel chain renders as legs on the client card
-- [x] Connection gaps computed (plain datetime arithmetic, no timezone math)
-- [x] Date-crossing "+N days" badges
-- [x] Optional per-leg IANA timezone labels (cosmetic only)
-- [x] Data migration backfills existing travel segments with one leg each
-
-### Wave 3 — Per-Client Access Control
-
-#### 7.6.6 Unique magic links per member ✅ COMPLETE
-- [x] Magic links issued per portal member, not per portal (already in schema — per-member token FK)
-- [x] Whitelist model: only active members hold valid links
-- [x] Session invalidation on revoke
-- [x] Audit confirmed existing architecture was already per-member
-
-#### 7.6.7 Ban / revoke / unban ✅ COMPLETE
-- [x] Admin can revoke a member's access (link stops working)
-- [x] Admin can blacklist a member (no new links issued)
-- [x] Undo ban — restore access at any time
-- [x] Banned member sees a generic "access unavailable" page (via existing "Link Expired or Invalid" — no info leak)
-- [x] Admin UI: ban/unban button on portal detail page
-- [x] Admin UI: banned members show red "Banned" badge + Unban button (stay visible, not deleted)
-- [x] Audit log: ban/unban events recorded
-- [x] Schema: `portal_members.status`, `banned_at`, `ban_reason`, `link_revoked_at`
-- [x] Enforcement: `isMemberOfPortal` requires `status='active'`; `validateMagicLink`, `validatePortalSession`, `generateMagicLink` all gated
-- [x] Ban side-effects: destroy all live sessions, revoke all unused links
-- [x] Unban: clears ban fields; old links/sessions stay dead (deliberate — fresh link required)
-
-#### 7.6.8 Notepad tag behaviour — NEVER BUILT (see standalone section above)
-
-### Wave 4 — Content & Styling
-
-#### 7.6.9 Itinerary block styling ✅ COMPLETE
-- [x] Curated palette inheritance: site default -> itinerary -> section -> block override
-- [x] Section theme override dropdown (inherit / palette)
-- [x] Standalone graphic blocks (image / callout / notice) with slot-based placement
-- [x] Block palette override (deliberate visual elements only)
-- [x] Highlight flag on segments uses accent colour
-- [x] Slot anchors: before-day, after-morning, after-afternoon, after-evening
-- [x] Content segments stay automated (type + theme; no per-segment palettes)
-- [x] Print rules for blocks + break-after-avoid on section headers
-- [x] Full plan: see ITINERARY-STYLING-PLAN.md
-- [x] Commits: f0cbd60, 1f09a46, b1406f9
-
-#### 7.6.10 Hero / block resizing in post editor ✅ COMPLETE
-- [x] Hero size options: Banner / Medium / Large / Fullscreen (per-block in HeroData)
-- [x] Text overlay inside hero: title / subtitle / caption (with gradient scrim)
-- [x] Backward compat: existing hero blocks default to "large"
-- [x] Shipped in 9953501
-
-#### 7.6.11 Hero image from Content Library ✅ COMPLETE
-- [x] Hero image picker: upload from PC OR paste URL
-- [x] Content Library integration (image-only filter + modal)
-- [x] Same treatment for Image block
-- [x] Shared component: components/editor/ImageSourcePicker.tsx
-- [x] Library modal: components/editor/LibraryImagePicker.tsx
-- [x] Shipped in 9953501 + f04b9a7
-
----
-
-## Phase 7.7: Launch Day — Email + Magic Link Go-Live
-
-Operational setup for the deployed system. The code is complete; this is everything needed to make emails actually send, links arrive, and the cron processor run on the mini PC.
-
-### Pre-Launch (before deploy day)
-
-**TOTP enforcement (env-gated):**
-- [ ] Install an authenticator app (Google Authenticator, Authy, 1Password, etc.)
-- [ ] Set `TOTP_ENFORCEMENT=true` in the mini PC's `.env` (this is the go-live switch)
-- [ ] Verify: unenrolled admin hitting `/admin/*` → redirected to `/admin/enroll-2fa`
-- [ ] First production login: redirected to `/admin/enroll-2fa`
-- [ ] Scan the otpauth URL or manually enter the secret in your authenticator app
-- [ ] Enter the 6-digit code to confirm enrollment
-- [ ] Subsequent logins require TOTP code after password
-- [ ] **Store the TOTP secret in your password manager as a backup** (in case phone is lost)
-- [ ] Re-enroll on a second device if you want redundancy (same secret, different app)
-- [ ] **Note:** in dev / Codespace, leave `TOTP_ENFORCEMENT` unset or `false` to skip enrollment during testing
-
-**Cron entries (mini PC crontab):**
-- [ ] Email queue processor — every 1 minute
-  `* * * * * curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue > /dev/null 2>&1`
-- [ ] Portal purge — daily at 3 AM
-  `0 3 * * * cd /var/www/site && npx tsx scripts/purge-portals.ts >> /var/log/portal-purge.log 2>&1`
-
-**Dependency refresh on deploy:**
-- [ ] `npm ci` on the mini PC (installs exact versions from package-lock.json — includes all Phase 7.9 additions)
-- [ ] Verify `@tiptap/extension-*` packages present in `node_modules`
-- [ ] Run `node scripts/setup-db.js` to apply any pending migrations and trigger seeds (including `color_presets`)
-
-
-- [ ] Register Resend account (resend.com)
-- [ ] Add production domain to Resend
-- [ ] Add DNS records at registrar: SPF, DKIM, DMARC (provided by Resend)
-- [ ] Wait for Resend domain verification (status must be "Verified")
-- [ ] Generate production Resend API key (`re_...`)
-- [ ] Decide production `SITE_URL` (e.g., `https://myahtravels.com`)
-- [ ] Generate strong `CRON_SECRET` (32+ random chars)
-- [ ] Decide `EMAIL_FROM` — must be at verified domain (e.g., `Myah <hello@myahtravels.com>`)
-- [ ] Decide `EMAIL_ADMIN_TO` — Myah's real inbox for admin notifications
-
-### OS + Hardware Hardening (do FIRST, before anything else)
-
-**Disk encryption (do this at OS install time):**
-- [ ] Install Ubuntu Server LTS with **LUKS full-disk encryption enabled at install**
-- [ ] Choose a strong passphrase for LUKS (not the same as any other password)
-- [ ] Store the LUKS passphrase in a password manager (1Password, Bitwarden) — losing it means losing the drive
-- [ ] Confirm `lsblk` shows `crypt` on the root partition after install
-
-**User + access setup:**
-- [ ] Create a dedicated non-root app user (e.g., `myahtravels`) — this app does NOT run as root
-- [ ] Disable root SSH login (`PermitRootLogin no` in `/etc/ssh/sshd_config`)
-- [ ] Disable password SSH login (`PasswordAuthentication no`)
-- [ ] Add SSH public key to `~myahtravels/.ssh/authorized_keys`
-- [ ] Test SSH key-only login BEFORE closing the current session (don't lock yourself out)
-- [ ] Change SSH port from 22 if desired (optional, but reduces bot noise)
-
-**Firewall:**
-- [ ] `sudo ufw default deny incoming`
-- [ ] `sudo ufw default allow outgoing`
-- [ ] `sudo ufw allow from <your LAN subnet> to any port 22` (SSH from home network only)
-- [ ] `sudo ufw enable`
-- [ ] No inbound rules for HTTP/HTTPS — Cloudflare Tunnel handles that (no ports opened to the internet)
-- [ ] Verify: `sudo ufw status verbose`
-
-**OS updates + hardening:**
-- [ ] `sudo apt update && sudo apt upgrade -y`
-- [ ] `sudo apt install unattended-upgrades`
-- [ ] `sudo dpkg-reconfigure --priority=low unattended-upgrades` — enable automatic security updates
-- [ ] `sudo apt install fail2ban` — with default config, protects SSH
-- [ ] `sudo apt install ufw` if not already present
-
-**Network isolation (protects your other devices):**
-- [ ] Do NOT put the mini PC on the same VLAN/subnet as your daily-driver devices (if your router supports it)
-- [ ] If no VLAN available: at minimum, ensure the mini PC user has no SSH keys to other machines on your LAN
-- [ ] Verify: from the mini PC, `ping <your-nas-or-other-device>` — if it responds, note it and add a firewall rule to block
-
-### Environment Setup (on mini PC)
-
-- [ ] Add to `.env` on mini PC:
-  - `RESEND_API_KEY=re_...` (real key, never committed)
-  - `EMAIL_FROM=Myah <hello@myahtravels.com>`
-  - `EMAIL_ADMIN_TO=myah@...`
-  - `SITE_URL=https://myahtravels.com`
-  - `CRON_SECRET=<strong random string>`
-  - `PORTAL_MAGIC_LINK_EXPIRY_DAYS=7`
-  - `DATABASE_URL=./data/site.db`
-  - `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-- [ ] Verify `.env` is in `.gitignore` (never committed)
-- [ ] Verify `data/site.db` path is correct for deploy target
-- [ ] Verify `NODE_ENV=production` is set (this enables `secure: true` on session cookies)
-- [ ] `chmod 600 .env` — only the app user can read it
-- [ ] Confirm the app runs as the `myahtravels` user, not root, not your personal user
-
-### Database File Security
-
-- [ ] `chmod 700 data/` — only the app user can access the folder
-- [ ] `chmod 600 data/site.db` — only the app user can read/write the DB
-- [ ] `chown -R myahtravels:myahtravels data/`
-- [ ] Verify: `ls -la data/` shows `myahtravels` owns everything, no world-readable
-- [ ] Confirm `data/` is NOT served by the web app (Next.js doesn't serve it by default; verify no `public/` symlink)
-- [ ] Confirm `data/` is NOT in the tunnel-exposed path
-
-### Backups (CRITICAL — this is the #1 real risk)
-
-**One-time encryption setup (mini PC):**
-- [ ] `sudo apt install age sqlite3 rsync`
-- [ ] `sudo mkdir -p /root/.age && sudo chmod 700 /root/.age`
-- [ ] `sudo age-keygen -o /root/.age/backup-key.txt` — copy the printed public key (age1...)
-- [ ] `sudo chmod 600 /root/.age/backup-key.txt`
-- [ ] `sudo mkdir -p /etc/myahtravels`
-- [ ] Create `/etc/myahtravels/backup.env` containing: `BACKUP_AGE_PUBLIC_KEY=age1...`
-- [ ] `sudo chmod 600 /etc/myahtravels/backup.env`
-- [ ] **Copy `/root/.age/backup-key.txt` to your password manager NOW.** Losing this key means every encrypted backup is unrecoverable.
-- [ ] Verify: the private key is stored in TWO places — the mini PC and the password manager.
-
-**Setup:**
-- [ ] Edit `scripts/backup.sh` to write to an external location (USB drive, another machine on the LAN, or offsite via rclone to Backblaze/S3)
-- [ ] **Encrypt backups** — pipe the SQLite dump through `age` or `gpg` before writing:
-  - `sqlite3 data/site.db .dump | gzip | age -r <public-key> > backup-$(date +%F).sql.gz.age`
-- [ ] Schedule daily: `0 2 * * * /var/www/site/scripts/backup.sh`
-- [ ] Verify the backup runs — check the target directory after the first cron cycle
-- [ ] Keep at least 7 daily + 4 weekly + 3 monthly backups
-- [ ] **Test a restore** on a scratch machine BEFORE launch — extract, decrypt, load into a fresh DB, verify client records exist
-
-**What must be backed up:**
-- [ ] `data/site.db` (the DB)
-- [ ] `public/uploads/` (uploaded files)
-- [ ] `.env` (all secrets — store encrypted separately)
-
-**Do NOT back up to:**
-- [ ] Anywhere unencrypted
-- [ ] Any cloud folder with your personal account unless encrypted first
-- [ ] Same physical drive as the live DB
-
-### Cloudflare Tunnel Configuration
-
-- [ ] Tunnel points ONLY to `http://localhost:3000` (the app) — no other local services exposed
-- [ ] Cloudflare Access is NOT used (breaks magic links — clients need direct URL access)
-- [ ] Verify: `cloudflared tunnel info <tunnel-id>` shows only the app hostname mapped
-- [ ] Check DNS: `dig <your-domain>` — should point to Cloudflare IPs, not your home IP
-- [ ] **Lock origin to Cloudflare only:** firewall rule allowing inbound TCP from Cloudflare IP ranges only (or rely on tunnel-only mode, which does this by default)
-- [ ] Verify: `curl -I http://<your-home-ip>` from outside the network → should be nothing/timed out. Only through Cloudflare works.
-
-### First Login + TOTP Setup
-
-- [ ] Navigate to `https://<your-domain>/admin/login`
-- [ ] Log in with credentials from `.env`
-- [ ] Redirected to `/admin/enroll-2fa`
-- [ ] Open authenticator app on your phone
-- [ ] Either scan the otpauth URL (if a QR renderer exists) or manually enter the secret
-- [ ] Enter the 6-digit code to confirm
-- [ ] Log out, log back in — verify TOTP prompt appears
-- [ ] **Store the TOTP secret in your password manager as a backup** (in case phone is lost)
-- [ ] Re-enroll on a second device if you want redundancy (same secret, different app)
-
-### Monitoring + Health
-
-- [ ] Set up a simple uptime check — Cloudflare's built-in monitor, or UptimeRobot free tier, or a simple `curl` cron from another machine
-- [ ] Set up log rotation for `/var/log/syslog` and app logs (`/etc/logrotate.d/`)
-- [ ] Verify disk space: `df -h` — set up an alert if free space drops below 10%
-- [ ] Check email queue is draining (after first magic link test — see Launch Day email section)
-
-### Pre-Launch Security Verification (final pass)
-
-- [ ] From outside your home network: `curl -I http://<home-ip>` returns nothing (no direct exposure)
-- [ ] `sudo ss -tlnp` — only expected ports listening (3000 for app, 22 for SSH)
-- [ ] Session cookie flags verified in browser dev tools: `HttpOnly` + `Secure` + `SameSite=Lax` on `portal_session`
-- [ ] Admin session cookie also `HttpOnly` + `Secure`
-- [ ] TOTP enforced: unenrolled admin is redirected on every `/admin/*` request
-- [ ] Rate limiting works: 6 rapid login attempts → 6th is rejected with 429
-- [ ] `/admin/portals/[id]/preview` renders correctly without magic link
-- [ ] `/portal/[slug]` without a session shows "Session Expired" (not a redirect loop, not the wall)
-- [ ] Verify `robots.txt` disallows `/admin/*`, `/portal/*`, `/api/*` (if any exist) — prevents accidental search engine indexing of admin/portal routes
-
-### Database Setup
-
-- [ ] Run `node scripts/setup-db.js` (adds missing columns including ban fields)
-- [ ] Run `npm run seed` if fresh install
-- [ ] Verify `portal_members` has `status`, `banned_at`, `ban_reason`, `link_revoked_at`
-- [ ] Verify `itinerary_travel_legs` table exists
-- [ ] Verify `itinerary_segments` has `reference_type`, `reference_label`
-
-### Cron Setup
-
-- [ ] Edit crontab on mini PC: `crontab -e`
-- [ ] Add entry:
-  `* * * * * curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue > /dev/null 2>&1`
-- [ ] Every 1 minute (not 5) — avoids race conditions, imperceptible to clients
-- [ ] Verify cron fires by checking `email_queue` status transitions after a test send
-
-### First Live Test
-
-- [ ] Restart service (`systemctl restart mycaltravels`)
-- [ ] Open admin → a portal → click **Send Magic Links**
-- [ ] Confirm email arrives at a real inbox within 60 seconds
-- [ ] Click the link → access page → Continue → wall loads
-- [ ] Verify `portal_session` cookie is set (httpOnly)
-- [ ] Log out → verify logout destroys the session
-- [ ] Send a second magic link → confirm the first is revoked (per `generateMagicLink` behavior)
-
-### Verification Checklist
-
-- [ ] Email arrives (not in spam — check SPF/DKIM pass in headers)
-- [ ] Magic link URL points to production domain, not localhost
-- [ ] Access page shows valid (not "Link Expired or Invalid")
-- [ ] Wall loads after Continue
-- [ ] Cron processing runs within 1 minute
-- [ ] Logs show no `[email] RESEND_API_KEY is not set` warning
-- [ ] Failed sends surface in `email_queue` with `error_message` populated
-- [ ] Ban a test member → their link dies immediately → unban → send fresh link → works
-
-### Optional (Post-Launch)
-
-- [ ] Wire Resend webhook → `/api/email/webhook` for bounce/complaint tracking
-- [ ] Set `RESEND_WEBHOOK_SECRET` in `.env`
-- [ ] Add a "Pending emails" admin page (queue visibility)
-- [ ] Test `npx tsx scripts/send-magic-links.ts <slug>` against production
-- [ ] Set up monitoring: email failure rate, cron health
-
----
-
-## Phase 7.8: Data Entry Automation ✅ COMPLETE
-
-Reduces typing on 150-250 segment itineraries via a deterministic two-layer suggestion system, duplication, drag-reorder, and bulk-add. No AI at runtime. See MASTER-PROMPT.md for design rationale and the No Deferrals rule.
-
-### Wave A — Suggestion system + autocomplete ✅ SHIPPED
-
-**Lump 1 — Foundation** ✅ COMPLETE
-- [x] Schema: `entities`, `field_values` tables
-- [x] Migration 0009 + setup-db guards
-- [x] `lib/suggestions/field-keys.ts` (typed constant)
-- [x] `lib/suggestions/entities.ts`, `field-values.ts`
-- [x] `lib/operations/record.ts` (undo-log-ready stub)
-- [x] `data/airports.json` + `data/airlines.json` (dev seeds)
-- [x] `scripts/fetch-static-data.js` + `ATTRIBUTION.md`
-- [x] Commits: f54048d, 9eedcdc
-
-**Lump 2 — Suggestion API + AutocompleteField** ✅ COMPLETE
-- [x] `lib/suggestions/statics.ts` (in-memory loaders)
-- [x] 3 API routes: entities, field-values, statics
-- [x] `components/ui/AutocompleteField.tsx`
-- [x] Commit: c8737b1
-
-**Lump 3a — Server-side recording** ✅ COMPLETE
-- [x] `lib/suggestions/record.ts` + 6 routes wired
-- [x] Commit: 97080e2
-
-**Lump 3b — Client wiring** ✅ COMPLETE
-- [x] `AutocompleteInput.tsx`, `SuggestionDropdown.tsx`, `useSuggestions.ts`
-- [x] AddStayForm, AddSectionForm, AddDayForm, AddSegmentForm, TravelLegFields wired
-- [x] SegmentsEditor, StaysEditor, SectionEditor wired
-- [x] Commits: 5e5e98c, cf583e1, d1768e3, 8a29583
-
-**Wave A closeout** ✅ COMPLETE
-- [x] Kill switch: `AUTOCOMPLETE_ENABLED` env flag. Falls back to plain inputs if off.
-- [x] Telemetry: log suggestion-accepted vs typed-fresh per field
-
-### Wave B — Duplication + drag-reorder ✅ SHIPPED
-
-**Lump 4a — order_mode + duplication endpoints** ✅ COMPLETE
-- [x] `itinerary_days.order_mode` + migration 0010
-- [x] `getSegmentsForDay` respects order_mode for sort
-- [x] `duplicateSegment`, `duplicateDay`, `copySegmentToDay`, `extendSectionByOneDay`
-- [x] 4 API routes: segment/day duplicate, cross-itinerary copy, extend-day
-
-**Lump 4b — Duplication UI** ✅ COMPLETE
-- [x] Duplicate button on SegmentRow, DayRow, Extend-by-1-day on SectionEditor
-
-**Lump 4c — Drag-reorder backend** ✅ COMPLETE
-- [x] `reorderSegments`, `resetSegmentOrder`
-- [x] `PATCH`/`DELETE /api/days/[id]/order`
-
-**Lump 4d — Drag-reorder UI** ✅ COMPLETE
-- [x] HTML5 DnD, "Manual order" toggle, disagreement indicator
-
-**Wave B closeout** ✅ COMPLETE
-- [x] Cross-itinerary "Copy from…" modal UI. Backend `/api/itineraries/[targetId]/copy-segment` already works. Ship the 3-step picker (source itinerary → source day → source segment).
-
-### Wave C — Bulk-add + backfill ✅ COMPLETE
-
-**Lump 5 — Bulk-add segments**
-- [x] `POST /api/days/[id]/segments/bulk` — transactional, all-or-nothing
-- [x] Pipe + tab delimited parser
-- [x] Client-side preview table (mandatory before commit)
-- [x] Inline row editing in preview
-- [x] localStorage draft for the textarea
-- [x] Batch endpoint mirrors single-add Zod validation
-
-**Lump 6 — Backfill migration** (ships with Wave C, not after)
-- [x] One-time script walks existing stays/legs/segments
-- [x] Populates entities + field_values
-- [x] Trim + collapse-whitespace + title-case normalization
-- [x] `source = 'migration'` on backfilled rows
-- [x] `use_count` derived from historical frequency
-
-### Wave D — Closing features ✅ COMPLETE
-
-**Lump 7 — Entity cleanup admin page**
-- [x] List entities with `use_count = 1` and `created_at > 90 days`
-- [x] Delete button per row
-- [x] Small page, ships now so it exists when the data does
-
-**Lump 8 — FTS5 on field_values**
-- [x] Add FTS5 virtual table + triggers to migration 0009 (or new migration)
-- [x] Swap substring search to FTS5 MATCH query
-- [x] Removes a future migration; trivial to add now
-
-**Lump 9 — Instruction snippets**
-- [x] Small snippet system scoped to itinerary segment instructions
-- [x] Save a segment's instructions text as a named snippet
-- [x] Dropdown to insert a snippet into any segment's instructions field
-- [x] NOT deferred to Content Library — build the feature
-
-**Lump 10 — Paste-booking parser**
-- [x] Three parsers covering 90% of Myah's bookings
-- [x] Air Canada flight confirmation
-- [x] WestJet flight confirmation
-- [x] One hotel-chain confirmation (Marriott or similar)
-- [x] Preview-before-commit (regex parses, user reviews, then saves)
-
-### Genuinely Rejected (not deferred — wrong for the product)
-
-| Feature | Reason |
-|---------|--------|
-| Segment grouping | Conflicts with time-derived ordering architecture |
-| Fill-down across multi-select | Requires multi-select UI that works against the design philosophy |
-| AI/LLM at runtime | Wrong tool for bounded data — latency, cost, privacy |
-| Fuzzy matching for entity dedup | False-positive merge worse than the fragmentation it solves |
-
-### Docs update (in progress)
-
-- [x] MASTER-PROMPT.md Rev 4 — design rationale + No Deferrals rule
-- [x] code plan.md Rev 4 — Phase 7.8 file map
-- [x] TESTING.md — Phase 7.8 test cases (Waves A + B)
-- [x] TESTING.md — Phase 7.8 test cases for Wave C + Wave D (after those ship)
-
----
-
-## Phase 7.9: Post Editor and Writing Tools ✅ COMPLETE
-
-Scope: transform the post editor from typewriter to stylized writing tool. Full plan in PHASES-7.9-AND-9-PLAN.md.
-
-### Wave 7.9-A — Editor toolbar overhaul
-- [x] Rich text toolbar: bold, italic, underline, colour (semantic tokens + raw picker), highlight (curated), font family (~20 curated), font size (presets + fine-tune), alignment, lists, links, blockquote, horizontal rule, clear formatting
-- [x] Sticky toolbar, grouped (Text style / Structure / Insert), collapsible on narrow viewports
-- [x] Keyboard shortcuts (Cmd+B, Cmd+I, Cmd+U, Cmd+K)
-- [x] Word count + reading time estimate
-- [x] Paste sanitization — strip inline styles from pasted content
-
-### Wave 7.9-B — Colour presets system
-- [x] color_presets table: named presets with hex values
-- [x] Curated defaults seeded on first run
-- [x] Myah can create new presets and overwrite curated defaults
-- [x] Presets are global (site-wide), not per-post
-- [x] Text colour and highlight colour both draw from this library
-
-### Wave 7.9-C — Pop-up preview
-- [x] Pop-out preview (floating, resizable, movable)
-- [x] Fullscreen preview mode (button inside pop-out)
-- [x] No modal — redundant with floating
-- [x] Retire the fixed right-side pane in favour of pop-out as default
-
-### Wave 7.9-D — YouTube auto-embed + social handles
-- [x] Detect YouTube URLs in Body blocks, render inline embed
-- [x] Settings page for social handles (Instagram, TikTok, Facebook, YouTube)
-- [x] No publishing — linking only
-
-### Reviewer overrides recorded
-- Stakeholder overrode both reviewers on font family (kept, curated ~20) and raw colour picker (kept, with presets system). Rationale: optional does not mean harmful; guardrails hold; automatic entity colouring keeps daily decisions minimal.
-
----
-
-## Phase 9: Client Memory System ✅ COMPLETE
-
-Scope: canonical client records that persist across portals, with nested notepad per person and cross-portal search. Full plan in PHASES-7.9-AND-9-PLAN.md.
-
-### Wave 9-A — Schema + person model
-- [x] people table: id, email (unique), canonical_name, inquiry_id (nullable), created_at, updated_at
-- [x] portal_members.person_id FK (nullable initially, populated on creation)
-- [x] person_notes table: id, person_id, portal_id (nullable), content, created_at, updated_at
-- [x] person_trip_history table: id, person_id, itinerary_id, portal_title, departure_date, return_date, archived_at
-- [x] Migration + setup-db guards
-- [x] Backfill: existing portal_members, dedupe by email, populate people
-
-### Wave 9-B — Portal member add with suggestion
-- [x] Portal member add form suggests name from people when email matches (reuses AutocompleteInput pattern)
-- [x] Auto-links person_id
-- [x] Creates new person record if email is new
-
-### Wave 9-C — Person page
-- [x] /admin/clients/[personId] — canonical person view
-- [x] Global notes (post-it style, freeform)
-- [x] Trip history tabs — one tab per portal they have been part of (live or archived)
-- [x] Click tab, view the itinerary attached to that portal
-- [x] Forget this client action — hard delete person + notes + history (PIPEDA gap closure)
-- [x] Visible note: Do not store payment info, IDs, passport numbers, or home addresses. Dietary, preference, and personal notes are intended.
-
-### Wave 9-D — Client notes dashboard
-- [x] /admin/clients — search across all people
-- [x] Search by name, email, note content (LIKE, not FTS5 at this scale)
-- [x] Recently active clients panel
-
-### Wave 9-E — Portal purge automation
-- [x] Automatic purge at return_date + 90 days (configurable default in settings)
-- [x] Per-portal override: keep_until date field on portal edit
-- [x] Daily cron: purge expired portals
-- [x] On purge: delete portal + members-links + magic-links + sessions + hero + wall items + portal notepad + portal documents
-- [x] On purge: keep itinerary (detach portal_id, mark archived), keep library items, keep person records, write person_trip_history rows
-
-### Wave 9-F — Itinerary Library
-- [x] /admin/itineraries — library view of all itineraries (live + archived)
-- [x] Filter: live / archived / marked-as-template
-- [x] Search by title, portal name, date range
-- [x] Preview mode (reuse existing preview)
-- [x] Use as template action: copy to new portal, clear occurrence data (dates, references, confirmations)
-- [x] Live itineraries show used-in-portal link
-- [x] Archived itineraries show portal-purged marker, usable as template
-
----
-
-## Phase 9.5: Polish Pass ✅ COMPLETE
-
-Fixes from AI-reviewed audit (two rounds — one for polish, one for security).
-
-### Functional bugs (items 1-4) ✅
-- [x] Person page link from portal member list
-- [x] Portal-independent itinerary preview route (for archived itineraries)
-- [x] `statics.ts` visible failure signal (`hasStaticLoadError`)
-- [x] YouTube embed invalid-ID fallback
-
-### Accessibility (items 5-7) ✅
-- [x] aria-label sweep across editor pickers, toolbar, PreviewPopout
-- [x] Focus restoration hook (`useFocusRestore`) wired into modals + pickers
-- [x] EditorContextMenu keyboard open (Shift+F10) + arrow nav + Enter select
-- [x] Extended ARIA + focus to Phase 7.8/9 admin modals (UseAsTemplateButton, CopySegmentModal, AddBlockForm, etc.)
-
-### Security Audit ✅
-- [x] TOTP enrollment enforced via `TOTP_ENFORCEMENT=true` env flag — off in dev, on in production
-- [x] DOMPurify wraps `TipTapRenderer` + `CleanTipTapRenderer`
-- [x] Duplicate Content Library nav link removed
-- [x] Verified: upload magic-byte validation is solid; SVG not allowed; bcrypt cost 12; rate limits adequate; no SQL injection in itinerary repo; no CSRF exposure (SameSite=Lax + fetch)
-- [x] Documented: TipTap moderate severity advisory (prototype pollution, npm audit) — deferred, admin-authored content only
+## Batch Plan
+
+Build order, then testing pass. Every batch updates `docs/TESTING.md` with its test cases before commit. Every batch is a heredoc, verified, committed, pushed.
+
+### Round 1 — Three outstanding bugs
+
+**Batch A — Gallery block reuses ImageSourcePicker**
+- Swap Gallery's URL-only inputs for `ImageSourcePicker` per slot
+- Match wiring from `HeroBlockEditor` and `ImageBlockEditor`
+- No schema/API changes
+- Append TESTING.md section: upload from PC, paste URL, library picker, add/remove slots, render on `/blog/[slug]`, print behaviour
+
+**Batch B — Body editor Tab handler**
+- Tab → `sinkListItem("listItem")` when in a list, `preventDefault()` otherwise
+- Shift+Tab → `liftListItem("listItem")` when in a list
+- Handler in `TipTapEditor` (editor-only, not renderer-relevant; `buildExtensions` untouched)
+- Append TESTING.md section: indent/outdent, Tab outside list does nothing, Tab doesn't escape editor, nested lists, blockquote behaviour
+
+**Batch C — PreviewPopout bounds clamping**
+- `clampToViewport(x, y)` helper
+- Call on drag, on mount from saved position, on window resize
+- Keep title bar reachable at all times
+- Append TESTING.md section: drag off top, drag to corners, window resize pulls back, reload with off-screen saved position, close/reopen, self-resize
+
+### Round 2 — Itinerary Client Experience (part 1)
+
+**Batch D — Itinerary at a Glance**
+- Migration `0016_itinerary_timezone.sql` — `itineraries.timezone TEXT`
+- Migration `0017_portal_items_variant.sql` — `portal_items.variant TEXT NOT NULL DEFAULT 'full'`
+- Extend `setup-db.js` requiredColumns + Drizzle schema files
+- `lib/itineraries/derive.ts` — `deriveGlance(itineraryId)`
+- `app/api/itineraries/[id]/glance/route.ts` — GET, auth-gated
+- `components/portal/glance/ItineraryGlanceView.tsx` — print-friendly renderer
+- `PortalWall.tsx` — `variant === 'glance'` renders glance view
+- `ItineraryEditor.tsx` — timezone dropdown
+- Append TESTING.md section: derivation, missing stay/anchor, print, timezone field, glance variant render, full variant unchanged
+
+### Round 3 — Itinerary Client Experience (part 2)
+
+**Batch E — Today's Plan card**
+- Depends on Batch D's `derive.ts`
+- `components/portal/TodayCard.tsx` — three states (pre-trip countdown, during-trip today, post-trip)
+- `PortalWall.tsx` — render above tiles when applicable; nothing when not (no placeholder)
+- Modal expansion reuses `ItineraryView` (during) and `deriveGlance` (pre-trip)
+- Share: `navigator.share` with clipboard fallback
+- Download: print stylesheet
+- Append TESTING.md section: all three states, no-itinerary / no-departure / outside-window → no card, modal expand, share, download, timezone respected, card above tiles
+
+### Round 4 — Phase 7.3 sweep
+
+**Batch F — audit and rebuild Phase 7.3 survivors**
+- Walk the 8 Phase 7.3 items; mark each MOOT / DONE / STILL PENDING / NEW SCOPE
+- Update this TODO with the survivors
+- If any code work survives, build it; append TESTING.md section accordingly
+- No code if all items resolve to MOOT / DONE
+
+### Round 5 — Launch Day
+
+**Batch G — Phase 7.7 execution**
+- The Launch Day checklist below IS the test
+- Completed on the mini PC
+- After completion, append TESTING.md "Launch Day verification" section recording what passed
+- No code changes expected; if issues surface, mini-batches within this Round
+
+### Testing pass
+
+- Read accumulated `docs/TESTING.md`
+- Run through every batch's checklist on a real browser
+- Fix what's broken in new mini-batches
+- Repeat until green
 
 ---
 
@@ -749,7 +206,7 @@ Expansion: modal (consistent with existing admin patterns), reuses `ItineraryVie
 
 ## Outstanding bugs from testing pass
 
-Three bugs found in the last testing session, not fixed.
+Three bugs found in the last testing session, not fixed. They are Batches A, B, C.
 
 ### 1. PreviewPopout bounds clamping
 
@@ -765,71 +222,134 @@ The Gallery block still uses URL-only inputs. Should reuse `ImageSourcePicker` (
 
 ---
 
-## Phase 7.6.8 — Notepad tag behaviour (NEVER BUILT — decision needed)
+## Phase 7.6.8 — Notepad tag behaviour (REJECTED)
 
-The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
+Specced in Phase 7.6 but never built. **Rejected, not deferred.**
 
-- [ ] Member names auto-populate as notepad tags on portal creation
-- [ ] Removing a member removes their tag from autocomplete (old notes keep the tag text)
+Original spec:
+- Member names auto-populate as notepad tags on portal creation
+- Removing a member removes their tag from autocomplete (old notes keep the tag text)
 
-**Decision needed:** is this behaviour still wanted, or superseded by the current comma-separated tag model? The notepad uses free-text comma-separated tags with autocomplete from portal members + previously-used tags. Auto-populating every member name on portal creation may create noise. Auto-removing on member removal is also questionable — old notes referencing a removed member should keep their tag text (they do today; the spec agrees).
+**Rationale for rejection:** the current notepad uses free-text comma-separated tags with autocomplete from portal members + previously-used tags. This already covers the discoverability need without the noise. Auto-populating every member name on portal creation would clutter the suggestion list on portals with many members. Auto-removing on member removal is also questionable — old notes referencing a removed member should keep their tag text, which they already do.
 
-**Recommendation if revisited:** keep the current manual-tag model. Skip auto-populate. The autocomplete from portal members already covers the discoverability need without the noise.
-
----
-
-## Phase 7.2 Loose Ends (Before Phase 8)
-- [x] Attach itinerary UI on admin editor page
-- [x] Admin preview of itinerary
-- [x] Verify travel segment `datetime-local` <-> ISO string handling
-- [x] Verify PDF export includes proper timestamp
-
-## Phase 7.3 Production Hardening
-- [ ] Fix better-sqlite3 crash on mini PC deployment
-- [ ] Delete Canvas system (frozen — safe to leave; delete when confirmed unnecessary)
-- [ ] Preview popup (modal -> floating -> fullscreen)
-- [ ] Target surface token conversion (~20-30 `bg-gray-50/100`)
-- [ ] Undo / Redo (global stack, capped 50)
-- [ ] Publish Validation (required blocks filled)
-- [ ] Error Boundaries per block
-- [ ] Responsive Preview (desktop/tablet/mobile)
+The autocomplete from portal members already handles discovery. Phase 7.6.8 adds complexity for no clear benefit.
 
 ---
 
-## Phase 8: Future / Deferred
+## Phase 7.3 — Production Hardening (sweep first)
 
-### Itinerary V2
-- [ ] Options segments (A/B alternatives)
-- [ ] Cruise mode (port schedule tables)
-- [ ] Overlapping stays
-- [ ] Group splits
+Do not build against this list until it has been swept (Batch F). Several items may already be done or moot.
 
-### People & Tagging V2
-- [ ] People table (triggered by naming inconsistency)
-- [ ] Per-person itinerary lookup
-- [ ] PII isolation
+- Fix better-sqlite3 crash on mini PC deployment — likely moot per MASTER-PROMPT Known Issue 1
+- Delete Canvas system — decision needed; MASTER-PROMPT says frozen, safe to leave
+- Preview popup (modal → floating → fullscreen) — likely already done (PreviewPopout shipped)
+- Target surface token conversion (~20-30 `bg-gray-50/100` → semantic tokens)
+- Undo / Redo (global stack, capped 50)
+- Publish Validation (required blocks filled)
+- Error Boundaries per block
+- Responsive Preview (desktop/tablet/mobile)
 
-### Portal Enhancements
-- [ ] Client portal reply capability
-- [ ] Global announcements (email all portal members)
-- [ ] Client-facing docs acknowledgment
+Sweep marks each MOOT / DONE / STILL PENDING / NEW SCOPE. Surviving items are built in the same batch.
 
-### Content Migration
-- [ ] Template Migration (Canvas -> Block)
-- [ ] Inline Editing (blocks)
+---
 
-### Low Priority
-- [ ] Dark mode
-- [ ] Template versioning
-- [ ] Reading time / word count
-- [ ] Additional block types
+## Phase 7.7 — Launch Day (Batch G)
+
+Operational checklist for the deployed system. Completed on the mini PC. This section is the compressed version; the full checklist lives in this document below the summary if needed.
+
+### Pre-launch
+
+- TOTP enforcement: `TOTP_ENFORCEMENT=true` on mini PC, enroll first authenticator, verify redirect, store secret in password manager
+- Dependencies: `npm ci`, verify `@tiptap/extension-*` in `node_modules`, run `setup-db.js`
+- Resend: account, domain verified, DNS records (SPF/DKIM/DMARC), production API key, `SITE_URL`, `CRON_SECRET`, `EMAIL_FROM`, `EMAIL_ADMIN_TO`
+
+### OS + hardware hardening
+
+- LUKS full-disk encryption at install; passphrase in password manager
+- Dedicated non-root app user (`myahtravels`)
+- SSH: `PermitRootLogin no`, `PasswordAuthentication no`, SSH key added, test key-only login before closing current session
+- Firewall: `ufw default deny incoming`, `ufw default allow outgoing`, `ufw allow from LAN subnet to port 22`, `ufw enable`
+- `unattended-upgrades`, `fail2ban`, `ufw`
+- Network isolation: no VLAN shared with daily-driver devices; no SSH keys from mini PC to other LAN devices
+
+### Environment + DB security
+
+- `.env` on mini PC: `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_ADMIN_TO`, `SITE_URL`, `CRON_SECRET`, `PORTAL_MAGIC_LINK_EXPIRY_DAYS`, `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+- `.env` in `.gitignore`, `chmod 600`
+- `NODE_ENV=production` (enables secure cookies)
+- App runs as `myahtravels` user, not root
+- `chmod 700 data/`, `chmod 600 data/site.db`, `chown -R myahtravels:myahtravels data/`
+- Confirm `data/` not served by web app, not in tunnel-exposed path
+
+### Backups (CRITICAL)
+
+- `age-keygen` → public key stored in `/etc/myahtravels/backup.env`
+- Private key to password manager NOW
+- Backup script writes to external location (USB, LAN, or encrypted offsite)
+- Encrypt dump: `sqlite3 data/site.db .dump | gzip | age -r <pubkey> > backup-$(date +%F).sql.gz.age`
+- Schedule daily: `0 2 * * * /var/www/site/scripts/backup.sh`
+- Verify first backup runs; keep 7 daily + 4 weekly + 3 monthly
+- **Test restore on scratch machine BEFORE launch** — extract, decrypt, load, verify client records
+
+### Cloudflare Tunnel
+
+- Tunnel → `http://localhost:3000` only
+- Cloudflare Access NOT used (breaks magic links)
+- `cloudflared tunnel info` shows only app hostname
+- `dig <domain>` points at Cloudflare IPs
+- Lock origin to Cloudflare only
+- `curl -I http://<home-ip>` from outside → nothing/timed out
+
+### Cron
+
+- Email queue: `* * * * * curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/email/process-queue > /dev/null 2>&1`
+- Portal purge: `0 3 * * * cd /var/www/site && npx tsx scripts/purge-portals.ts >> /var/log/portal-purge.log 2>&1`
+- Verify by checking `email_queue` status transitions after a test send
+
+### First live test
+
+- Restart service, send magic link, confirm email arrives within 60s
+- Click link → access page → continue → wall loads
+- Verify `portal_session` cookie httpOnly + Secure + SameSite=Lax
+- Logout destroys session
+- Second magic link revokes the first
+
+### Pre-launch security verification
+
+- `curl -I http://<home-ip>` returns nothing (no direct exposure)
+- `sudo ss -tlnp` shows only 3000 + 22
+- Cookie flags verified in browser dev tools
+- TOTP enforced on `/admin/*`
+- Rate limiting: 6 rapid login attempts → 6th is 429
+- `/admin/portals/[id]/preview` renders without magic link
+- `/portal/[slug]` without session shows "Session Expired"
+- `robots.txt` disallows `/admin/*`, `/portal/*`, `/api/*`
+
+### Post-launch (optional)
+
+- Resend webhook → `/api/email/webhook`, set `RESEND_WEBHOOK_SECRET`
+- "Pending emails" admin page
+- `npx tsx scripts/send-magic-links.ts <slug>` against production
+- Monitoring: email failure rate, cron health
+
+---
+
+## Phase 8 — Deferred (post-launch)
+
+Do not schedule until Launch Day completes.
+
+- **Itinerary V2:** options segments, cruise mode, overlapping stays, group splits
+- **People & Tagging V2:** triggered People table, per-person itinerary lookup, PII isolation
+- **Portal enhancements:** client reply, global announcements, docs acknowledgment
+- **Content migration:** template migration (Canvas → Block), inline editing
+- **Low priority:** dark mode, template versioning, reading time / word count, additional block types
 
 ---
 
 ## Architecture Decisions (Locked)
 
 ### Autosave Hook
-- Single `saveInternal()` path - no other `onSave` calls
+- Single `saveInternal()` path — no other `onSave` calls
 - Multi-value in-flight dedup via `Map<T, number>`
 - Version gating: stale responses ignored
 - Mount gating: React state updates only
@@ -857,10 +377,10 @@ The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
 
 | Guardrail | Applies To |
 |-----------|-----------|
-| No raw colour pickers | Hero presets are named options |
+| No raw colour pickers on surfaces | Hero presets are named options. Exception: inline text/highlight in Body block uses curated presets + raw picker |
 | No per-segment styling | Itinerary colours derive from type + theme |
 | No free icon picker | Content tile icons are fixed enum |
-| No manual reordering | Itinerary segments ordered by time |
+| No manual reordering | Itinerary segments ordered by time (or explicit manual via order_mode) |
 | No CMS-style versioning | Live edits, snapshot exports |
 | Notepad never leaks to client | Admin-only scoping |
 | No attendees on segments | People tagging lives only in Notepad |
@@ -871,106 +391,40 @@ The only unchecked item in the entire Phase 7.6 wave. Specced but never built:
 | No PDF pipeline | Print stylesheet only |
 | Autosave never blocks editing | localStorage failures swallowed |
 | React state gated by mount | Refs + localStorage always update |
+| All renderers import `buildExtensions` | No parallel extension lists |
+| Itinerary client views are derived | No authoring surface for glance or today's plan |
+| Never use `@tiptap/html`'s `generateHTML` | zeed-dom drops inline styles |
 
 ---
 
 ## Known Issues
 
-1. **better-sqlite3 crash in Codespace** - environment-specific; not present on local PC
-2. **Canvas system frozen** - 39 emerald remain
-3. **`schema.sql` outdated** - use Drizzle schema + `scripts/setup-db.js` + seed
-4. **Missing DB columns on fresh setup** - `scripts/setup-db.js` handles known cases
-5. **`TESTING.md` is partial** - predates the September 18 break session. Break-session features (PiP, divider config, context menu submenus, gradient tiles, body content versioning) are not yet covered. Block system beyond Body, client-facing post rendering, Content Library, and admin dashboard are also uncovered. See Testing Debt coverage map above.
-
----
-
-## Development Workflow
-
-**Editing:** Codespace (VS Code, Python heredocs, Copilot)
-**Testing:** Local PC (no better-sqlite3 crash, real browser at localhost:3000)
-**Sync:** `git push` Codespace -> `git pull` local -> test -> report bugs
-
----
-
-## Testing Commands
-
-    # First-time local setup
-    node scripts/setup-db.js   # Create DB
-    npm run seed               # Seed data
-
-    # Daily
-    npm run dev                # Dev server (port 3000)
-    npm run build              # Production build
-    npm start                  # Production server
-
-    # Tests
-    npm test                   # Run all vitest tests (87 passing)
-    npm run test:watch         # Watch mode
-    npm run test:ui            # Vitest UI
+1. **better-sqlite3 crash in Codespace (historical)** — Environment-specific, reported in early sessions. Not reproduced recently. Not present on local PC (Node 22) or mini PC deployment.
+2. **Canvas system frozen** — Legacy files in `components/editor/canvas/`. Unwired from nav and TipTap. Pending deletion when confirmed unnecessary.
+3. **`schema.sql` outdated** — Use `scripts/setup-db.js`.
+4. **Codespace Node version** — Codespace runs Node 24; local runs Node 22 LTS. Minor drift; both work. Local is deployment-target.
+5. **`TESTING.md` coverage gaps** — break-session features covered at `65f857f`. Still uncovered: block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Each batch fixes its own gap going forward.
 
 ---
 
 ## Testing Debt — Coverage Map
 
-**What `docs/TESTING.md` covers (as of Rev 17):**
-- Phase 7.6 Waves 2–4 (multi-leg travel, ban/revoke, hero styling)
-- Phase 7.8 Waves A–D (suggestions, duplication, drag-reorder, bulk-add, snippets, paste-booking, stale entities, kill switch)
-- Phase 7.9 stubs (E1–E12)
-- Phase 9 stubs (F1–F9)
-- TOTP enrollment (S1–S5)
+**What `docs/TESTING.md` covers:**
+- Phase 7.6 Waves 2-4 (multi-leg travel, ban/revoke, hero styling)
+- Phase 7.8 Waves A-D (suggestions, duplication, drag-reorder, bulk-add, snippets, paste-booking, stale entities, kill switch)
+- Phase 7.9 stubs (E1-E12)
+- Phase 9 stubs (F1-F9)
+- TOTP enrollment (S1-S5)
+- Break-session features (PiP, divider config, context menu submenus, gradient tiles, body content versioning)
 
-**What `docs/TESTING.md` does NOT cover (break-session features, Sept 18):**
-- Picture-in-Picture preview (`useDocumentPiP`, `PreviewPopout`)
-- Divider config popover (thickness + colour)
-- Context menu submenus (colour / size / font)
-- Toolbar gradient tiles + icon labels + key props
-- Body content versioning envelope round-trip (`serializeBodyContent` / `deserializeBodyContent`)
-
-**What else is missing:**
-- Block system beyond Body — Title, Hero, Image, Gallery, Callout, ProsCons, Verdict, QuickFacts, Quote have no browser test
-- Template selection in editor (which template, switching templates, template-driven block order)
+**What `docs/TESTING.md` does NOT cover:**
+- Block system beyond Body — Title, Hero, Image, Gallery, Callout, ProsCons, Verdict, QuickFacts, Quote
+- Template selection in editor
 - Client-facing post rendering — `/blog/[slug]`, `/guides/[slug]`, `/reviews/[slug]`
 - Content Library — admin list, add PDF/image/text, attach to portal
 - Admin dashboard — widgets, storage usage, recent activity
 
-**Known Issue #5:** `docs/TESTING.md` is partial — it predates the September 18 break session. It needs a new section covering the break-session additions before the testing pass is complete.
-
-**Recent completions (for context):**
-- Phase 6.4A: Notepad verified + admin itinerary preview
-- Phase 6.4B: Autosave hook + durability (87 tests total across 5 files)
-- Phase 6.4C: 4 form primitives
-- Phase 6.4D: Replaced all `prompt()` with inline forms (580 -> 17 lines)
-- Phase 7: All 6 batches complete
-- Phase 7.5: Singapore Demo seeded (portal id 4, itinerary id 3); Japan+Cruise+Singapore pending
-- Phase 7.6: Waves 1–4 complete (7.6.8 never built — see standalone section)
-- Phase 7.8, 7.9, 9, 9.5: Complete
-- Email queue correctness: atomic claim, RESEND guard, CLI script
-
-**Next action:** TODO Rev 18 (this revision) → SRS v5.1 → TESTING.md coverage additions → browser testing pass → Phase 7.7 Launch Day → Phase 7.3 (trimmed).
-
----
-
-## Phase 7 Bug Fix Priorities (COMPLETE)
-
-| Batch | Priority | Description | Status |
-|-------|----------|-------------|--------|
-| 1 | **Critical** | Segment edit revert, admin preview session, date picker `showPicker()` | DONE |
-| 2 | High | Date constraints, optional field audit | DONE |
-| 3 | High | Portal manager trash + recovery + preview | DONE |
-| 4 | Medium | Tile restyle, toast, Save button, picker UI | DONE |
-| 5 | Medium | Segment UX, time picker clicks | DONE |
-| 6 | Low | Download verification | DONE |
-
----
-
-## What's Left After Phase 7
-
-1. **Phase 7.5** - Demo rendering (Singapore done; Japan+Cruise+Singapore seed pending — PARTIAL)
-2. **Phase 7.6** - Refinement pass (all waves complete except 7.6.8, never built)
-3. **Phase 7.7** - Launch Day (email + magic link go-live)
-4. **Phase 7.3** - Production hardening (Canvas deletion, deployment, undo/redo)
-5. **Phase 8** - V2 features (Options, cruise mode, People table, global announcements)
-6. **Phase 8+** - Post-launch (dark mode, versioning, block expansion)
+**Forward process:** each batch appends its own TESTING.md section. Coverage gaps close as batches ship.
 
 ---
 
