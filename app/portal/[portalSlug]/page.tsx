@@ -2,6 +2,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import { validatePortalSession, getPortalBySlug } from "@/lib/portal";
 import { getPortalItemsWithContent } from "@/lib/portal-items";
+import { attachDerivedItems } from "@/lib/itineraries/attach-derived-items";
 import { logActivity } from "@/lib/logging";
 import PortalWall from "@/components/portal/PortalWall";
 
@@ -43,8 +44,9 @@ export default async function PortalDashboardPage({ params }: { params: { portal
   });
 
   const items = await getPortalItemsWithContent(portal.id);
+  const itemsWithDerived = await attachDerivedItems(items);
 
-  return <PortalWall portal={portal} items={items} />;
+  return <PortalWall portal={portal} items={itemsWithDerived} />;
 }
 
 function SessionExpired() {
