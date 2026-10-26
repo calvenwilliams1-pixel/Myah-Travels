@@ -446,3 +446,30 @@ The admin-side preview has been tested. The public-facing pages have not.
 **Test S5 — TOTP recovery**
 - [ ] If authenticator app is lost, recovery requires DB-level intervention
   (Document this as a known limitation — recovery codes deferred to Phase 8+)
+
+## Batch A — Gallery block reuses ImageSourcePicker
+
+**Commit:** (pending)
+
+### What was built
+Gallery block now uses `ImageSourcePicker` per image slot, matching Hero and Image blocks. Each gallery image can be uploaded from PC, pasted by URL, or picked from the content library (where wired by the picker). Caption input preserved. Add/remove slot UI restructured for clarity — empty state message, per-image card with labelled Remove button.
+
+### Test cases
+- [ ] Open a post editor, add a Gallery block
+- [ ] Click "Add Image" → new slot appears with Upload/Paste URL toggle
+- [ ] **Upload from PC:** choose an image file → preview appears, URL path shown
+- [ ] **Paste URL:** switch to URL mode, paste a valid image URL → preview appears
+- [ ] Click "Clear" on a slot → URL clears, preview disappears
+- [ ] Add a caption to an image → caption persists after save/reload
+- [ ] Add a second image → both slots render independently
+- [ ] Remove the second image → first image and caption unchanged
+- [ ] Save post → reload editor → gallery images preserved with URLs and captions
+- [ ] Publish post → view `/blog/[slug]` → gallery renders all images at correct URLs
+- [ ] Print view (`Ctrl+P`) → gallery images render, not broken
+- [ ] Empty gallery (no images) → editor shows "No images yet" message, page does not error
+- [ ] Gallery with one image → renders correctly on client
+- [ ] Image upload failure (e.g. disconnected) → error message shown, slot not corrupted
+
+### Known limitations
+- Gallery images do not yet have `alt` text (Image and Hero blocks have it). Adding alt is a separate batch — needs `GalleryData` type change and `GalleryRenderer.tsx` update.
+- Library picker is provided by `ImageSourcePicker` as currently implemented — this batch wires the picker in, but does not extend the picker's library integration beyond what Hero and Image already have.
