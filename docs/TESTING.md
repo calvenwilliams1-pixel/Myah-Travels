@@ -500,3 +500,29 @@ Tab in the Body block editor now indents list items (`sinkListItem`) instead of 
 ### Known limitations
 - Tab is consumed globally inside the editor when not in a list. If a future feature needs Tab-to-navigate within the editor (e.g. table cells), the handler will need a table-aware branch.
 - Code block Tab insertion is out of scope for this batch — ProseMirror's default code block behaviour is unchanged.
+
+## Batch C — PreviewPopout bounds clamping
+
+**Commit:** (pending)
+
+### What was built
+`PreviewPopout` now clamps position and size so it can never be dragged off-screen, resized beyond the viewport, or left unreachable after a window shrink. Clamping applies at three points: during drag, during resize, on window resize. Reclamp uses `clampPosition` (keeps title bar reachable, at least 200px horizontally visible) and `clampSize` (clamps to viewport, honours MIN_WIDTH/MIN_HEIGHT). Also fixed a pre-existing escape bug where the close button rendered the literal string `\u2715` instead of the ✕ glyph.
+
+### Test cases
+- [ ] Open the preview popout from a post editor
+- [ ] Drag the popout to the top edge → title bar stays visible, popout cannot go above y=0
+- [ ] Drag to the left edge → at least 200px of the popout remains visible
+- [ ] Drag to the right edge → at least 200px remains visible
+- [ ] Drag to the bottom edge → title bar stays visible
+- [ ] Resize the popout from the bottom-right handle → cannot exceed viewport width or height
+- [ ] Resize very small → stops at MIN_WIDTH (320) / MIN_HEIGHT (240)
+- [ ] Shrink the browser window → popout repositions and resizes to stay in view
+- [ ] Enlarge the browser window → popout stays where it was, no jump
+- [ ] Close button renders ✕ (not `\u2715` text)
+- [ ] PiP button still works — pops out to OS window, unaffected by clamping
+- [ ] Fullscreen still works — Esc exits fullscreen, then Esc closes popout
+- [ ] Esc inside PiP closes PiP window, then Esc closes popout
+
+### Known limitations
+- Position is not persisted across sessions — the popout resets to `{x: 80, y: 80}` on every mount, so the off-screen-saved-state scenario does not arise. If persistence is added later, clamping must be applied on mount from saved state.
+- Multi-monitor drag is not clamped to the primary viewport — a user with two screens can drag the popout across monitors via PiP only, not the in-page popout. This matches the design intent (PiP is the multi-monitor path).

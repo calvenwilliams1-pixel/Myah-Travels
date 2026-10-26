@@ -25,6 +25,41 @@ interface Size {
 
 const MIN_WIDTH = 320;
 const MIN_HEIGHT = 240;
+const TITLE_BAR_HEIGHT = 36;
+const MIN_VISIBLE_WIDTH = 200;
+
+/**
+ * Clamp a popout position so the title bar stays reachable.
+ * The title bar is the only drag handle — if it goes off-screen
+ * (especially past the top), the popout is unrecoverable.
+ */
+function clampPosition(
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Position {
+  if (typeof window === "undefined") return { x, y };
+  // Leave at least MIN_VISIBLE_WIDTH of the popout horizontally visible,
+  // and the title bar fully visible vertically.
+  const maxX = Math.max(0, window.innerWidth - MIN_VISIBLE_WIDTH);
+  const maxY = Math.max(0, window.innerHeight - TITLE_BAR_HEIGHT);
+  return {
+    x: Math.max(0, Math.min(maxX, x)),
+    y: Math.max(0, Math.min(maxY, y)),
+  };
+}
+
+/**
+ * Clamp a popout size so it never exceeds the viewport.
+ */
+function clampSize(width: number, height: number): Size {
+  if (typeof window === "undefined") return { width, height };
+  return {
+    width: Math.min(window.innerWidth, Math.max(MIN_WIDTH, width)),
+    height: Math.min(window.innerHeight, Math.max(MIN_HEIGHT, height)),
+  };
+}
 
 export default function PreviewPopout({ blocks, template, onClose }: PreviewPopoutProps) {
   const [position, setPosition] = useState<Position>({ x: 80, y: 80 });
@@ -42,7 +77,8 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
   useEffect(() => {
     if (!dragOffset) return;
     function onMouseMove(e: MouseEvent) {
-      setPosition({ x: e.clientX - dragOffset!.x, y: e.clientY - dragOffset!.y });
+      const raw = { x: e.clientX - dragOffset!.x, y: e.clientY - dragOffset!.y };
+      setPosition(clampPosition(raw.x, raw.y, size.width, size.height));
     }
     function onMouseUp() {
       setDragOffset(null);
@@ -61,10 +97,9 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
     function onMouseMove(e: MouseEvent) {
       const dx = e.clientX - resizeStart!.x;
       const dy = e.clientY - resizeStart!.y;
-      setSize({
-        width: Math.max(MIN_WIDTH, resizeStart!.w + dx),
-        height: Math.max(MIN_HEIGHT, resizeStart!.h + dy),
-      });
+      setSize(
+        clampSize(resizeStart!.w + dx, resizeStart!.h + dy)
+      );
     }
     function onMouseUp() {
       setResizeStart(null);
@@ -76,6 +111,16 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
       document.removeEventListener("mouseup", onMouseUp);
     };
   }, [resizeStart]);
+
+  // Reclamp on window resize so a shrunk viewport pulls the popout back.
+  useEffect(() => {
+    function onResize() {
+      setSize((s) => clampSize(s.width, s.height));
+      setPosition((p) => clampPosition(p.x, p.y, size.width, size.height));
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [size.width, size.height]);
 
   // Esc closes; fullscreen handled by CSS. Destructure stable pieces of
   // the PiP handle so effect deps are primitives/functions.
@@ -178,7 +223,7 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
               title="Close preview (Esc)"
               aria-label="Close preview"
             >
-              \u2715
+              {"\u2715"}
             </button>
           </div>
         </div>
