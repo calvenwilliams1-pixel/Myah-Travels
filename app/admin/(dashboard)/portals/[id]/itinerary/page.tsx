@@ -59,15 +59,27 @@ export default function ItineraryListPage() {
     fetchItineraries();
   }
 
-  async function handleAttach(id: number) {
+  async function handleAttach(
+    id: number,
+    viewType: "full" | "glance" | "today" = "full"
+  ) {
     const res = await fetch(`/api/itineraries/${id}/attach`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ portalId }),
+      body: JSON.stringify({ portalId, viewType }),
     });
+    if (res.status === 409) {
+      showToast("This itinerary is already attached with that view type", {
+        variant: "warning",
+      });
+      return;
+    }
     const data = await res.json();
     if (data.success) {
-      showToast("Itinerary attached to portal wall", { variant: "success" });
+      const labels = { full: "Full", glance: "At a Glance", today: "Day by Day" };
+      showToast(`Itinerary attached as ${labels[viewType]}`, {
+        variant: "success",
+      });
     }
   }
 
@@ -128,9 +140,23 @@ export default function ItineraryListPage() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => handleAttach(itinerary.id)}
+                    onClick={() => handleAttach(itinerary.id, "full")}
                   >
-                    Attach to Wall
+                    Full
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleAttach(itinerary.id, "glance")}
+                  >
+                    Glance
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleAttach(itinerary.id, "today")}
+                  >
+                    Today
                   </Button>
                   <Button
                     size="sm"
