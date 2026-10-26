@@ -526,3 +526,94 @@ Tab in the Body block editor now indents list items (`sinkListItem`) instead of 
 ### Known limitations
 - Position is not persisted across sessions — the popout resets to `{x: 80, y: 80}` on every mount, so the off-screen-saved-state scenario does not arise. If persistence is added later, clamping must be applied on mount from saved state.
 - Multi-monitor drag is not clamped to the primary viewport — a user with two screens can drag the popout across monitors via PiP only, not the in-page popout. This matches the design intent (PiP is the multi-monitor path).
+
+## Batch D-a — Itinerary Client Experience (Glance on correct model)
+
+**Commits:** 1dbb231, a7f98e9, d8f75fd, cfe7e40, f4b45fd, ee1fbc5, ebd530a, a5b1afa, 35ee99d, 40f49ba, 283d675, 4eebf67
+
+### What was built
+
+**Data model:**
+- Migration `0018_portal_items_source_type_expansion.sql` — table rebuild, `source_type` CHECK extended to include `itinerary_glance` and `itinerary_today`; `type` and `category` CHECKs preserved; `variant` column removed (reverted)
+- `types/portal-items.ts` — `PortalItemSourceType` union and `ITINERARY_SOURCE_TYPES` constant
+
+**Derivation:**
+- `lib/itineraries/attach-derived-items.ts` — replaces `attach-glances.ts`; branches on `itinerary_glance` only; per-item failure isolation; `derivedError: true` on failure
+- 9 tests covering glance branch, pass-through, failure isolation
+
+**Rendering:**
+- `PortalWall.tsx` — `itinerary_glance` tiles render inline full-width; neutral "Summary unavailable" fallback when `glance` missing or `derivedError`; unknown source types logged and skipped
+- `PortalItemsList.tsx` — five-way source label (Library / Itinerary / At a Glance / Day by Day / Portal-specific)
+
+**Admin:**
+- `attach/route.ts` — accepts `viewType` (full / glance / today), defaults to `full`; blocks duplicates with 409
+- `portals/[id]/itinerary/page.tsx` — three-button attach group per itinerary row (Full / Glance / Today); 409 toast
+
+**Wiring:**
+- `app/portal/[portalSlug]/page.tsx` and `app/admin/(dashboard)/portals/[id]/preview/page.tsx` — call `attachDerivedItems` and pass `itemsWithDerived` to `PortalWall`
+
+### Test cases
+
+**Unit (automated):**
+- [x] `attachDerivedItems` — glance item gets glance data
+- [x] `attachDerivedItems` — `itinerary` (full) passes through unchanged, no DB call
+- [x] `attachDerivedItems` — library passes through unchanged
+- [x] `attachDerivedItems` — portal_specific passes through unchanged
+- [x] `attachDerivedItems` — unknown source_type passes through unchanged, no DB call
+- [x] `attachDerivedItems` — null itineraryId sets derivedError
+- [x] `attachDerivedItems` — missing itinerary sets derivedError
+- [x] `attachDerivedItems` — thrown derive sets derivedError, no throw propagates
+- [x] `attachDerivedItems` — one failing item does not block others
+- [x] Existing `deriveGlance` tests still pass (15)
+- [x] Existing 87 base tests still pass
+
+**Migration (manual):**
+- [ ] `node scripts/setup-db.js` shows `0018_portal_items_source_type_expansion.sql` with `✓`, no `✗`
+- [ ] `.schema portal_items` shows `source_type` CHECK with five values
+- [ ] `.schema portal_items` shows `type` CHECK `('pdf', 'image', 'text')` preserved
+- [ ] `.schema portal_items` shows `category` CHECK preserved
+- [ ] `.schema portal_items` shows no `variant` column
+- [ ] Both indexes present: `idx_portal_items_portal_id`, `idx_portal_items_position`
+- [ ] Existing `portal_items` rows survived the rebuild (count matches pre-migration)
+
+**Admin UI (browser):**
+- [ ] `/admin/portals/[id]/itinerary` shows three buttons per itinerary row: Full / Glance / Today
+- [ ] Click "Full" on an unattached itinerary → success toast "Itinerary attached as Full", item appears on wall as full tile
+- [ ] Click "Glance" on an unattached itinerary → success toast "Itinerary attached as At a Glance", item appears on wall as glance tile
+- [ ] Click "Today" on an unattached itinerary → success toast "Itinerary attached as Day by Day" (renders nothing yet — D-b)
+- [ ] Click "Glance" on an itinerary already attached as glance → info toast "This itinerary is already attached with that view type", no duplicate created
+- [ ] Same itinerary can be attached as Full, Glance, and Today simultaneously
+- [ ] `/admin/portals/[id]/edit` wall items list shows correct label per source type: "Itinerary", "At a Glance", "Day by Day", "Library", "Portal-specific"
+
+**Wall rendering (browser):**
+- [ ] Portal wall with one glance item → glance renders full-width, auto-populated (days, hotels, transport, anchors)
+- [ ] Portal wall with full + glance + today for same itinerary → full tile renders as tile, glance renders full-width, today renders nothing (D-b)
+- [ ] Portal wall with glance whose itinerary was deleted → "Summary unavailable" tile, no crash
+- [ ] Portal wall with unknown source_type → skipped, logged to console, no crash
+- [ ] Existing full itinerary tiles still render correctly
+
+**Access control (manual — presentation model):**
+- [ ] Client with glance-only wall can still open full itinerary by URL `/portal/[slug]/itinerary/[id]` — this is intended, not a bug
+- [ ] Client cannot open an itinerary belonging to a different portal
+
+**Print (browser):**
+- [ ] Glance tile has Print button top-right
+- [ ] Click Print → print preview hides admin chrome (header, nav, logout)
+- [ ] Print preview hides hero banner and footer
+- [ ] Print preview shows only glance tile(s), full-width
+- [ ] Ctrl+P on a wall with NO glance → normal wall prints (chrome and tiles visible, no blank page)
+
+### Known limitations
+- Day by Day button attaches the tile but renders nothing (D-b delivers the renderer)
+- Print CSS was verified structurally in D1; re-verify visually in D-a
+- Segment `location` is free text — may contain addresses, deferred to D-b with real data
+- Multi-country trips will use one timezone per itinerary (D-b limitation)
+- Existing `variant` column dropped by migration 0018 rebuild; smoke-test row (id=1) survived as `source_type='itinerary'`
+
+### D-b deliverable (next batch)
+- Migration `0019_itinerary_timezone.sql`
+- `timezone` field on `itineraries`, "Auto" option
+- `deriveDayByDay` with 5 states (pre-trip / during-trip / post-trip / no-plan-today / no-window)
+- `DayByDayView` renderer
+- `PortalWall` day-by-day branch
+- Print CSS for day-by-day
