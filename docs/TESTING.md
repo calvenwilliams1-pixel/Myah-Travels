@@ -1,5 +1,7 @@
 # Phase 7.6 — Test Checklist (PENDING)
 
+> **This checklist predates the September 18 break session.** Features added since (Picture-in-Picture preview, divider config popover, context menu submenus, gradient tiles, body content versioning) are **not yet covered** in this file. See `docs/TODO.md` → "Testing Debt — Coverage Map" for the full list of gaps.
+
 Everything since Wave 2 has been implemented without local testing. Run this on the local PC.
 
 ## Setup
@@ -289,6 +291,128 @@ Tests written as each wave ships.
 - Test F7 — Per-portal keep_until override prevents purge
 - Test F8 — Itinerary Library: filter live/archived/template, preview, use-as-template flow
 - Test F9 — Reused itinerary as template: sections/days/segments copied, occurrence data cleared
+
+---
+
+## Phase 7.9 break-session additions (NOT YET COVERED)
+
+Features added in the September 18 break session. These are shipped but have no browser test yet.
+
+### PiP — Picture-in-Picture preview
+
+**Test P1 — PiP opens**
+- [ ] In the post editor, click the PiP button on the preview popout
+- [ ] An OS-level PiP window appears, showing the live template preview
+- [ ] Window is draggable across monitors
+- [ ] Content updates as you edit (both directions)
+
+**Test P2 — Stylesheets + theme vars copied**
+- [ ] Open PiP while editing a post with custom accent colour
+- [ ] PiP window renders with the same theme colours as the main window
+- [ ] Headings, badges, accent elements match
+
+**Test P3 — Escape closes**
+- [ ] With PiP focused, press Escape
+- [ ] PiP window closes, editor remains open and unchanged
+
+**Test P4 — Unsupported fallback**
+- [ ] In a browser without `documentPictureInPicture` (Firefox, Safari), click the PiP button
+- [ ] Clean fallback — no error thrown, popout continues to work
+
+**Test P5 — PreviewPopout bounds clamping (currently BROKEN — see TODO Outstanding Bugs #1)**
+- [ ] Drag the in-page popout upward until its title bar goes off-screen
+- [ ] Currently: popout becomes unrecoverable. Fix pending.
+- [ ] After fix: `top` clamps to viewport top, title bar stays reachable
+
+### Divider config popover
+
+**Test P6 — Divider insert**
+- [ ] In Body editor, insert a divider from the toolbar
+- [ ] A horizontal rule appears at cursor position
+
+**Test P7 — Divider thickness**
+- [ ] Click the divider, open config popover
+- [ ] Change thickness (thin / medium / thick) — divider re-renders immediately
+- [ ] Value persists after save + reload
+
+**Test P8 — Divider colour**
+- [ ] Change colour via the popover
+- [ ] Divider renders in the chosen colour
+- [ ] Colour persists after save + reload
+
+### Context menu submenus
+
+**Test P9 — Keyboard open**
+- [ ] Select text in Body editor, press Shift+F10
+- [ ] Context menu opens at selection
+
+**Test P10 — Arrow navigation**
+- [ ] With context menu open, arrow keys move selection
+- [ ] Enter activates the focused item
+- [ ] Escape closes the menu
+
+**Test P11 — Submenus (colour / size / font)**
+- [ ] Open context menu, hover "Colour" — submenu appears
+- [ ] Select a colour — text updates immediately
+- [ ] Repeat for Size and Font submenus
+- [ ] All three apply correctly to the selected text
+
+### Body content versioning envelope
+
+**Test P12 — Envelope round-trip**
+- [ ] Create a new post, add a Body block, type text with bold + a colour mark
+- [ ] Save
+- [ ] Reload the post — text, bold, colour all render correctly
+- [ ] Open DB: `data.tiptapJson` should be `{"version":1,"content":...}`, not bare doc
+
+**Test P13 — Legacy bare doc still readable**
+- [ ] Manually edit a post's `tiptapJson` in DB to strip the envelope (bare doc)
+- [ ] Reload the editor — no crash, text renders
+- [ ] Save — the envelope is reapplied on write
+
+**Test P14 — Envelope unwrap on load (commit 4b32d7c)**
+- [ ] Open an existing post with a wrapped envelope
+- [ ] Editor shows the content, not raw JSON
+- [ ] Save without changes — envelope remains correct (not double-wrapped)
+
+---
+
+## Block system coverage (NO BROWSER TEST)
+
+Body block has coverage above (P12–P14). The other nine have none. Each needs at minimum: add → configure → save → reload → client render.
+
+- [ ] **Title block** — level 1/2/3 renders correct heading; persists
+- [ ] **Hero block** — size options (Banner/Medium/Large/Full), text overlay (title/subtitle/caption), image upload/URL/library, gradient scrim
+- [ ] **Image block** — single image, caption, `ImageSourcePicker` (upload/URL/library)
+- [ ] **Gallery block** — grid layout, multiple images, order, captions. **NOTE: still URL-only inputs, should reuse `ImageSourcePicker` — see TODO Outstanding Bugs #3**
+- [ ] **Callout block** — tip/warning/info variants render distinct styling; status colours fixed
+- [ ] **ProsCons block** — two-column, add/remove rows, save round-trip
+- [ ] **Verdict block** — text + star rating; accent stripe renders; star count persists
+- [ ] **QuickFacts block** — label/value pairs, add/remove, save round-trip
+- [ ] **Quote block** — text + author, blockquote styling
+
+**Template selection in editor:**
+- [ ] New post opens with template chooser
+- [ ] Selecting a template sets the block order + which blocks are required/optional/disabled
+- [ ] Switching templates mid-edit preserves content where block types overlap
+- [ ] Legacy Canvas template rows do NOT appear in the chooser (`loadTemplatesFromDb` filter)
+
+---
+
+## Client-facing rendering (NO BROWSER TEST)
+
+The admin-side preview has been tested. The public-facing pages have not.
+
+- [ ] `/blog/[slug]` — renders blocks via `PostRenderer`; CSS vars applied; TipTap HTML sanitised by DOMPurify; no raw JSON leaks
+- [ ] `/guides/[slug]` — same as blog
+- [ ] `/reviews/[slug]` — same, plus Verdict block accent stripe and Featured badge
+- [ ] Long-form post with all 10 block types — no layout breaks, no console errors
+- [ ] Post with inline colour marks in Body — colours survive to public render (this is the whole point of the `buildExtensions` + `DOMSerializer` fix)
+- [ ] Post with font-family and font-size marks — same
+- [ ] Post with divider (custom thickness + colour) — renders correctly
+- [ ] Post with YouTube embed — inline player renders, invalid ID falls back gracefully
+- [ ] `/` homepage feed — cards load, infinite scroll works, filters work
+- [ ] Search results — `/search?q=...` returns matching posts/guides/reviews
 
 ---
 
