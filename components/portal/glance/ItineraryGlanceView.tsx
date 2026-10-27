@@ -47,10 +47,10 @@ function formatDate(raw: string): string {
 export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps) {
   return (
     <div className="glance-view bg-white p-6 border border-gray-200 rounded-lg">
-      <div className="flex items-center justify-between mb-4 print:hidden">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          {glance.itineraryTitle}
-        </h2>
+      <div className="flex items-center justify-between mb-1 print:hidden">
+        <p className="text-xs uppercase tracking-wider text-primary font-semibold">
+          Trip Summary · At a Glance
+        </p>
         <button
           type="button"
           onClick={() => window.print()}
@@ -60,6 +60,9 @@ export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps
           Print
         </button>
       </div>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+        {glance.itineraryTitle}
+      </h2>
 
       {glance.days.length === 0 && (
         <p className="text-gray-500 italic">No days in this itinerary yet.</p>

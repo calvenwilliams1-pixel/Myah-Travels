@@ -107,7 +107,7 @@ export default function WallItemRenderer({
         <div className="flex items-center gap-2 mb-3">
           <span className="text-2xl">📋</span>
           <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-            Itinerary
+            Full Itinerary
           </span>
         </div>
         <h3 className="text-lg font-bold text-gray-900 leading-tight mb-3">
@@ -115,7 +115,7 @@ export default function WallItemRenderer({
         </h3>
         <div className="flex items-center justify-between mt-auto pt-2">
           <span className="text-xs text-gray-600">
-            Multi-day trip · Full details
+            Complete day-by-day document
           </span>
           <span className="text-sm text-primary font-medium group-hover:translate-x-1 transition-transform">
             View →

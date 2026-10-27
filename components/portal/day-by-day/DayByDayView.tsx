@@ -97,7 +97,9 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
   return (
     <div className="day-by-day-banner bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div className="bg-primary/5 border-b border-primary/20 px-6 py-3">
-        <p className="text-xs uppercase tracking-wider text-primary font-semibold">Today</p>
+        <p className="text-xs uppercase tracking-wider text-primary font-semibold">
+          Today's Plan · {itineraryTitle}
+        </p>
         <p className="text-lg font-semibold text-gray-900">
           Day {day.dayNumber} · {formatDate(day.date)}
         </p>
