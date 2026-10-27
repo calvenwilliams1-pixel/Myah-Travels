@@ -846,3 +846,55 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - Legacy TipTap posts (if any existed) start fresh on edit — DB currently has 0 posts so no impact
 - ErrorBoundary fallback is generic text; per-block custom fallbacks would require passing `fallback` prop
 - Responsive preview only affects preview, not the actual admin editor layout
+
+## Batch G — Notepad tags link to client memory
+
+**Commits:** 219d408, 5ce7ae8, 03434ed, bd8fb44, f150a21, 9535d19
+
+### What was built
+
+**Layer 1 — TagInput autocompleteSource:** optional prop. When provided, filters locally instead of calling `/api/tags/suggest`. Notepad passes member names + distinct tags; post tag editor unchanged.
+
+**Layer 2 — Structured tag mapping:**
+- Migration 0022 adds `notepad_entries.person_links TEXT` (JSON array of {tag, personId})
+- `resolveTagPersonLinks(tags, portalId)` — member-first then people canonical_name, strict exact match, duplicate canonical_name → null + console.warn
+- `addNotepadEntry` / `updateNotepadEntry` populate `person_links` on every save (re-resolve)
+- Notepad page renders tags as Next.js `<Link>` to `/admin/clients/people/[id]` when personId resolves
+
+**Layer 3 — Add-member verification:** form wired to `addMemberAction`, name + email + person lookup on blur. No code changes needed.
+
+### Test cases
+
+**Suggestions (browser):**
+- [ ] Add member 'Calven Williams' / calven@example.com → row in portal_members with person_id
+- [ ] Notepad: type 'Cal' → dropdown shows 'Calven Williams' from member list (not post-tag API)
+- [ ] Type 'Cal' again after saving → still suggests, no duplicate entry
+- [ ] Post tag editor (TagInput without autocompleteSource) still uses `/api/tags/suggest`
+
+**Structured links (browser):**
+- [ ] Save note with tags 'Calven Williams, Tokyo, Airbnb' → DB row has person_links JSON
+- [ ] 'Calven Williams' resolves to personId, 'Tokyo'/'Airbnb' resolve to null if no people match
+- [ ] Reload notepad → 'Calven Williams' renders as a link, others as plain text
+- [ ] Click 'Calven Williams' link → opens `/admin/clients/people/[id]` for that person
+- [ ] Edit note, remove 'Calven Williams' tag, save → person_links no longer has that entry
+- [ ] Edit note, add 'Calven Williams' back, save → re-resolves, link returns
+- [ ] Note with no tags → person_links is null, no crash
+- [ ] Existing notes with person_links=null → all tags plain text (backward compat)
+
+**Edge cases (browser or manual):**
+- [ ] Two people named 'John Smith' → tag 'John Smith' resolves to null, console.warn logged, plain text rendered
+- [ ] Tag 'Cal' (prefix, not exact) → no match, plain text (no fuzzy)
+- [ ] Tag with different case 'CALVEN WILLIAMS' → resolves to same person as 'Calven Williams' (case-insensitive on canonical_name)
+- [ ] Tag matching a portal member by email 'calven@example.com' → resolves to that member's personId
+
+**Data integrity:**
+- [ ] Duplicate tag 'Calven, Calven' → person_links has two entries (preserved, not deduped)
+- [ ] Deleting a notepad note doesn't affect `people` rows
+- [ ] Renaming a person → old tag text stays, link points to same person by ID
+
+### Known limitations
+- JSON storage, not junction table — migration to `notepad_entry_people` deferred until a cross-portal query requires it
+- Existing notepad tags not backfilled to person_links (would risk typo→person mismatches)
+- Person deleted after tag created → link points to 404 (person page handles gracefully if verified)
+- Autocomplete doesn't include people who aren't members of this portal (only members + distinct tags)
+- No remove-tag-on-member-removal — old tag text persists (intentional)
