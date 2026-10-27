@@ -1,5 +1,7 @@
 "use client";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 import React, { useState, useEffect } from "react";
 import { BlockData, BlockType } from "@/types/blocks";
 import { getBlockDefinition, getAllBlockDefinitions } from "@/lib/blocks/registry";
@@ -307,7 +309,17 @@ export default function BlockEditor({
                 )}
               </div>
             </div>
-            {renderBlockEditor(block)}
+            <ErrorBoundary
+              fallback={
+                <div className="border-2 border-dashed border-red-300 rounded p-4 text-center">
+                  <p className="text-sm text-red-500">
+                    This {getBlockDefinition(block.type).label} block failed to render.
+                  </p>
+                </div>
+              }
+            >
+              {renderBlockEditor(block)}
+            </ErrorBoundary>
           </div>
         ))}
 
