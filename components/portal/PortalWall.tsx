@@ -2,8 +2,9 @@ import React from "react";
 import HeroBanner from "@/components/portal/HeroBanner";
 import WallItemRenderer from "@/components/portal/WallItemRenderer";
 import ItineraryGlanceView from "@/components/portal/glance/ItineraryGlanceView";
+import DayByDayView from "@/components/portal/day-by-day/DayByDayView";
 import PortalPrintSetup from "@/components/portal/PortalPrintSetup";
-import type { GlanceData } from "@/lib/itineraries/derive";
+import type { GlanceData, DayByDayState } from "@/lib/itineraries/derive";
 
 export interface PortalWallPortal {
   id: number;
@@ -29,6 +30,7 @@ export interface PortalWallItem {
   itineraryId?: number | null;
   isVisible?: boolean;
   glance?: GlanceData;
+  dayByDay?: DayByDayState;
   derivedError?: boolean;
 }
 
@@ -46,6 +48,13 @@ export default function PortalWall({
   const isClient = mode === "client";
   const visibleItems = isClient ? items.filter((i) => i.isVisible !== false) : items;
 
+  const todayItems = visibleItems.filter(
+    (i) =>
+      i.sourceType === "itinerary_today" &&
+      i.dayByDay &&
+      i.dayByDay.state !== "no-window" &&
+      !i.derivedError
+  );
   const glanceItem = visibleItems.find(
     (i) => i.sourceType === "itinerary_glance" && i.glance && !i.derivedError
   );
@@ -54,10 +63,12 @@ export default function PortalWall({
   );
 
   // Grid items = everything except itinerary_glance (which is the sidebar)
-  const gridItems = visibleItems.filter((i) => i.sourceType !== "itinerary_glance");
+  const gridItems = visibleItems.filter(
+    (i) => i.sourceType !== "itinerary_glance" && i.sourceType !== "itinerary_today"
+  );
 
   const hasGlance = !!glanceItem || glanceBroken;
-  const hasInlineDerivedTile = hasGlance;
+  const hasInlineDerivedTile = hasGlance || todayItems.length > 0;
 
   const subtitle =
     portal.heroSubtitle ||
@@ -81,8 +92,27 @@ export default function PortalWall({
         />
       </div>
 
-      {/* Day by Day banner slot — D-b fills this with DayByDayView */}
-      {/* Currently renders nothing; slot reserved for D-b */}
+      {/* Day by Day banner — renders each itinerary_today item attached to this portal */}
+      {todayItems.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <div className="space-y-4">
+            {todayItems.map((item) => (
+              <div key={item.id} data-wall-item data-variant="today">
+                {item.dayByDay ? (
+                  <DayByDayView
+                    dayByDay={item.dayByDay}
+                    itineraryTitle={item.resolvedTitle}
+                  />
+                ) : (
+                  <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500">
+                    Today's plan unavailable
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto py-8 px-4">
         {visibleItems.length === 0 ? (
