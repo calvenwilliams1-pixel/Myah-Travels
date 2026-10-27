@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { posts } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { validatePost } from "@/lib/security";
+import { validateRequiredBlocks } from "@/lib/blocks/validate";
+import { getEditorTemplates } from "@/lib/blocks/template-store";
 import { logActivity } from "@/lib/logging";
 
 export async function createPostAction(formData: FormData) {
@@ -82,6 +84,25 @@ export async function updatePostAction(
 
   if (!validation.success) {
     return { error: validation.error.errors[0]?.message || "Invalid input" };
+  }
+
+  // Publish validation: all required blocks must be present and non-empty
+  if (data.status === "published") {
+    try {
+      const parsed = JSON.parse(data.content);
+      const blocks = Array.isArray(parsed?.blocks) ? parsed.blocks : [];
+      const templateId = parsed?.templateId ?? "story";
+      const templates = await getEditorTemplates();
+      const template = templates.find((t) => t.id === templateId) ?? null;
+      const missing = validateRequiredBlocks(blocks, template);
+      if (missing.length > 0) {
+        return {
+          error: `Cannot publish — required blocks are empty: ${missing.join(", ")}`,
+        };
+      }
+    } catch {
+      // Content not block-shaped — skip block validation, let base validation handle it
+    }
   }
 
   const post = await updatePost(id, {

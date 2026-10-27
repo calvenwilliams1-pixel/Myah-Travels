@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { getPostAction, updatePostAction, getPostTagsAction } from "../actions";
 import TagInput from "@/components/editor/TagInput";
 import type { Template, BlockData } from "@/types/blocks";
+import { validateRequiredBlocks } from "@/lib/blocks/validate";
 
 type PostStatus = "draft" | "published" | "hidden";
 
@@ -88,6 +89,18 @@ export default function EditPostForm({ postId, templates }: EditPostFormProps) {
     if (!title.trim()) {
       setError("Title is required");
       return;
+    }
+
+    // Publish validation: all required blocks must be present and non-empty
+    if (status === "published") {
+      const currentTemplate = templates.find((t) => t.id === templateId) ?? null;
+      const missing = validateRequiredBlocks(blocks, currentTemplate);
+      if (missing.length > 0) {
+        setError(
+          `Cannot publish — required blocks are empty: ${missing.join(", ")}`
+        );
+        return;
+      }
     }
 
     try {
