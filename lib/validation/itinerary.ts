@@ -2,6 +2,23 @@ import { z } from "zod";
 
 const SEGMENT_TYPES = ["activity", "travel", "meal", "free_day"] as const;
 
+/**
+ * IANA timezone validator. Rejects any string that Intl.DateTimeFormat
+ * cannot instantiate with. Null = "inherit from parent" (section) or
+ * "Auto / fallback to UTC" (itinerary). Undefined = no change on update.
+ */
+const TimezoneSchema = z.string().refine(
+  (tz) => {
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone: tz });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  { message: "Invalid IANA timezone" }
+).nullable().optional();
+
 export const CreateItinerarySchema = z.object({
   portalId: z.number(),
   title: z.string().min(1, "Title is required"),
@@ -10,7 +27,7 @@ export const CreateItinerarySchema = z.object({
 export const UpdateItinerarySchema = z.object({
   title: z.string().min(1).optional(),
   themePreset: z.string().nullable().optional(),
-  timezone: z.string().nullable().optional(),
+  timezone: TimezoneSchema,
 });
 
 export const CreateSectionSchema = z.object({
@@ -18,6 +35,7 @@ export const CreateSectionSchema = z.object({
   baseCity: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  timezone: TimezoneSchema,
 }).refine(
   (data) => {
     if (data.startDate && data.endDate) {
@@ -27,6 +45,15 @@ export const CreateSectionSchema = z.object({
   },
   { message: "End date must be after start date" }
 );
+
+export const UpdateSectionSchema = z.object({
+  title: z.string().min(1).optional(),
+  baseCity: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  themePresetOverride: z.string().nullable().optional(),
+  timezone: TimezoneSchema,
+});
 
 export const CreateDaySchema = z.object({
   date: z.string().min(1, "Date is required"),
