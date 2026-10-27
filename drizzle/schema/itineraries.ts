@@ -35,6 +35,7 @@ export const itinerarySections = sqliteTable(
     endDate: text("end_date"),
     position: integer("position").default(0),
     themePresetOverride: text("theme_preset_override"),
+    timezone: text("timezone"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
