@@ -46,11 +46,13 @@ export default function NotepadPage() {
   }
 
   async function fetchMembers() {
-    const res = await fetch(`/api/portal/${portalId}`);
-    const data = await res.json();
-    // Members fetched via separate endpoint or included in portal data
-    // For now, we'll handle empty state
-    setMembers([]);
+    try {
+      const res = await fetch(`/api/portal/${portalId}`);
+      const data = await res.json();
+      setMembers(data.members || []);
+    } catch {
+      setMembers([]);
+    }
   }
 
   useEffect(() => {
