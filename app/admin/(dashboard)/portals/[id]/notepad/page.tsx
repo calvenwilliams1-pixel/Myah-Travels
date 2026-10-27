@@ -3,13 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import type { TagPersonLink } from "@/lib/notepad/resolve-tag-person-links";
 import NotepadEntryForm from "@/components/admin/notepad/NotepadEntryForm";
 
 interface NotepadEntry {
   id: number;
   content: string;
   tags: string | null;
+  person_links: string | null;
   createdAt: string;
 }
 
@@ -136,18 +139,42 @@ export default function NotepadPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <p className="text-gray-800 whitespace-pre-wrap">{entry.content}</p>
-                  {entry.tags && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {entry.tags.split(",").map((tag, i) => (
-                        <span
-                          key={i}
-                          className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full"
-                        >
-                          {tag.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {entry.tags && (() => {
+                    const links: TagPersonLink[] = entry.person_links
+                      ? (() => { try { return JSON.parse(entry.person_links); } catch { return []; } })()
+                      : [];
+                    const linksByTag = new Map<string, TagPersonLink>(
+                      links.map((l) => [l.tag.toLowerCase(), l])
+                    );
+                    return (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {entry.tags.split(",").map((tag, i) => {
+                          const trimmed = tag.trim();
+                          if (!trimmed) return null;
+                          const link = linksByTag.get(trimmed.toLowerCase());
+                          if (link?.personId) {
+                            return (
+                              <Link
+                                key={i}
+                                href={`/admin/clients/people/${link.personId}`}
+                                className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full hover:bg-primary/20"
+                              >
+                                {trimmed}
+                              </Link>
+                            );
+                          }
+                          return (
+                            <span
+                              key={i}
+                              className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full"
+                            >
+                              {trimmed}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                   <p className="text-xs text-gray-400 mt-2">
                     {new Date(entry.createdAt).toLocaleString()}
                   </p>
