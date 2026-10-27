@@ -69,6 +69,7 @@ const requiredColumns = [
   { table: "itinerary_sections", column: "theme_preset_override", type: "TEXT" },
   { table: "itinerary_segments", column: "is_highlighted", type: "INTEGER DEFAULT 0" },
   { table: "portal_items", column: "is_visible", type: "INTEGER NOT NULL DEFAULT 1" },
+  { table: "itineraries", column: "timezone", type: "TEXT" },
 ];
 
 for (const { table, column, type } of requiredColumns) {

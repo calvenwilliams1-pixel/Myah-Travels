@@ -10,6 +10,7 @@ export const itineraries = sqliteTable(
       .references(() => portals.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     themePreset: text("theme_preset"),
+    timezone: text("timezone"),
     isArchived: integer("is_archived", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at"),
