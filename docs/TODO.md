@@ -139,11 +139,12 @@ Build order, then testing pass. Every batch updates `docs/TESTING.md` with its t
 
 ### Round 4 — Phase 7.3 sweep
 
-**Batch F — audit and rebuild Phase 7.3 survivors**
-- Walk the 8 Phase 7.3 items; mark each MOOT / DONE / STILL PENDING / NEW SCOPE
-- Update this TODO with the survivors
-- If any code work survives, build it; append TESTING.md section accordingly
-- No code if all items resolve to MOOT / DONE
+**Batch F — build the three survivors**
+- Publish Validation (required blocks filled)
+- Error Boundaries per block
+- Responsive Preview (desktop / tablet / mobile)
+- Append TESTING.md section
+- Total ~4.5 hours
 
 ### Round 5 — Launch Day
 
@@ -236,20 +237,27 @@ The autocomplete from portal members already handles discovery. Phase 7.6.8 adds
 
 ---
 
-## Phase 7.3 — Production Hardening (sweep first)
+## Phase 7.3 — Production Hardening (swept)
 
-Do not build against this list until it has been swept (Batch F). Several items may already be done or moot.
+**Sweep complete (Batch F).** Results:
 
-- Fix better-sqlite3 crash on mini PC deployment — likely moot per MASTER-PROMPT Known Issue 1
-- Delete Canvas system — decision needed; MASTER-PROMPT says frozen, safe to leave
-- Preview popup (modal → floating → fullscreen) — likely already done (PreviewPopout shipped)
-- Target surface token conversion (~20-30 `bg-gray-50/100` → semantic tokens)
-- Undo / Redo (global stack, capped 50)
-- Publish Validation (required blocks filled)
-- Error Boundaries per block
-- Responsive Preview (desktop/tablet/mobile)
+| # | Item | Class | Notes |
+|---|------|-------|-------|
+| 1 | better-sqlite3 crash on mini PC | **MOOT** | Codespace-only, resolved by Node 22 pinning. No code needed. |
+| 2 | Delete Canvas system | **DEFER** | 14 files in `components/editor/canvas/`, `mode === "design"` branches exist but no DB rows use `design`. Leave frozen — deletion is risk with no reward. |
+| 3 | Preview popup (modal → floating → fullscreen) | **DONE** | `PreviewPopout.tsx` ships floating + fullscreen. |
+| 4 | Target surface token conversion | **DROPPED** | 144 gray tokens found (not ~20-30 as originally estimated). Earlier 7.9 plan already dropped this — neutral greys work fine. |
+| 5 | Undo / Redo (global stack, capped 50) | **EDITOR-ONLY DONE** | TipTap toolbar has per-editor undo/redo. App-wide stack dropped — significant architecture for low value in single-admin. |
+| 6 | Publish Validation (required blocks filled) | **STILL NEEDED** | Build in Batch F. |
+| 7 | Error Boundaries per block | **STILL NEEDED** | Component exists at `components/ErrorBoundary.tsx`, not wired. Build in Batch F — wrap each block. |
+| 8 | Responsive Preview (desktop/tablet/mobile) | **STILL NEEDED** | Build in Batch F — width presets in PreviewPopout. |
 
-Sweep marks each MOOT / DONE / STILL PENDING / NEW SCOPE. Surviving items are built in the same batch.
+**Batch F scope (3 items):**
+- #6 Publish Validation — reject publish if any `required` block is empty. ~2h.
+- #7 Error Boundaries per block — wrap each block in `<ErrorBoundary>` with "Block failed to render" fallback. ~1h.
+- #8 Responsive Preview — desktop / tablet (768px) / mobile (375px) width presets in `PreviewPopout`. ~1.5h.
+
+**Total: ~4.5 hours.**
 
 ---
 
