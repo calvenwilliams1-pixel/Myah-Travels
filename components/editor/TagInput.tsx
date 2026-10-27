@@ -7,6 +7,12 @@ interface TagInputProps {
   onAddTag: (tag: string) => void;
   onRemoveTag: (tag: string) => void;
   placeholder?: string;
+  /**
+   * Optional local suggestion source. When provided, filters this array
+   * client-side instead of calling /api/tags/suggest (post-tag endpoint).
+   * Notepad uses this to suggest portal member names + distinct notepad tags.
+   */
+  autocompleteSource?: string[];
 }
 
 function normaliseForCompare(s: string): string {
@@ -23,6 +29,7 @@ export default function TagInput({
   onAddTag,
   onRemoveTag,
   placeholder = "Add tags...",
+  autocompleteSource,
 }: TagInputProps) {
   const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -41,6 +48,19 @@ export default function TagInput({
       return;
     }
 
+    // Local filter path — used by notepad (member names + distinct tags)
+    if (autocompleteSource) {
+      const q = input.trim().toLowerCase();
+      const already = new Set(selectedTags.map((t) => t.toLowerCase()));
+      const matches = autocompleteSource
+        .filter((s) => s.toLowerCase().includes(q) && !already.has(s.toLowerCase()))
+        .slice(0, 8);
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+      return;
+    }
+
+    // API path — used by post tag editor
     const fetchSuggestions = async () => {
       try {
         const res = await fetch(`/api/tags/suggest?q=${encodeURIComponent(input)}`);
@@ -54,7 +74,7 @@ export default function TagInput({
 
     const timeout = setTimeout(fetchSuggestions, 200);
     return () => clearTimeout(timeout);
-  }, [input]);
+  }, [input, autocompleteSource, selectedTags]);
 
   const handleAddTag = (tag: string) => {
     const slug = normaliseForCompare(tag);
