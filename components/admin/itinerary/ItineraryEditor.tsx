@@ -109,6 +109,7 @@ export interface Itinerary {
   portalId: number;
   title: string;
   themePreset: string | null;
+  timezone: string | null;
   sections: Section[];
 }
 
@@ -172,6 +173,15 @@ export default function ItineraryEditor({
     fetchItinerary();
   }
 
+  async function updateTimezone(timezone: string | null) {
+    await fetch(`/api/itineraries/${itineraryId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ timezone }),
+    });
+    fetchItinerary();
+  }
+
   async function deleteSection(sectionId: number) {
     if (!confirm("Delete this section and all its days/stays?")) return;
     await fetch(`/api/sections/${sectionId}`, { method: "DELETE" });
@@ -221,6 +231,38 @@ export default function ItineraryEditor({
           inheritLabel="Inherit site default"
           helperText="Applied to all sections. Sections can override individually."
         />
+      </Card>
+
+      {/* Timezone selector */}
+      <Card>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Trip Timezone
+          </label>
+          <select
+            value={itinerary.timezone ?? ""}
+            onChange={(e) =>
+              updateTimezone(e.target.value === "" ? null : e.target.value)
+            }
+            className="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+          >
+            <option value="">Auto — derive from first travel leg (falls back to UTC)</option>
+            {typeof Intl !== "undefined" && "supportedValuesOf" in Intl
+              ? (Intl as any).supportedValuesOf("timeZone").map((tz: string) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))
+              : ["UTC", "America/Toronto", "America/Vancouver", "Europe/London", "Europe/Paris", "Asia/Tokyo"].map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Used to compute "today" for the Day by Day tile. Auto derives from the first travel leg's destination timezone.
+          </p>
+        </div>
       </Card>
 
       {/* Add Section Form */}

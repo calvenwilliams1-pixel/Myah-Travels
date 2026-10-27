@@ -10,6 +10,7 @@ export const CreateItinerarySchema = z.object({
 export const UpdateItinerarySchema = z.object({
   title: z.string().min(1).optional(),
   themePreset: z.string().nullable().optional(),
+  timezone: z.string().nullable().optional(),
 });
 
 export const CreateSectionSchema = z.object({

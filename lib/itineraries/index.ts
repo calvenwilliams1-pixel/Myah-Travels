@@ -37,7 +37,7 @@ export async function createItinerary(portalId: number, title: string, themePres
   }).returning();
 }
 
-export async function updateItinerary(id: number, data: { title?: string; themePreset?: string | null }) {
+export async function updateItinerary(id: number, data: { title?: string; themePreset?: string | null; timezone?: string | null }) {
   return db.update(itineraries)
     .set({ ...data, updatedAt: new Date().toISOString() })
     .where(eq(itineraries.id, id))
