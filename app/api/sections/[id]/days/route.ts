@@ -21,6 +21,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const parsed = CreateDaySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors }, { status: 400 });
 
-  const result = await createDay(sectionId, parsed.data);
-  return NextResponse.json({ success: true, day: result[0] });
+  try {
+    const result = await createDay(sectionId, parsed.data);
+    return NextResponse.json({ success: true, day: result[0] });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Create failed";
+    return NextResponse.json({ error: message }, { status: 409 });
+  }
 }

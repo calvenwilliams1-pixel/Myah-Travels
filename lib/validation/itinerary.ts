@@ -62,6 +62,12 @@ export const CreateDaySchema = z.object({
   notes: z.string().optional(),
 });
 
+export const UpdateDaySchema = z.object({
+  date: z.string().min(1).optional(),
+  title: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 export const CreateSegmentSchema = z.object({
   type: z.enum(SEGMENT_TYPES),
   startTime: z.string().optional(),
