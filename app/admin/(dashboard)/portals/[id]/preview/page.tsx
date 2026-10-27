@@ -72,24 +72,48 @@ export default async function AdminPreviewPage({ params }: { params: { id: strin
   const itemsWithDerived = await attachDerivedItems(items);
 
   return (
-    <AdminPreviewShell>
+    <AdminPreviewShell portalId={portal.id}>
       <PreviewBanner variant="info">Preview mode — this is what your client sees.</PreviewBanner>
       <PortalWall portal={portal} items={itemsWithDerived} mode="admin-preview" />
     </AdminPreviewShell>
   );
 }
 
-function AdminPreviewShell({ children }: { children: React.ReactNode }) {
+function AdminPreviewShell({
+  children,
+  portalId,
+}: {
+  children: React.ReactNode;
+  portalId?: number;
+}) {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-gray-900 text-white px-6 py-3 flex items-center justify-between">
         <span className="text-sm font-medium">Admin Preview</span>
-        <Link
-          href="/admin/portals"
-          className="text-sm text-gray-300 hover:text-white"
-        >
-          ← Back to Portals
-        </Link>
+        <div className="flex items-center gap-4">
+          {portalId && (
+            <>
+              <Link
+                href={`/admin/portals/${portalId}`}
+                className="text-sm text-gray-300 hover:text-white"
+              >
+                ← Back to Portal
+              </Link>
+              <Link
+                href={`/admin/portals/${portalId}/edit`}
+                className="text-sm bg-primary text-white px-3 py-1 rounded hover:opacity-90"
+              >
+                Edit Portal
+              </Link>
+            </>
+          )}
+          <Link
+            href="/admin/portals"
+            className="text-sm text-gray-300 hover:text-white"
+          >
+            ← All Portals
+          </Link>
+        </div>
       </div>
       {children}
     </div>
