@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { notepadEntries } from "@/drizzle/schema";
 import { eq, and, isNull, desc, like, or } from "drizzle-orm";
+import { resolveTagPersonLinks } from "./resolve-tag-person-links";
 
 export async function getNotepadEntries(portalId: number) {
   return db.select().from(notepadEntries)
@@ -30,10 +31,18 @@ export async function getNotepadEntryById(id: number) {
 }
 
 export async function addNotepadEntry(portalId: number, content: string, tags: string | null) {
+  const tagArray = tags
+    ? tags.split(",").map((t) => t.trim()).filter(Boolean)
+    : [];
+  const links = tagArray.length > 0
+    ? await resolveTagPersonLinks(tagArray, portalId)
+    : [];
+
   return db.insert(notepadEntries).values({
     portalId,
     content,
     tags: tags || null,
+    personLinks: links.length > 0 ? JSON.stringify(links) : null,
   }).returning();
 }
 
@@ -41,8 +50,28 @@ export async function updateNotepadEntry(id: number, data: {
   content?: string;
   tags?: string | null;
 }) {
+  // If tags changed, re-resolve person links. Always re-resolve on save
+  // so renamed people / new members / duplicate canonical_names are handled.
+  const update: Record<string, any> = {
+    ...data,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (data.tags !== undefined) {
+    const existing = await getNotepadEntryById(id);
+    if (existing) {
+      const tagArray = data.tags
+        ? data.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : [];
+      const links = tagArray.length > 0
+        ? await resolveTagPersonLinks(tagArray, existing.portalId)
+        : [];
+      update.personLinks = links.length > 0 ? JSON.stringify(links) : null;
+    }
+  }
+
   return db.update(notepadEntries)
-    .set({ ...data, updatedAt: new Date().toISOString() })
+    .set(update)
     .where(eq(notepadEntries.id, id))
     .returning();
 }
