@@ -72,6 +72,7 @@ export async function createSection(itineraryId: number, data: {
   baseCity?: string;
   startDate?: string;
   endDate?: string;
+  timezone?: string | null;
 }) {
   const sections = await getSectionsForItinerary(itineraryId);
   const nextPosition = sections.length > 0 ? Math.max(...sections.map(s => s.position ?? 0)) + 1 : 0;
@@ -82,6 +83,7 @@ export async function createSection(itineraryId: number, data: {
     baseCity: data.baseCity ?? null,
     startDate: data.startDate ?? null,
     endDate: data.endDate ?? null,
+    timezone: data.timezone ?? null,
     position: nextPosition,
   }).returning();
 }
@@ -92,6 +94,7 @@ export async function updateSection(id: number, data: {
   startDate?: string;
   endDate?: string;
   themePresetOverride?: string | null;
+  timezone?: string | null;
 }) {
   return db.update(itinerarySections).set(data).where(eq(itinerarySections.id, id)).returning();
 }
@@ -712,6 +715,7 @@ export async function duplicateItineraryAsTemplate(
           startDate: null,
           endDate: null,
           themePresetOverride: section.themePresetOverride,
+          timezone: section.timezone ?? null,
           position: section.position,
         })
         .returning()
