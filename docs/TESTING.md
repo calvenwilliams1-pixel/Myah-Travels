@@ -728,3 +728,74 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - One timezone per itinerary for multi-country trips
 - Date-only matching (overnight flights stay on departure day, intentional)
 - "Welcome home" state persists until item removed or hidden
+
+## Batch D-c — Multi-timezone trips
+
+**Commits:** ada7e3c, 9c7b994, 4b28105, 14c6ed6, 605dcdd, 534a623
+
+### What was built
+
+**Schema:**
+- Migration `0021_itinerary_sections_timezone.sql` — adds `itinerary_sections.timezone TEXT` (nullable)
+- `itineraries.timezone` reinterpreted as "default when section timezone is null"
+
+**Validation:**
+- `TimezoneSchema` — validates IANA timezone strings via `Intl.DateTimeFormat`
+- `UpdateSectionSchema` — new, validates sections PATCH
+- `UpdateDaySchema` — new, validates days PATCH
+- Section schemas accept `timezone`
+- `CreateDaySchema` unchanged (date uniqueness is repo-level, not Zod)
+
+**Repo:**
+- `updateSection` accepts `timezone`
+- `createSection` accepts `timezone`
+- `duplicateItineraryAsTemplate` copies `section.timezone`
+- `findDuplicateDayDate` helper — checks for existing days with the same date across all sections in the itinerary
+- `createDay` enforces uniqueness (throws on duplicate)
+- `updateDay` accepts optional `date`, enforces uniqueness (excluding self)
+
+**Derivation:**
+- `resolveSectionTimezone(section, itinerary)` — centralised inheritance helper
+- `deriveDayByDay(full, now: Date, destination)` — signature changed from `today: string`
+- Per-section timezone resolution: iterates sections, computes today in each section's timezone, finds the matching day
+- Explicit day sort by date before assigning global day numbers
+- Ambiguity logging if two sections somehow match (should not happen with uniqueness enforcement)
+- Pre-trip / post-trip / gap states use itinerary default timezone
+
+**UI:**
+- `TimezoneSelect.tsx` — grouped by region (`<optgroup>`), searchable, "Inherit" option for null
+- `SectionEditor` — timezone dropdown below theme override
+- `ItineraryEditor` — helper text clarified as "default timezone"
+
+**Routes:**
+- Sections PATCH validates via `UpdateSectionSchema`
+- Days PATCH validates via `UpdateDaySchema`, returns 409 on uniqueness conflict
+- Days POST (createDay) returns 409 on uniqueness conflict
+
+### Test cases
+
+**Unit (automated — `derive-day-by-day.test.ts`):**
+- [x] Single-section, single-timezone trips still work (13 existing tests, adapted to `now: Date` signature)
+- [x] Multi-section, single itinerary timezone
+- [x] Multi-section, per-section timezones — matching section wins
+- [x] Pre-trip / post-trip states use itinerary default timezone
+- [x] Gap day (no matching day in any section's tz) → no-plan-today
+
+**Browser (manual):**
+- [ ] Section editor shows timezone dropdown (grouped by region, searchable)
+- [ ] Setting section timezone persists
+- [ ] "Inherit itinerary default" option clears section timezone
+- [ ] Setting itinerary timezone persists
+- [ ] Multi-section itinerary with different timezones: Day by Day picks the correct section based on current time
+- [ ] Section with null timezone inherits itinerary default
+- [ ] Both null → UTC fallback
+- [ ] Search filter narrows timezone list
+- [ ] Duplicate date across sections → 409 with clear message ("Dates must be unique across all sections")
+- [ ] Editing a day's date to a conflicting date → 409
+- [ ] Editing a day's date to a non-conflicting date → succeeds
+- [ ] Templates: duplicate itinerary copies section timezones
+
+### Known limitations
+- Cross-dateline ambiguity: uniqueness enforcement prevents overlaps, but a flight landing "same day" in a different timezone must be assigned to one section (Myah's data-entry decision)
+- No automatic timezone detection from travel legs (future: derive from first leg's destinationTimezone in each section)
+- AddSectionForm doesn't include timezone during initial create — set after creation
