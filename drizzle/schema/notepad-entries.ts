@@ -11,6 +11,7 @@ export const notepadEntries = sqliteTable(
       .references(() => portals.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
     tags: text("tags"),
+    personLinks: text("person_links"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at"),
     deletedAt: text("deleted_at"),

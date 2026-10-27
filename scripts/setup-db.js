@@ -71,6 +71,7 @@ const requiredColumns = [
   { table: "portal_items", column: "is_visible", type: "INTEGER NOT NULL DEFAULT 1" },
   { table: "itineraries", column: "timezone", type: "TEXT" },
   { table: "itinerary_sections", column: "timezone", type: "TEXT" },
+  { table: "notepad_entries", column: "person_links", type: "TEXT" },
 ];
 
 for (const { table, column, type } of requiredColumns) {
