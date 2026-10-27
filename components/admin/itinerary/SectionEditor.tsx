@@ -9,6 +9,7 @@ import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
 import AddStayForm from "./AddStayForm";
 import ThemeSelector from "./ThemeSelector";
+import TimezoneSelect from "./TimezoneSelect";
 import StaysEditor from "./StaysEditor";
 import AddDayForm from "./AddDayForm";
 import DaysEditor from "./DaysEditor";
@@ -112,6 +113,17 @@ export default function SectionEditor({
         }}
         inheritLabel="Inherit itinerary theme"
         helperText="Leave on inherit unless this section needs a different look."
+      />
+
+      {/* Timezone override */}
+      <TimezoneSelect
+        value={section.timezone ?? null}
+        onChange={(v) => {
+          updateSection({ timezone: v });
+          onChanged();
+        }}
+        inheritLabel="Inherit itinerary default"
+        helperText="Set when this section is in a different timezone from the itinerary default. Used for today's plan."
       />
 
       {/* Stays */}

@@ -100,6 +100,7 @@ export interface Section {
   endDate: string | null;
   position: number;
   themePresetOverride: string | null;
+  timezone: string | null;
   days: Day[];
   stays: Stay[];
 }
@@ -260,7 +261,7 @@ export default function ItineraryEditor({
                 ))}
           </select>
           <p className="text-xs text-gray-500 mt-1">
-            Used to compute "today" for the Day by Day tile. Auto derives from the first travel leg's destination timezone.
+            Default timezone for the trip. Sections can override. Used when computing "today" for the Day by Day tile. Auto falls back to UTC.
           </p>
         </div>
       </Card>
