@@ -1,7 +1,10 @@
 import { getFullItinerary } from "./index";
-import { deriveGlance } from "./derive";
-import type { GlanceData } from "./derive";
-import type { PortalItemSourceType } from "@/types/portal-items";
+import {
+  deriveGlance,
+  deriveDayByDay,
+  computeTodayInTimezone,
+} from "./derive";
+import type { GlanceData, DayByDayState } from "./derive";
 
 interface PortalItemLike {
   id: number;
@@ -10,25 +13,32 @@ interface PortalItemLike {
 }
 
 /**
- * Attach derived data (glance, and later day-by-day) to portal wall items.
+ * Attach derived data to portal wall items.
  *
- * D-a scope: only `itinerary_glance` items are derived. `itinerary` (full)
- * and all other source types pass through unchanged. D-b adds the
- * `itinerary_today` branch when deriveDayByDay lands.
+ * - `itinerary_glance` → deriveGlance, attaches `glance`
+ * - `itinerary_today` → deriveDayByDay, attaches `dayByDay`
+ * - Everything else (including `itinerary` full) passes through unchanged
  *
- * Failure isolation: per-item try/catch, `derivedError: true` on failure.
+ * Per-item failure isolation: `derivedError: true` on failure.
  * Never throws, never blocks other items.
  */
 export async function attachDerivedItems<T extends PortalItemLike>(
   items: T[]
-): Promise<(T & { glance?: GlanceData; derivedError?: boolean })[]> {
+): Promise<(T & {
+  glance?: GlanceData;
+  dayByDay?: DayByDayState;
+  derivedError?: boolean;
+})[]> {
   return Promise.all(
     items.map(async (item) => {
-      if (item.sourceType !== "itinerary_glance") return item;
+      const isGlance = item.sourceType === "itinerary_glance";
+      const isToday = item.sourceType === "itinerary_today";
+
+      if (!isGlance && !isToday) return item;
 
       if (!item.itineraryId) {
         console.error(
-          `[attach-derived-items] portal_item ${item.id} is itinerary_glance but has no itineraryId`
+          `[attach-derived-items] portal_item ${item.id} is ${item.sourceType} but has no itineraryId`
         );
         return { ...item, derivedError: true as const };
       }
@@ -41,8 +51,21 @@ export async function attachDerivedItems<T extends PortalItemLike>(
           );
           return { ...item, derivedError: true as const };
         }
-        const glance = deriveGlance(full);
-        return { ...item, glance };
+
+        if (isGlance) {
+          const glance = deriveGlance(full);
+          return { ...item, glance };
+        }
+
+        // itinerary_today
+        const tz = (full as any).timezone ?? null;
+        const today = computeTodayInTimezone(tz);
+        const destination =
+          (full.sections?.[0] as any)?.baseCity ||
+          full.title ||
+          "your trip";
+        const dayByDay = deriveDayByDay(full, today, destination);
+        return { ...item, dayByDay };
       } catch (err) {
         console.error(
           `[attach-derived-items] derive failed for portal_item ${item.id} (itinerary ${item.itineraryId}):`,
