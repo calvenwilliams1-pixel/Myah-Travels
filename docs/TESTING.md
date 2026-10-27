@@ -799,3 +799,50 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - Cross-dateline ambiguity: uniqueness enforcement prevents overlaps, but a flight landing "same day" in a different timezone must be assigned to one section (Myah's data-entry decision)
 - No automatic timezone detection from travel legs (future: derive from first leg's destinationTimezone in each section)
 - AddSectionForm doesn't include timezone during initial create — set after creation
+
+## Batch F — Phase 7.3 sweep survivors
+
+**Commits:** 951fced, e3c0d09, 8efa6d1, 0604292
+
+### What was built
+
+**6a — Edit page uses BlockEditor:** server wrapper page fetches templates, `EditPostForm` parses content as {blocks, templateId} and renders BlockEditor. Legacy TipTap posts start fresh (no migration needed — DB has 0 posts).
+
+**6b — Publish validation:** client-side check in `handleSave` rejects publish when required blocks empty; server-side check in `updatePostAction` mirrors it. Per-type emptiness criteria in `lib/blocks/validate.ts`.
+
+**7 — Error boundaries per block:** each block editor wrapped in `<ErrorBoundary>` with per-block fallback. Generic fallback in `ErrorBoundary.tsx` replaces Canvas-specific messaging.
+
+**8 — Responsive preview:** desktop / tablet (768px) / mobile (375px) viewport width toggles in `PreviewPopout`. Content wraps in a max-width container with grey surround.
+
+### Test cases
+
+**Edit page (browser):**
+- [ ] Create a new post via `/admin/posts/new` — block editor renders
+- [ ] Save post → redirect to `/admin/posts/[id]` → block editor loads with saved blocks
+- [ ] Add/edit blocks, save, reload — content persists
+- [ ] Delete a block, save, reload — stays deleted
+- [ ] Switch template, save, reload — template persists
+
+**Publish validation (browser):**
+- [ ] New post with empty Title block, status = published → save rejects with 'Cannot publish — required blocks are empty: [label]'
+- [ ] Same post, status = draft → saves fine
+- [ ] Fill Title block, publish → succeeds
+- [ ] Server-side rejection: bypass client with direct POST → still rejects
+
+**Error boundaries (browser):**
+- [ ] Corrupt one block's data in DB → page loads, only that block shows fallback
+- [ ] Other blocks render normally
+- [ ] Removing the corrupt block clears the fallback
+
+**Responsive preview (browser):**
+- [ ] Open preview → Desktop button active, full width
+- [ ] Click Tablet → preview narrows to 768px centered
+- [ ] Click Mobile → preview narrows to 375px centered
+- [ ] Click Desktop → back to full width
+- [ ] Resize popout while in tablet/mobile mode — max-width preserved
+- [ ] Buttons have aria-pressed state for screen readers
+
+### Known limitations
+- Legacy TipTap posts (if any existed) start fresh on edit — DB currently has 0 posts so no impact
+- ErrorBoundary fallback is generic text; per-block custom fallbacks would require passing `fallback` prop
+- Responsive preview only affects preview, not the actual admin editor layout
