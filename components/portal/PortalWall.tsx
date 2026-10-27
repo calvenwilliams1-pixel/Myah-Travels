@@ -96,7 +96,12 @@ export default function PortalWall({
             <div>
               {/* Mobile: glance renders inline above grid */}
               {hasGlance && (
-                <div className="lg:hidden mb-6" data-wall-item data-variant="glance">
+                <div className={`lg:hidden mb-6 relative ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance">
+                  {!isClient && glanceItem && glanceItem.isVisible === false && (
+                    <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
+                      Hidden
+                    </span>
+                  )}
                   {glanceItem ? (
                     <ItineraryGlanceView glance={glanceItem.glance!} />
                   ) : (
@@ -159,7 +164,12 @@ export default function PortalWall({
                 data-wall-item
                 data-variant="glance"
               >
-                <div className="sticky top-4">
+                <div className={`sticky top-4 relative ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`}>
+                  {!isClient && glanceItem && glanceItem.isVisible === false && (
+                    <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
+                      Hidden
+                    </span>
+                  )}
                   {glanceItem ? (
                     <ItineraryGlanceView glance={glanceItem.glance!} />
                   ) : (
