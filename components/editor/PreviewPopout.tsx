@@ -65,6 +65,7 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
   const [position, setPosition] = useState<Position>({ x: 80, y: 80 });
   const [size, setSize] = useState<Size>({ width: 480, height: 600 });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [dragOffset, setDragOffset] = useState<Position | null>(null);
   const [resizeStart, setResizeStart] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -207,6 +208,38 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
                 {isPiPOpen ? "\u29C9 Close PiP" : "\u29C9 PiP"}
               </button>
             )}
+            <span className="flex items-center gap-0.5 border-r border-gray-300 pr-2 mr-1" role="group" aria-label="Preview viewport size">
+              <button
+                type="button"
+                onClick={() => setViewportWidth("desktop")}
+                className={`text-xs px-2 py-1 rounded ${viewportWidth === "desktop" ? "bg-primary text-white" : "text-gray-500 hover:text-gray-700"}`}
+                title="Desktop width"
+                aria-label="Desktop preview"
+                aria-pressed={viewportWidth === "desktop"}
+              >
+                Desktop
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewportWidth("tablet")}
+                className={`text-xs px-2 py-1 rounded ${viewportWidth === "tablet" ? "bg-primary text-white" : "text-gray-500 hover:text-gray-700"}`}
+                title="Tablet width (768px)"
+                aria-label="Tablet preview"
+                aria-pressed={viewportWidth === "tablet"}
+              >
+                Tablet
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewportWidth("mobile")}
+                className={`text-xs px-2 py-1 rounded ${viewportWidth === "mobile" ? "bg-primary text-white" : "text-gray-500 hover:text-gray-700"}`}
+                title="Mobile width (375px)"
+                aria-label="Mobile preview"
+                aria-pressed={viewportWidth === "mobile"}
+              >
+                Mobile
+              </button>
+            </span>
             <button
               type="button"
               onClick={() => setIsFullscreen(!isFullscreen)}
@@ -228,8 +261,18 @@ export default function PreviewPopout({ blocks, template, onClose }: PreviewPopo
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto preview-body">
-          <TemplatePreview blocks={blocks} template={template} />
+        <div className="flex-1 overflow-auto preview-body bg-gray-100">
+          <div
+            className="mx-auto bg-white min-h-full transition-all duration-150"
+            style={{
+              maxWidth:
+                viewportWidth === "tablet" ? "768px"
+                : viewportWidth === "mobile" ? "375px"
+                : "100%",
+            }}
+          >
+            <TemplatePreview blocks={blocks} template={template} />
+          </div>
         </div>
 
         {!isFullscreen && (
