@@ -8,7 +8,7 @@ import {
   itineraryTravelLegs,
   itineraryBlocks,
 } from "@/drizzle/schema";
-import { eq, and, isNull, desc, asc } from "drizzle-orm";
+import { eq, ne, and, isNull, desc, asc, inArray } from "drizzle-orm";
 import { getLegsForSegments, getLegsForSegment } from "./travelLegs";
 import { getBlocksForDays } from "./blocks";
 
@@ -120,12 +120,65 @@ export async function getDayById(id: number) {
   return result[0] ?? null;
 }
 
+/**
+ * Check whether any day already exists in this itinerary with the given date.
+ * Dates must be unique across all sections of an itinerary — a day cannot
+ * appear in two sections at once.
+ *
+ * When `excludeDayId` is provided, that day is excluded from the check —
+ * used on update so a day doesn't conflict with itself.
+ *
+ * Returns the conflicting day's id if found, null otherwise.
+ */
+async function findDuplicateDayDate(
+  itineraryId: number,
+  date: string,
+  excludeDayId?: number
+): Promise<number | null> {
+  const sectionRows = await db
+    .select({ id: itinerarySections.id })
+    .from(itinerarySections)
+    .where(eq(itinerarySections.itineraryId, itineraryId));
+
+  if (sectionRows.length === 0) return null;
+
+  const sectionIds = sectionRows.map((s) => s.id);
+  const conditions = [
+    eq(itineraryDays.date, date),
+    inArray(itineraryDays.sectionId, sectionIds),
+  ];
+  if (excludeDayId !== undefined) {
+    conditions.push(ne(itineraryDays.id, excludeDayId));
+  }
+
+  const existing = await db
+    .select({ id: itineraryDays.id })
+    .from(itineraryDays)
+    .where(and(...conditions))
+    .limit(1);
+
+  return existing[0]?.id ?? null;
+}
+
 export async function createDay(sectionId: number, data: {
   date: string;
   dayNumber: number;
   title?: string;
   notes?: string;
 }) {
+  // Resolve the itinerary this section belongs to
+  const section = await getSectionById(sectionId);
+  if (!section) {
+    throw new Error(`Section ${sectionId} not found`);
+  }
+
+  const duplicateId = await findDuplicateDayDate(section.itineraryId, data.date);
+  if (duplicateId !== null) {
+    throw new Error(
+      `A day with date ${data.date} already exists elsewhere in this itinerary. Dates must be unique across all sections.`
+    );
+  }
+
   return db.insert(itineraryDays).values({
     sectionId,
     date: data.date,
@@ -138,7 +191,23 @@ export async function createDay(sectionId: number, data: {
 export async function updateDay(id: number, data: {
   title?: string;
   notes?: string;
+  date?: string;
 }) {
+  if (data.date !== undefined) {
+    const day = await getDayById(id);
+    if (!day) throw new Error(`Day ${id} not found`);
+
+    const section = await getSectionById(day.sectionId);
+    if (!section) throw new Error(`Section ${day.sectionId} not found`);
+
+    const duplicateId = await findDuplicateDayDate(section.itineraryId, data.date, id);
+    if (duplicateId !== null) {
+      throw new Error(
+        `A day with date ${data.date} already exists elsewhere in this itinerary. Dates must be unique across all sections.`
+      );
+    }
+  }
+
   return db.update(itineraryDays).set(data).where(eq(itineraryDays.id, id)).returning();
 }
 
