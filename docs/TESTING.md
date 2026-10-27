@@ -669,3 +669,62 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - [ ] Same with `{ isVisible: "true" }` (string, not boolean) → 400
 - [ ] Same with a non-existent item → 404
 - [ ] Same without auth → redirect/401
+
+## Batch D-b — Day by Day
+
+**Commits:** 8772560, 2e6a42a, 996b71d, 4ddc13c, 79f6bed, 26d0e23
+
+### What was built
+
+**Schema:**
+- Migration `0019_itinerary_timezone.sql` — adds `itineraries.timezone TEXT` (nullable, IANA)
+- Schema field + requiredColumns guard
+
+**Derivation:**
+- `lib/itineraries/derive.ts` — appended `deriveDayByDay`, `formatDateISOInTimezone`, `computeTodayInTimezone`, `daysBetweenUTC` (private)
+- `lib/itineraries/derive-day-by-day.test.ts` — 17 tests
+- `lib/itineraries/attach-derived-items.ts` — extended to branch on `itinerary_today`
+
+**Rendering:**
+- `components/portal/day-by-day/DayByDayView.tsx` — pre-trip countdown, during-trip today, post-trip welcome home, no-plan-today
+- `PortalWall.tsx` — banner slot above grid for itinerary_today items
+
+### Test cases
+
+**Unit (automated):**
+- [x] formatDateISOInTimezone returns YYYY-MM-DD in given timezone
+- [x] Different timezones produce different dates at same instant
+- [x] Null timezone falls back to UTC
+- [x] Invalid timezone falls back to UTC
+- [x] computeTodayInTimezone uses now parameter
+- [x] deriveDayByDay pre-trip state with daysUntil
+- [x] Pre-trip across month boundary
+- [x] During-trip state with day data
+- [x] no-plan-today when today in window but no day row
+- [x] Post-trip state
+- [x] no-window when itinerary has no days
+- [x] Segments ordered by startTime, null last
+- [x] Medium detail included: title, times, location
+- [x] Data leakage: no instructions, no confirmation, no references
+- [x] Stay isCheckinDay/isCheckoutDay flags
+- [x] Travel segment gets transport with legCount, operator, origin
+- [x] Multi-section: correct day lookup, global day numbering
+
+**Browser (manual):**
+- [ ] Attach an itinerary as "Today" via admin portal editor
+- [ ] Portal wall shows Day by Day banner above grid
+- [ ] Pre-trip: "N days until [destination]"
+- [ ] During-trip: "Today · Day N · [date]" with stay + segments
+- [ ] Post-trip: "Welcome home"
+- [ ] Gap day: "Nothing scheduled today"
+- [ ] Visibility toggle hides banner from clients
+- [ ] Multiple itinerary_today items stack
+- [ ] Travel segments show operator, identifier, origin→destination, leg count
+- [ ] Times formatted 12-hour
+- [ ] Print preview: banner prints above grid, chrome hidden
+
+### Known limitations
+- Timezone editor UI not wired yet — timezone stays null, falls back to UTC
+- One timezone per itinerary for multi-country trips
+- Date-only matching (overnight flights stay on departure day, intentional)
+- "Welcome home" state persists until item removed or hidden
