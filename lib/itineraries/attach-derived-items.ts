@@ -2,7 +2,6 @@ import { getFullItinerary } from "./index";
 import {
   deriveGlance,
   deriveDayByDay,
-  computeTodayInTimezone,
 } from "./derive";
 import type { GlanceData, DayByDayState } from "./derive";
 
@@ -58,13 +57,11 @@ export async function attachDerivedItems<T extends PortalItemLike>(
         }
 
         // itinerary_today
-        const tz = (full as any).timezone ?? null;
-        const today = computeTodayInTimezone(tz);
         const destination =
           (full.sections?.[0] as any)?.baseCity ||
           full.title ||
           "your trip";
-        const dayByDay = deriveDayByDay(full, today, destination);
+        const dayByDay = deriveDayByDay(full, new Date(), destination);
         return { ...item, dayByDay };
       } catch (err) {
         console.error(

@@ -35,6 +35,11 @@ function seg(overrides: any = {}): any {
   };
 }
 
+function now(dateStr: string): Date {
+  // Midday UTC — avoids midnight boundary issues in any timezone
+  return new Date(dateStr + "T12:00:00Z");
+}
+
 describe("formatDateISOInTimezone", () => {
   it("returns YYYY-MM-DD in given timezone", () => {
     const d = new Date("2026-01-15T12:00:00Z");
@@ -71,7 +76,7 @@ describe("deriveDayByDay", () => {
     const full = fixture({
       sections: [section({ days: [day({ date: "2026-01-15" })] })],
     });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     expect(r.state).toBe("pre-trip");
     if (r.state === "pre-trip") {
       expect(r.daysUntil).toBe(14);
@@ -83,7 +88,7 @@ describe("deriveDayByDay", () => {
     const full = fixture({
       sections: [section({ days: [day({ date: "2026-02-05" })] })],
     });
-    const r = deriveDayByDay(full, "2026-01-28", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-28"), "Tokyo");
     if (r.state === "pre-trip") expect(r.daysUntil).toBe(8);
   });
 
@@ -91,7 +96,7 @@ describe("deriveDayByDay", () => {
     const full = fixture({
       sections: [section({ days: [day({ date: "2026-01-01" })] })],
     });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     expect(r.state).toBe("during-trip");
     if (r.state === "during-trip") {
       expect(r.day.dayNumber).toBe(1);
@@ -105,7 +110,7 @@ describe("deriveDayByDay", () => {
         days: [day({ date: "2026-01-01" }), day({ id: 3, date: "2026-01-03" })],
       })],
     });
-    const r = deriveDayByDay(full, "2026-01-02", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-02"), "Tokyo");
     expect(r.state).toBe("no-plan-today");
   });
 
@@ -113,13 +118,13 @@ describe("deriveDayByDay", () => {
     const full = fixture({
       sections: [section({ days: [day({ date: "2026-01-01" })] })],
     });
-    const r = deriveDayByDay(full, "2026-02-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-02-01"), "Tokyo");
     expect(r.state).toBe("post-trip");
   });
 
   it("no-window: no days", () => {
     const full = fixture({ sections: [] });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     expect(r.state).toBe("no-window");
   });
 
@@ -136,7 +141,7 @@ describe("deriveDayByDay", () => {
         })],
       })],
     });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     if (r.state === "during-trip") {
       expect(r.day.segments.map(s => s.title)).toEqual(["Early", "Late", "NullTime"]);
     }
@@ -156,7 +161,7 @@ describe("deriveDayByDay", () => {
         })],
       })],
     });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     if (r.state === "during-trip") {
       expect(r.day.segments[0].title).toBe("Museum");
       expect(r.day.segments[0].startTime).toBe("09:00");
@@ -182,7 +187,7 @@ describe("deriveDayByDay", () => {
         stays: [stay({ notes: "Call ahead", address: "123 Main St" })],
       })],
     });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     const s = JSON.stringify(r);
     expect(s).not.toContain("Meet at gate");
     expect(s).not.toContain("ABC123");
@@ -198,12 +203,12 @@ describe("deriveDayByDay", () => {
         stays: [stay({ checkInDate: "2026-01-01", checkOutDate: "2026-01-02" })],
       })],
     });
-    const checkin = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const checkin = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     if (checkin.state === "during-trip") {
       expect(checkin.day.stay?.isCheckinDay).toBe(true);
       expect(checkin.day.stay?.isCheckoutDay).toBe(false);
     }
-    const checkout = deriveDayByDay(full, "2026-01-02", "Tokyo");
+    const checkout = deriveDayByDay(full, now("2026-01-02"), "Tokyo");
     if (checkout.state === "during-trip") {
       expect(checkout.day.stay).toBeNull(); // checkout day, no current stay
     }
@@ -225,7 +230,7 @@ describe("deriveDayByDay", () => {
         })],
       })],
     });
-    const r = deriveDayByDay(full, "2026-01-01", "Tokyo");
+    const r = deriveDayByDay(full, now("2026-01-01"), "Tokyo");
     if (r.state === "during-trip") {
       expect(r.day.segments[0].transport?.legCount).toBe(2);
       expect(r.day.segments[0].transport?.operator).toBe("AC");
@@ -245,7 +250,7 @@ describe("deriveDayByDay", () => {
         ]}),
       ],
     });
-    const r = deriveDayByDay(full, "2026-01-03", "Japan");
+    const r = deriveDayByDay(full, now("2026-01-03"), "Japan");
     if (r.state === "during-trip") {
       expect(r.day.sectionTitle).toBe("Kyoto");
       expect(r.day.dayNumber).toBe(3); // global counter
