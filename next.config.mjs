@@ -11,6 +11,16 @@ const nextConfig = {
       ],
     },
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // jsdom and its Node-only deps (undici → node:assert, fs, path, canvas)
+      // are pulled in via CleanTipTapRenderer's lazy require("jsdom") inside
+      // a runtime guard that webpack can't eliminate. Externals keeps them
+      // out of the client bundle entirely.
+      config.externals = [...(config.externals || []), "jsdom", "canvas"];
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
