@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // Local shape for Document Picture-in-Picture. Named to avoid colliding
 // with the DOM-lib global that newer TypeScript versions ship.
 interface DocumentPiPHandle {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>;
-  window: Window | null;
+  windowRef: React.MutableRefObject<Window | null>;
 }
 
 type WindowWithPiP = Window & {
@@ -17,6 +17,7 @@ interface UseDocumentPiPResult {
   isSupported: boolean;
   isOpen: boolean;
   container: HTMLElement | null;
+  windowRef: React.MutableRefObject<Window | null>;
   open: (options?: { width?: number; height?: number }) => Promise<void>;
   close: () => void;
 }
@@ -183,5 +184,5 @@ export function useDocumentPiP(): UseDocumentPiPResult {
     return () => window.removeEventListener("pagehide", onPageHide);
   }, [teardown]);
 
-  return { isSupported, isOpen, container, open, close };
+  return { isSupported, isOpen, container, windowRef: pipWindowRef, open, close };
 }
