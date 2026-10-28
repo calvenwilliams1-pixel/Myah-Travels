@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { templates } from "@/drizzle/schema/templates";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Template } from "@/types/blocks";
 import { STARTER_TEMPLATES } from "./templates";
 
@@ -24,7 +24,7 @@ export async function saveTemplateToDb(template: Template): Promise<number> {
   const existing = await db
     .select()
     .from(templates)
-    .where(eq(templates.slug, template.id))
+    .where(and(eq(templates.slug, template.id), eq(templates.contentType, "post")))
     .limit(1);
 
   if (existing.length > 0) {
@@ -94,24 +94,27 @@ export async function loadTemplatesFromDb(): Promise<Template[]> {
 }
 
 export async function deleteTemplateFromDb(templateId: string): Promise<void> {
-  await db.delete(templates).where(eq(templates.slug, templateId));
+  await db.delete(templates).where(
+    and(
+      eq(templates.slug, templateId),
+      eq(templates.contentType, "post"),
+      eq(templates.isBuiltIn, false)
+    )
+  );
 }
 
 /**
- * Checks whether a slug is already used by a different template id.
+ * Returns the contentType of the row for this slug, or null if no row exists.
+ * Used to detect collisions with non-post templates (e.g. canvas rows) that
+ * share the slug namespace.
  */
-export async function checkSlugCollision(
-  slug: string,
-  excludingId: string | null
-): Promise<boolean> {
-  const result = await db
-    .select({ slug: templates.slug })
+export async function getTemplateSlugContentType(slug: string): Promise<string | null> {
+  const rows = await db
+    .select({ contentType: templates.contentType })
     .from(templates)
     .where(eq(templates.slug, slug))
     .limit(1);
-  if (result.length === 0) return false;
-  if (excludingId && result[0].slug === excludingId) return false;
-  return true;
+  return rows[0]?.contentType ?? null;
 }
 
 /**
