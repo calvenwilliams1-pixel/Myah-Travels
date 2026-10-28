@@ -38,6 +38,8 @@ Two client-facing features are **specced but unbuilt** — the Itinerary Client 
 
 **Core principle:**
 > Developer controls design. Template controls layout. Writer controls content. Settings control brand. System controls hierarchy.
+>
+> **Gallery block carve-out:** the Gallery block may select a layout preset (style, columns, aspect, gap, caption display) from a curated set defined by the block, overriding theme-level gallery defaults. Freeform positioning, arbitrary column counts, and per-image size overrides remain rejected. See "Gallery Block Layout Presets" below.
 
 ---
 
@@ -382,6 +384,7 @@ npm run smoke              # Operational smoke scripts (needs populated DB)
 | **All renderers import `buildExtensions`** | No parallel extension lists |
 | Itinerary client views are derived | No authoring surface for glance or today's plan |
 | **Never use `@tiptap/html`'s `generateHTML`** | zeed-dom drops inline styles |
+| Gallery layout presets override theme defaults | Style / columns / aspect / gap / caption display are curated presets; freeform positioning stays rejected |
 
 ---
 
@@ -465,3 +468,24 @@ If context is unclear, ask:
 ---
 
 **Last Updated:** October 26, 2026
+
+
+---
+
+## Gallery Block Layout Presets (Batch H)
+
+The Gallery block's layout is selected from a fixed preset set, stored per-gallery in `GalleryData`. These override the theme-level `TemplateStyle.gallery*` values for that specific gallery. Presets are curated by the developer; the writer picks one, does not configure arbitrary values.
+
+| Field | Presets | Default |
+|-------|---------|---------|
+| `style` | `grid` \| `masonry` \| `carousel` \| `hero-then-grid` | `grid` |
+| `columns` | `2` \| `3` \| `4` | `3` |
+| `aspect` | `square` \| `portrait` \| `landscape` \| `auto` | `landscape` |
+| `gap` | `small` \| `medium` \| `large` | `medium` |
+| `captionDisplay` | `below` \| `overlay` \| `hidden` | `below` |
+
+All fields optional. Absent -> default. Existing galleries with no layout fields render as `grid` / `3` / `landscape` / `medium` / `below`.
+
+`TemplateStyle.galleryImageHeight` becomes unused once GalleryRenderer respects `aspect`. Keep the field in `TemplateStyle` (other code may still reference the shape) but the renderer will not read it after Batch H1.
+
+**Rejected (still):** freeform image positioning, arbitrary column counts (5, 6, 7...), per-image custom aspect ratios, per-image size overrides, drag-anywhere layouts, animated transitions.
