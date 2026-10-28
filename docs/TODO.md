@@ -146,6 +146,21 @@ Build order, then testing pass. Every batch updates `docs/TESTING.md` with its t
 - Append TESTING.md section
 - Total ~4.5 hours
 
+
+### Round 4b - Gallery Collage (Batch H)
+
+**H1 - renderer + data (~5h)**
+- `types/blocks.ts` - GalleryData extension + 5 type unions
+- `GalleryRenderer.tsx` - 4 styles, `<dialog>` lightbox, print rules, defaults
+- `docs/TESTING.md` - Batch H1 section
+- Verify: `npm test` >= 135, `tsc` clean, existing galleries render identically
+
+**H2 - editor UX (~8h, after H1 review)**
+- `GalleryBlockEditor.tsx` - bulk upload zone, thumbnail strip + drag reorder, layout controls, per-image detail collapse
+- `docs/TESTING.md` - Batch H2 section
+
+See `docs/BATCH-H-PLAN.md` for full spec.
+
 ### Round 5 — Launch Day
 
 **Batch G — Phase 7.7 execution**
