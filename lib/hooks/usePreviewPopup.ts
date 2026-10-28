@@ -69,13 +69,23 @@ export function usePreviewPopup(): UsePreviewPopupResult {
     channel.onmessage = (ev: MessageEvent) => {
       const msg = ev.data;
       if (msg?.type === "ready") {
+        // Popup (re)connected — mark open and (re)send current state.
+        // Handles both the initial handshake and a Strict Mode remount.
+        setIsOpen(true);
         try { channel.postMessage(stateMsg); } catch {}
       } else if (msg?.type === "closed") {
-        setIsOpen(false);
-        popupRef.current = null;
-        channel.close();
-        channelRef.current = null;
-        sessionIdRef.current = null;
+        // "closed" is a hint, not proof. React 18 Strict Mode fires effect
+        // cleanup on first mount, which looks like a close but isn't. Verify
+        // the actual popup window is closed before resetting state.
+        setTimeout(() => {
+          if (!popupRef.current || popupRef.current.closed) {
+            setIsOpen(false);
+            popupRef.current = null;
+            try { channel.close(); } catch {}
+            channelRef.current = null;
+            sessionIdRef.current = null;
+          }
+        }, 100);
       }
     };
 

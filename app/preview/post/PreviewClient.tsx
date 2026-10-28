@@ -45,14 +45,16 @@ export default function PreviewClient({ sessionId }: { sessionId?: string }) {
       if (isValidState(msg)) setState(msg);
     };
     try { channel.postMessage({ type: "ready" }); } catch {}
+    // Only post "closed" from pagehide — not from effect cleanup. React 18
+    // Strict Mode tears down and re-mounts effects on first mount in dev;
+    // posting "closed" from cleanup would tell the editor the popup is gone
+    // when it isn't, and the editor would stop sending updates.
     function onPageHide() {
       try { channel.postMessage({ type: "closed" }); } catch {}
-      channel.close();
     }
     window.addEventListener("pagehide", onPageHide);
     return () => {
       window.removeEventListener("pagehide", onPageHide);
-      try { channel.postMessage({ type: "closed" }); } catch {}
       channel.close();
     };
   }, [sessionId]);

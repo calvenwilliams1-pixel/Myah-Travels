@@ -57,6 +57,16 @@ export default function BlockEditor({
     popup.open(blocks, currentTemplate);
   }
 
+  // Broadcast state to the popup on every change. The hook debounces
+  // the actual channel send to ~150ms so typing stays smooth.
+  useEffect(() => {
+    if (!popup.isOpen) return;
+    const currentTemplate = resolveTemplate(templateId) ?? listTemplates()[0];
+    if (!currentTemplate) return;
+    popup.send(blocks, currentTemplate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks, templateId, popup.isOpen]);
+
   // Template resolution: prefer DB-loaded templates (from parent), fall
   // back to static starters so this component works regardless of
   // whether the caller has migrated.
