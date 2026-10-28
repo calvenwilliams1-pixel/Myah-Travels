@@ -42,8 +42,19 @@ export interface ImageData {
   caption?: string;
 }
 
+export type GalleryStyle = "grid" | "masonry" | "carousel" | "hero-then-grid";
+export type GalleryColumns = 2 | 3 | 4;
+export type GalleryAspect = "square" | "portrait" | "landscape" | "auto";
+export type GalleryGap = "small" | "medium" | "large";
+export type GalleryCaptionDisplay = "below" | "overlay" | "hidden";
+
 export interface GalleryData {
   images: { url: string; caption: string }[];
+  style?: GalleryStyle;
+  columns?: GalleryColumns;
+  aspect?: GalleryAspect;
+  gap?: GalleryGap;
+  captionDisplay?: GalleryCaptionDisplay;
 }
 
 export interface QuickFactsData {
