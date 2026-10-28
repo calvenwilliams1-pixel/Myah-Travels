@@ -5,10 +5,13 @@ import { BlockType, Template, TemplateSection } from "@/types/blocks";
 import { getAllBlockDefinitions } from "@/lib/blocks/registry";
 import { getAllTemplates } from "@/lib/blocks/templates";
 
+type SaveResult = { ok: true; id: string } | { ok: false; error: string };
+type DeleteResult = { ok: true } | { ok: false; error: string };
+
 interface TemplateCreatorProps {
   initialTemplates: Template[];
-  onSave: (template: Template) => Promise<void>;
-  onDelete?: (templateId: string) => Promise<void>;
+  onSave: (template: Template, mode: "create" | "update") => Promise<SaveResult>;
+  onDelete?: (templateId: string) => Promise<DeleteResult>;
 }
 
 const BLOCK_TYPES: BlockType[] = [
@@ -112,18 +115,24 @@ export default function TemplateCreator({
     };
 
     try {
-      await onSave(newTemplate);
+      const mode = selectedId ? "update" : "create";
+      const res = await onSave(newTemplate, mode);
+      if (!res.ok) {
+        setSaveStatus(res.error);
+        return;
+      }
+      const savedTemplate = { ...newTemplate, id: res.id };
       setSaveStatus("Saved");
       setTemplates((prev) => {
-        const existing = prev.findIndex((t) => t.id === newTemplate.id);
+        const existing = prev.findIndex((t) => t.id === savedTemplate.id);
         if (existing >= 0) {
           const updated = [...prev];
-          updated[existing] = newTemplate;
+          updated[existing] = savedTemplate;
           return updated;
         }
-        return [...prev, newTemplate];
+        return [...prev, savedTemplate];
       });
-      setSelectedId(newTemplate.id);
+      setSelectedId(savedTemplate.id);
     } catch (error) {
       setSaveStatus("Save failed");
     } finally {
@@ -136,9 +145,17 @@ export default function TemplateCreator({
     const confirmed = confirm("Delete this template?");
     if (!confirmed) return;
 
-    await onDelete(selectedId);
-    setTemplates((prev) => prev.filter((t) => t.id !== selectedId));
-    handleNewTemplate();
+    try {
+      const res = await onDelete(selectedId);
+      if (!res.ok) {
+        setSaveStatus(res.error);
+        return;
+      }
+      setTemplates((prev) => prev.filter((t) => t.id !== selectedId));
+      handleNewTemplate();
+    } catch {
+      setSaveStatus("Delete failed");
+    }
   };
 
   return (
