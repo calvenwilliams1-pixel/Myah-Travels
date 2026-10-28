@@ -2,11 +2,13 @@
 
 ## Status
 
-**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 87 vitest tests passing, `tsc` clean.
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 135 vitest tests passing, `tsc` clean. Batch H1 (Gallery Collage renderer) shipped.
 
 **Current work: batch build then accumulated testing pass.** Features are being shipped in batches; each batch appends its test cases to `docs/TESTING.md`. Testing happens later, in one pass, against the accumulated doc. Full coverage map below.
 
 **Two features are SPECCED but unbuilt:** the Itinerary Client Experience — Itinerary at a Glance + Today's Plan card. Both derive entirely from existing itinerary data, no authoring surface. Spec below; build order in the Batch Plan.
+
+**Batch H1 (Gallery Collage renderer) shipped.** H2 (editor UX — bulk upload, thumbnail drag, layout controls header) is the next batch. Spec in `docs/BATCH-H-PLAN.md`; H2 makes the H1 layouts reachable from the admin editor.
 
 **Three outstanding bugs** from the last testing session, documented below. They are Batch A, B, C in the Batch Plan.
 
@@ -82,7 +84,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 | 9 | ✅ Complete | Client Memory System (people, notes, trip history, portal purge, itinerary library) |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
 | Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
-| **Batch build** | **🔄 Current** | **Three bugs, then Glance, then Today's Plan (see Batch Plan below)** |
+| **Batch build** | **🔄 Current** | **H1 done (Gallery Collage renderer). H2 next (editor UX). See Batch Plan below.** |
 | 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
 | 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
 | 8 | ⏳ Future | Options segments, cruise mode, People table — post-launch |
@@ -149,15 +151,16 @@ Build order, then testing pass. Every batch updates `docs/TESTING.md` with its t
 
 ### Round 4b - Gallery Collage (Batch H)
 
-**H1 - renderer + data (~5h)**
-- `types/blocks.ts` - GalleryData extension + 5 type unions
-- `GalleryRenderer.tsx` - 4 styles, `<dialog>` lightbox, print rules, defaults
-- `docs/TESTING.md` - Batch H1 section
-- Verify: `npm test` >= 135, `tsc` clean, existing galleries render identically
+**H1 - renderer + data (DONE, shipped)**
+- `e683a2f` - `types/blocks.ts` - GalleryData extended with style/columns/aspect/gap/captionDisplay + 5 type unions
+- `5e39e6b` - `GalleryRenderer.tsx` - 4 layout styles (grid, masonry, carousel, hero-then-grid), `<dialog>` lightbox, print rules, defaults
+- `46b16e5` - `docs/TESTING.md` - Batch H1 section (test cases + known limitations)
+- Verified: tsc clean, 135 vitest tests passing, defaults render identically to pre-H1
 
-**H2 - editor UX (~8h, after H1 review)**
-- `GalleryBlockEditor.tsx` - bulk upload zone, thumbnail strip + drag reorder, layout controls, per-image detail collapse
+**H2 - editor UX (PENDING, next batch, ~8h)**
+- `GalleryBlockEditor.tsx` - bulk upload zone, thumbnail strip + drag reorder, layout controls header, per-image detail collapse
 - `docs/TESTING.md` - Batch H2 section
+- H2 is what makes the H1 layouts reachable from the admin UI
 
 See `docs/BATCH-H-PLAN.md` for full spec.
 
