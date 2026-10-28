@@ -59,26 +59,25 @@ export async function loadTemplatesFromDb(): Promise<Template[]> {
     .from(templates)
     .where(eq(templates.contentType, "post"));
 
-  const dbTemplates: Template[] = result.map((t) => {
-    try {
-      const parsed = JSON.parse(t.layoutData) as StoredTemplateMetadata;
-      return {
-        id: t.slug,
-        name: t.name,
-        description: parsed.description || t.name,
-        sections: parsed.sections,
-        themeVariant: parsed.themeVariant || "minimal",
-      };
-    } catch {
-      return {
-        id: t.slug,
-        name: t.name,
-        description: t.name,
-        sections: [],
-        themeVariant: "minimal",
-      };
-    }
-  });
+  const dbTemplates: Template[] = result
+    .map((t): Template | null => {
+      try {
+        const parsed = JSON.parse(t.layoutData) as StoredTemplateMetadata;
+        // Block templates always have a sections array. Legacy Canvas
+        // templates (schemaVersion/canvas/elements) do not — skip them.
+        if (!Array.isArray(parsed.sections)) return null;
+        return {
+          id: t.slug,
+          name: t.name,
+          description: parsed.description || t.name,
+          sections: parsed.sections,
+          themeVariant: parsed.themeVariant || "minimal",
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter((t): t is Template => t !== null);
 
   const starterIds = new Set(STARTER_TEMPLATES.map((t) => t.id));
   const dbIds = new Set(dbTemplates.map((t) => t.id));

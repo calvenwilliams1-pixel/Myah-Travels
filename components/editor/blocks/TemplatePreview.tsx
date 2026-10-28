@@ -17,7 +17,7 @@ export default function TemplatePreview({ blocks, template }: TemplatePreviewPro
         <h3 className="font-semibold text-sm">{template.name}</h3>
         <p className="text-xs text-gray-500 mt-1">{template.description}</p>
         <div className="flex flex-wrap gap-1 mt-2">
-          {template.sections.map((section) => (
+          {(template.sections ?? []).map((section) => (
             <span
               key={section.id}
               className={`text-xs px-2 py-1 rounded ${
