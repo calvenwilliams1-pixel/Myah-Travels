@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ThemeProvider from "@/components/theme/ThemeProvider";
 import PostRenderer from "@/components/editor/renderers/PostRenderer";
 import type { BlockData, Template } from "@/types/blocks";
 
@@ -65,10 +64,8 @@ export default function PreviewClient({ sessionId }: { sessionId?: string }) {
     return <div className="p-8 text-center text-gray-500">Waiting for editor…</div>;
   }
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-white">
-        <PostRenderer blocks={state.blocks} template={state.template} />
-      </div>
-    </ThemeProvider>
+    <div className="min-h-screen bg-white">
+      <PostRenderer blocks={state.blocks} template={state.template} />
+    </div>
   );
 }
