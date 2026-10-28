@@ -17,6 +17,7 @@ import QuoteBlockEditor from "./QuoteBlockEditor";
 import ProsConsBlockEditor from "./ProsConsBlockEditor";
 import VerdictBlockEditor from "./VerdictBlockEditor";
 import PreviewPopout from "../PreviewPopout";
+import { usePreviewPopup } from "@/lib/hooks/usePreviewPopup";
 
 const IMPLEMENTED_BLOCKS: BlockType[] = [
   "title",
@@ -48,6 +49,13 @@ export default function BlockEditor({
   const [templateId, setTemplateId] = useState(initialTemplateId);
   const [isInitialised, setIsInitialised] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const popup = usePreviewPopup();
+
+  function handlePreviewClick() {
+    const currentTemplate = resolveTemplate(templateId) ?? listTemplates()[0];
+    if (!currentTemplate) return;
+    popup.open(blocks, currentTemplate);
+  }
 
   // Template resolution: prefer DB-loaded templates (from parent), fall
   // back to static starters so this component works regardless of
@@ -252,7 +260,10 @@ export default function BlockEditor({
       <div className="flex gap-3 items-center">
         <button
           type="button"
-          onClick={() => setPreviewOpen(true)}
+          onClick={() => {
+            handlePreviewClick();
+            if (popup.isBlocked) setPreviewOpen(true);
+          }}
           className="px-3 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
           title="Open preview"
         >
