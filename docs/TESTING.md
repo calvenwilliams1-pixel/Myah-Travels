@@ -898,3 +898,78 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - Person deleted after tag created → link points to 404 (person page handles gracefully if verified)
 - Autocomplete doesn't include people who aren't members of this portal (only members + distinct tags)
 - No remove-tag-on-member-removal — old tag text persists (intentional)
+
+## Batch H1 — Gallery Collage Renderer
+
+### What was built
+
+- `types/blocks.ts` — `GalleryData` extended with optional `style`, `columns`, `aspect`, `gap`, `captionDisplay` + five type unions (`GalleryStyle`, `GalleryColumns`, `GalleryAspect`, `GalleryGap`, `GalleryCaptionDisplay`)
+- `components/editor/renderers/GalleryRenderer.tsx` — full rewrite:
+  - `resolveLayout(data)` — defaults kick in when a field is absent (`grid` / `3` / `landscape` / `medium` / `below`)
+  - Four layout components: `GridLayout`, `MasonryLayout`, `CarouselLayout`, `HeroThenGridLayout`
+  - `Caption` helper — `below` / `overlay` / `hidden`
+  - `GalleryLightbox` — `<dialog>` with `showModal()`, prev/next, Esc, arrow-key navigation, click-outside to close
+  - Print styles — carousel renders as grid, `break-inside: avoid` per figure, lightbox hidden
+  - Mobile collapse — grid and masonry go to 2 columns at <= 640px
+- Editor unchanged in H1. Layout controls land in H2.
+
+### Test cases
+
+**Defaults (existing galleries)**
+- Open `/blog/[slug]` for a post with a gallery that has no layout fields set. Gallery renders as 3-column grid, landscape cells, medium gap, captions below. Matches pre-H1 behavior visually.
+- Same gallery in admin preview popup. Identical.
+
+**Grid**
+- Set `data.style = "grid"`, `data.columns = 4` in the DB (or via admin once H2 ships). 4-column grid renders.
+- Set `columns = 2`. 2-column grid.
+- Shrink viewport to <= 640px. 3/4-column grids collapse to 2 columns. 2-column stays 2.
+
+**Masonry**
+- `style = "masonry"`, `columns = 3`. Three CSS columns, images keep natural aspect. Verify `break-inside: avoid` — an image is not split across columns.
+
+**Carousel**
+- `style = "carousel"`. Horizontal scroll, snap-to-item. Arrow keys / prev-next buttons navigate. Dot indicators reflect current position.
+- Mobile: image width ~80% of container. Desktop: capped at 480px.
+
+**Hero-then-grid**
+- `style = "hero-then-grid"`, `columns = 3`. First image full-width, height <= 60vh. Remaining images in 3-column grid.
+- Only one image in data: hero renders alone, no empty grid.
+
+**Aspect**
+- `aspect = "square"` → 1:1 cells in grid and hero-then-grid. Masonry ignores (natural).
+- `aspect = "portrait"` → 3:4 cells.
+- `aspect = "auto"` → natural aspect, no forced ratio.
+
+**Gap**
+- `gap = "small"` (8px), `"medium"` (16px), `"large"` (24px) — visually distinct spacing between tiles.
+
+**Captions**
+- `captionDisplay = "below"` → `<figcaption>` under each image, colored `style.bodyColor`.
+- `captionDisplay = "overlay"` → white text over image bottom with gradient scrim, readable over both light and dark photos.
+- `captionDisplay = "hidden"` → no visible caption, but `alt` attribute still set from `caption` (inspect DOM).
+
+**Lightbox**
+- Click any image → full-screen dialog opens with that image centered, caption below.
+- Arrow keys navigate prev/next, wraps at ends.
+- Prev/next buttons work.
+- Close via `×` button, Esc key, or click outside the image area.
+- Opening image 3 shows image 3, not image 1 (index tracking works).
+
+**Print**
+- Ctrl+P on a grid gallery — figures don't split across pages.
+- Ctrl+P on a carousel gallery — carousel renders as 3-column grid on paper, no horizontal scroll, all images visible.
+- Lightbox dialog hidden in print even if it was open.
+
+**Regression**
+- Gallery with images but no captions: renders correctly, no empty `<figcaption>`.
+- Gallery with captions on some images but not others: per-image, no placeholder for missing.
+- Empty gallery (no images): placeholder box renders as before.
+- Other blocks (Hero, Image, Body, etc.) unaffected — tsc + 135 tests confirm.
+
+### Known limitations
+
+- **Masonry top-to-bottom flow** — CSS columns pack images vertically within each column, not left-to-right across rows. Documented trade-off; standard editorial masonry. Zero-dependency, print-safe.
+- **No layout controls in admin yet** — H2 work. Until H2 ships, layout presets must be set directly via DB (`update posts set content = json_set(content, ...)` or admin once controls exist). This is why H1 is renderer-only: Myah can't exercise the new layouts from the UI until H2 lands.
+- **Lightbox `<dialog>` styling** — native dialog styling varies slightly by browser. Current inline styles force full-viewport dark overlay, but browser version differences may show minor differences (focus ring color, backdrop opacity).
+- **No image dimension metadata** — masonry relies on `height: auto` and natural image load. Very tall or very wide images may cause column imbalance; acceptable for the use case.
+- **Carousel scrollbar** — `scrollbarWidth: thin` is Firefox; Chromium ignores it. Chromium may show a standard scrollbar under the carousel. Acceptable.
