@@ -1,4 +1,5 @@
 import React from "react";
+import { requireAuth } from "@/lib/auth";
 import { saveTemplateToDb, deleteTemplateFromDb, loadTemplatesFromDb } from "@/lib/blocks/template-store";
 import TemplateCreator from "@/components/editor/TemplateCreator";
 import { Template } from "@/types/blocks";
@@ -10,11 +11,13 @@ export default async function TemplatesPage() {
 
   async function handleSave(template: Template): Promise<void> {
     "use server";
+    await requireAuth();
     await saveTemplateToDb(template);
   }
 
   async function handleDelete(templateId: string): Promise<void> {
     "use server";
+    await requireAuth();
     await deleteTemplateFromDb(templateId);
   }
 
