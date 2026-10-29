@@ -104,6 +104,7 @@ export async function addMediaRecord(data: {
   folder: string;
   altText?: string;
   caption?: string;
+  isLibrary?: boolean;
 }) {
   return db.insert(media).values({
     filePath: data.filePath,
@@ -111,6 +112,7 @@ export async function addMediaRecord(data: {
     fileType: data.fileType,
     fileSize: data.fileSize,
     folder: sanitizeFolderName(data.folder),
+    isLibrary: data.isLibrary ?? false,
     altText: data.altText ?? null,
     caption: data.caption ?? null,
   }).returning();
