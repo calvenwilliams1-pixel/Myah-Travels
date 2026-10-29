@@ -7,6 +7,7 @@ import { Table } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import FolderTree from "@/components/admin/media/FolderTree";
+import MediaRowActions from "@/components/admin/media/MediaRowActions";
 import { uploadMediaAction, deleteMediaAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -124,12 +125,12 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
                 {
                   header: "Actions",
                   accessor: (item: any) => (
-                    <form action={deleteMediaAction}>
-                      <input type="hidden" name="id" value={item.id} />
-                      <Button variant="danger" size="sm" type="submit">
-                        Delete
-                      </Button>
-                    </form>
+                    <MediaRowActions
+                      mediaId={item.id}
+                      fileName={item.fileName || `File ${item.id}`}
+                      currentFolderId={item.folderId ?? null}
+                      deleteAction={deleteMediaAction}
+                    />
                   ),
                 },
               ]}
