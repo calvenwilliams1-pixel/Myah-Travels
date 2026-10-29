@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { buildPublicUrl } from "@/lib/media/url";
 
 interface ImageSourcePickerProps {
   value: string;
@@ -36,12 +37,7 @@ export default function ImageSourcePicker({
         return;
       }
 
-      // Upload route returns filePath; build a public URL from it.
-      // Existing convention (per media library): /uploads/<filePath>
-      const publicUrl = data.filePath?.startsWith("/")
-        ? data.filePath
-        : `/uploads/${data.filePath}`;
-      onChange(publicUrl);
+      onChange(buildPublicUrl(data.filePath));
     } catch (e) {
       setError(String(e));
     } finally {
