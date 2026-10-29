@@ -1042,3 +1042,98 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - **Detail panel expands below the strip, not inline** — scrolls the strip out of view on a long gallery. Plan mentioned "click scrolls to its detail slot"; not implemented. If a gallery has 20+ images, clicking a thumbnail far down the strip may require scrolling to reach the detail. Acceptable for typical galleries (5–15 images).
 - **Bulk upload progress loses context on tab switch** — if the admin navigates away mid-upload, in-flight POSTs may complete server-side but the strip won't show them. Re-open the block to re-fetch (existing block data). No cross-tab coordination — same limitation as other autosave features.
 
+## Batch I — Media Library Picker
+
+### What was built
+
+- `drizzle/schema/media.ts` — `is_library` column ({ mode: "boolean" }) + `idx_media_library` index
+- `drizzle/migrations` — `is_library` migration (applied directly to `data/site.db`; migration file not yet added to `drizzle/migrations/`)
+- `lib/media/index.ts` — `addMediaRecord` accepts `isLibrary?: boolean`
+- `lib/media/url.ts` — `buildPublicUrl(filePath)` helper
+- `app/api/media/route.ts` — `GET /api/media` (scope=library|all, search, pagination, server-capped limit 48, LIKE escaping for `\`, `%`, `_`, total from separate count query)
+- `app/api/media/[id]/route.ts` — `PATCH /api/media/:id` (strict boolean validation, 400 on invalid id/JSON, 404 on missing/soft-deleted)
+- `app/api/upload/route.ts` — reads `isLibrary` form field (literal `"true"` only)
+- `components/editor/MediaLibraryPicker.tsx` — new modal (Saved/All tabs, search, star-to-promote, load-more, `<dialog>` primitive, backdrop close, `close` event sync, `AbortController` on search, `offset = items.length` pagination, first-open auto-switch when Saved empty, hint in All view, "N saved" count in header)
+- `components/editor/ImageSourcePicker.tsx` — third mode "From library", `buildPublicUrl` use, "Save to library" checkbox (default OFF, `localStorage` key `imagePicker:saveToLibrary`)
+
+### Test cases
+
+**API — list**
+- `GET /api/media?scope=all` → 36 items (Codespace), `total: 36`
+- `GET /api/media?scope=library` → `{ items: [], total: 0 }` before starring
+- `GET /api/media?scope=all&q=Screenshot` → filename substring, case-insensitive
+- `GET /api/media?q=%` → literal `%` match, not wildcard
+- `GET /api/media?q=_` → literal `_` match
+- `GET /api/media?limit=999` → capped at 48 items
+- `GET /api/media?scope=all&offset=24` → next page, no overlap with page 1
+
+**API — promote**
+- `PATCH /api/media/1` `{ isLibrary: true }` → 200 `{ id: 1, isLibrary: true }`
+- `PATCH /api/media/1` `{ isLibrary: "true" }` → 400 `{ error: "isLibrary must be a boolean" }`
+- `PATCH /api/media/1` `{ isLibrary: 1 }` → 400 (number, not boolean)
+- `PATCH /api/media/abc` → 400 invalid id
+- `PATCH /api/media/99999` `{ isLibrary: true }` → 404 not found
+- `PATCH /api/media/1` invalid JSON body → 400
+
+**API — upload**
+- `POST /api/upload` with `isLibrary=true` → new row `is_library = 1`
+- `POST /api/upload` with `isLibrary=false` → `is_library = 0`
+- `POST /api/upload` with `isLibrary=yes` → `is_library = 0` (only literal `"true"` counts)
+- `POST /api/upload` with no `isLibrary` → `is_library = 0`
+
+**ImageSourcePicker — third mode (browser)**
+- Hero block editor: three tabs visible — Upload from PC / Paste URL / From library
+- Click "From library" → "Browse library" button appears
+- Click "Browse library" → modal opens with Saved tab default (if library has items) or All uploads + hint (if empty)
+- Image block editor: same behavior
+- Gallery per-image detail: same behavior, selecting sets that slot's image
+
+**MediaLibraryPicker — modal (browser)**
+- Saved tab lists only `is_library = 1` files
+- All uploads tab lists everything (including unsaved)
+- "N saved" count in header reflects actual library count
+- Star a tile in All uploads → becomes yellow-filled, count increments
+- Unstar a tile in Saved → removed from Saved view on next load
+- Click a tile body → selects, `onChange` fires with `/uploads/<filePath>`, modal closes
+- Star click does not trigger selection (only toggles star)
+- Search by filename filters both tabs
+- Search debounces 300ms
+- Load more appends next page (24 per)
+- Escape key closes modal
+- Click outside grid closes modal
+- × button closes modal
+- Missing file (404 on `/uploads/<path>`) — image hidden via `onError`, tile still selectable
+- First open when Saved is empty → auto-switches to All uploads, hint visible
+- After starring one tile, switching to Saved shows it
+
+**Upload checkbox (browser)**
+- Upload mode: checkbox "Save to library" visible, unchecked by default (fresh browser)
+- Tick checkbox, upload file → file appears in Saved view of library modal
+- Untick checkbox, upload file → file only in All uploads
+- Reload page, tick state persists (localStorage `imagePicker:saveToLibrary`)
+- Clear localStorage → checkbox defaults to unchecked on next mount
+- Private browsing / localStorage disabled → checkbox defaults unchecked, upload still works (no throw)
+
+**Persistence (browser)**
+- Upload with checkbox ticked, save post, reload edit page → image persists in block AND appears in Saved library view
+- Select from library, save post, reload → URL persists in block
+- Publish post, view on `/blog/[slug]` → image renders correctly
+
+**Regression**
+- Existing posts with gallery/hero/image blocks render identically (renderers untouched)
+- Paste URL mode unchanged
+- Existing "Choose image" upload mode without checkbox interaction still works (defaults to `is_library = 0`)
+- Portal wall loads (content_library untouched)
+- `/admin/media` page still lists files (unchanged in Batch I)
+- `tsc --noEmit` clean
+- `npm test` still 135 passing
+
+### Known limitations
+
+- **No admin UI for library yet.** Picker browses and stars, but managing/organizing library files is Batch J. Admin `/admin/media` is unchanged.
+- **No folders.** Files are flat. Nested folders are Batch J.
+- **No thumbnail generation.** Full-size images (1920px max) load in the grid. First page of 24 could pull ~24MB worst-case. Batch J candidate.
+- **No multi-select in picker.** Single image per picker call. Gallery requires one modal open per slot. Batch J candidate.
+- **Auth is a dev gate.** `requireAuth()` returns first user when `DISABLE_AUTH=true` in dev, throws otherwise. Real session-based auth is Phase 7.7. The two new endpoints (`GET /api/media`, `PATCH /api/media/:id`) will inherit whatever `requireAuth()` becomes at launch.
+- **No reference tracking.** Deleting a `media` row via `/admin/media` (which is possible today) still breaks any post referencing that URL. Starring makes files feel permanent but they aren't. Batch J candidate.
+
