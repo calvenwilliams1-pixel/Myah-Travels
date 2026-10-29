@@ -19,6 +19,7 @@ export default function FolderTree({ onChanged }: FolderTreeProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get("folderId");
+  const selectedUnfiled = searchParams.get("unfiled") === "1";
 
   const [tree, setTree] = useState<FolderNode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,10 @@ export default function FolderTree({ onChanged }: FolderTreeProps) {
       params.set("folderId", String(folderId));
     }
     router.push(`/admin/media${params.toString() ? "?" + params.toString() : ""}`);
+  }
+
+  function navigateToUnfiled() {
+    router.push("/admin/media?unfiled=1");
   }
 
   function toggleExpand(id: number) {
@@ -218,13 +223,24 @@ export default function FolderTree({ onChanged }: FolderTreeProps) {
       <div className="p-1 max-h-[500px] overflow-y-auto">
         <div
           className={`flex items-center gap-2 px-2 py-1 rounded text-sm cursor-pointer ${
-            selectedId === null ? "bg-primary/10 text-primary font-medium" : "hover:bg-gray-100"
+            selectedId === null && !selectedUnfiled ? "bg-primary/10 text-primary font-medium" : "hover:bg-gray-100"
           }`}
           onClick={() => navigateTo(null)}
         >
           <span className="w-4" />
           <span className="text-base">📚</span>
           <span className="flex-1">All files</span>
+        </div>
+
+        <div
+          className={`flex items-center gap-2 px-2 py-1 rounded text-sm cursor-pointer ${
+            selectedUnfiled ? "bg-primary/10 text-primary font-medium" : "hover:bg-gray-100"
+          }`}
+          onClick={navigateToUnfiled}
+        >
+          <span className="w-4" />
+          <span className="text-base">📄</span>
+          <span className="flex-1">Unfiled</span>
         </div>
 
         {creating && creating.parentId === null && (

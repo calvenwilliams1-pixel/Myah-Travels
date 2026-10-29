@@ -118,17 +118,27 @@ export async function addMediaRecord(data: {
   }).returning();
 }
 
-export async function getMediaByFolderId(folderId: number | null) {
-  const conditions = [isNull(media.deletedAt)];
-  if (folderId === null) {
-    conditions.push(isNull(media.folderId));
-  } else {
-    conditions.push(eq(media.folderId, folderId));
-  }
+export async function getAllMedia() {
   return db
     .select()
     .from(media)
-    .where(and(...conditions))
+    .where(isNull(media.deletedAt))
+    .orderBy(desc(media.uploadedAt));
+}
+
+export async function getUnfiledMedia() {
+  return db
+    .select()
+    .from(media)
+    .where(and(isNull(media.deletedAt), isNull(media.folderId)))
+    .orderBy(desc(media.uploadedAt));
+}
+
+export async function getMediaByFolderId(folderId: number) {
+  return db
+    .select()
+    .from(media)
+    .where(and(isNull(media.deletedAt), eq(media.folderId, folderId)))
     .orderBy(desc(media.uploadedAt));
 }
 

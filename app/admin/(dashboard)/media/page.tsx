@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { getMediaByFolderId, getMediaFolders } from "@/lib/media";
+import { getAllMedia, getUnfiledMedia, getMediaByFolderId } from "@/lib/media";
 import { getFolderById } from "@/lib/folders";
 import { Card } from "@/components/ui/Card";
 import { Table } from "@/components/ui/Table";
@@ -13,7 +13,7 @@ import { uploadMediaAction, deleteMediaAction } from "./actions";
 export const dynamic = "force-dynamic";
 
 interface MediaPageProps {
-  searchParams: { folderId?: string };
+  searchParams: { folderId?: string; unfiled?: string };
 }
 
 async function buildBreadcrumb(folderId: number): Promise<{ id: number; name: string }[]> {
@@ -31,12 +31,30 @@ async function buildBreadcrumb(folderId: number): Promise<{ id: number; name: st
 
 export default async function MediaPage({ searchParams }: MediaPageProps) {
   const folderIdRaw = searchParams?.folderId;
+  const unfiledRaw = searchParams?.unfiled;
+
   const folderId = folderIdRaw ? parseInt(folderIdRaw, 10) : null;
   const validFolderId = folderId !== null && !isNaN(folderId) ? folderId : null;
+  const unfiled = unfiledRaw === "1";
 
-  const mediaItems = await getMediaByFolderId(validFolderId);
-  const breadcrumb =
-    validFolderId !== null ? await buildBreadcrumb(validFolderId) : [];
+  let mediaItems: any[];
+  let breadcrumb: { id: number; name: string }[] = [];
+  let view: "all" | "unfiled" | "folder" = "all";
+  let emptyMessage = "No media uploaded yet.";
+
+  if (validFolderId !== null) {
+    view = "folder";
+    mediaItems = await getMediaByFolderId(validFolderId);
+    breadcrumb = await buildBreadcrumb(validFolderId);
+    emptyMessage = "No files in this folder.";
+  } else if (unfiled) {
+    view = "unfiled";
+    mediaItems = await getUnfiledMedia();
+    emptyMessage = "No unfiled files.";
+  } else {
+    mediaItems = await getAllMedia();
+    emptyMessage = "No media uploaded yet.";
+  }
 
   return (
     <div className="space-y-6">
@@ -57,6 +75,12 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
             <Link href="/admin/media" className="hover:text-primary">
               All files
             </Link>
+            {view === "unfiled" && (
+              <>
+                <span className="text-gray-400">/</span>
+                <span className="text-gray-800">Unfiled</span>
+              </>
+            )}
             {breadcrumb.map((b) => (
               <React.Fragment key={b.id}>
                 <span className="text-gray-400">/</span>
@@ -136,11 +160,7 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
               ]}
               data={mediaItems}
               keyExtractor={(item) => item.id}
-              emptyMessage={
-                validFolderId === null
-                  ? "No media uploaded yet."
-                  : "No files in this folder."
-              }
+              emptyMessage={emptyMessage}
             />
           </Card>
         </div>
