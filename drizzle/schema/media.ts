@@ -15,10 +15,12 @@ export const media = sqliteTable(
     uploadedAt: text("uploaded_at").default(sql`CURRENT_TIMESTAMP`),
     deletedAt: text("deleted_at"),
     isLibrary: integer("is_library", { mode: "boolean" }).notNull().default(false),
+    folderId: integer("folder_id"),
   },
   (table) => ({
     idxMediaFolder: index("idx_media_folder").on(table.folder),
     idxMediaDeletedAt: index("idx_media_deleted_at").on(table.deletedAt),
     idxMediaLibrary: index("idx_media_library").on(table.isLibrary, table.uploadedAt),
+    idxMediaFolderId: index("idx_media_folder_id").on(table.folderId),
   })
 );
