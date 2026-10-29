@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import { buildPublicUrl } from "@/lib/media/url";
+import MediaLibraryPicker from "./MediaLibraryPicker";
 
 interface ImageSourcePickerProps {
   value: string;
@@ -16,7 +17,8 @@ export default function ImageSourcePicker({
   folder = "posts",
   label = "Image",
 }: ImageSourcePickerProps) {
-  const [mode, setMode] = useState<"upload" | "url">("upload");
+  const [mode, setMode] = useState<"upload" | "url" | "library">("upload");
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -70,9 +72,20 @@ export default function ImageSourcePicker({
         >
           Paste URL
         </button>
+        <button
+          type="button"
+          onClick={() => setMode("library")}
+          className={`text-xs px-2 py-1 rounded ${
+            mode === "library"
+              ? "bg-primary text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          From library
+        </button>
       </div>
 
-      {mode === "upload" ? (
+      {mode === "upload" && (
         <div>
           <input
             ref={fileRef}
@@ -93,7 +106,8 @@ export default function ImageSourcePicker({
             {isUploading ? "Uploading..." : "Choose image"}
           </button>
         </div>
-      ) : (
+      )}
+      {mode === "url" && (
         <input
           type="text"
           value={value}
@@ -101,6 +115,17 @@ export default function ImageSourcePicker({
           placeholder="https://... or /uploads/..."
           className="w-full px-3 py-2 border border-gray-200 rounded text-sm"
         />
+      )}
+      {mode === "library" && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            className="w-full px-3 py-2 border border-dashed border-gray-300 rounded text-sm text-gray-600 hover:border-primary hover:text-primary"
+          >
+            Browse library
+          </button>
+        </div>
       )}
 
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -124,6 +149,16 @@ export default function ImageSourcePicker({
             Clear
           </button>
         </div>
+      )}
+
+      {libraryOpen && (
+        <MediaLibraryPicker
+          onSelect={(url) => {
+            onChange(url);
+            setLibraryOpen(false);
+          }}
+          onClose={() => setLibraryOpen(false)}
+        />
       )}
     </div>
   );
