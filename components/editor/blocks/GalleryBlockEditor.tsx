@@ -328,6 +328,7 @@ export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEdito
 
   const addImage = () => {
     onChange({ images: [...data.images, { url: "", caption: "" }] });
+    setFocusedIndex(data.images.length);
   };
 
   const handleBulkUploaded = (urls: string[]) => {
@@ -372,42 +373,55 @@ export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEdito
       />
       {data.images.length === 0 && (
         <p className="text-sm text-gray-500 italic">
-          No images yet. Add one below.
+          No images yet. Drop files above or click + Add Image.
         </p>
       )}
-      {data.images.map((img, i) => (
-        <div
-          key={i}
-          className="border border-gray-200 rounded p-3 space-y-2 bg-gray-50"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-600">
-              Image {i + 1}
-            </span>
-            <button
-              type="button"
-              onClick={() => removeImage(i)}
-              className="text-xs text-red-500 hover:text-red-700"
-              aria-label={`Remove image ${i + 1}`}
-            >
-              Remove
-            </button>
+      {data.images.map((img, i) => {
+        if (focusedIndex !== i) return null;
+        return (
+          <div
+            key={i}
+            className="border border-gray-200 rounded p-3 space-y-2 bg-gray-50"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-600">
+                Image {i + 1}
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="text-xs text-red-500 hover:text-red-700"
+                  aria-label={`Remove image ${i + 1}`}
+                >
+                  Remove
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFocusedIndex(null)}
+                  className="text-xs text-gray-500 hover:text-gray-800"
+                  aria-label="Close detail"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <ImageSourcePicker
+              value={img.url}
+              onChange={(url) => updateImage(i, "url", url)}
+              folder="posts"
+              label={`Image ${i + 1}`}
+            />
+            <input
+              type="text"
+              value={img.caption}
+              onChange={(e) => updateImage(i, "caption", e.target.value)}
+              placeholder="Caption (optional)"
+              className="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+            />
           </div>
-          <ImageSourcePicker
-            value={img.url}
-            onChange={(url) => updateImage(i, "url", url)}
-            folder="posts"
-            label={`Image ${i + 1}`}
-          />
-          <input
-            type="text"
-            value={img.caption}
-            onChange={(e) => updateImage(i, "caption", e.target.value)}
-            placeholder="Caption (optional)"
-            className="w-full px-3 py-2 border border-gray-200 rounded text-sm"
-          />
-        </div>
-      ))}
+        );
+      })}
       <button
         type="button"
         onClick={addImage}
