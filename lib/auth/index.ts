@@ -114,6 +114,20 @@ export async function getCurrentUser(): Promise<any | null> {
 }
 
 export async function requireAuth() {
+  // SECURITY: Login is currently disabled for testing. This gate ensures
+  // production builds cannot bypass auth, and dev builds must explicitly
+  // opt in via DISABLE_AUTH=true in .env. Remove this bypass entirely when
+  // real session-based requireAuth() is wired up at launch (Phase 7.7).
+  const authDisabled =
+    process.env.DISABLE_AUTH === "true" && process.env.NODE_ENV !== "production";
+
+  if (!authDisabled) {
+    throw new Error(
+      "Auth is not implemented yet. Set DISABLE_AUTH=true in .env for local development. " +
+      "This error will not appear in production once real auth is wired up."
+    );
+  }
+
   const result = await db.select().from(users).limit(1);
   return result[0];
 }
