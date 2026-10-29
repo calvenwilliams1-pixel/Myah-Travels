@@ -1137,3 +1137,97 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - **Auth is a dev gate.** `requireAuth()` returns first user when `DISABLE_AUTH=true` in dev, throws otherwise. Real session-based auth is Phase 7.7. The two new endpoints (`GET /api/media`, `PATCH /api/media/:id`) will inherit whatever `requireAuth()` becomes at launch.
 - **No reference tracking.** Deleting a `media` row via `/admin/media` (which is possible today) still breaks any post referencing that URL. Starring makes files feel permanent but they aren't. Batch J candidate.
 
+## Batch J1 — Folders
+
+### What was built
+
+- `drizzle/schema/folders.ts` — new `folders` table (id, name, parent_id self-FK, created_at, deleted_at)
+- `drizzle/schema/media.ts` — `folder_id` nullable FK column + index
+- `lib/folders/index.ts` — folder repository (`getFolderTree`, `getFolderById`, `createFolder`, `renameFolder`, `moveFolder`, `softDeleteFolder`, `moveFileToFolder`) + descendant tracking for safe folder moves/deletes
+- `lib/media/index.ts` — `getMediaByFolderId(folderId | null)` new function (existing `getMediaByFolder(folder?: string)` untouched, still in use elsewhere)
+- `app/api/folders/route.ts` — `GET` (tree), `POST` (create)
+- `app/api/folders/[id]/route.ts` — `PATCH` (rename, move), `DELETE` (soft-delete, cascades children, moves files to root)
+- `app/api/media/[id]/move/route.ts` — `POST` move single file to folder
+- `components/admin/media/FolderTree.tsx` — sidebar tree component (create/rename/delete, expand/collapse, click-to-filter)
+- `components/admin/media/MoveFileModal.tsx` — `<dialog>` folder picker for moving a file
+- `components/admin/media/MediaRowActions.tsx` — wraps Move button + Delete form per file row
+- `app/admin/(dashboard)/media/page.tsx` — sidebar layout, `?folderId` filter, breadcrumb navigation, per-row Move action; folder text field and folder chips removed from upload form
+
+### Test cases
+
+**Folder creation (browser)**
+- `/admin/media` loads with "Folders" sidebar on the left, "All files" at top
+- Click "+ New" in Folders header → inline input appears under "All files"
+- Type "Travel" + Enter → folder appears in tree, count 0
+- Click "+ New" again, then drag? (no drag yet) — click +New with a folder selected, verify nesting: hover "Travel" → "+" button appears? (Not implemented in J1 — nested create is via the tree only at root. To create a nested folder, create at root then rename/move later in J2. **Known limitation for J1.**) 
+  - **Correct behavior:** +New creates at root. Nested folders can be created via API but not from UI in J1. Flag as known limitation.
+- Type "Japan" + Enter → second root folder appears
+- Creating an empty name (Enter with blank) → no folder created, input closes
+
+**Folder rename (browser)**
+- Hover a folder → pencil icon appears
+- Click pencil → inline input with current name
+- Change to "Asia" + Enter → tree updates, breadcrumb updates if that folder is selected
+- Click pencil, press Escape → no change, input closes
+- Rename to empty → no change
+
+**Folder delete (browser)**
+- Hover a folder → × icon appears
+- Click × → confirm dialog: "Delete folder "Travel"? Files inside will move to All files."
+- Confirm → folder removed from tree, any files in it appear under "All files"
+- If deleted folder was currently selected → URL updates to `/admin/media` (no folderId)
+- Cancel → folder remains
+
+**Folder tree expand/collapse (browser)**
+- Create a nested folder via API (or DB): `POST /api/folders {"name":"Japan","parentId":<travelId>}`
+- Refresh tree → Travel shows a ▸ expander
+- Click ▸ → Japan appears, indicator changes to ▾
+- Click ▾ → Japan hides
+
+**Folder filter (browser)**
+- Click "Travel" in tree → URL becomes `/admin/media?folderId=<id>`
+- Table shows only files with `folder_id = <id>`
+- Breadcrumb shows "All files / Travel"
+- Click "All files" in tree or breadcrumb → URL back to `/admin/media`, all files shown
+- Refresh with `?folderId=<id>` in URL → same view loads
+- Bookmark and open in new tab → same view loads
+- Invalid `?folderId=99999` → breadcrumb empty, table shows "No files in this folder." (no 500)
+
+**Move file (browser)**
+- On any file row, "Move" button visible in Actions column
+- Click Move → dialog opens with file name, dropdown "Move to folder:" listing "All files (no folder)" + all folders (nested indented)
+- Select a folder → Save → dialog closes, table refreshes, file disappears from current view if it was filtered
+- Click "All files" in tree → moved file appears
+- Click the target folder → file appears there
+- Click Move again, select "All files (no folder)" → file returns to root
+- Cancel → no change, dialog closes
+
+**Folder API (curl)**
+- `GET /api/folders` → `{ tree: [...] }` reflecting all non-deleted folders
+- `POST /api/folders {"name":"X"}` → 200 `{ folder: {...} }`
+- `POST /api/folders {"name":""}` → 400
+- `POST /api/folders {"name":"X","parentId":999}` → 404 "Parent folder not found"
+- `PATCH /api/folders/:id {"name":"Y"}` → 200
+- `PATCH /api/folders/:id {"parentId"::id}` (self) → 400 "Cannot move folder into itself or a descendant"
+- `PATCH /api/folders/:id {"parentId":<descendant>}` → 400 (same error)
+- `DELETE /api/folders/:id` → 200, folder + descendants soft-deleted, files moved to root
+- `POST /api/media/:id/move {"folderId":null}` → file back to root
+- `POST /api/media/:id/move {"folderId":999}` → 400 "Folder not found"
+
+**Regression**
+- Existing 37 media files all show under "All files" (folder_id NULL)
+- Upload form still works — no folder text field, uploaded file lands at root
+- Delete action still works (per row)
+- `/admin/content-library` unaffected
+- `tsc --noEmit` clean
+- `npm test` still 135 passing
+
+### Known limitations
+
+- **Cannot create nested folders from the UI in J1.** `+ New` creates at root only. To create a child folder, either use the API directly or wait for J2 (which adds a right-click "New sub-folder" affordance in the tree). The `parentId` is fully supported by the API, just not yet wired into the tree's `+ New` button.
+- **No drag-to-move.** Files move via the per-row "Move" button + dropdown. Drag-and-drop is J2 (needs the client-side library view).
+- **No multi-select bulk move.** Single file at a time. J2.
+- **No folder move between parents from the UI.** `PATCH { parentId }` exists; no UI. J2.
+- **Old `media.folder` text column still exists** but is deprecated. Uploads still write `folder = 'general'` by default. Column removal is a later cleanup batch.
+- **Folder soft-delete keeps `deleted_at` rows in DB.** Not visible anywhere, safe, cleanup is later.
+
