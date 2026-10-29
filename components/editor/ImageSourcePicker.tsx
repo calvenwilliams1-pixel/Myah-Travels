@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { buildPublicUrl } from "@/lib/media/url";
 import MediaLibraryPicker from "./MediaLibraryPicker";
 
@@ -19,9 +19,17 @@ export default function ImageSourcePicker({
 }: ImageSourcePickerProps) {
   const [mode, setMode] = useState<"upload" | "url" | "library">("upload");
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [saveToLibrary, setSaveToLibrary] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("imagePicker:saveToLibrary");
+      if (stored === "true") setSaveToLibrary(true);
+    } catch {}
+  }, []);
 
   async function handleFile(file: File) {
     setIsUploading(true);
@@ -30,6 +38,7 @@ export default function ImageSourcePicker({
       const fd = new FormData();
       fd.append("file", file);
       fd.append("folder", folder);
+      fd.append("isLibrary", saveToLibrary ? "true" : "false");
 
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
@@ -105,6 +114,18 @@ export default function ImageSourcePicker({
           >
             {isUploading ? "Uploading..." : "Choose image"}
           </button>
+          <label className="flex items-center gap-2 text-xs text-gray-600 mt-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={saveToLibrary}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setSaveToLibrary(next);
+                try { localStorage.setItem("imagePicker:saveToLibrary", String(next)); } catch {}
+              }}
+            />
+            Save to library
+          </label>
         </div>
       )}
       {mode === "url" && (
