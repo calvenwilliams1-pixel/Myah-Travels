@@ -973,3 +973,72 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - **Lightbox `<dialog>` styling** — native dialog styling varies slightly by browser. Current inline styles force full-viewport dark overlay, but browser version differences may show minor differences (focus ring color, backdrop opacity).
 - **No image dimension metadata** — masonry relies on `height: auto` and natural image load. Very tall or very wide images may cause column imbalance; acceptable for the use case.
 - **Carousel scrollbar** — `scrollbarWidth: thin` is Firefox; Chromium ignores it. Chromium may show a standard scrollbar under the carousel. Acceptable.
+
+## Batch H2 — Gallery Collage Editor
+
+### What was built
+
+- `components/editor/blocks/GalleryBlockEditor.tsx` — full rewrite (~434 lines):
+  - **Layout controls header** — Style / Columns / Aspect / Gap / Captions dropdowns, wired to `onChange`, live preview. Columns visible for grid/masonry/hero-then-grid. Aspect visible for grid/hero-then-grid only.
+  - **Bulk upload zone** — dashed drop target + click-to-browse, `<input type="file" multiple accept="image/*">`, drag-over highlight, sequential POST to `/api/upload`, client-side 10MB check (matches `lib/media` `MAX_IMAGE_SIZE`), progress "Uploading N of M...", partial failures listed inline, URL conversion matching `ImageSourcePicker` (`/uploads/` prefix).
+  - **Thumbnail strip** — 60×60 previews, up/down arrow buttons per thumbnail (matching `PortalItemsList` pattern — no drag, arrows only), × remove, focused thumbnail ring-highlight.
+  - **Per-image detail collapse** — only the focused image expands the full `ImageSourcePicker` + caption input. Close button, remove, focus tracking survives reorder.
+  - **`+ Add Image`** — appends blank slot and auto-focuses it.
+  - **`focusedIndex`-aware `removeImage`** — removing an image adjusts focus correctly (clears if removing focused, decrements if removing a lower-indexed image).
+
+- Existing behaviors preserved: per-image `ImageSourcePicker`, per-image caption input, `+ Add Image`, remove. All of it now reachable only via focused slot.
+
+### Test cases
+
+**Layout controls**
+- Open a gallery block editor. Five dropdowns visible: Style, Columns, Aspect, Gap, Captions.
+- Change Style to `masonry`. Columns stays visible. Aspect disappears (masonry uses natural aspect).
+- Change Style to `carousel`. Both Columns and Aspect disappear.
+- Change Style to `hero-then-grid`. Both reappear.
+- Change each control — preview pane (or popup preview) updates within ~150ms of the change.
+- Save post, reload, reopen editor — all five settings persist.
+
+**Bulk upload**
+- Click the drop zone. File picker opens with multi-select. Pick 5 images. All 5 upload sequentially ("Uploading 1 of 5..." through "5 of 5"). 5 thumbnails appear in the strip in file-order. All 5 expanded slots collapse (only the strip is populated, no detail auto-opens).
+- Drag 3 images from Explorer/Finder onto the drop zone. Same behavior — all 3 upload, thumbnails appear, drop zone highlights during drag-over.
+- Drop 3 images where one is 15MB. That one listed under "Failed: file.jpg (exceeds 10MB)". Other two upload successfully. No POST attempted for the oversized file.
+- Drop 3 images where one is a valid size but the server rejects (simulate by stopping the API or making a folder permission issue). Other two upload, that one listed as "(server rejected)".
+- Drop 3 images, kill network after first upload. First uploads, other two listed as "(network error)" or "server rejected". Partial success.
+- Single image upload still works — one file, one thumbnail.
+
+**Thumbnail strip**
+- Click the ↑ arrow on thumbnail 2. Swaps with thumbnail 1. Focus (if any) follows.
+- Click the ↑ arrow on thumbnail 1. Disabled (button is `disabled={i === 0}`), no change.
+- Click the ↓ arrow on the last thumbnail. Disabled, no change.
+- Click a thumbnail image. That image's detail section expands below. Other images' details stay collapsed.
+- Click a different thumbnail. Detail swaps to the new image.
+- Click × on a thumbnail. Image removed, remaining images shift, focus adjusts (clears if removing focused, moves if removing a lower-indexed one).
+- With 4 images, remove image 1 (while image 3 is focused). Focus should now be on what was image 3 → now index 1. Verify by clicking the new index-1 thumbnail — it should already be focused (ring visible), not require re-click.
+
+**Per-image detail**
+- Click thumbnail. Detail expands showing ImageSourcePicker, caption input, Image N header, Remove, Close.
+- Replace the image URL via ImageSourcePicker. Thumbnail updates live.
+- Change caption. Thumbnail's `alt` updates (inspect DOM), preview caption updates.
+- Click Close. Detail collapses. Thumbnail stays in strip.
+- Click ↑/↓ while detail is open on the moved image. Detail follows the move.
+- + Add Image. New blank slot appears in strip (with `+` placeholder if no URL). Detail auto-opens on the new slot.
+
+**Persistence**
+- Set all 5 layout fields to non-default values. Add 4 images, reorder them. Save post. Reload edit page. All 5 fields persist, order persists, thumbnails persist.
+- Publish post. View on `/blog/[slug]`. Gallery renders with the chosen layout (verify against each style: grid, masonry, carousel, hero-then-grid).
+- Existing gallery with no layout fields. Open editor. All dropdowns show defaults (grid/3/landscape/medium/below). No visible change to the editor layout. Save without touching layout. Existing render unchanged.
+
+**Integration**
+- Gallery with 0 images. Editor shows "No images yet. Drop files above or click + Add Image." Bulk zone visible. Add 1 image via `+ Add Image` — auto-focuses. Drop 2 images — all 3 thumbnails present.
+- Gallery with 1 image. Up/down arrows on the single thumbnail are both disabled.
+- Very long captions — detail input accepts, thumbnail `alt` accepts, renderer truncates/wraps per style.
+- Popup preview open while editing. All changes (layout, images, captions) reflect in the popup within ~150ms.
+
+### Known limitations
+
+- **No drag reorder** — up/down arrows only, matching `PortalItemsList`. Plan originally specified HTML5 drag; dropped in H2 because (a) `PortalItemsList` doesn't use drag, (b) arrows work on touch, (c) drag adds ambiguity around drop-targets and reorder-during-upload. If drag is wanted later, it's an additive change to `ThumbnailStrip` without touching the rest of the editor.
+- **Sequential upload only** — files upload one at a time (progress "N of M"). Plan considered parallel `Promise.all`; sequential chosen for cleaner progress, simpler error handling, gentler on the server. Bulk-uploading 20 images at ~1s each = 20s total. Acceptable for a single-admin tool.
+- **No image reordering inside detail view** — only via strip arrows. The detail shows the image but no up/down for convenience. Deliberate; strip is the reorder surface.
+- **Detail panel expands below the strip, not inline** — scrolls the strip out of view on a long gallery. Plan mentioned "click scrolls to its detail slot"; not implemented. If a gallery has 20+ images, clicking a thumbnail far down the strip may require scrolling to reach the detail. Acceptable for typical galleries (5–15 images).
+- **Bulk upload progress loses context on tab switch** — if the admin navigates away mid-upload, in-flight POSTs may complete server-side but the strip won't show them. Re-open the block to re-fetch (existing block data). No cross-tab coordination — same limitation as other autosave features.
+
