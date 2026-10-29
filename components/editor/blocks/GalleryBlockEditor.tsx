@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import {
   GalleryData,
   GalleryStyle,
@@ -15,6 +15,8 @@ interface GalleryBlockEditorProps {
   data: GalleryData;
   onChange: (data: Partial<GalleryData>) => void;
 }
+
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB, matches lib/media MAX_IMAGE_SIZE
 
 const STYLE_OPTIONS: { value: GalleryStyle; label: string }[] = [
   { value: "grid", label: "Grid" },
@@ -139,9 +141,131 @@ function LayoutControls({
   );
 }
 
+interface BulkUploadZoneProps {
+  onUploaded: (urls: string[]) => void;
+}
+
+function BulkUploadZone({ onUploaded }: BulkUploadZoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  const [failures, setFailures] = useState<string[]>([]);
+
+  async function uploadFiles(files: FileList | File[]) {
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+
+    const newFailures: string[] = [];
+    const valid: File[] = [];
+    for (const f of arr) {
+      if (f.size > MAX_IMAGE_SIZE) {
+        newFailures.push(`${f.name} (exceeds 10MB)`);
+      } else {
+        valid.push(f);
+      }
+    }
+
+    if (valid.length === 0) {
+      setFailures(newFailures);
+      return;
+    }
+
+    setUploading(true);
+    setFailures([]);
+    setProgress({ current: 0, total: valid.length });
+
+    const urls: string[] = [];
+    for (let i = 0; i < valid.length; i++) {
+      const file = valid[i];
+      setProgress({ current: i + 1, total: valid.length });
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("folder", "posts");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          newFailures.push(`${file.name} (server rejected)`);
+          continue;
+        }
+        const data = await res.json();
+        const publicUrl = data.filePath?.startsWith("/")
+          ? data.filePath
+          : `/uploads/${data.filePath}`;
+        urls.push(publicUrl);
+      } catch {
+        newFailures.push(`${file.name} (network error)`);
+      }
+    }
+
+    setUploading(false);
+    setProgress(null);
+    setFailures(newFailures);
+
+    if (urls.length > 0) {
+      onUploaded(urls);
+    }
+  }
+
+  function onDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files?.length) {
+      uploadFiles(e.dataTransfer.files);
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+        onClick={() => !uploading && inputRef.current?.click()}
+        className={
+          "border-2 border-dashed rounded p-4 text-center text-xs cursor-pointer transition-colors " +
+          (dragOver
+            ? "border-blue-400 bg-blue-50 text-blue-700"
+            : "border-gray-300 bg-gray-50 text-gray-500 hover:border-gray-400")
+        }
+        role="button"
+        tabIndex={0}
+        aria-label="Upload images"
+      >
+        {uploading && progress ? (
+          <span>Uploading {progress.current} of {progress.total}...</span>
+        ) : (
+          <span>Drop images here, or click to browse</span>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) uploadFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      {failures.length > 0 && (
+        <div className="text-xs text-red-600">
+          Failed: {failures.join(", ")}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEditorProps) {
   const addImage = () => {
     onChange({ images: [...data.images, { url: "", caption: "" }] });
+  };
+
+  const handleBulkUploaded = (urls: string[]) => {
+    const newImages = urls.map((url) => ({ url, caption: "" }));
+    onChange({ images: [...data.images, ...newImages] });
   };
 
   const removeImage = (index: number) => {
@@ -159,6 +283,7 @@ export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEdito
   return (
     <div className="space-y-4">
       <LayoutControls data={data} onChange={onChange} />
+      <BulkUploadZone onUploaded={handleBulkUploaded} />
       {data.images.length === 0 && (
         <p className="text-sm text-gray-500 italic">
           No images yet. Add one below.
