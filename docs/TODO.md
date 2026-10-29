@@ -8,7 +8,7 @@
 
 **Two features are SPECCED but unbuilt:** the Itinerary Client Experience — Itinerary at a Glance + Today's Plan card. Both derive entirely from existing itinerary data, no authoring surface. Spec below; build order in the Batch Plan.
 
-**Batch H1 (Gallery Collage renderer) shipped.** H2 (editor UX — bulk upload, thumbnail drag, layout controls header) is the next batch. Spec in `docs/BATCH-H-PLAN.md`; H2 makes the H1 layouts reachable from the admin editor.
+**Batch H (Gallery Collage) shipped** — renderer + editor UX + drag reorder. **Batch I (Media Library Picker) shipped** — `is_library` flag on `media`, GET/PATCH `/api/media`, From-library third mode in `ImageSourcePicker`, upload checkbox. See `docs/CONTENT-LIBRARY-AUDIT.md` for the model. **Next: Batch J** — admin library page (storage widget, bulk delete, edit, nested folders).
 
 **Three outstanding bugs** from the last testing session, documented below. They are Batch A, B, C in the Batch Plan.
 
@@ -84,7 +84,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 | 9 | ✅ Complete | Client Memory System (people, notes, trip history, portal purge, itinerary library) |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
 | Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
-| **Batch build** | **🔄 Current** | **H1 done (Gallery Collage renderer). H2 next (editor UX). See Batch Plan below.** |
+| **Batch build** | **🔄 Current** | **H shipped. I shipped (Media Library Picker). Batch J next (admin library page + folders).** |
 | 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
 | 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
 | 8 | ⏳ Future | Options segments, cruise mode, People table — post-launch |
