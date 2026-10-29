@@ -165,3 +165,20 @@ reset_audit_posts() {
 reset_audit_portals() {
   db_query "DELETE FROM portals WHERE title LIKE '[AUDIT]%';" || true
 }
+
+# Returns length of `items` array in JSON
+jlen_items() {
+  python3 -c 'import sys,json
+try: d=json.load(sys.stdin)
+except: print(0); sys.exit(0)
+print(len(d.get("items", [])))'
+}
+
+# Returns id of first item in `items` array
+jfirst_id() {
+  python3 -c 'import sys,json
+try: d=json.load(sys.stdin)
+except: print(""); sys.exit(0)
+items = d.get("items", [])
+print(items[0]["id"] if items else "")'
+}
