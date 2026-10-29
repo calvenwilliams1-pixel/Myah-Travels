@@ -258,7 +258,74 @@ function BulkUploadZone({ onUploaded }: BulkUploadZoneProps) {
   );
 }
 
+interface ThumbnailStripProps {
+  images: { url: string; caption: string }[];
+  focusedIndex: number | null;
+  onFocus: (index: number) => void;
+  onMove: (from: number, direction: "up" | "down") => void;
+  onRemove: (index: number) => void;
+}
+
+function ThumbnailStrip({ images, focusedIndex, onFocus, onMove, onRemove }: ThumbnailStripProps) {
+  if (images.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 p-2 bg-gray-50 rounded border border-gray-200">
+      {images.map((img, i) => (
+        <div
+          key={i}
+          className={
+            "flex flex-col items-center gap-1 p-1 rounded " +
+            (focusedIndex === i ? "ring-2 ring-blue-400 bg-white" : "")
+          }
+        >
+          <div className="flex gap-0.5">
+            <button
+              type="button"
+              onClick={() => onMove(i, "up")}
+              disabled={i === 0}
+              aria-label={`Move image ${i + 1} up`}
+              className="text-xs px-1 text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed"
+            >↑</button>
+            <button
+              type="button"
+              onClick={() => onMove(i, "down")}
+              disabled={i === images.length - 1}
+              aria-label={`Move image ${i + 1} down`}
+              className="text-xs px-1 text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed"
+            >↓</button>
+          </div>
+          <button
+            type="button"
+            onClick={() => onFocus(i)}
+            aria-label={`Edit image ${i + 1}`}
+            className="block w-[60px] h-[60px] rounded overflow-hidden border border-gray-300 bg-white hover:border-blue-400"
+          >
+            {img.url ? (
+              <img
+                src={img.url}
+                alt={img.caption || `Image ${i + 1}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="flex items-center justify-center w-full h-full text-xs text-gray-400">+</span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => onRemove(i)}
+            aria-label={`Remove image ${i + 1}`}
+            className="text-xs text-red-500 hover:text-red-700"
+          >×</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEditorProps) {
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
   const addImage = () => {
     onChange({ images: [...data.images, { url: "", caption: "" }] });
   };
@@ -271,6 +338,18 @@ export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEdito
   const removeImage = (index: number) => {
     const updated = data.images.filter((_, i) => i !== index);
     onChange({ images: updated });
+    if (focusedIndex === index) setFocusedIndex(null);
+    else if (focusedIndex !== null && focusedIndex > index) setFocusedIndex(focusedIndex - 1);
+  };
+
+  const moveImage = (from: number, direction: "up" | "down") => {
+    const to = direction === "up" ? from - 1 : from + 1;
+    if (to < 0 || to >= data.images.length) return;
+    const updated = [...data.images];
+    [updated[from], updated[to]] = [updated[to], updated[from]];
+    onChange({ images: updated });
+    if (focusedIndex === from) setFocusedIndex(to);
+    else if (focusedIndex === to) setFocusedIndex(from);
   };
 
   const updateImage = (index: number, field: "url" | "caption", value: string) => {
@@ -284,6 +363,13 @@ export default function GalleryBlockEditor({ data, onChange }: GalleryBlockEdito
     <div className="space-y-4">
       <LayoutControls data={data} onChange={onChange} />
       <BulkUploadZone onUploaded={handleBulkUploaded} />
+      <ThumbnailStrip
+        images={data.images}
+        focusedIndex={focusedIndex}
+        onFocus={setFocusedIndex}
+        onMove={moveImage}
+        onRemove={removeImage}
+      />
       {data.images.length === 0 && (
         <p className="text-sm text-gray-500 italic">
           No images yet. Add one below.
