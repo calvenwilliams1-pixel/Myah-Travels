@@ -182,3 +182,11 @@ except: print(""); sys.exit(0)
 items = d.get("items", [])
 print(items[0]["id"] if items else "")'
 }
+
+
+# Scalar query — single value, no table formatting, no header.
+# Use this for INSERT...RETURNING or single-value SELECTs where you
+# need the raw value, not the boxed table output.
+db_scalar() {
+  sqlite3 -list -noheader "$DB" "$1" 2>/dev/null
+}
