@@ -2,7 +2,8 @@ import React from "react";
 import { getReviewBySlug } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import TipTapRenderer from "@/components/editor/renderers/CleanTipTapRenderer";
+import PostRenderer from "@/components/editor/renderers/PostRenderer";
+import { parsePostContent } from "@/lib/blocks/parse-post-content";
 
 export const revalidate = 3600;
 
@@ -38,6 +39,7 @@ export default async function ReviewDetailPage({ params }: { params: { slug: str
     : [];
 
   const dateString = review.publishedAt ?? review.createdAt;
+  const parsed = await parsePostContent(review.content);
 
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
@@ -82,7 +84,11 @@ export default async function ReviewDetailPage({ params }: { params: { slug: str
         </p>
       )}
 
-      <TipTapRenderer content={review.content} />
+      {parsed ? (
+        <PostRenderer blocks={parsed.blocks} template={parsed.template} isPreview={false} />
+      ) : (
+        <p className="text-gray-500 italic">Content unavailable.</p>
+      )}
 
       {review.finalVerdict && (
         <div className="mt-8 bg-gray-50 rounded-lg p-4">

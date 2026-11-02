@@ -2,7 +2,8 @@ import React from "react";
 import { getPostBySlug } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import TipTapRenderer from "@/components/editor/renderers/CleanTipTapRenderer";
+import PostRenderer from "@/components/editor/renderers/PostRenderer";
+import { parsePostContent } from "@/lib/blocks/parse-post-content";
 
 export const revalidate = 3600;
 
@@ -31,6 +32,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
   }
 
   const dateString = post.publishedAt ?? post.createdAt;
+  const parsed = await parsePostContent(post.content);
 
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
@@ -38,7 +40,11 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
       <p className="text-sm text-gray-500 mb-8">
         {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}
       </p>
-      <TipTapRenderer content={post.content} />
+      {parsed ? (
+        <PostRenderer blocks={parsed.blocks} template={parsed.template} isPreview={false} />
+      ) : (
+        <p className="text-gray-500 italic">Content unavailable.</p>
+      )}
     </article>
   );
 }

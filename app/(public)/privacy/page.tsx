@@ -20,7 +20,7 @@ export default async function PrivacyPage() {
     <div className="max-w-3xl mx-auto py-12 px-4">
       <h1 className="text-3xl font-semibold mb-6">Privacy Policy</h1>
       {page.length > 0 && page[0].isVisible ? (
-        <TipTapRenderer content={page[0].content} />
+        <TipTapRenderer content={page[0].content} allowHtmlString />
       ) : (
         <p className="text-gray-500">Privacy policy coming soon.</p>
       )}

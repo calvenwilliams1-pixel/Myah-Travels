@@ -2,7 +2,8 @@ import React from "react";
 import { getGuideBySlug } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import TipTapRenderer from "@/components/editor/renderers/CleanTipTapRenderer";
+import PostRenderer from "@/components/editor/renderers/PostRenderer";
+import { parsePostContent } from "@/lib/blocks/parse-post-content";
 
 export const revalidate = 3600;
 
@@ -31,6 +32,7 @@ export default async function GuideDetailPage({ params }: { params: { slug: stri
   }
 
   const dateString = guide.updatedAt ?? guide.createdAt;
+  const parsed = await parsePostContent(guide.content);
 
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
@@ -47,7 +49,11 @@ export default async function GuideDetailPage({ params }: { params: { slug: stri
         </div>
       )}
       
-      <TipTapRenderer content={guide.content} />
+      {parsed ? (
+        <PostRenderer blocks={parsed.blocks} template={parsed.template} isPreview={false} />
+      ) : (
+        <p className="text-gray-500 italic">Content unavailable.</p>
+      )}
     </article>
   );
 }
