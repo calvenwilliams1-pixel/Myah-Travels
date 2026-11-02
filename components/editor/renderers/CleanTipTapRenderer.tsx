@@ -49,25 +49,42 @@ export default function CleanTipTapRenderer({ content }: CleanTipTapRendererProp
     return null;
   }
 
-  let html = "";
-
-  try {
-    html = serializeJsonToHtml(content);
-  } catch (err) {
-    // Log server-side too — a silent failure here is exactly the class
-    // of bug that leaks raw content into the DOM.
-    console.error("[CleanTipTapRenderer] render failed:", err);
-    html = "";
+  // Branch 1: TipTap JSON doc — the primary path.
+  if (typeof content === "object" && (content as any)?.type === "doc") {
+    let html = "";
+    try {
+      html = serializeJsonToHtml(content);
+    } catch (err) {
+      // Log server-side too — a silent failure here is exactly the class
+      // of bug that leaks raw content into the DOM.
+      console.error("[CleanTipTapRenderer] JSON render failed:", err);
+      return null;
+    }
+    if (!html) return null;
+    return (
+      <div
+        className="prose prose-sm sm:prose-base max-w-none"
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html, PURIFY_CONFIG) }}
+      />
+    );
   }
 
-  if (!html) {
-    return null;
+  // Branch 2: HTML string — legacy/static content (pages table, etc.).
+  // Renders through DOMPurify so raw content cannot leak unsafe markup.
+  if (typeof content === "string") {
+    return (
+      <div
+        className="prose prose-sm sm:prose-base max-w-none"
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content, PURIFY_CONFIG) }}
+      />
+    );
   }
 
-  return (
-    <div
-      className="prose prose-sm sm:prose-base max-w-none"
-      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html, PURIFY_CONFIG) }}
-    />
+  // Branch 3: unknown shape — log once, render nothing.
+  console.error(
+    "[CleanTipTapRenderer] unrecognized content shape:",
+    typeof content,
+    Array.isArray(content) ? "(array)" : ""
   );
+  return null;
 }
