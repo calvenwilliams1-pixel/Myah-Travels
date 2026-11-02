@@ -12,6 +12,12 @@ interface CleanTipTapRendererProps {
    * turn TipTap JSON into HTML.
    */
   content: unknown;
+  /**
+   * Allow rendering HTML strings (legacy content: pages table).
+   * Default false — only TipTap JSON renders unless explicitly opted in.
+   * Prevents garbage strings (including raw block-array JSON) leaking into the DOM.
+   */
+  allowHtmlString?: boolean;
 }
 
 // Build schema + serializer once at module load. These are pure data
