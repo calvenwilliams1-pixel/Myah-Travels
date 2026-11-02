@@ -44,7 +44,7 @@ function serializeJsonToHtml(json: unknown): string {
   return container.innerHTML;
 }
 
-export default function CleanTipTapRenderer({ content }: CleanTipTapRendererProps) {
+export default function CleanTipTapRenderer({ content, allowHtmlString = false }: CleanTipTapRendererProps) {
   if (!content) {
     return null;
   }
@@ -71,7 +71,15 @@ export default function CleanTipTapRenderer({ content }: CleanTipTapRendererProp
 
   // Branch 2: HTML string — legacy/static content (pages table, etc.).
   // Renders through DOMPurify so raw content cannot leak unsafe markup.
+  // Requires allowHtmlString prop — callers that expect TipTap JSON get null
+  // for string content rather than risking raw JSON leaking into the DOM.
   if (typeof content === "string") {
+    if (!allowHtmlString) {
+      console.error(
+        "[CleanTipTapRenderer] string content received but allowHtmlString not set — refusing to render"
+      );
+      return null;
+    }
     return (
       <div
         className="prose prose-sm sm:prose-base max-w-none"

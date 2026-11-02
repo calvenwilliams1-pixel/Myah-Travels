@@ -15,19 +15,26 @@ import VerdictRenderer from "./VerdictRenderer";
 interface PostRendererProps {
   blocks: BlockData[];
   template: Template;
+  /**
+   * When true (default), renders the "Preview: {template.name}" heading.
+   * Editor previews keep the default; public-facing pages pass false.
+   */
+  isPreview?: boolean;
 }
 
-export default function PostRenderer({ blocks, template }: PostRendererProps) {
+export default function PostRenderer({ blocks, template, isPreview = true }: PostRendererProps) {
   const style = getTemplateStyle(template.themeVariant);
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-6">
-      <h1
-        className="text-2xl font-semibold mb-6"
-        style={{ color: style.headingColor, fontFamily: style.fontFamily }}
-      >
-        Preview: {template.name}
-      </h1>
+      {isPreview && (
+        <h1
+          className="text-2xl font-semibold mb-6"
+          style={{ color: style.headingColor, fontFamily: style.fontFamily }}
+        >
+          Preview: {template.name}
+        </h1>
+      )}
 
       <div>
         {blocks.map((block) => {
