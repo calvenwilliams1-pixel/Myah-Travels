@@ -190,3 +190,12 @@ print(items[0]["id"] if items else "")'
 db_scalar() {
   sqlite3 -list -noheader "$DB" "$1" 2>/dev/null
 }
+
+# Returns length of an array at a named key in JSON.
+# e.g. jlen_key sections < {"sections": [...]}
+jlen_key() {
+  python3 -c 'import sys,json
+try: d=json.load(sys.stdin)
+except: print(0); sys.exit(0)
+print(len(d.get(sys.argv[1], [])))' "$1"
+}

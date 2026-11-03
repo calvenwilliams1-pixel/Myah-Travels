@@ -32,7 +32,7 @@ check_not_empty "POST section returns id" "$SEC_ID"
 check "section in DB" "1" "$(db_count "SELECT COUNT(*) FROM itinerary_sections WHERE id=$SEC_ID;")"
 
 RESP=$(http_get "/api/itineraries/$ITIN_ID/sections")
-check "GET sections returns 1" "1" "$(echo "$RESP" | jlen)"
+check "GET sections returns 1" "1" "$(echo "$RESP" | jlen_key sections)"
 
 echo
 echo "-- Day CRUD --"
@@ -41,7 +41,7 @@ DAY_ID=$(echo "$RESP" | jget "day.id")
 check_not_empty "POST day returns id" "$DAY_ID"
 
 RESP=$(http_get "/api/sections/$SEC_ID/days")
-check "GET days returns 1" "1" "$(echo "$RESP" | jlen)"
+check "GET days returns 1" "1" "$(echo "$RESP" | jlen_key days)"
 
 echo
 echo "-- Segment CRUD --"
@@ -50,7 +50,7 @@ SEG_ID=$(echo "$RESP" | jget "segment.id")
 check_not_empty "POST segment returns id" "$SEG_ID"
 
 RESP=$(http_get "/api/days/$DAY_ID/segments")
-check "GET segments returns 1" "1" "$(echo "$RESP" | jlen)"
+check "GET segments returns 1" "1" "$(echo "$RESP" | jlen_key segments)"
 
 echo
 echo "-- Full itinerary GET --"
