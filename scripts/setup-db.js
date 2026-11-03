@@ -2,7 +2,7 @@ const Database = require("better-sqlite3");
 const fs = require("fs");
 const path = require("path");
 
-const dbPath = path.join(__dirname, "..", "data", "site.db");
+const dbPath = process.env.DATABASE_URL || path.join(__dirname, "..", "data", "site.db");
 
 // Create data dir if missing
 const dataDir = path.join(__dirname, "..", "data");

@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 import { fileTypeFromBuffer } from "file-type";
 
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), "public", "uploads");
 const ALLOWED_DOC_EXTENSIONS = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt"];
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_DOC_SIZE = 20 * 1024 * 1024;
