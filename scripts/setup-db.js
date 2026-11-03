@@ -57,6 +57,7 @@ const requiredColumns = [
   { table: "tags", column: "is_favourite", type: "INTEGER DEFAULT 0" },
   { table: "tags", column: "last_used_at", type: "TEXT" },
   { table: "email_queue", column: "last_attempt_at", type: "TEXT" },
+  { table: "email_queue", column: "error_message", type: "TEXT" },
   { table: "itinerary_segments", column: "reference_type", type: "TEXT" },
   { table: "itinerary_segments", column: "reference_label", type: "TEXT" },
   { table: "portal_members", column: "status", type: "TEXT NOT NULL DEFAULT 'active'" },
