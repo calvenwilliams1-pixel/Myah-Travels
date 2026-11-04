@@ -4,6 +4,10 @@ import { db } from "@/lib/db";
 import { entities } from "@/drizzle/schema";
 import { and, eq, lte, lt, sql } from "drizzle-orm";
 
+// Force dynamic: this route reads the DB and requires auth. Must not
+// be prerendered at build time.
+export const dynamic = "force-dynamic";
+
 // Returns entities used exactly once and not touched in the last 90 days.
 // Candidates for cleanup.
 

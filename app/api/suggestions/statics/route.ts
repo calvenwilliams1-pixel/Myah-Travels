@@ -3,6 +3,10 @@ import { requireAuth } from "@/lib/auth";
 import { searchAirports, searchAirlines } from "@/lib/suggestions/statics";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
+// Force dynamic: this route reads the DB and requires auth. Must not
+// be prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   await requireAuth();
 

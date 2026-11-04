@@ -4,6 +4,10 @@ import { db } from "@/lib/db";
 import { itineraries, portals } from "@/drizzle/schema";
 import { and, isNull, eq, or, like, desc } from "drizzle-orm";
 
+// Force dynamic: this route reads the DB and requires auth. Must not
+// be prerendered at build time.
+export const dynamic = "force-dynamic";
+
 // SECURITY: Single-admin system — requireAuth() only.
 
 export async function GET(req: NextRequest) {

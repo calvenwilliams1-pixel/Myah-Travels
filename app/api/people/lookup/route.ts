@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getPersonByEmail } from "@/lib/clients/people";
 
+// Force dynamic: this route reads the DB and requires auth. Must not
+// be prerendered at build time.
+export const dynamic = "force-dynamic";
+
 // SECURITY: Single-admin system — requireAuth() only.
 
 export async function GET(req: NextRequest) {
