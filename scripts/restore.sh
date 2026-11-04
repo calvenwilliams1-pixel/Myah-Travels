@@ -31,7 +31,7 @@ if [[ ! "${DATE}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
     exit 1
 fi
 
-BACKUP_FILE="${DB_DIR}/site-${DATE}.db"
+BACKUP_FILE="${DB_DIR}/site-${DATE}.db.gz.age"
 
 if [ ! -f "${BACKUP_FILE}" ]; then
     echo "ERROR: Backup file not found: ${BACKUP_FILE}"
@@ -59,7 +59,22 @@ if [ -f "${DB_PATH}" ]; then
 fi
 
 echo "Restoring database..."
-cp "${BACKUP_FILE}" "${DB_PATH}"
+if ! command -v age >/dev/null 2>&1; then
+    echo "ERROR: age not installed (sudo apt install age)"
+    exit 1
+fi
+AGE_KEY="${AGE_KEY:-/root/.age/backup-key.txt}"
+if [ ! -f "${AGE_KEY}" ]; then
+    echo "ERROR: age private key not found at ${AGE_KEY}"
+    exit 1
+fi
+DECRYPTED="$(mktemp)"
+trap 'rm -f "${DECRYPTED}"' EXIT
+if ! age -d -i "${AGE_KEY}" "${BACKUP_FILE}" | gunzip > "${DECRYPTED}"; then
+    echo "ERROR: decryption/decompression failed"
+    exit 1
+fi
+cp "${DECRYPTED}" "${DB_PATH}"
 
 rm -f "${DB_PATH}-wal" "${DB_PATH}-shm"
 
@@ -81,8 +96,26 @@ echo "✅ Database integrity verified."
 
 echo "Restoring media..."
 if [ -d "${MEDIA_DIR}" ]; then
-    mkdir -p "${UPLOADS_PATH}"
-    rsync -av --delete "${MEDIA_DIR}/" "${UPLOADS_PATH}/"
+    LATEST_MEDIA=$(ls -t "${MEDIA_DIR}"/media-*.tar.gz.age 2>/dev/null | head -1)
+    if [ -z "${LATEST_MEDIA}" ]; then
+        echo "WARNING: no media archive found in ${MEDIA_DIR}"
+    else
+        if ! command -v age >/dev/null 2>&1; then
+            echo "ERROR: age not installed (sudo apt install age)"
+            exit 1
+        fi
+        if [ ! -f "${AGE_KEY}" ]; then
+            echo "ERROR: age private key not found at ${AGE_KEY}"
+            exit 1
+        fi
+        echo "  Restoring from: $(basename "${LATEST_MEDIA}")"
+        mkdir -p "${UPLOADS_PATH}"
+        if ! age -d -i "${AGE_KEY}" "${LATEST_MEDIA}" | tar -xzf - -C "${SITE_DIR}/public"; then
+            echo "ERROR: media decryption or extraction failed"
+            exit 1
+        fi
+        echo "  Media restored"
+    fi
 fi
 
 echo "Starting application..."
