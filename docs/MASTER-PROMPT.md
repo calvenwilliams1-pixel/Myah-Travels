@@ -12,7 +12,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 ## Current Status (as of November 6, 2026)
 
-**Architecture:** Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation + Client Memory System + Picture-in-Picture preview.
+**Architecture:** Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation + Client Memory System + popup preview.
 
 All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
 
@@ -29,7 +29,7 @@ Two client-facing features are **specced but unbuilt** — the Itinerary Client 
 - Toolbar rewrite with gradient tiles, icon labels, key props, size picker persistence, link command fix
 - Divider extension with thickness + colour attributes, config popover
 - Context menu submenus for colour/size/font
-- Picture-in-Picture preview via `useDocumentPiP` (real OS window, draggable across monitors)
+- Popup preview via window.open + BroadcastChannel (replaced PiP Oct 2026; session-scoped, ready handshake, inline fallback)
 - `useFocusRestore` cleanup on unmount
 - Smoke scripts relocated from `tests/` → `scripts/smoke/`, `npm run smoke` registered
 - `React.cache` removed from `lib/auth/index.ts` (Next.js coupling removed)
@@ -68,7 +68,7 @@ Two client-facing features are **specced but unbuilt** — the Itinerary Client 
 - **Autosave infrastructure** (draft durability + form primitives)
 - **Data Entry Automation** (suggestion system, duplication, drag-reorder)
 - **Client Memory System** (people, notes, trip history, portal purge)
-- **Picture-in-Picture preview** (real OS window, draggable across monitors)
+- **Popup preview** (window.open + BroadcastChannel, session-scoped)
 
 ---
 
@@ -247,12 +247,12 @@ Expansion: modal (consistent with existing admin patterns), reuses `ItineraryVie
 - Background fixed white
 - Status colours fixed
 
-### Picture-in-Picture Preview
-- `useDocumentPiP` hook wraps `documentPictureInPicture`
-- Real OS window, draggable across monitors
-- Uses React portal into the PiP window's document
+### Popup Preview
+- `usePreviewPopup` hook wraps window.open + BroadcastChannel; session-scoped
+- Real OS popup window (browser-controlled, movable)
+- Renders `TemplatePreview` into the popup via React portal
 - Stylesheets + theme CSS vars copied on open
-- Escape inside PiP window closes it (separate keydown listener)
+- Escape inside popup closes it (separate keydown listener)
 - Falls back cleanly on unsupported browsers (Firefox, Safari)
 
 ---
@@ -405,7 +405,7 @@ Recent additions since the last testing pass:
 - Toolbar gradient tiles + icon labels
 - Divider config popover (thickness + colour)
 - Context menu submenus (colour/size/font)
-- Picture-in-Picture preview
+- Popup preview
 - Content schema versioning (body content envelope)
 - Editor body content now written via `serializeBodyContent`
 
