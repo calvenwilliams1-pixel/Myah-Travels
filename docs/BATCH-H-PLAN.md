@@ -1,3 +1,5 @@
+**Status: SHIPPED**
+
 ﻿# Batch H — Gallery Collage (Plan)
 
 **Status:** Proposed. Awaiting review before any code.

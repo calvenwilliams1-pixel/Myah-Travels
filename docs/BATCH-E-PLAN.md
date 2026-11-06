@@ -1,3 +1,5 @@
+**Status: DEFERRED** (not blocked; revisit after Batch L + deployment)
+
 # Batch E — Timezone & Time Tools
 
 **Status:** Proposed, not built. Deferred until after Batch F (Phase 7.3 sweep) and Batch G (Launch Day).

@@ -129,3 +129,15 @@ No migration runs against production without a verified backup and a passing cop
 - [ ] Test migration workflow end-to-end on a copy
 - [ ] Verify backup → restore round-trip on mini PC
 - [ ] Confirm `deleteMediaAction` / `cleanup-daily.sh` protect referenced files
+
+## Rate limiting
+
+`lib/security/index.ts` — in-memory rate limiting. loginRateLimit: 5/15min. magicLinkRateLimit: 5/hour. formRateLimit: 3/hour. apiRateLimit: 100/min. `getClientIp` reads cf-connecting-ip → x-forwarded-for → x-real-ip → "unknown" (correct for Cloudflare Tunnel). Caveats: in-memory (resets on restart), single-instance only, not tested.
+
+## Media file/DB orphan risk
+
+Deleting files from `public/uploads/` without deleting `media` rows orphans the rows. `integrity.sh` flags this. Cleanup scripts must delete DB rows first or check both.
+
+## Portal FK migration pending
+
+8 portal-scoped FKs are `NO ACTION` instead of `CASCADE` (see §2.3). Migration to trigger-based cascade deferred to Phase 7.7. Currently safe because portals use soft-delete.

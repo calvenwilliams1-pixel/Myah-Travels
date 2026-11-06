@@ -1231,3 +1231,11 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 - **Old `media.folder` text column still exists** but is deprecated. Uploads still write `folder = 'general'` by default. Column removal is a later cleanup batch.
 - **Folder soft-delete keeps `deleted_at` rows in DB.** Not visible anywhere, safe, cleanup is later.
 
+
+## Known fixture gaps
+
+`folders.sh` and `media.sh` depend on pre-existing media rows in `data/site.db`. When the media table is empty, these fail. Not a code bug — a test fixture gap. Fix pattern: create fixtures at start, clean up at end (as `itineraries.sh` and `portals.sh` already do).
+
+## Automated audit suite
+
+`npm run audit` runs 13 suites, ~235 checks. Covers: page existence, API behavior, FK enforcement, DB invariants, magic link chain, integration flows. Not covered: UI interaction, email delivery, cross-browser, responsive.

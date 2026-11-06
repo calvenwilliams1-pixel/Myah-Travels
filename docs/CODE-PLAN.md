@@ -551,7 +551,7 @@ lib/editor/
 components/editor/renderers/
 └── CleanTipTapRenderer.test.tsx        # 26 render + sanitisation tests
 
-Total: 5 files, 87 tests passing.
+Total: 5 files, 139 tests passing.
 ```
 
 ### Migrations (`drizzle/migrations/`)
@@ -799,4 +799,4 @@ npm run smoke              # Operational smoke scripts (needs populated DB)
 
 ---
 
-**Last Updated:** September 18, 2026
+**Last Updated:** November 6, 2026

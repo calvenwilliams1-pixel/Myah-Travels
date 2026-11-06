@@ -2,7 +2,7 @@
 
 ## Status
 
-**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 135 vitest tests passing, `tsc` clean. Batch H1 (Gallery Collage renderer) shipped.
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 139 vitest tests passing, `tsc` clean. Batch H1 (Gallery Collage renderer) shipped.
 
 **Current work: batch build then accumulated testing pass.** Features are being shipped in batches; each batch appends its test cases to `docs/TESTING.md`. Testing happens later, in one pass, against the accumulated doc. Full coverage map below.
 
@@ -45,7 +45,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - Autosave hook with durability layer (localStorage draft persistence)
 - Form primitives (AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField)
 - Inline forms replace `prompt()` dialogs
-- Test framework: vitest + testing library (87 tests)
+- Test framework: vitest + testing library (139 tests)
 - Itinerary client views (Glance, Today's Plan) derive from itinerary data — no authoring surface
 
 ### REJECTED
@@ -155,7 +155,7 @@ Build order, then testing pass. Every batch updates `docs/TESTING.md` with its t
 - `e683a2f` - `types/blocks.ts` - GalleryData extended with style/columns/aspect/gap/captionDisplay + 5 type unions
 - `5e39e6b` - `GalleryRenderer.tsx` - 4 layout styles (grid, masonry, carousel, hero-then-grid), `<dialog>` lightbox, print rules, defaults
 - `46b16e5` - `docs/TESTING.md` - Batch H1 section (test cases + known limitations)
-- Verified: tsc clean, 135 vitest tests passing, defaults render identically to pre-H1
+- Verified: tsc clean, 139 vitest tests passing, defaults render identically to pre-H1
 
 **H2 - editor UX (PENDING, next batch, ~8h)**
 - `GalleryBlockEditor.tsx` - bulk upload zone, thumbnail strip + drag reorder, layout controls header, per-image detail collapse
