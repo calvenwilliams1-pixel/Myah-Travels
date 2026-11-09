@@ -33,7 +33,7 @@ export default function LoginPage() {
       }
 
       if (data.success) {
-        router.push("/admin");
+        router.push(data.requiresSetup ? "/admin/setup" : "/admin");
         router.refresh();
       }
     } catch (err) {
