@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { verifyPassword, createSession, logActivity } from "@/lib/auth";
+import { verifyPassword, createSession } from "@/lib/auth";
+import { logActivity } from "@/lib/logging";
 import { loginRateLimit, getClientIp } from "@/lib/security";
 
 export async function POST(request: NextRequest) {

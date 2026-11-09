@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth, verifyTotp } from "@/lib/auth";
+import { requireSession, verifyTotp } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
-// SECURITY: Single-admin system — requireAuth() only.
+// SECURITY: Single-admin system — requireSession() only.
 
 export async function POST(req: NextRequest) {
-  const user = await requireAuth();
+  const user = await requireSession();
   const body = await req.json();
   const code = String(body?.code || "").trim();
 

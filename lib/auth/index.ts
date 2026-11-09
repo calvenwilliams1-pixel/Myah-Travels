@@ -136,7 +136,9 @@ export async function getCurrentUser(): Promise<any | null> {
         const { eq } = await import("drizzle-orm");
         const userId = parseInt(user.id, 10);
         const row = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-        return row[0] ?? null;
+        const found = row[0] ?? null;
+        if (found && !found.isActive) return null;
+        return found;
       } catch {
         return null;
       }
@@ -146,43 +148,78 @@ export async function getCurrentUser(): Promise<any | null> {
 }
 
 /**
- * Require authentication. Returns the authenticated user.
- * Throws if no valid session exists.
+ * Typed auth error. API routes map `status` to the HTTP response code;
+ * pages should let it bubble to the error boundary or redirect handler.
+ */
+export class AuthError extends Error {
+  constructor(public status: 401 | 403, message: string) {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
+/**
+ * Require a valid session (and is_active). Does NOT require setup completion.
+ * Used by the setup wizard and enroll-2fa routes — anything a pre-setup user
+ * needs to reach.
+ */
+export async function requireSession() {
+  resetCurrentUserCache();
+  const user = await getCurrentUser();
+  if (!user) throw new AuthError(401, "Unauthorized");
+  return user;
+}
+
+/**
+ * Strict authentication gate. Requires:
+ *   - Valid session
+ *   - is_active = 1
+ *   - has_completed_setup = 1
+ *   - must_change_password = 0
+ *
+ * Throws AuthError on any failure. Use for all admin pages, admin actions,
+ * and admin API routes.
  *
  * Dev bypass: DISABLE_AUTH=true in .env (ignored in production builds).
- * In production (NODE_ENV=production), the bypass is disabled and a valid
- * Lucia session is required.
+ * In production, the bypass is disabled and a valid Lucia session is required.
  */
 export async function requireAuth() {
   resetCurrentUserCache();
   const user = await getCurrentUser();
-  if (!user) {
-    throw new Error("Unauthorized");
+  if (!user) throw new AuthError(401, "Unauthorized");
+  if (!user.hasCompletedSetup || user.mustChangePassword) {
+    throw new AuthError(403, "Setup required");
   }
   return user;
 }
 
 /**
- * Require authentication AND return onboarding flags alongside the user.
- * Used by login flow and admin layout guard.
+ * Strict gate + return onboarding flags and isAdmin alongside the user.
  */
 export async function requireAuthWithFlags(): Promise<{
   user: any;
   mustChangePassword: boolean;
   hasCompletedSetup: boolean;
   isActive: boolean;
+  isAdmin: boolean;
 }> {
-  resetCurrentUserCache();
-  const user = await getCurrentUser();
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireAuth();
   return {
     user,
     mustChangePassword: !!user.mustChangePassword,
     hasCompletedSetup: !!user.hasCompletedSetup,
     isActive: !!user.isActive,
+    isAdmin: !!user.isAdmin,
   };
+}
+
+/**
+ * Strict gate + admin role required. Use for /admin/users actions.
+ */
+export async function requireAdmin() {
+  const flags = await requireAuthWithFlags();
+  if (!flags.isAdmin) throw new AuthError(403, "Forbidden");
+  return flags;
 }
 
 export async function logActivity(data: any): Promise<void> {

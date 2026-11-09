@@ -1,13 +1,13 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { requireAuth, getUserTotpStatus } from "@/lib/auth";
+import { requireSession, getUserTotpStatus } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import EnrollTotpForm from "./EnrollTotpForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function Enroll2FAPage() {
-  const user = await requireAuth();
+  const user = await requireSession();
   const status = await getUserTotpStatus(Number(user.id));
 
   if (status.totpEnabled) {

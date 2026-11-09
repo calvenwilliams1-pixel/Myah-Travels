@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireAuth, generateTotpSecret, generateTotpUri } from "@/lib/auth";
+import { requireSession, generateTotpSecret, generateTotpUri } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
-// SECURITY: Single-admin system — requireAuth() only.
+// SECURITY: Single-admin system — requireSession() only.
 
 export async function POST() {
-  const user = await requireAuth();
+  const user = await requireSession();
   const secret = generateTotpSecret();
   const otpauthUrl = generateTotpUri(secret, String(user.username));
 
