@@ -16,6 +16,12 @@ export default async function DashboardLayout({
     redirect("/admin/login");
   }
 
+  // Setup guard: users who haven't completed onboarding (or have a pending
+  // password change) must finish the wizard before reaching the dashboard.
+  if (!user.hasCompletedSetup || user.mustChangePassword) {
+    redirect("/admin/setup");
+  }
+
   // TOTP enforcement is gated behind an env var so development and
   // testing can proceed without an authenticator app. At launch,
   // set TOTP_ENFORCEMENT=true on the mini PC — the Launch Day checklist
