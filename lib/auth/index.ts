@@ -103,33 +103,86 @@ export function resetCurrentUserCache(): void {
   currentUserPromise = null;
 }
 
+/**
+ * Read the currently authenticated user from the Lucia session.
+ * Returns null if no session exists or DISABLE_AUTH bypass is not active.
+ * Memoized per-request via currentUserPromise — call resetCurrentUserCache()
+ * at the top of each request handler (or leave unset for fresh reads).
+ */
 export async function getCurrentUser(): Promise<any | null> {
   if (!currentUserPromise) {
     currentUserPromise = (async () => {
-      const result = await db.select().from(users).limit(1);
-      return result[0] ?? null;
+      const authDisabled =
+        process.env.DISABLE_AUTH === "true" && process.env.NODE_ENV !== "production";
+
+      if (authDisabled) {
+        // Dev bypass: return the first (only) user without session check.
+        const result = await db.select().from(users).limit(1);
+        return result[0] ?? null;
+      }
+
+      // Session-based: validate Lucia session, fetch user.
+      try {
+        const { cookies } = await import("next/headers");
+        const cookieStore = await cookies();
+        const sessionCookie = cookieStore.get(lucia.sessionCookieName);
+        if (!sessionCookie?.value) return null;
+
+        const { session, user } = await lucia.validateSession(sessionCookie.value);
+        if (!session) return null;
+        if (!user) return null;
+
+        // Fetch the full user row (Lucia only returns declared attributes).
+        const { eq } = await import("drizzle-orm");
+        const userId = parseInt(user.id, 10);
+        const row = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+        return row[0] ?? null;
+      } catch {
+        return null;
+      }
     })();
   }
   return currentUserPromise;
 }
 
+/**
+ * Require authentication. Returns the authenticated user.
+ * Throws if no valid session exists.
+ *
+ * Dev bypass: DISABLE_AUTH=true in .env (ignored in production builds).
+ * In production (NODE_ENV=production), the bypass is disabled and a valid
+ * Lucia session is required.
+ */
 export async function requireAuth() {
-  // SECURITY: Login is currently disabled for testing. This gate ensures
-  // production builds cannot bypass auth, and dev builds must explicitly
-  // opt in via DISABLE_AUTH=true in .env. Remove this bypass entirely when
-  // real session-based requireAuth() is wired up at launch (Phase 7.7).
-  const authDisabled =
-    process.env.DISABLE_AUTH === "true" && process.env.NODE_ENV !== "production";
-
-  if (!authDisabled) {
-    throw new Error(
-      "Auth is not implemented yet. Set DISABLE_AUTH=true in .env for local development. " +
-      "This error will not appear in production once real auth is wired up."
-    );
+  resetCurrentUserCache();
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Unauthorized");
   }
+  return user;
+}
 
-  const result = await db.select().from(users).limit(1);
-  return result[0];
+/**
+ * Require authentication AND return onboarding flags alongside the user.
+ * Used by login flow and admin layout guard.
+ */
+export async function requireAuthWithFlags(): Promise<{
+  user: any;
+  mustChangePassword: boolean;
+  hasCompletedSetup: boolean;
+  isActive: boolean;
+}> {
+  resetCurrentUserCache();
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  return {
+    user,
+    mustChangePassword: !!user.mustChangePassword,
+    hasCompletedSetup: !!user.hasCompletedSetup,
+    isActive: !!user.isActive,
+  };
 }
 
 export async function logActivity(data: any): Promise<void> {
