@@ -127,9 +127,12 @@ export default function SetupWizard({
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Saving..." : "Secure my account"}
         </Button>
+        <p className="text-xs text-gray-500 text-center mt-2">
+          Press Enter or click the button to continue.
+        </p>
       </form>
     );
   }
@@ -185,7 +188,7 @@ export default function SetupWizard({
           required
         />
         <div className="flex gap-2">
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="flex-1">
             {loading ? "Saving..." : "Continue"}
           </Button>
           <Button
