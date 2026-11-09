@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
+import { getCurrentUser, hashPassword, verifyPassword, createSession, lucia } from "@/lib/auth";
 import { setMultipleSettings } from "@/lib/settings";
 import { getPalette } from "@/lib/theme/palettes";
 import { logActivity } from "@/lib/logging";
@@ -12,7 +12,10 @@ import { logActivity } from "@/lib/logging";
 async function requireSetupUser() {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
-  if (user.hasCompletedSetup) throw new Error("Setup already completed");
+  if (!user.isActive) throw new Error("Account disabled");
+  if (user.hasCompletedSetup && !user.mustChangePassword) {
+    throw new Error("Setup already completed");
+  }
   return user;
 }
 
@@ -36,6 +39,8 @@ export async function changePasswordAction(formData: FormData) {
 
   const newHash = await hashPassword(newPassword);
   await db.update(users).set({ passwordHash: newHash, mustChangePassword: false }).where(eq(users.id, user.id));
+  await lucia.invalidateUserSessions(user.id.toString());
+  await createSession(user.id);
 
   await logActivity({
     userId: user.id,
@@ -82,6 +87,9 @@ export async function changeUsernameAction(formData: FormData) {
 
 export async function applyThemeAction(formData: FormData) {
   const user = await requireSetupUser();
+  if (user.mustChangePassword) {
+    return { error: "Change your password first." };
+  }
   const paletteName = String(formData.get("palette") || "");
 
   const palette = getPalette(paletteName);
