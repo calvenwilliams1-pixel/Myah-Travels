@@ -11,6 +11,7 @@ import {
   changePasswordAction,
   changeUsernameAction,
   applyThemeAction,
+  signOutAction,
 } from "./actions";
 
 interface SetupWizardProps {
@@ -28,11 +29,10 @@ export default function SetupWizard({
 }: SetupWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Step 1 fields
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -78,7 +78,6 @@ export default function SetupWizard({
     setLoading(true);
 
     const fd = new FormData();
-    fd.append("currentPassword", currentPassword);
     fd.append("newPassword", newPassword);
     fd.append("confirmPassword", confirmPassword);
 
@@ -107,13 +106,6 @@ export default function SetupWizard({
           First, let's secure your account. Pick a password only you know.
         </p>
         <Input
-          label="Current password"
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          required
-        />
-        <Input
           label="New password (8+ characters)"
           type="password"
           value={newPassword}
@@ -127,8 +119,8 @@ export default function SetupWizard({
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Saving..." : "Secure my account"}
+        <Button type="submit" variant="solid" isLoading={loading} className="w-full">
+          Secure my account
         </Button>
         <p className="text-xs text-gray-500 text-center mt-2">
           Press Enter or click the button to continue.
@@ -188,8 +180,8 @@ export default function SetupWizard({
           required
         />
         <div className="flex gap-2">
-          <Button type="submit" disabled={loading} className="flex-1">
-            {loading ? "Saving..." : "Continue"}
+          <Button type="submit" variant="solid" isLoading={loading} className="flex-1">
+            Continue
           </Button>
           <Button
             type="button"
@@ -258,8 +250,8 @@ export default function SetupWizard({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <h1 className="text-2xl font-semibold text-center mb-2">
+      <Card className="w-full max-w-lg p-8 shadow-xl">
+        <h1 className="text-3xl font-semibold text-center mb-2">
           Welcome home, {capitalizeFirst(initialUsername)}
         </h1>
         <p className="text-sm text-gray-600 text-center mb-6">
@@ -277,6 +269,17 @@ export default function SetupWizard({
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
+
+        <div className="text-center mt-6 pt-4 border-t border-gray-100">
+          <form action={signOutAction}>
+            <button
+              type="submit"
+              className="text-xs text-gray-500 hover:text-gray-700 underline"
+            >
+              Sign out and use a different account
+            </button>
+          </form>
+        </div>
       </Card>
     </div>
   );

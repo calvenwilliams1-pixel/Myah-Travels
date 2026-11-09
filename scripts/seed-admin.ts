@@ -81,7 +81,7 @@ async function main() {
     await db.insert(users).values({
       username, passwordHash,
       isAdmin: true, isActive: true,
-      hasCompletedSetup: true, mustChangePassword: false,
+      hasCompletedSetup: true, mustChangePassword: true,
       totpEnabled: false,
     });
     console.log(`Created admin: ${username}`);

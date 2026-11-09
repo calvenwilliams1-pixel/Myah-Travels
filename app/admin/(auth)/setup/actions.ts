@@ -14,14 +14,15 @@ async function requireSetupUser() {
   if (!user) throw new Error("Unauthorized");
   if (!user.isActive) throw new Error("Account disabled");
   if (user.hasCompletedSetup && !user.mustChangePassword) {
-    throw new Error("Setup already completed");
+    // Setup already complete — redirect instead of throwing.
+    const { redirect } = await import("next/navigation");
+    redirect("/admin");
   }
   return user;
 }
 
 export async function changePasswordAction(formData: FormData) {
   const user = await requireSetupUser();
-  const currentPassword = String(formData.get("currentPassword") || "");
   const newPassword = String(formData.get("newPassword") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
 
@@ -30,11 +31,6 @@ export async function changePasswordAction(formData: FormData) {
   }
   if (newPassword !== confirmPassword) {
     return { error: "Passwords do not match." };
-  }
-
-  const valid = await verifyPassword(currentPassword, user.passwordHash);
-  if (!valid) {
-    return { error: "Current password is incorrect." };
   }
 
   const newHash = await hashPassword(newPassword);
@@ -113,4 +109,12 @@ export async function applyThemeAction(formData: FormData) {
   });
 
   return { success: true };
+}
+
+
+export async function signOutAction() {
+  const { destroySession } = await import("@/lib/auth");
+  const { redirect } = await import("next/navigation");
+  await destroySession();
+  redirect("/admin/login");
 }

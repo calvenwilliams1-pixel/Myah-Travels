@@ -71,7 +71,7 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <Button type="submit" isLoading={isLoading} className="w-full">
+          <Button type="submit" variant="solid" isLoading={isLoading} className="w-full">
             Continue
           </Button>
         </form>
