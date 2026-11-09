@@ -5,6 +5,8 @@ import ClientInquiries from "./components/ClientInquiries";
 import ActivePortals from "./components/ActivePortals";
 import RecentActivity from "./components/RecentActivity";
 import StorageUsage from "./components/StorageUsage";
+import { getCurrentUser } from "@/lib/auth";
+import { pickGreeting } from "@/lib/greetings";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +14,22 @@ export const metadata = {
   title: "Dashboard | MyCalTravels Admin",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  const greeting = user ? pickGreeting(Number(user.id)) : null;
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      {greeting && (
+        <div className="text-center py-2">
+          <p className="text-base italic text-gray-700">
+            &ldquo;{greeting.text}&rdquo;
+          </p>
+          {greeting.attribution && (
+            <p className="text-xs text-gray-500 mt-1">— {greeting.attribution}</p>
+          )}
+        </div>
+      )}
 
       <QuickActions />
 

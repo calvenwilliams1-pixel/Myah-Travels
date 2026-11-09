@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { PALETTES } from "@/lib/theme/palettes";
+import { capitalizeFirst } from "@/lib/greetings";
 import {
   changePasswordAction,
   changeUsernameAction,
@@ -103,9 +104,7 @@ export default function SetupWizard({
     return (
       <form onSubmit={handleStep1Submit} className="space-y-4">
         <p className="text-sm text-gray-600 mb-4">
-          {hasCompletedSetup
-            ? "Your password has been reset. Please choose a new one."
-            : "Choose a new password for your account."}
+          First, let's secure your account. Pick a password only you know.
         </p>
         <Input
           label="Current password"
@@ -129,7 +128,7 @@ export default function SetupWizard({
           required
         />
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : "Continue"}
+          {loading ? "Saving..." : "Secure my account"}
         </Button>
       </form>
     );
@@ -176,7 +175,7 @@ export default function SetupWizard({
     return (
       <form onSubmit={handleStep2Submit} className="space-y-4">
         <p className="text-sm text-gray-600 mb-4">
-          You can keep your current username or choose a new one.
+          This is how you'll log in. Keep it as is, or change it to something that feels like you.
         </p>
         <Input
           label="Username"
@@ -225,7 +224,7 @@ export default function SetupWizard({
     return (
       <div className="space-y-4">
         <p className="text-sm text-gray-600 mb-4">
-          Pick a colour palette for your site. You can change it later in Settings.
+          Choose the colours that feel like your travel brand. You can always change these later.
         </p>
         <div className="grid grid-cols-2 gap-3">
           {PALETTES.map((palette) => (
@@ -258,10 +257,10 @@ export default function SetupWizard({
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-semibold text-center mb-2">
-          Welcome, {initialUsername}
+          Welcome home, {capitalizeFirst(initialUsername)}
         </h1>
         <p className="text-sm text-gray-600 text-center mb-6">
-          Let's get your account set up.
+          Everything here is built for you. Let's get started.
         </p>
 
         {progressBar()}
