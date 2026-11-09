@@ -61,6 +61,7 @@ const requiredColumns = [
   { table: "users", column: "must_change_password", type: "INTEGER NOT NULL DEFAULT 0" },
   { table: "users", column: "has_completed_setup", type: "INTEGER NOT NULL DEFAULT 1" },
   { table: "users", column: "is_active", type: "INTEGER NOT NULL DEFAULT 1" },
+  { table: "users", column: "is_admin", type: "INTEGER NOT NULL DEFAULT 0" },
   { table: "itinerary_segments", column: "reference_type", type: "TEXT" },
   { table: "itinerary_segments", column: "reference_label", type: "TEXT" },
   { table: "portal_members", column: "status", type: "TEXT NOT NULL DEFAULT 'active'" },

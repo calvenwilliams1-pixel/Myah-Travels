@@ -14,6 +14,7 @@ export const users = sqliteTable(
     mustChangePassword: integer("must_change_password", { mode: "boolean" }).notNull().default(false),
     hasCompletedSetup: integer("has_completed_setup", { mode: "boolean" }).notNull().default(true),
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    isAdmin: integer("is_admin", { mode: "boolean" }).notNull().default(false),
     deletedAt: text("deleted_at"),
   },
   (table) => ({
