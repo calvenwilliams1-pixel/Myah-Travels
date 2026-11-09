@@ -97,54 +97,50 @@ export async function destroySession(): Promise<void> {
 // scripts. The memo is reset per call site via `resetCurrentUserCache()`
 // at the top of request handlers — or simply not used if the caller
 // wants the fresh DB read each time.
-let currentUserPromise: Promise<any> | null = null;
-
+/**
+ * Kept for API compatibility. No-op — getCurrentUser no longer caches.
+ * The previous module-level cache was process-scoped, not request-scoped,
+ * and caused stale user reads across sessions (a login could show another
+ * user's dashboard until the process restarted). Removed in Batch M.5d.
+ */
 export function resetCurrentUserCache(): void {
-  currentUserPromise = null;
+  // intentionally empty
 }
 
 /**
  * Read the currently authenticated user from the Lucia session.
- * Returns null if no session exists or DISABLE_AUTH bypass is not active.
- * Memoized per-request via currentUserPromise — call resetCurrentUserCache()
- * at the top of each request handler (or leave unset for fresh reads).
+ * Returns null if no session exists.
+ * Reads fresh from the DB on every call — no caching. Correctness over
+ * one extra query per request.
  */
 export async function getCurrentUser(): Promise<any | null> {
-  if (!currentUserPromise) {
-    currentUserPromise = (async () => {
-      const authDisabled =
-        process.env.DISABLE_AUTH === "true" && process.env.NODE_ENV !== "production";
+  const authDisabled =
+    process.env.DISABLE_AUTH === "true" && process.env.NODE_ENV !== "production";
 
-      if (authDisabled) {
-        // Dev bypass: return the first (only) user without session check.
-        const result = await db.select().from(users).limit(1);
-        return result[0] ?? null;
-      }
-
-      // Session-based: validate Lucia session, fetch user.
-      try {
-        const { cookies } = await import("next/headers");
-        const cookieStore = await cookies();
-        const sessionCookie = cookieStore.get(lucia.sessionCookieName);
-        if (!sessionCookie?.value) return null;
-
-        const { session, user } = await lucia.validateSession(sessionCookie.value);
-        if (!session) return null;
-        if (!user) return null;
-
-        // Fetch the full user row (Lucia only returns declared attributes).
-        const { eq } = await import("drizzle-orm");
-        const userId = parseInt(user.id, 10);
-        const row = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-        const found = row[0] ?? null;
-        if (found && !found.isActive) return null;
-        return found;
-      } catch {
-        return null;
-      }
-    })();
+  if (authDisabled) {
+    const result = await db.select().from(users).limit(1);
+    return result[0] ?? null;
   }
-  return currentUserPromise;
+
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(lucia.sessionCookieName);
+    if (!sessionCookie?.value) return null;
+
+    const { session, user } = await lucia.validateSession(sessionCookie.value);
+    if (!session) return null;
+    if (!user) return null;
+
+    const { eq } = await import("drizzle-orm");
+    const userId = parseInt(user.id, 10);
+    const row = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const found = row[0] ?? null;
+    if (found && !found.isActive) return null;
+    return found;
+  } catch {
+    return null;
+  }
 }
 
 /**
