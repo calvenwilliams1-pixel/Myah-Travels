@@ -1239,3 +1239,93 @@ The initial D-a shipped Glance as an inline full-width tile. That was the wrong 
 ## Automated audit suite
 
 `npm run audit` runs 13 suites, ~235 checks. Covers: page existence, API behavior, FK enforcement, DB invariants, magic link chain, integration flows. Not covered: UI interaction, email delivery, cross-browser, responsive.
+
+## Batch M — Auth + Onboarding + Dashboard Warmth
+
+### What was built
+
+- `users.is_admin` column (migration `0027_users_is_admin.sql`)
+- `seed-admin.ts` — create-admin / create-temp / reset-password / promote modes, env or `--password`/`--username` flags
+- Auth functions restructured: `requireAuth` (strict — session + isActive + hasCompletedSetup + !mustChangePassword), `requireSession` (loose — session + isActive, for wizard), `requireAuthWithFlags`, `requireAdmin`, typed `AuthError`
+- Login API hardened: rate limit, isActive check, activity logging from `@/lib/logging`, `requiresSetup` signal
+- Setup wizard (`/admin/setup`): 3 steps (password, username, theme), progress bar, sign-out escape, no current-password field (session proof suffices)
+- Dashboard layout guard: setup-incomplete users → `/admin/setup`, complete users → dashboard
+- `ThemeProvider` wrapped on `(auth)` pages — fixes invisible buttons on login/setup
+- `Button` new `variant="solid"` (theme-independent dark gray)
+- Dashboard warmth: rotating greetings (Shakespeare + Sonnet 116 weighted + 5 personal lines), capitalized header
+- Removed module-level `currentUserPromise` cache — was process-scoped, caused session crossover (login as myah showed dev dashboard)
+
+### Test cases
+
+**Login (browser)**
+- `/admin` anonymous → redirect `/admin/login`
+- Login as `dev` with correct password → dashboard, header "Welcome back, Dev"
+- Login as `myah` with correct password → wizard (if incomplete) or dashboard (if complete)
+- Login with wrong password → error message, stays on login
+- 6 rapid wrong attempts → 6th returns 429 rate limit
+
+**Wizard — fresh user (`must_change_password=1, has_completed_setup=0`)**
+- Login → redirect `/admin/setup`
+- Progress bar shows 3 steps: Password / Username / Theme
+- Step 1: only new password + confirm fields (no current password)
+- Step 1 → step 2 (username, with Continue + Skip)
+- Step 2 → step 3 (6 palette cards)
+- Click palette → redirect `/admin` dashboard, theme applied
+- DB after: `must_change_password=0, has_completed_setup=1`
+
+**Wizard — reset user (`must_change_password=1, has_completed_setup=1`)**
+- Login → redirect `/admin/setup`
+- Step 1 only (no username/theme steps — already complete)
+- Change password → straight to `/admin` dashboard (skips step 2/3)
+
+**Session isolation**
+- Log in as `dev` → dev dashboard
+- Log out, log in as `myah` → myah dashboard, NOT dev
+- No cache crossover
+
+**Sign-out escape**
+- On `/admin/setup` → "Sign out and use a different account" link at bottom of card
+- Click → logs out, redirects to `/admin/login`
+
+**Dashboard warmth**
+- Header: "Welcome back, Myah" (capitalized)
+- Rotating greeting renders on dashboard: Shakespeare quote with attribution, OR personal line
+- Refresh page — same greeting (deterministic on user + day, not random)
+- Log out, log back in — same greeting (same day)
+- Next day: different greeting
+
+**Rate limit**
+- 6 rapid POST `/api/auth/login` with wrong creds → 6th returns 429
+- Same 6 rapid POSTs from different `CF-Connecting-IP` header → not rate-limited (401s)
+
+### Audit commands
+
+New suites and how to run them:
+
+**`npm run audit`** — runs all audit suites. Currently 12 suites, ~235 checks (may be 13 with auth-rate-limit).
+
+Individual suites:
+- `bash scripts/audit/auth-rate-limit.sh` — 6-attempt rate limit test, different-IP bypass
+- `bash scripts/audit/magic-link.sh` — token → session → wall, email queue
+- `bash scripts/audit/portals.sh` — portal items, reorder, visibility, attach
+- `bash scripts/audit/itineraries.sh` — section/day/segment CRUD, soft-delete
+- `bash scripts/audit/integration.sh` — itinerary → portal end-to-end
+- `bash scripts/audit/folders.sh` — folder CRUD, nesting, cascade
+- `bash scripts/audit/media.sh` — media API, promote, move
+- `bash scripts/audit/content.sh` — public page rendering
+- `bash scripts/audit/fk-audit.sh` — FK enforcement + policy
+- `bash scripts/audit/migration.sh` — fresh install reproduces dev schema
+- `bash scripts/audit/routes.sh` — all static pages load
+- `bash scripts/audit/wiring.sh` — endpoints have UI callers
+- `bash scripts/audit/integrity.sh` — DB invariants
+
+Environment requirements:
+- Dev server running on `localhost:3000`
+- `DISABLE_AUTH=false` for auth-rate-limit (needs real rate limiting)
+- `DISABLE_AUTH=true` for most other suites (skip auth checks)
+
+### Known gaps
+
+- **No users admin page.** Account management is CLI-only via `scripts/seed-admin.ts`. Documented in DATA-DURABILITY.md. Deferred — fine for single-admin + dev, needs UI if selling deployments.
+- **Rate limit is in-memory.** Resets on server restart. Fine for single instance.
+- **No TOTP in onboarding.** Deferred to Phase 7.7. `totp_secret`/`totp_enabled` columns exist, wizard doesn't prompt.

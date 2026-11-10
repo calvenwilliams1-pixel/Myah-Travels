@@ -14,7 +14,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 **Architecture:** Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation + Client Memory System + popup preview.
 
-All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
+All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**, and **Batch M (auth + onboarding) is code-complete on the `batch-m` branch** — not yet merged to `main`. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
 
 Two client-facing features are **specced but unbuilt** — the Itinerary Client Experience (Glance + Today's Plan card). Both derive from existing itinerary data, no authoring surface. Full spec in `docs/TODO.md`.
 
@@ -276,6 +276,7 @@ Expansion: modal (consistent with existing admin patterns), reuses `ItineraryVie
 | 9 | ✅ Complete | Client Memory System |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
 | Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface. See `docs/TODO.md` |
+| **Batch M** | **✅ Code-complete on `batch-m`** | **Auth + onboarding: is_admin/is_active/must_change_password/has_completed_setup, seed-admin CLI, requireAuth split (requireAuth/requireSession/requireAuthWithFlags/requireAdmin), 3-step wizard, cache bug fix, dashboard warmth** |
 | **Testing pass** | **🔄 Current** | **Browser verification of everything since 7.6 Wave 2** |
 | 7.3 | ⏳ Pending | Publish validation, error boundaries, responsive preview |
 | 8 | ⏳ Future | Options segments, cruise mode, People table |
@@ -316,7 +317,24 @@ Canvas-in-TipTap was fully removed (CanvasBlockNode, CanvasBlockRenderer, Canvas
 - `people`, `person_notes`, `person_trip_history` — client memory (9)
 - `settings`, `media`, `clients`, `activity_log`, `email_queue` — system
 
-**Migrations:** 0001-0015 in `drizzle/migrations/` (0016+ reserved for specced features)
+**Migrations:** 0001-0015, 0018-0027 in `drizzle/migrations/` (0016 and 0017 were never created; 0026 adds `must_change_password`/`has_completed_setup`/`is_active`, 0027 adds `is_admin`)
+
+
+### Authentication (Batch M)
+
+- **`requireAuth()`** — strict gate: Lucia session + `is_active=1` + `has_completed_setup=1` + `must_change_password=0`. Throws typed `AuthError(401/403)`. All admin pages and API routes use this.
+- **`requireSession()`** — loose gate: valid session + `is_active=1`. Used only by the setup wizard and `enroll-2fa` — anything a pre-setup user needs to reach.
+- **`requireAuthWithFlags()`** — strict + returns `{ user, mustChangePassword, hasCompletedSetup, isActive, isAdmin }`.
+- **`requireAdmin()`** — strict + `is_admin=1`. Reserved for future admin-only actions (no Users page yet).
+- **`checkSetupRequired(user)`** — extracted setup guard (M.5g). Tested in isolation via `lib/auth/require-auth.test.ts`. `requireAuth` calls it.
+- **`getCurrentUser()`** — no cache. Reads from the DB on every request. The module-level `currentUserPromise` cache was removed in M.5d (it was process-scoped, not request-scoped, and caused session crossover).
+- **`resetCurrentUserCache()`** — no-op, kept for API compatibility. Do not rely on it.
+- **Wizard (`/admin/setup`):** 3 steps for fresh users (password, username, theme), 1 step for reset users (password only). No current-password field — session proof suffices. Sign-out escape link. `(auth)/layout.tsx` wraps the whole auth tree in `ThemeProvider`.
+- **Dashboard guard:** `(dashboard)/layout.tsx` redirects to `/admin/setup` if `!hasCompletedSetup || mustChangePassword`. Then, if `TOTP_ENFORCEMENT=true`, redirects to `/admin/enroll-2fa` when TOTP isn't set up.
+- **Login page** (`app/admin/(auth)/login/page.tsx`): client-side form. POSTs `/api/auth/login`, then `router.push(data.requiresSetup ? "/admin/setup" : "/admin")`. API returns `{ success, requiresSetup }` where `requiresSetup = mustChangePassword || !hasCompletedSetup`.
+- **`DISABLE_AUTH=true`** — dev bypass, ignored in production. In dev, `getCurrentUser()` returns the first `users` row without a session cookie.
+- **`TOTP_ENFORCEMENT=true`** — production launch flag. Read by the dashboard layout. Enforces `/admin/enroll-2fa` before any dashboard access.
+- **Account management is CLI-only** via `scripts/seed-admin.ts` (create-admin / create-temp / reset-password / promote). Refuses to run in `NODE_ENV=production`. No Users admin UI (M.6 dropped this session — fine for single-admin + dev; add UI if selling deployments).
 
 ---
 
