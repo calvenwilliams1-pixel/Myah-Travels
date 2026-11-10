@@ -460,86 +460,118 @@ layout.tsx               # Root layout
 ### API Routes (`app/api/`)
 
 ```
-auth/login/route.ts
-feed/route.ts
-search/route.ts
-upload/route.ts
-health/route.ts
-tags/suggest/route.ts
+admin/[type]/[id]/toggle/route.ts    # Toggle publish/featured/etc for a content row
+
+auth/
+├── login/route.ts                    # POST — validate creds, rate limit, return {success, requiresSetup}
+└── enroll-2fa/
+    ├── start/route.ts                # POST — generate TOTP secret + QR
+    └── confirm/route.ts              # POST — verify TOTP code, enable 2FA
+
+feed/route.ts                         # GET — paginated public feed
+search/route.ts                       # GET — FTS5 search
+upload/route.ts                       # POST — media upload
+health/route.ts                       # GET — health check
+tags/suggest/route.ts                 # GET — tag autocomplete
 
 content-library/
-├── route.ts             # GET (list), POST (create)
-└── [id]/route.ts        # DELETE
+├── route.ts                          # GET list, POST create
+└── [id]/route.ts                     # DELETE
+
+color-presets/
+├── route.ts                          # GET ?kind=, POST
+└── [id]/route.ts                     # DELETE
+
+folders/
+├── route.ts                          # GET, POST (folder CRUD)
+└── [id]/route.ts                     # PATCH, DELETE (cascade)
+
+media/
+├── route.ts                          # GET list, POST upload/promote
+├── [id]/route.ts                     # PATCH (rename/promote), DELETE
+└── [id]/move/route.ts                # POST — move to folder
 
 portal/[id]/
-├── route.ts             # GET (portal with hero fields)
-├── items/route.ts       # GET, POST (attach or portal-specific)
-├── items/[itemId]/route.ts # DELETE
-├── reorder/route.ts     # POST
-└── notepad/route.ts     # GET (list + search), POST (create)
+├── route.ts                          # GET portal with hero fields
+├── items/
+│   ├── route.ts                      # GET list, POST attach or portal-specific
+│   └── [itemId]/
+│       ├── route.ts                  # DELETE
+│       └── visibility/route.ts       # PATCH toggle visibility
+├── itineraries/route.ts              # GET list, POST create
+├── reorder/route.ts                  # POST reorder items
+└── notepad/route.ts                  # GET list+search, POST create
+
+portals/route.ts                      # GET all portals (for picker)
 
 itineraries/
-├── [id]/route.ts                # GET, PATCH, DELETE
-├── [id]/sections/route.ts       # GET, POST
-├── [id]/attach/route.ts         # POST (attach to wall)
-└── [targetId]/copy-segment/route.ts # POST (cross-itinerary copy)
+├── route.ts                          # GET list, POST create
+└── [id]/
+    ├── route.ts                      # GET, PATCH, DELETE (soft)
+    ├── sections/route.ts             # GET, POST
+    ├── attach/route.ts               # POST attach to portal wall
+    ├── blocks/route.ts               # GET, POST (itinerary blocks)
+    ├── copy-segment/route.ts         # POST (cross-itinerary copy)
+    └── duplicate-to-portal/route.ts  # POST duplicate an itinerary to another portal
 
-portal/[id]/itineraries/route.ts  # GET (list), POST (create)
+itinerary-blocks/[blockId]/route.ts   # PATCH, DELETE
 
-sections/
-├── [id]/route.ts                # PATCH, DELETE
-├── [id]/days/route.ts           # GET, POST
-├── [id]/stays/route.ts          # GET, POST
-└── [id]/extend-day/route.ts     # POST
+sections/[id]/
+├── route.ts                          # PATCH, DELETE
+├── days/route.ts                     # GET, POST
+├── stays/route.ts                    # GET, POST
+└── extend-day/route.ts               # POST
 
-days/
-├── [id]/route.ts                # PATCH, DELETE
-├── [id]/segments/route.ts       # GET, POST
-├── [id]/segments/bulk/route.ts  # POST (transactional bulk-add)
-├── [id]/duplicate/route.ts      # POST
-└── [id]/order/route.ts          # PATCH (reorder), DELETE (reset)
+days/[id]/
+├── route.ts                          # PATCH, DELETE
+├── duplicate/route.ts                # POST
+├── order/route.ts                    # PATCH reorder, DELETE reset
+└── segments/
+    ├── route.ts                      # GET, POST
+    └── bulk/route.ts                 # POST transactional bulk-add
 
-segments/
-├── [id]/route.ts                # PATCH, DELETE
-└── [id]/duplicate/route.ts      # POST
+segments/[id]/
+├── route.ts                          # PATCH, DELETE
+├── duplicate/route.ts                # POST
+└── legs/route.ts                     # GET, POST (travel legs)
 
-stays/[id]/route.ts              # PATCH, DELETE
-notepad/[id]/route.ts            # PATCH, DELETE
+legs/[id]/route.ts                    # PATCH, DELETE
+stays/[id]/route.ts                   # PATCH, DELETE
+notepad/[id]/route.ts                 # PATCH, DELETE
 
 suggestions/
-├── entities/route.ts            # GET ?kind=&q=
-├── entities/[id]/route.ts       # DELETE
-├── entities/stale/route.ts      # GET
-├── field-values/route.ts        # GET ?field=&q=
-├── statics/route.ts             # GET ?field=&q=
-├── snippets/route.ts            # GET, POST
-├── snippets/[id]/route.ts       # PATCH, DELETE
-└── telemetry/route.ts           # POST
+├── entities/
+│   ├── route.ts                      # GET ?kind=&q=
+│   ├── [id]/route.ts                 # DELETE
+│   └── stale/route.ts                # GET (stale entities report)
+├── field-values/route.ts             # GET ?field=&q=
+├── statics/route.ts                  # GET ?field=&q= (airports/airlines)
+├── snippets/
+│   ├── route.ts                      # GET, POST
+│   └── [id]/route.ts                 # PATCH, DELETE
+└── telemetry/route.ts                # POST (suggestion events)
 
-color-presets/route.ts           # GET ?kind=, POST
+people/
+├── route.ts                          # GET list, POST create
+├── lookup/route.ts                   # GET — find person by name/email
+└── [id]/
+    ├── route.ts                      # GET, PATCH, DELETE
+    └── notes/
+        ├── route.ts                  # GET list, POST create
+        └── [noteId]/route.ts         # PATCH, DELETE
 
-portals/route.ts                 # GET (all portals for picker)
+clients/export/route.ts               # GET export clients as CSV
 
-canvas/templates/                # FROZEN
+email/
+├── process-queue/route.ts            # POST (cron auth)
+├── status/route.ts                   # GET
+└── webhook/route.ts                  # POST (Resend webhook)
+
+canvas/templates/                     # FROZEN — Canvas system
 ├── route.ts
 └── [id]/route.ts
 
-admin/
-├── [type]/[id]/toggle/route.ts
-└── theme/route.ts
-
-clients/export/route.ts
-
-email/
-├── process-queue/route.ts
-├── status/route.ts
-└── webhook/route.ts
-
-people/
-├── route.ts                     # GET, POST
-└── [id]/route.ts                # GET, PATCH, DELETE
 ```
-
 ### Scripts (`scripts/`)
 
 ```
