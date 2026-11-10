@@ -159,6 +159,25 @@ export class AuthError extends Error {
  * Used by the setup wizard and enroll-2fa routes — anything a pre-setup user
  * needs to reach.
  */
+/**
+ * Setup-completion guard. Extracted from `requireAuth` so it can be tested
+ * without touching the database. Throws AuthError(403) when the user has not
+ * finished onboarding or still owes a password change.
+ */
+export function checkSetupRequired(user: {
+  hasCompletedSetup: boolean;
+  mustChangePassword: boolean;
+}): void {
+  if (!user.hasCompletedSetup || user.mustChangePassword) {
+    throw new AuthError(403, "Setup required");
+  }
+}
+
+/**
+ * Require a valid session (and is_active). Does NOT require setup completion.
+ * Used by the setup wizard and enroll-2fa routes — anything a pre-setup user
+ * needs to reach.
+ */
 export async function requireSession() {
   resetCurrentUserCache();
   const user = await getCurrentUser();
@@ -183,9 +202,7 @@ export async function requireAuth() {
   resetCurrentUserCache();
   const user = await getCurrentUser();
   if (!user) throw new AuthError(401, "Unauthorized");
-  if (!user.hasCompletedSetup || user.mustChangePassword) {
-    throw new AuthError(403, "Setup required");
-  }
+  checkSetupRequired(user);
   return user;
 }
 
