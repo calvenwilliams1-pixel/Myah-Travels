@@ -429,6 +429,26 @@ Recent additions since the last testing pass:
 
 ---
 
+## Recovery Set
+
+If context is lost, paste these files into a fresh AI chat in this order:
+
+1. **`docs/MASTER-PROMPT.md`** (this file) — project state, pivot history, architecture overview, current focus
+2. **`docs/SRS.md`** — full software requirements specification
+3. **`docs/TODO.md`** — what's shipped, what's next, batch plan
+4. **`docs/CODE-PLAN.md`** — complete file map (every directory, every significant file)
+5. **`docs/DATA-DURABILITY.md`** — data invariants, FK policy, backup/restore, account lifecycle
+6. **`docs/ACCOUNT-LIFECYCLE.md`** — auth specifics: user flags, seed modes, session behavior
+
+Optionally, if the work is auth-related: paste `docs/ACCOUNT-LIFECYCLE.md` after this file.
+
+**Do not paste `docs/TESTING.md`** — it's 75K of accumulated test checklists, too large for a single paste. Reference it from TODO.md when specific tests are needed.
+
+**Do not paste `docs/AUDIT.md`** — that's a legacy template-audit findings report from Oct 2026, not the live audit suite. The audit suite is `scripts/audit/*.sh` and is run via `npm run audit` when the dev server is running.
+
+If a pasted recovery document contradicts the code, the code is authoritative. Update the docs.
+
+
 ## What to Do When Resuming
 
 1. **Read this document** (`docs/MASTER-PROMPT.md`)
