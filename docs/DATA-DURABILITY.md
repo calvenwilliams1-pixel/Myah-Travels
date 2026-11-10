@@ -122,6 +122,27 @@ No migration runs against production without a verified backup and a passing cop
 - `routes.sh` — every static page loads
 - `wiring.sh` — every API resource has a UI caller
 
+## Account lifecycle (Batch M)
+
+Users table carries four flags added in Batch M: `is_admin`, `is_active`, `must_change_password`, `has_completed_setup`. Migrations `0026_users_onboarding.sql` and `0027_users_is_admin.sql`.
+
+**Invariants:**
+- `is_active = 0` blocks login (getCurrentUser returns null for inactive users) but does not delete existing session rows.
+- `seed-admin.ts --reset-password` sets `must_change_password = 1` but does not revoke sessions. Sessions stay valid until expiry or password change.
+- The setup wizard's changePasswordAction invalidates all other sessions on success.
+- `resetCurrentUserCache()` is a no-op (kept for API compatibility after M.5d cache removal). Do not reintroduce module-level caching — it was process-scoped, not request-scoped, and caused cross-session data leakage.
+- `seed-admin.ts` refuses to run in `NODE_ENV=production`.
+
+**Account operations are CLI-only.** No admin UI. Full lifecycle, seed modes, and session behavior documented in `docs/ACCOUNT-LIFECYCLE.md`.
+
+**Orphan risk:** deleting a user does not cascade to `sessions` (Lucia's schema). Sessions will 401 on next request when getCurrentUser returns null. Cleanup deferred.
+
+## Batch M launch requirements
+
+- **Bind localhost:** `npm start` must use `next start -H 127.0.0.1`. Behind Cloudflare Tunnel. If the app binds 0.0.0.0, LAN devices can reach it directly and forge `cf-connecting-ip` to bypass rate limits.
+- **TOTP enforcement:** `TOTP_ENFORCEMENT=true` in `.env` on the mini PC forces every logged-in user to enroll TOTP before reaching any admin page. Read by `app/admin/(dashboard)/layout.tsx`. Unset in dev.
+- **`DISABLE_AUTH=true` fails closed in production.** Dev-only bypass.
+
 ## 8. Phase 7.7 Migration TODO
 
 - [ ] Add `cascade_portal_delete` trigger (Option B) via migration
