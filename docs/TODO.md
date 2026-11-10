@@ -2,7 +2,7 @@
 
 ## Status
 
-**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 139 vitest tests passing, `tsc` clean. Batch H1 (Gallery Collage renderer) shipped.
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 143 vitest tests passing, `tsc` clean. Batch H1 (Gallery Collage renderer) shipped. **Batch M (auth + onboarding) code-complete on `batch-m` branch — not yet merged to `main`.**
 
 **Current work: batch build then accumulated testing pass.** Features are being shipped in batches; each batch appends its test cases to `docs/TESTING.md`. Testing happens later, in one pass, against the accumulated doc. Full coverage map below.
 
@@ -47,6 +47,8 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - Inline forms replace `prompt()` dialogs
 - Test framework: vitest + testing library (139 tests)
 - Itinerary client views (Glance, Today's Plan) derive from itinerary data — no authoring surface
+- Account management is CLI-only via `scripts/seed-admin.ts` (M.6 Users page dropped — fine for single-admin + dev; revisit if selling deployments)
+- `requireAuth` (strict) vs `requireSession` (loose for wizard) — see `docs/ACCOUNT-LIFECYCLE.md`
 
 ### REJECTED
 - CanvasElement for writers
@@ -84,6 +86,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 | 9 | ✅ Complete | Client Memory System (people, notes, trip history, portal purge, itinerary library) |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
 | Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
+| **Batch M** | **✅ Code-complete on `batch-m`** | **Auth + onboarding: user flags, seed-admin CLI, requireAuth split, 3-step wizard, cache bug fix, dashboard warmth. Merge pending after M.8/M.9.** |
 | **Batch build** | **🔄 Current** | **H shipped. I shipped (Media Library Picker). Batch J next (admin library page + folders).** |
 | 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
 | 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
@@ -285,7 +288,8 @@ Operational checklist for the deployed system. Completed on the mini PC. This se
 
 ### Pre-launch
 
-- TOTP enforcement: `TOTP_ENFORCEMENT=true` on mini PC, enroll first authenticator, verify redirect, store secret in password manager
+- TOTP enforcement: `TOTP_ENFORCEMENT=true` in `.env` on mini PC (read by `app/admin/(dashboard)/layout.tsx`), enroll first authenticator, verify redirect to `/admin/enroll-2fa`, store TOTP secret in password manager
+- **Bind localhost (M.8):** `npm start` must use `next start -H 127.0.0.1` — behind Cloudflare Tunnel. If the app binds 0.0.0.0 the LAN can reach it and forge `cf-connecting-ip` to bypass the login rate limit.
 - Dependencies: `npm ci`, verify `@tiptap/extension-*` in `node_modules`, run `setup-db.js`
 - Resend: account, domain verified, DNS records (SPF/DKIM/DMARC), production API key, `SITE_URL`, `CRON_SECRET`, `EMAIL_FROM`, `EMAIL_ADMIN_TO`
 
