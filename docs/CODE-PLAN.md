@@ -2,7 +2,7 @@
 
 ## Overview
 
-All planned phases COMPLETE: Block System, Template Creator, Theme, Portal V1, Itinerary Builder, Admin Notepad, Autosave Infrastructure (87 tests), Form Primitives, Phase 7.6 (Waves 1-4), Phase 7.8 Data Entry Automation, Phase 7.9 Post Editor, Phase 9 Client Memory, Phase 9.5 Polish + Security Audit. Current work is a large accumulated-testing pass — see `docs/TESTING.md`. Phase 8 deferred to post-launch. Canvas system frozen (unwired from nav and TipTap, pending deletion).
+All planned phases COMPLETE: Block System, Template Creator, Theme, Portal V1, Itinerary Builder, Admin Notepad, Autosave Infrastructure, Form Primitives, Phase 7.6 (Waves 1-4), Phase 7.8 Data Entry Automation, Phase 7.9 Post Editor, Phase 9 Client Memory, Phase 9.5 Polish + Security Audit, Batch M Auth + Onboarding (code-complete on batch-m). Test count: 143 vitest tests. Current work is a large accumulated-testing pass — see `docs/TESTING.md`. Phase 8 deferred to post-launch. Canvas system frozen (unwired from nav and TipTap, pending deletion).
 
 **Rendering note:** TipTap HTML rendering does NOT use `@tiptap/html`'s `generateHTML`. That function uses `zeed-dom` internally and silently drops inline styles on `textStyle` marks (Color, FontFamily, FontSize). See "Rendering Architecture" section.
 
@@ -10,7 +10,7 @@ All planned phases COMPLETE: Block System, Template Creator, Theme, Portal V1, I
 
 ## Tech Stack
 
-Next.js 14 App Router, TypeScript, SQLite (better-sqlite3, WAL mode), Drizzle ORM, Tailwind CSS (+ @tailwindcss/typography), Lucia Auth, TipTap 2.27, Vitest + Testing Library (87 tests), react-moveable 0.56.0 (frozen Canvas only), DOMPurify, jsdom (server-side serializer).
+Next.js 14 App Router, TypeScript, SQLite (better-sqlite3, WAL mode), Drizzle ORM, Tailwind CSS (+ @tailwindcss/typography), Lucia Auth, TipTap 2.27, Vitest + Testing Library (143 tests), react-moveable 0.56.0 (frozen Canvas only), DOMPurify, jsdom (server-side serializer).
 
 ---
 
