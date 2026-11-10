@@ -14,7 +14,7 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 **Architecture:** Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation + Client Memory System + popup preview.
 
-All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**, and **Batch M (auth + onboarding) is code-complete on the `batch-m` branch** — not yet merged to `main`. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
+All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**, and **Batch M (auth + onboarding) is code-complete on the `batch-m` branch** — not yet merged to `main`. 143 vitest tests passing, `tsc` clean. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
 
 Two client-facing features are **specced but unbuilt** — the Itinerary Client Experience (Glance + Today's Plan card). Both derive from existing itinerary data, no authoring surface. Full spec in `docs/TODO.md`.
 
@@ -334,7 +334,8 @@ Canvas-in-TipTap was fully removed (CanvasBlockNode, CanvasBlockRenderer, Canvas
 - **Login page** (`app/admin/(auth)/login/page.tsx`): client-side form. POSTs `/api/auth/login`, then `router.push(data.requiresSetup ? "/admin/setup" : "/admin")`. API returns `{ success, requiresSetup }` where `requiresSetup = mustChangePassword || !hasCompletedSetup`.
 - **`DISABLE_AUTH=true`** — dev bypass, ignored in production. In dev, `getCurrentUser()` returns the first `users` row without a session cookie.
 - **`TOTP_ENFORCEMENT=true`** — production launch flag. Read by the dashboard layout. Enforces `/admin/enroll-2fa` before any dashboard access.
-- **Account management is CLI-only** via `scripts/seed-admin.ts` (create-admin / create-temp / reset-password / promote). Refuses to run in `NODE_ENV=production`. No Users admin UI (M.6 dropped this session — fine for single-admin + dev; add UI if selling deployments).
+- **`npm start` binds to `127.0.0.1`** — `package.json` sets `next start -H 127.0.0.1`. Required behind Cloudflare Tunnel so LAN devices cannot forge `cf-connecting-ip` and bypass rate limits. Audits run against `npm run dev` and are unaffected.
+- **Account management is CLI-only** via `scripts/seed-admin.ts` (create-admin / create-temp / reset-password / promote). Note: create-admin mode sets `mustChangePassword: true` — even admins must change their password on first login. Refuses to run in `NODE_ENV=production`. No Users admin UI (M.6 dropped this session — fine for single-admin + dev; add UI if selling deployments).
 
 ---
 

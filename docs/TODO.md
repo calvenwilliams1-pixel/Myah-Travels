@@ -45,7 +45,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 - Autosave hook with durability layer (localStorage draft persistence)
 - Form primitives (AutosaveTextField, AutosaveDateField, AutosaveTimeField, AutosaveSelectField)
 - Inline forms replace `prompt()` dialogs
-- Test framework: vitest + testing library (139 tests)
+- Test framework: vitest + testing library (143 tests)
 - Itinerary client views (Glance, Today's Plan) derive from itinerary data — no authoring surface
 - Account management is CLI-only via `scripts/seed-admin.ts` (M.6 Users page dropped — fine for single-admin + dev; revisit if selling deployments)
 - `requireAuth` (strict) vs `requireSession` (loose for wizard) — see `docs/ACCOUNT-LIFECYCLE.md`

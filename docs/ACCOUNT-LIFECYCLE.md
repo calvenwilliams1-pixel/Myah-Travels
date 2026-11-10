@@ -40,6 +40,7 @@ The script only creates users unless one of the flags above is given. Other flag
 - `requireAuth()` and `requireSession()` call `getCurrentUser()`, which reads fresh from the DB on every request. There is no cache.
 - `resetCurrentUserCache()` is a **no-op** left for API compatibility after the M.5d cache removal. Calls in `requireAuth`/`requireSession` do nothing.
 - `getCurrentUser()` returns `null` for any user with `is_active = 0`, so **disabling a user blocks their next request** even though their session row still exists.
+- `checkSetupRequired(user)` (extracted from `requireAuth`, tested in `lib/auth/require-auth.test.ts`) throws `AuthError(403, "Setup required")` when `hasCompletedSetup` is false or `mustChangePassword` is true. `requireAuth` calls it; `requireSession` does not.
 - `seed-admin.ts --reset-password` sets `must_change_password = 1` but does **not** revoke existing sessions. Those sessions keep working until they expire or the user changes password via the wizard.
 - The wizard's `changePasswordAction` invalidates all other sessions on success, then creates a new session for the wizard tab.
 

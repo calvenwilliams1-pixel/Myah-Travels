@@ -664,7 +664,7 @@ lib/editor/
 components/editor/renderers/
 └── CleanTipTapRenderer.test.tsx        # 26 render + sanitisation tests
 
-Total: 5 files, 139 tests passing.
+Total: 6 files, 143 tests passing.
 ```
 
 ### Migrations (`drizzle/migrations/`)
