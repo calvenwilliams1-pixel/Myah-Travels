@@ -329,66 +329,92 @@ Certifications.tsx
 ### Admin Pages (`app/admin/`)
 
 ```
-(auth)/login/
-├── page.tsx             # Login form
-└── actions.ts           # loginAction, verifyTotpAction
-
-(auth)/enroll-2fa/
-├── page.tsx             # TOTP enrollment
-└── EnrollTotpForm.tsx   # Enrollment form
+(auth)/
+├── layout.tsx              # ThemeProvider wrapper for login + setup + enroll-2fa
+├── login/
+│   └── page.tsx            # Login form (client) — POSTs /api/auth/login, routes by requiresSetup
+├── enroll-2fa/
+│   ├── page.tsx            # TOTP enrollment
+│   └── EnrollTotpForm.tsx  # Enrollment form
+└── setup/
+    ├── page.tsx            # Wizard page (server): redirects completed users to /admin
+    ├── SetupWizard.tsx     # Client: 3-step wizard (password / username / theme)
+    └── actions.ts          # changePasswordAction, changeUsernameAction, applyThemeAction, signOutAction
 
 (dashboard)/
-├── layout.tsx           # Admin layout with nav
-├── page.tsx             # Dashboard
+├── layout.tsx              # Admin shell — auth guard, setup redirect, TOTP enforcement, nav
+├── page.tsx                # Dashboard (greetings + widgets)
+├── clients/
+│   ├── page.tsx            # Inquiries + Clients tabs
+│   ├── actions.ts
+│   ├── [id]/page.tsx
+│   └── people/[personId]/page.tsx  # Person view (Client Memory)
+├── components/             # Dashboard widgets
+│   ├── ActivePortals.tsx
+│   ├── ClientInquiries.tsx
+│   ├── QuickActions.tsx
+│   ├── RecentActivity.tsx
+│   ├── RecentPosts.tsx
+│   ├── Sidebar.tsx
+│   └── StorageUsage.tsx
 ├── content-library/page.tsx
+├── guides/
+│   ├── page.tsx
+│   ├── actions.ts
+│   ├── new/page.tsx
+│   └── [id]/page.tsx
+├── homepage/
+│   ├── page.tsx            # Canvas homepage editor (frozen)
+│   └── actions.ts
+├── itineraries/
+│   ├── page.tsx            # Itinerary library
+│   └── [itineraryId]/preview/page.tsx
+├── media/
+│   ├── page.tsx            # Media library
+│   └── actions.ts
+├── portals/
+│   ├── page.tsx            # Portal list
+│   ├── actions.ts
+│   ├── new/page.tsx
+│   ├── BanMemberButton.tsx
+│   └── [id]/
+│       ├── page.tsx        # Portal detail
+│       ├── edit/page.tsx   # Wall editor
+│       ├── preview/page.tsx        # Admin wall preview
+│       ├── notepad/page.tsx        # Admin notepad
+│       └── itinerary/
+│           ├── page.tsx            # Itinerary list for portal
+│           └── [itineraryId]/
+│               ├── page.tsx        # Itinerary editor (thin wrapper)
+│               └── preview/page.tsx  # Admin itinerary preview
 ├── posts/
-│   ├── page.tsx         # List
+│   ├── page.tsx
+│   ├── actions.ts
 │   ├── new/
 │   │   ├── page.tsx
 │   │   └── NewPostForm.tsx
-│   ├── [id]/page.tsx    # Edit (uses TipTapEditor or CanvasEditor by mode)
-│   └── actions.ts       # createPostAction, updatePostAction, deletePostAction
-├── guides/
-│   ├── page.tsx
-│   ├── new/page.tsx
-│   └── [id]/page.tsx
+│   └── [id]/
+│       ├── page.tsx
+│       └── EditPostForm.tsx
 ├── reviews/
 │   ├── page.tsx
+│   ├── actions.ts
 │   ├── new/page.tsx
 │   └── [id]/page.tsx
-├── templates/page.tsx   # Template Creator
 ├── settings/
 │   ├── page.tsx
+│   ├── actions.ts
 │   ├── PalettePicker.tsx
-│   └── password/
-├── media/page.tsx       # Media library
-├── clients/
-│   ├── page.tsx         # Inquiries + Clients tabs
-│   └── people/[id]/page.tsx  # Person view
-├── itineraries/page.tsx # Itinerary Library
-├── portals/
-│   ├── page.tsx         # Portal list
-│   ├── new/page.tsx     # Create portal
-│   ├── actions.ts       # Server actions
-│   └── [id]/
-│       ├── page.tsx              # Portal detail
-│       ├── edit/page.tsx         # Wall editor
-│       ├── preview/page.tsx      # Admin wall preview
-│       ├── itinerary/
-│       │   ├── page.tsx          # Itinerary list
-│       │   └── [itineraryId]/
-│       │       ├── page.tsx      # Itinerary editor (thin wrapper)
-│       │       └── preview/page.tsx  # Admin itinerary preview
-│       └── notepad/page.tsx      # Admin notepad
-├── homepage/page.tsx    # Canvas homepage editor (frozen)
-└── components/          # Dashboard widgets
-    ├── ActivePortals.tsx
-    ├── ClientInquiries.tsx
-    ├── QuickActions.tsx
-    ├── RecentActivity.tsx
-    ├── RecentPosts.tsx
-    ├── Sidebar.tsx
-    └── StorageUsage.tsx
+│   ├── password/
+│   │   ├── page.tsx
+│   │   └── actions.ts
+│   └── tags/
+│       ├── page.tsx
+│       └── actions.ts
+├── suggestions/stale-entities/page.tsx
+└── templates/
+    ├── page.tsx            # Template Creator
+    └── actions.ts
 ```
 
 ### Public Pages (`app/`)
