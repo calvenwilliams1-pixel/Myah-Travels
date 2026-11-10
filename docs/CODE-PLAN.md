@@ -300,9 +300,64 @@ ui/
 └── autosave/                  # Form primitives (see above)
 
 ErrorBoundary.tsx
-admin/FeedAdminControls.tsx
+admin/                    # see Admin Components section below
 canvas/PortalElementRenderer.tsx
 ```
+
+### Admin Components (`components/admin/`)
+
+```
+FeedAdminControls.tsx       # Feed admin inline controls
+SaveIndicator.tsx           # Save state dot/text (autosave)
+
+clients/
+├── ClientsPeopleList.tsx   # Clients + People tabs
+├── ForgetPersonButton.tsx  # GDPR-style forget (purges person + notes + history)
+├── PersonNotes.tsx         # Per-person notes list + add
+└── TripTabs.tsx            # Person trip history tabs
+
+content-library/
+└── AddContentModal.tsx     # Add PDF/Image/Text (auto-detect)
+
+itineraries/
+└── UseAsTemplateButton.tsx # Clone an itinerary as a template
+
+itinerary/                  # Itinerary editor components
+├── ItineraryEditor.tsx     # Main editor shell
+├── AddBlockForm.tsx        # Add an itinerary block
+├── BlockList.tsx           # Render + reorder itinerary blocks
+├── SectionEditor.tsx       # Section with stays + days
+├── AddSectionForm.tsx
+├── DaysEditor.tsx
+├── AddDayForm.tsx
+├── SegmentsEditor.tsx      # Segment list + SegmentRow (collapsible)
+├── AddSegmentForm.tsx
+├── BulkAddForm.tsx         # Bulk-add textarea + preview + draft
+├── BookingParseForm.tsx    # Paste-booking parse + apply
+├── CopySegmentModal.tsx    # Cross-itinerary segment picker
+├── SnippetPicker.tsx       # Instruction snippets (insert / save)
+├── StaysEditor.tsx
+├── AddStayForm.tsx
+├── ThemeSelector.tsx       # Itinerary theme
+├── TimezoneSelect.tsx      # IANA timezone dropdown
+└── TravelLegFields.tsx     # Multi-leg flight/train/transfer fields
+
+media/
+├── FolderTree.tsx          # Nested folder tree
+├── MediaRowActions.tsx     # Per-file actions (rename, move, promote, delete)
+└── MoveFileModal.tsx       # Move to folder
+
+notepad/
+└── NotepadEntryForm.tsx    # Add note form
+
+portals/
+├── HeroEditor.tsx          # Hero settings + image upload
+├── AttachLibraryModal.tsx  # Attach library items
+├── PortalSpecificItemModal.tsx  # One-off portal-specific content
+├── PortalItemsList.tsx     # Reorder + remove
+└── AddMemberForm.tsx       # Add portal member
+```
+
 
 ### Homepage (`components/homepage/`)
 
