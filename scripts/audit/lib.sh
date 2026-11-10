@@ -117,7 +117,10 @@ db_nullable() {
 
 require_server() {
   local code
-  code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/folders" 2>/dev/null || echo "000")
+  # Use /api/health — unauthenticated, no DB access, returns 200 {"status":"ok"}.
+  # Previous check was /api/folders, which requires auth and fails under
+  # DISABLE_AUTH=false (returned 500 and masked real server state).
+  code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/health" 2>/dev/null || echo "000")
   if [ "$code" != "200" ]; then
     echo "FATAL: dev server not reachable at $BASE (status: $code)."
     echo "Start it with: npm run dev"

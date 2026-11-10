@@ -1321,8 +1321,8 @@ Individual suites:
 
 Environment requirements:
 - Dev server running on `localhost:3000`
-- `DISABLE_AUTH=false` for auth-rate-limit (needs real rate limiting)
-- `DISABLE_AUTH=true` for most other suites (skip auth checks)
+- `DISABLE_AUTH=true` for most suites — required because individual suite tests hit auth-gated endpoints (create portal, POST itinerary sections, etc.) that return 500 or 403 without the bypass. `require_server` in `scripts/audit/lib.sh` checks `/api/health` (unauthenticated), so it works either way.
+- `auth-rate-limit.sh` specifically: **no override needed**. The rate limiter fires before any auth bypass is consulted — `app/api/auth/login/route.ts` does not call `getCurrentUser`. Running it with `DISABLE_AUTH=true` or `false` produces identical results.
 
 ### Known gaps
 
