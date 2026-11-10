@@ -455,11 +455,29 @@ The distinction: sensitive data means credentials and identifiers. Practical cli
 
 ### 11.1 Admin Auth
 
-- Username + password (hashed)
-- TOTP (2FA) optional per-user
-- Lucia sessions
-- Brute-force protection (rate limiting)
-- Password change flow
+- Username + password (bcrypt, cost 12)
+- TOTP (2FA) optional per-user; enforced via `TOTP_ENFORCEMENT=true` env var read by `app/admin/(dashboard)/layout.tsx`
+- Lucia sessions (SameSite=strict, Secure in production)
+- Brute-force protection: 5 login attempts / 15 min / IP (see §14.3)
+- Password change flow via the setup wizard (first login or forced reset) or `/admin/settings/password`
+
+**User flags** (`users` table, added Batch M migrations `0026`, `0027`):
+- `is_admin` — grants access to admin-only actions via `requireAdmin()`
+- `is_active` — disabled users cannot log in
+- `must_change_password` — forces wizard step 1 on next login
+- `has_completed_setup` — whether the 3-step wizard has been completed
+
+**Auth function split** (`lib/auth/index.ts`):
+- `requireAuth()` — strict: session + is_active + has_completed_setup + !must_change_password
+- `requireSession()` — loose: session + is_active only (wizard, enroll-2fa)
+- `requireAuthWithFlags()` — strict + returns all four flags + user
+- `requireAdmin()` — strict + is_admin
+- `checkSetupRequired(user)` — extracted guard, tested in isolation
+- `getCurrentUser()` — no cache, reads DB per request (cache removed in Batch M.5d — was process-scoped, caused session crossover)
+
+**Wizard** (`/admin/setup`): 3 steps for fresh users (password, username, theme); 1 step for reset users (password only). No current-password field — session proof suffices. Sign-out escape link. `(auth)/layout.tsx` wraps the auth tree in `ThemeProvider`.
+
+**Account management is CLI-only** via `scripts/seed-admin.ts` (create-admin / create-temp / reset-password / promote). No Users admin page (M.6 dropped). See `docs/ACCOUNT-LIFECYCLE.md`.
 
 ### 11.2 Portal Auth
 
@@ -511,7 +529,7 @@ The distinction: sensitive data means credentials and identifiers. Practical cli
 
 | Category | Tables |
 |----------|--------|
-| **Auth** | `users`, `sessions`, `portal_members`, `portal_magic_links`, `portal_sessions` |
+| **Auth** | `users` (with `is_admin`, `is_active`, `must_change_password`, `has_completed_setup` — Batch M), `sessions`, `portal_members`, `portal_magic_links`, `portal_sessions` |
 | **Content** | `posts`, `guides`, `reviews`, `tags`, `categories`, `post_tags`, `guide_tags`, `review_tags` |
 | **Templates** | `templates` |
 | **Portal** | `portals`, `portal_items`, `content_library`, `portal_notices`* , `portal_documents`* , `portal_faqs`* , `portal_checklist_states`* |
@@ -547,10 +565,18 @@ The distinction: sensitive data means credentials and identifiers. Practical cli
 
 ### 14.3 Security
 
-- Rate limiting on auth endpoints
+- **Rate limiting** (`lib/security/index.ts`, in-memory, single-instance only):
+  - `loginRateLimit`: 5 attempts / 15 min / IP
+  - `magicLinkRateLimit`: 5 / hour / IP
+  - `formRateLimit`: 3 / hour / IP
+  - `apiRateLimit`: 100 / min / IP
+  - `getClientIp` trusts `cf-connecting-ip` → `x-forwarded-for` → `x-real-ip` → `"unknown"`. Correct for Cloudflare Tunnel because the app binds to `127.0.0.1`.
 - Soft deletes for user content
 - Activity logging for audit trail
 - PII isolation (notepad data separate from low-stakes tags)
+- **Auth gates:** `requireAuth` (strict) vs `requireSession` (loose for wizard). See §11.1.
+- **Dev bypass:** `DISABLE_AUTH=true` ignored in production. Fails closed.
+- **TOTP enforcement:** `TOTP_ENFORCEMENT=true` blocks admin pages until TOTP enrolled.
 
 ### 14.4 Accessibility
 
@@ -598,6 +624,12 @@ npm run test:ui
 3. **`schema.sql` outdated** — use `scripts/setup-db.js`
 4. **Native date/time pickers** — highlight-on-click issue (Phase 7 bug fix)
 5. **Segment edits revert on collapse** — SegmentRow lifecycle (Phase 7 bug fix)
+6. **No Users admin page** — account management is CLI-only via `scripts/seed-admin.ts`. M.6 dropped — fine for single-admin + dev; add UI if selling deployments.
+7. **Rate limiting is in-memory** — resets on server restart. Single-instance only.
+8. **No TOTP in onboarding wizard** — deferred to Phase 7.7. `TOTP_ENFORCEMENT=true` blocks access until `/admin/enroll-2fa` is completed after login.
+9. **Sessions not revoked on disable / password reset** — disabling blocks the next request (getCurrentUser returns null for inactive users), but existing session rows are not deleted. `seed-admin.ts --reset-password` sets `must_change_password=1` without revoking sessions. See `docs/ACCOUNT-LIFECYCLE.md`.
+10. **`resetCurrentUserCache()` is a no-op** — kept for API compatibility after the M.5d cache removal. Do not reintroduce module-level caching (was process-scoped, not request-scoped, caused session crossover).
+11. **Batch M not merged to `main`** — code-complete on `batch-m` branch. Merge pending after docs + M.8.
 
 ---
 
