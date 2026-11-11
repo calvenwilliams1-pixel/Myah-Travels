@@ -265,6 +265,24 @@ export async function getPostTags(postId: number): Promise<string[]> {
   return result.map((r) => r.name);
 }
 
+export async function getGuideTags(guideId: number): Promise<string[]> {
+  const result = await db.select({ name: tags.name })
+    .from(guideTags)
+    .innerJoin(tags, eq(guideTags.tagId, tags.id))
+    .where(eq(guideTags.guideId, guideId));
+
+  return result.map((r) => r.name);
+}
+
+export async function getReviewTags(reviewId: number): Promise<string[]> {
+  const result = await db.select({ name: tags.name })
+    .from(reviewTags)
+    .innerJoin(tags, eq(reviewTags.tagId, tags.id))
+    .where(eq(reviewTags.reviewId, reviewId));
+
+  return result.map((r) => r.name);
+}
+
 export async function updatePostTags(postId: number, tagNames: string[]) {
   // Resolve tags first (outside transaction — getOrCreateTag is async + needs db)
   const resolved: number[] = [];
@@ -715,6 +733,50 @@ export async function setReviewTags(reviewId: number, tagIds: number[]) {
     });
   } catch (err) {
     console.error("setReviewTags failed:", err);
+    throw err;
+  }
+}
+
+export async function updateGuideTags(guideId: number, tagNames: string[]) {
+  const resolved: number[] = [];
+  for (const name of tagNames) {
+    const tag = await getOrCreateTag(name);
+    if (tag) resolved.push(tag.id);
+  }
+
+  const now = new Date().toISOString();
+  try {
+    db.transaction((tx) => {
+      tx.delete(guideTags).where(eq(guideTags.guideId, guideId)).run();
+      for (const tagId of resolved) {
+        tx.insert(guideTags).values({ guideId, tagId }).onConflictDoNothing().run();
+        tx.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tagId)).run();
+      }
+    });
+  } catch (err) {
+    console.error("updateGuideTags failed:", err);
+    throw err;
+  }
+}
+
+export async function updateReviewTags(reviewId: number, tagNames: string[]) {
+  const resolved: number[] = [];
+  for (const name of tagNames) {
+    const tag = await getOrCreateTag(name);
+    if (tag) resolved.push(tag.id);
+  }
+
+  const now = new Date().toISOString();
+  try {
+    db.transaction((tx) => {
+      tx.delete(reviewTags).where(eq(reviewTags.reviewId, reviewId)).run();
+      for (const tagId of resolved) {
+        tx.insert(reviewTags).values({ reviewId, tagId }).onConflictDoNothing().run();
+        tx.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tagId)).run();
+      }
+    });
+  } catch (err) {
+    console.error("updateReviewTags failed:", err);
     throw err;
   }
 }

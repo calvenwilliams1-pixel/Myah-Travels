@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
-import { createReview, updateReview, getReviewById, softDeleteReview } from "@/lib/content";
+import { createReview, updateReview, getReviewById, softDeleteReview, updateReviewTags, getReviewTags } from "@/lib/content";
 import { validateReview } from "@/lib/security";
 import { logActivity } from "@/lib/logging";
 
@@ -81,6 +81,7 @@ export async function updateReviewAction(
     wouldRecommend?: string;
     finalVerdict?: string;
     status?: string;
+    tagNames?: string[];
   }
 ) {
   const user = await requireAuth();
@@ -115,6 +116,10 @@ export async function updateReviewAction(
     return { error: "Failed to update review" };
   }
 
+  if (data.tagNames) {
+    await updateReviewTags(id, data.tagNames);
+  }
+
   await logActivity({
     userId: Number(user.id),
     actionType: "update",
@@ -129,6 +134,11 @@ export async function updateReviewAction(
 export async function getReviewAction(id: number) {
   await requireAuth();
   return getReviewById(id);
+}
+
+export async function getReviewTagsAction(reviewId: number) {
+  await requireAuth();
+  return getReviewTags(reviewId);
 }
 
 export async function deleteReviewAction(id: number) {

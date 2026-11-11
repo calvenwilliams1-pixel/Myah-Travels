@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
-import { createGuide, updateGuide, getGuideById, softDeleteGuide } from "@/lib/content";
+import { createGuide, updateGuide, getGuideById, softDeleteGuide, updateGuideTags, getGuideTags } from "@/lib/content";
 import { validateGuide } from "@/lib/security";
 import { logActivity } from "@/lib/logging";
 
@@ -60,6 +60,7 @@ export async function updateGuideAction(
     excerpt?: string;
     quickReference?: string;
     status?: string;
+    tagNames?: string[];
   }
 ) {
   const user = await requireAuth();
@@ -89,6 +90,10 @@ export async function updateGuideAction(
     return { error: "Failed to update guide" };
   }
 
+  if (data.tagNames) {
+    await updateGuideTags(id, data.tagNames);
+  }
+
   await logActivity({
     userId: Number(user.id),
     actionType: "update",
@@ -103,6 +108,11 @@ export async function updateGuideAction(
 export async function getGuideAction(id: number) {
   await requireAuth();
   return getGuideById(id);
+}
+
+export async function getGuideTagsAction(guideId: number) {
+  await requireAuth();
+  return getGuideTags(guideId);
 }
 
 export async function deleteGuideAction(id: number) {

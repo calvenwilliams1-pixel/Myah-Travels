@@ -7,7 +7,8 @@ import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { getReviewAction, updateReviewAction } from "../actions";
+import { getReviewAction, updateReviewAction, getReviewTagsAction } from "../actions";
+import TagInput from "@/components/editor/TagInput";
 import { EditorMode } from "@/types/canvas";
 
 type ReviewStatus = "draft" | "published" | "hidden";
@@ -31,6 +32,7 @@ export default function EditReviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadReview() {
@@ -65,6 +67,9 @@ export default function EditReviewPage() {
           } else {
             setMode("story");
           }
+
+          const loadedTags = await getReviewTagsAction(reviewId);
+          setTags(loadedTags);
         }
       } catch (err) {
         console.error("Failed to load review:", err);
@@ -100,6 +105,7 @@ export default function EditReviewPage() {
         pros,
         cons,
         status,
+        tagNames: tags,
       });
 
       if (result.error) {
@@ -247,6 +253,17 @@ export default function EditReviewPage() {
             onSave={async (docJson) => setContent(JSON.stringify(docJson))}
           />
         )}
+      </Card>
+
+      <Card>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tags
+        </label>
+        <TagInput
+          selectedTags={tags}
+          onAddTag={(tag) => setTags([...tags, tag])}
+          onRemoveTag={(tag) => setTags(tags.filter((t) => t !== tag))}
+        />
       </Card>
 
       <Card>

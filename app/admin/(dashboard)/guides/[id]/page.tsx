@@ -7,7 +7,8 @@ import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { getGuideAction, updateGuideAction } from "../actions";
+import { getGuideAction, updateGuideAction, getGuideTagsAction } from "../actions";
+import TagInput from "@/components/editor/TagInput";
 import { EditorMode } from "@/types/canvas";
 
 type GuideStatus = "draft" | "published" | "hidden";
@@ -26,6 +27,7 @@ export default function EditGuidePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadGuide() {
@@ -51,6 +53,9 @@ export default function EditGuidePage() {
           } else {
             setMode("story");
           }
+
+          const loadedTags = await getGuideTagsAction(guideId);
+          setTags(loadedTags);
         }
       } catch (err) {
         console.error("Failed to load guide:", err);
@@ -78,6 +83,7 @@ export default function EditGuidePage() {
         excerpt,
         quickReference,
         status,
+        tagNames: tags,
       });
 
       if (result.error) {
@@ -162,6 +168,17 @@ export default function EditGuidePage() {
             onSave={async (docJson) => setContent(JSON.stringify(docJson))}
           />
         )}
+      </Card>
+
+      <Card>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tags
+        </label>
+        <TagInput
+          selectedTags={tags}
+          onAddTag={(tag) => setTags([...tags, tag])}
+          onRemoveTag={(tag) => setTags(tags.filter((t) => t !== tag))}
+        />
       </Card>
 
       <Card>
