@@ -1,6 +1,12 @@
 import { db } from "@/lib/db";
-import { posts, guides, reviews, categories } from "@/drizzle/schema";
-import { eq, and, isNull, desc, asc, sql } from "drizzle-orm";
+import { posts, guides, reviews, categories, tags, postTags, guideTags, reviewTags } from "@/drizzle/schema";
+import { eq, and, isNull, desc, asc, sql, inArray } from "drizzle-orm";
+
+export interface FeedTag {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 export interface FeedItem {
   id: number;
@@ -13,6 +19,61 @@ export interface FeedItem {
   isPinned: boolean;
   isHighlighted: boolean;
   category: string | null;
+  tags: FeedTag[];
+}
+
+async function hydrateTags(items: FeedItem[]): Promise<FeedItem[]> {
+  if (items.length === 0) return items;
+
+  const postIds = items.filter((i) => i.type === "post").map((i) => i.id);
+  const guideIds = items.filter((i) => i.type === "guide").map((i) => i.id);
+  const reviewIds = items.filter((i) => i.type === "review").map((i) => i.id);
+
+  const tagMap = new Map<string, FeedTag[]>();
+
+  if (postIds.length > 0) {
+    const rows = await db
+      .select({ itemId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagId, tags.id))
+      .where(inArray(postTags.postId, postIds));
+    for (const r of rows) {
+      const key = `post-${r.itemId}`;
+      if (!tagMap.has(key)) tagMap.set(key, []);
+      tagMap.get(key)!.push({ id: r.id, name: r.name, slug: r.slug });
+    }
+  }
+
+  if (guideIds.length > 0) {
+    const rows = await db
+      .select({ itemId: guideTags.guideId, id: tags.id, name: tags.name, slug: tags.slug })
+      .from(guideTags)
+      .innerJoin(tags, eq(guideTags.tagId, tags.id))
+      .where(inArray(guideTags.guideId, guideIds));
+    for (const r of rows) {
+      const key = `guide-${r.itemId}`;
+      if (!tagMap.has(key)) tagMap.set(key, []);
+      tagMap.get(key)!.push({ id: r.id, name: r.name, slug: r.slug });
+    }
+  }
+
+  if (reviewIds.length > 0) {
+    const rows = await db
+      .select({ itemId: reviewTags.reviewId, id: tags.id, name: tags.name, slug: tags.slug })
+      .from(reviewTags)
+      .innerJoin(tags, eq(reviewTags.tagId, tags.id))
+      .where(inArray(reviewTags.reviewId, reviewIds));
+    for (const r of rows) {
+      const key = `review-${r.itemId}`;
+      if (!tagMap.has(key)) tagMap.set(key, []);
+      tagMap.get(key)!.push({ id: r.id, name: r.name, slug: r.slug });
+    }
+  }
+
+  return items.map((item) => ({
+    ...item,
+    tags: tagMap.get(`${item.type}-${item.id}`) ?? [],
+  }));
 }
 
 export async function getFeedItems(
@@ -67,7 +128,7 @@ export async function getFeedItems(
       .limit(limit)
       .offset(offset);
 
-    return result.map((row: any) => ({
+    const mapped = result.map((row: any) => ({
       id: row.id,
       type: row.type,
       title: row.title,
@@ -78,7 +139,9 @@ export async function getFeedItems(
       isPinned: row.isPinned ?? false,
       isHighlighted: row.isHighlighted ?? false,
       category: null,
+      tags: [],
     }));
+    return hydrateTags(mapped);
   }
 
   // Multiple queries — use UNION ALL
@@ -95,7 +158,7 @@ export async function getFeedItems(
     .limit(limit)
     .offset(offset);
 
-  return result.map((row: any) => ({
+  const mapped = result.map((row: any) => ({
     id: row.id,
     type: row.type,
     title: row.title,
@@ -106,7 +169,9 @@ export async function getFeedItems(
     isPinned: row.isPinned ?? false,
     isHighlighted: row.isHighlighted ?? false,
     category: null,
+    tags: [],
   }));
+  return hydrateTags(mapped);
 }
 
 export async function getCategories(): Promise<string[]> {

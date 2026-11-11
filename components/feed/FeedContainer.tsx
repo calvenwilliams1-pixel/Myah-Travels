@@ -31,6 +31,7 @@ export default function FeedContainer({ items }: FeedContainerProps) {
           isPinned={item.isPinned}
           isHighlighted={item.isHighlighted}
           category={item.category ?? undefined}
+          tags={item.tags}
         />
       ))}
     </div>

@@ -1,3 +1,9 @@
+export interface FeedTag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface FeedItem {
   id: number;
   type: "post" | "guide" | "review";
@@ -9,4 +15,5 @@ export interface FeedItem {
   isPinned: boolean;
   isHighlighted: boolean;
   category: string | null;
+  tags: FeedTag[];
 }

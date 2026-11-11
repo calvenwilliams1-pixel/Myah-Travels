@@ -12,6 +12,7 @@ interface FeedCardProps {
   isPinned?: boolean;
   isHighlighted?: boolean;
   category?: string;
+  tags?: { id: number; name: string; slug: string }[];
 }
 
 export default function FeedCard({
@@ -25,6 +26,7 @@ export default function FeedCard({
   isPinned = false,
   isHighlighted = false,
   category,
+  tags = [],
 }: FeedCardProps) {
   const typeLabels = {
     post: "Post",
@@ -106,6 +108,19 @@ export default function FeedCard({
         </Link>
         {excerpt && (
           <p className="text-sm text-gray-600 line-clamp-3">{excerpt}</p>
+        )}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {tags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/?tags=${encodeURIComponent(tag.slug)}`}
+                className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                #{tag.name}
+              </Link>
+            ))}
+          </div>
         )}
       </div>
     </article>
