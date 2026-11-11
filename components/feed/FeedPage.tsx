@@ -6,16 +6,27 @@ import InfiniteFeed from "./InfiniteFeed";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FeedItem } from "./types";
 
+interface TagWithCount {
+  id: number;
+  name: string;
+  slug: string;
+  usageCount: number;
+}
+
 interface FeedPageProps {
   initialItems: FeedItem[];
   initialType: string;
   initialSort: string;
+  initialTags: string[];
+  availableTags: TagWithCount[];
 }
 
 export default function FeedPage({
   initialItems,
   initialType,
   initialSort,
+  initialTags,
+  availableTags,
 }: FeedPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,8 +36,11 @@ export default function FeedPage({
   // initialType/initialSort come from the server render and match the URL.
   const selectedType = searchParams.get("type") ?? initialType;
   const selectedSort = searchParams.get("sort") ?? initialSort;
+  const selectedTags = (searchParams.get("tags") ?? initialTags.join(","))
+    .split(",")
+    .filter(Boolean);
 
-  const updateFilters = (updates: { type?: string; sort?: string }) => {
+  const updateFilters = (updates: { type?: string; sort?: string; tags?: string[] }) => {
     const params = new URLSearchParams(searchParams.toString());
     if (updates.type !== undefined) {
       if (updates.type === "all") params.delete("type");
@@ -35,6 +49,10 @@ export default function FeedPage({
     if (updates.sort !== undefined) {
       if (updates.sort === "pinned") params.delete("sort");
       else params.set("sort", updates.sort);
+    }
+    if (updates.tags !== undefined) {
+      if (updates.tags.length === 0) params.delete("tags");
+      else params.set("tags", updates.tags.join(","));
     }
     const queryString = params.toString();
     startTransition(() => {
@@ -49,14 +67,18 @@ export default function FeedPage({
         onTypeChange={(type) => updateFilters({ type })}
         selectedSort={selectedSort}
         onSortChange={(sort) => updateFilters({ sort })}
+        availableTags={availableTags}
+        selectedTags={selectedTags}
+        onTagsChange={(tags) => updateFilters({ tags })}
       />
 
       <div className={`mt-6 ${isPending ? "opacity-50" : ""}`}>
         <InfiniteFeed
-          key={`${selectedType}-${selectedSort}`}
+          key={`${selectedType}-${selectedSort}-${selectedTags.join(",")}`}
           initialItems={initialItems}
           selectedType={selectedType}
           selectedSort={selectedSort}
+          selectedTags={selectedTags}
         />
       </div>
     </div>

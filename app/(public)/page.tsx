@@ -1,6 +1,7 @@
 import React from "react";
 import FeedPage from "@/components/feed/FeedPage";
 import { getFeedItems } from "@/lib/feed";
+import { getAllTagsWithCounts } from "@/lib/content";
 import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,16 @@ function normaliseSort(raw: unknown): FeedSort {
     : "pinned";
 }
 
+function normaliseTags(raw: unknown): string[] {
+  const joined = Array.isArray(raw) ? raw.join(",") : raw;
+  if (typeof joined !== "string" || !joined.trim()) return [];
+  return joined
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => /^[a-z0-9-]+$/.test(s))
+    .slice(0, 10);
+}
+
 export async function generateMetadata() {
   const settings = await getAllSettings();
   return {
@@ -36,11 +47,28 @@ export async function generateMetadata() {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { type?: string | string[]; sort?: string | string[] };
+  searchParams: {
+    type?: string | string[];
+    sort?: string | string[];
+    tags?: string | string[];
+  };
 }) {
   const type = normaliseType(searchParams.type);
   const sort = normaliseSort(searchParams.sort);
-  const items = await getFeedItems(type, sort, 50, 0);
+  const tagSlugs = normaliseTags(searchParams.tags);
 
-  return <FeedPage initialItems={items} initialType={type} initialSort={sort} />;
+  const [items, availableTags] = await Promise.all([
+    getFeedItems(type, sort, 50, 0, tagSlugs),
+    getAllTagsWithCounts(),
+  ]);
+
+  return (
+    <FeedPage
+      initialItems={items}
+      initialType={type}
+      initialSort={sort}
+      initialTags={tagSlugs}
+      availableTags={availableTags}
+    />
+  );
 }

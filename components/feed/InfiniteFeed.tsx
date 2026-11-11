@@ -8,6 +8,7 @@ interface InfiniteFeedProps {
   initialItems: FeedItem[];
   selectedType: string;
   selectedSort: string;
+  selectedTags: string[];
 }
 
 const PAGE_SIZE = 10;
@@ -17,6 +18,7 @@ export default function InfiniteFeed({
   initialItems,
   selectedType,
   selectedSort,
+  selectedTags,
 }: InfiniteFeedProps) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [offset, setOffset] = useState(initialItems.length);
@@ -37,6 +39,9 @@ export default function InfiniteFeed({
     const params = new URLSearchParams();
     params.set("type", selectedType);
     params.set("sort", selectedSort);
+    if (selectedTags.length > 0) {
+      params.set("tags", selectedTags.join(","));
+    }
     params.set("limit", String(PAGE_SIZE));
     params.set("offset", String(offset));
 
@@ -66,7 +71,7 @@ export default function InfiniteFeed({
       setIsLoading(false);
       loadingRef.current = false;
     }
-  }, [hasMore, offset, selectedType, selectedSort]);
+  }, [hasMore, offset, selectedType, selectedSort, selectedTags]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

@@ -80,7 +80,8 @@ export async function getFeedItems(
   contentType: string = "all",
   sort: string = "newest",
   limit: number = 20,
-  offset: number = 0
+  offset: number = 0,
+  tagSlugs: string[] = []
 ): Promise<FeedItem[]> {
   const orderByClause =
     sort === "pinned"
@@ -89,7 +90,25 @@ export async function getFeedItems(
       ? sql`published_at ASC`
       : sql`published_at DESC`;
 
-  const buildSelect = (table: any, type: string) => {
+  const buildSelect = (
+    table: any,
+    type: string,
+    junctionTable: any,
+    junctionFk: any
+  ) => {
+    const conditions = [eq(table.status, "published"), isNull(table.deletedAt)];
+
+    if (tagSlugs.length > 0) {
+      const matchingIds = db
+        .select({ id: junctionFk })
+        .from(junctionTable)
+        .innerJoin(tags, eq(junctionTable.tagId, tags.id))
+        .where(inArray(tags.slug, tagSlugs))
+        .groupBy(junctionFk)
+        .having(sql`count(distinct ${tags.id}) = ${tagSlugs.length}`);
+      conditions.push(inArray(table.id, matchingIds));
+    }
+
     return db
       .select({
         id: table.id,
@@ -103,19 +122,19 @@ export async function getFeedItems(
         type: sql`'${sql.raw(type)}'`.as("type"),
       })
       .from(table)
-      .where(and(eq(table.status, "published"), isNull(table.deletedAt)));
+      .where(and(...conditions));
   };
 
   const queries: any[] = [];
 
   if (contentType === "all" || contentType === "post") {
-    queries.push(buildSelect(posts, "post"));
+    queries.push(buildSelect(posts, "post", postTags, postTags.postId));
   }
   if (contentType === "all" || contentType === "guide") {
-    queries.push(buildSelect(guides, "guide"));
+    queries.push(buildSelect(guides, "guide", guideTags, guideTags.guideId));
   }
   if (contentType === "all" || contentType === "review") {
-    queries.push(buildSelect(reviews, "review"));
+    queries.push(buildSelect(reviews, "review", reviewTags, reviewTags.reviewId));
   }
 
   if (queries.length === 0) {
