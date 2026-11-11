@@ -98,7 +98,7 @@ export default function InfiniteFeed({
 
   return (
     <div>
-      <FeedContainer items={items} />
+      <FeedContainer items={items} filterActive={selectedTags.length > 0 || selectedType !== "all"} />
       <div ref={sentinelRef} className="h-10" />
       {isLoading && (
         <div className="text-center py-8">

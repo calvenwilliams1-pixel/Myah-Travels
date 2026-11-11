@@ -4,14 +4,19 @@ import { FeedItem } from "./types";
 
 interface FeedContainerProps {
   items: FeedItem[];
+  filterActive?: boolean;
 }
 
-export default function FeedContainer({ items }: FeedContainerProps) {
+export default function FeedContainer({ items, filterActive = false }: FeedContainerProps) {
   if (items.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-2xl mb-2">📝</p>
-        <p className="text-gray-500">No content yet. Check back soon!</p>
+        <p className="text-2xl mb-2">{filterActive ? "🔍" : "📝"}</p>
+        <p className="text-gray-500">
+          {filterActive
+            ? "No content matches the selected tags."
+            : "No content yet. Check back soon!"}
+        </p>
       </div>
     );
   }

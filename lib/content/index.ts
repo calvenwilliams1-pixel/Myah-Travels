@@ -122,12 +122,21 @@ export async function getAllTagsWithCounts() {
     slug: tags.slug,
     isFavourite: tags.isFavourite,
     lastUsedAt: tags.lastUsedAt,
-    usageCount: sql<number>`COUNT(${postTags.postId})`.as("usage_count"),
+    usageCount: sql<number>`(
+      (SELECT COUNT(*) FROM post_tags pt
+        INNER JOIN posts p ON p.id = pt.post_id
+        WHERE pt.tag_id = tags.id AND p.status = 'published' AND p.deleted_at IS NULL)
+      + (SELECT COUNT(*) FROM guide_tags gt
+        INNER JOIN guides g ON g.id = gt.guide_id
+        WHERE gt.tag_id = tags.id AND g.status = 'published' AND g.deleted_at IS NULL)
+      + (SELECT COUNT(*) FROM review_tags rt
+        INNER JOIN reviews r ON r.id = rt.review_id
+        WHERE rt.tag_id = tags.id AND r.status = 'published' AND r.deleted_at IS NULL)
+    )`.as("usage_count"),
   })
   .from(tags)
-  .leftJoin(postTags, eq(tags.id, postTags.tagId))
-  .groupBy(tags.id, tags.name, tags.slug, tags.isFavourite, tags.lastUsedAt);
-  
+  .orderBy(desc(tags.lastUsedAt), tags.name);
+
   return result;
 }
 
@@ -156,53 +165,95 @@ export async function toggleTagFavourite(tagId: number) {
 export async function renameTag(tagId: number, newName: string) {
   const newSlug = normaliseTagName(newName);
   if (!newSlug) return { error: "Invalid tag name" };
-  
+
   const existing = await db.select().from(tags)
     .where(and(eq(tags.slug, newSlug), sql`${tags.id} != ${tagId}`))
     .limit(1);
-  
+
   if (existing.length > 0) {
-    return { error: "Tag with this name already exists", existingTag: existing[0] };
+    return { error: `Tag "${newName.trim()}" already exists` };
   }
-  
-  const updated = await db.update(tags)
-    .set({ name: newName.trim(), slug: newSlug })
-    .where(eq(tags.id, tagId))
-    .returning();
-  
-  return { success: true, tag: updated[0] };
+
+  try {
+    let updated: any = null;
+    db.transaction((tx) => {
+      updated = tx.update(tags)
+        .set({ name: newName.trim(), slug: newSlug })
+        .where(eq(tags.id, tagId))
+        .returning()
+        .all();
+    });
+    return { success: true, tag: updated?.[0] };
+  } catch (err) {
+    console.error("renameTag failed:", err);
+    return { error: "Failed to rename tag" };
+  }
 }
 
 export async function mergeTags(sourceId: number, targetId: number) {
   if (sourceId === targetId) return { error: "Cannot merge tag into itself" };
-  
-  const sourceAssociations = await db.select()
-    .from(postTags)
-    .where(eq(postTags.tagId, sourceId));
-  
-  for (const assoc of sourceAssociations) {
-    await db.insert(postTags)
-      .values({ postId: assoc.postId, tagId: targetId })
-      .onConflictDoNothing();
+
+  const source = await db.select().from(tags).where(eq(tags.id, sourceId)).limit(1);
+  if (source.length === 0) return { error: "Source tag not found" };
+  const target = await db.select().from(tags).where(eq(tags.id, targetId)).limit(1);
+  if (target.length === 0) return { error: "Target tag not found" };
+
+  try {
+    db.transaction((tx) => {
+      // Repoint post_tags
+      const postAssocs = tx.select().from(postTags).where(eq(postTags.tagId, sourceId)).all();
+      for (const a of postAssocs) {
+        tx.insert(postTags).values({ postId: a.postId, tagId: targetId }).onConflictDoNothing().run();
+      }
+      tx.delete(postTags).where(eq(postTags.tagId, sourceId)).run();
+
+      // Repoint guide_tags
+      const guideAssocs = tx.select().from(guideTags).where(eq(guideTags.tagId, sourceId)).all();
+      for (const a of guideAssocs) {
+        tx.insert(guideTags).values({ guideId: a.guideId, tagId: targetId }).onConflictDoNothing().run();
+      }
+      tx.delete(guideTags).where(eq(guideTags.tagId, sourceId)).run();
+
+      // Repoint review_tags
+      const reviewAssocs = tx.select().from(reviewTags).where(eq(reviewTags.tagId, sourceId)).all();
+      for (const a of reviewAssocs) {
+        tx.insert(reviewTags).values({ reviewId: a.reviewId, tagId: targetId }).onConflictDoNothing().run();
+      }
+      tx.delete(reviewTags).where(eq(reviewTags.tagId, sourceId)).run();
+
+      // Finally delete the source tag
+      tx.delete(tags).where(eq(tags.id, sourceId)).run();
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("mergeTags failed:", err);
+    return { error: "Failed to merge tags" };
   }
-  
-  await db.delete(postTags).where(eq(postTags.tagId, sourceId));
-  await db.delete(tags).where(eq(tags.id, sourceId));
-  
-  return { success: true };
 }
 
 export async function deleteTag(tagId: number) {
-  const usageCount = await db.select()
-    .from(postTags)
-    .where(eq(postTags.tagId, tagId));
-  
-  if (usageCount.length > 0) {
-    return { error: `Tag is used by ${usageCount.length} posts` };
+  const postUsage = await db.select().from(postTags).where(eq(postTags.tagId, tagId));
+  const guideUsage = await db.select().from(guideTags).where(eq(guideTags.tagId, tagId));
+  const reviewUsage = await db.select().from(reviewTags).where(eq(reviewTags.tagId, tagId));
+
+  const totalUsage = postUsage.length + guideUsage.length + reviewUsage.length;
+  if (totalUsage > 0) {
+    const parts = [];
+    if (postUsage.length > 0) parts.push(`${postUsage.length} post${postUsage.length === 1 ? "" : "s"}`);
+    if (guideUsage.length > 0) parts.push(`${guideUsage.length} guide${guideUsage.length === 1 ? "" : "s"}`);
+    if (reviewUsage.length > 0) parts.push(`${reviewUsage.length} review${reviewUsage.length === 1 ? "" : "s"}`);
+    return { error: `Tag is used by ${parts.join(", ")}` };
   }
-  
-  await db.delete(tags).where(eq(tags.id, tagId));
-  return { success: true };
+
+  try {
+    db.transaction((tx) => {
+      tx.delete(tags).where(eq(tags.id, tagId)).run();
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("deleteTag failed:", err);
+    return { error: "Failed to delete tag" };
+  }
 }
 
 export async function getPostTags(postId: number): Promise<string[]> {
@@ -215,17 +266,25 @@ export async function getPostTags(postId: number): Promise<string[]> {
 }
 
 export async function updatePostTags(postId: number, tagNames: string[]) {
-  // Delete existing tags
-  await db.delete(postTags).where(eq(postTags.postId, postId));
-
-  const now = new Date().toISOString();
-
+  // Resolve tags first (outside transaction — getOrCreateTag is async + needs db)
+  const resolved: number[] = [];
   for (const name of tagNames) {
     const tag = await getOrCreateTag(name);
-    if (tag) {
-      await db.insert(postTags).values({ postId, tagId: tag.id }).onConflictDoNothing();
-      await db.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tag.id));
-    }
+    if (tag) resolved.push(tag.id);
+  }
+
+  const now = new Date().toISOString();
+  try {
+    db.transaction((tx) => {
+      tx.delete(postTags).where(eq(postTags.postId, postId)).run();
+      for (const tagId of resolved) {
+        tx.insert(postTags).values({ postId, tagId }).onConflictDoNothing().run();
+        tx.update(tags).set({ lastUsedAt: now }).where(eq(tags.id, tagId)).run();
+      }
+    });
+  } catch (err) {
+    console.error("updatePostTags failed:", err);
+    throw err;
   }
 }
 
@@ -619,23 +678,44 @@ export async function softDeleteReview(id: number) {
 // ============================================
 
 export async function setPostTags(postId: number, tagIds: number[]) {
-  await db.delete(postTags).where(eq(postTags.postId, postId));
-  for (const tagId of tagIds) {
-    await db.insert(postTags).values({ postId, tagId }).onConflictDoNothing();
+  try {
+    db.transaction((tx) => {
+      tx.delete(postTags).where(eq(postTags.postId, postId)).run();
+      for (const tagId of tagIds) {
+        tx.insert(postTags).values({ postId, tagId }).onConflictDoNothing().run();
+      }
+    });
+  } catch (err) {
+    console.error("setPostTags failed:", err);
+    throw err;
   }
 }
 
 export async function setGuideTags(guideId: number, tagIds: number[]) {
-  await db.delete(guideTags).where(eq(guideTags.guideId, guideId));
-  for (const tagId of tagIds) {
-    await db.insert(guideTags).values({ guideId, tagId }).onConflictDoNothing();
+  try {
+    db.transaction((tx) => {
+      tx.delete(guideTags).where(eq(guideTags.guideId, guideId)).run();
+      for (const tagId of tagIds) {
+        tx.insert(guideTags).values({ guideId, tagId }).onConflictDoNothing().run();
+      }
+    });
+  } catch (err) {
+    console.error("setGuideTags failed:", err);
+    throw err;
   }
 }
 
 export async function setReviewTags(reviewId: number, tagIds: number[]) {
-  await db.delete(reviewTags).where(eq(reviewTags.reviewId, reviewId));
-  for (const tagId of tagIds) {
-    await db.insert(reviewTags).values({ reviewId, tagId }).onConflictDoNothing();
+  try {
+    db.transaction((tx) => {
+      tx.delete(reviewTags).where(eq(reviewTags.reviewId, reviewId)).run();
+      for (const tagId of tagIds) {
+        tx.insert(reviewTags).values({ reviewId, tagId }).onConflictDoNothing().run();
+      }
+    });
+  } catch (err) {
+    console.error("setReviewTags failed:", err);
+    throw err;
   }
 }
 
