@@ -24,10 +24,12 @@ export default function InfiniteFeed({
   const [isLoading, setIsLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
+  const errorRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadMore = useCallback(async () => {
-    if (loadingRef.current || !hasMore) return;
+    if (loadingRef.current || !hasMore || errorRef.current) return;
 
     loadingRef.current = true;
     setIsLoading(true);
@@ -40,8 +42,14 @@ export default function InfiniteFeed({
 
     try {
       const res = await fetch(`/api/feed?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`Feed request failed: ${res.status}`);
+      }
       const data = await res.json();
-      const newItems = data.items || [];
+      if (!Array.isArray(data.items)) {
+        throw new Error("Feed response malformed");
+      }
+      const newItems = data.items;
 
       if (newItems.length === 0) {
         setHasMore(false);
@@ -52,6 +60,8 @@ export default function InfiniteFeed({
       }
     } catch (err) {
       console.error("Failed to load more:", err);
+      setError("Couldn't load more posts.");
+      errorRef.current = true;
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
@@ -75,6 +85,12 @@ export default function InfiniteFeed({
     return () => observer.disconnect();
   }, [loadMore]);
 
+  const retry = () => {
+    setError(null);
+    errorRef.current = false;
+    loadMore();
+  };
+
   return (
     <div>
       <FeedContainer items={items} />
@@ -84,7 +100,17 @@ export default function InfiniteFeed({
           <p className="text-gray-400">Loading more...</p>
         </div>
       )}
-      {!hasMore && items.length > 0 && (
+      {error && (
+        <div className="text-center py-8">
+          <button
+            onClick={retry}
+            className="text-sm text-primary hover:underline"
+          >
+            {error} Tap to retry.
+          </button>
+        </div>
+      )}
+      {!hasMore && items.length > 0 && !error && (
         <div className="text-center py-8">
           <p className="text-gray-400 text-sm">You've reached the end 🎉</p>
         </div>
