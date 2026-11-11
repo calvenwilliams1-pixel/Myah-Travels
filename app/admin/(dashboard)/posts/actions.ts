@@ -2,11 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
-import { createPost, updatePost, getPostById, softDeletePost, updatePostTags, getPostTags } from "@/lib/content";
+import { createPost, updatePost, getPostById, softDeletePost, updatePostTags, getPostTags, generateSlug } from "@/lib/content";
 import { db } from "@/lib/db";
 import { posts } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { validatePost } from "@/lib/security";
+import { validatePost, validatePostUpdate } from "@/lib/security";
 import { validateRequiredBlocks } from "@/lib/blocks/validate";
 import { getEditorTemplates } from "@/lib/blocks/template-store";
 import { logActivity } from "@/lib/logging";
@@ -23,9 +23,14 @@ export async function createPostAction(formData: FormData) {
 
   const user = await requireAuth();
 
+  const baseSlug = generateSlug(data.title);
+  if (!baseSlug) {
+    return { error: "Title must contain at least one letter or number." };
+  }
+
   const validation = validatePost({
     title: data.title,
-    slug: data.title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-"),
+    slug: baseSlug,
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,
@@ -37,6 +42,7 @@ export async function createPostAction(formData: FormData) {
 
   const post = await createPost({
     title: data.title,
+    slug: baseSlug,
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,
@@ -74,9 +80,9 @@ export async function updatePostAction(
 ) {
   const user = await requireAuth();
 
-  const validation = validatePost({
+  // Update does not regenerate the slug — the post keeps its existing URL.
+  const validation = validatePostUpdate({
     title: data.title,
-    slug: data.title.toLowerCase().replace(/\s+/g, "-"),
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,

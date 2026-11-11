@@ -176,6 +176,11 @@ export function validatePost(input: unknown) {
   return postSchema.safeParse(input);
 }
 
+export const postUpdateSchema = postSchema.omit({ slug: true });
+export function validatePostUpdate(input: unknown) {
+  return postUpdateSchema.safeParse(input);
+}
+
 export function validateGuide(input: unknown) {
   return guideSchema.safeParse(input);
 }
