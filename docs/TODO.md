@@ -2,19 +2,48 @@
 
 ## Status
 
-**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 143 vitest tests passing, `tsc` clean. Batch H1 (Gallery Collage renderer) shipped. **Batch M (auth + onboarding) code-complete on `batch-m` branch — not yet merged to `main`.**
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 154 vitest tests passing, `tsc` clean.
 
-**Current work: batch build then accumulated testing pass.** Features are being shipped in batches; each batch appends its test cases to `docs/TESTING.md`. Testing happens later, in one pass, against the accumulated doc. Full coverage map below.
+**Batch M (auth + onboarding) SHIPPED on `main`** — merged at `60420df`. User flags (`is_admin`, `is_active`, `must_change_password`, `has_completed_setup`), `seed-admin.ts` CLI, `requireAuth`/`requireSession`/`requireAdmin` split, 3-step setup wizard, cache bug fix, dashboard warmth, `next start -H 127.0.0.1` bind, `auth-rate-limit.sh` audit suite.
 
-**Two features are SPECCED but unbuilt:** the Itinerary Client Experience — Itinerary at a Glance + Today's Plan card. Both derive entirely from existing itinerary data, no authoring surface. Spec below; build order in the Batch Plan.
+**Batch H1 (Gallery Collage renderer) shipped. Batch I (Media Library Picker) shipped. Batch J (admin library page + folders) shipped.** Verified in code this session — this TODO was lagging behind those commits.
 
-**Batch H (Gallery Collage) shipped** — renderer + editor UX + drag reorder. **Batch I (Media Library Picker) shipped** — `is_library` flag on `media`, GET/PATCH `/api/media`, From-library third mode in `ImageSourcePicker`, upload checkbox. See `docs/CONTENT-LIBRARY-AUDIT.md` for the model. **Next: Batch J** — admin library page (storage widget, bulk delete, edit, nested folders).
+**Itinerary Client Experience (Glance + Today's Plan) SHIPPED.** Verified in code this session: `lib/itineraries/derive.ts` (`deriveGlance` + `deriveDayByDay`), `components/portal/glance/ItineraryGlanceView.tsx`, `attachDerivedItems()`, `PortalWall.tsx` renders both variants, 3 test files. Migration `0019_itinerary_timezone.sql` applied. **This TODO's "SPECCED — not built" claim was stale — the code exists.**
 
-**Three outstanding bugs** from the last testing session, documented below. They are Batch A, B, C in the Batch Plan.
+**Current work: Tag System milestone on `feat/blog-system`** (branched from `main` at `60420df`).
+
+### Tag System Milestone (in progress)
+
+- **2a — tag chips on feed cards** ✅ `61d6651`
+  - `FeedTag` type, `tags: FeedTag[]` on `FeedItem`, batched hydration (3 queries, no N+1), chips below excerpt on `FeedCard`
+- **2b — URL-driven tag filtering** ✅ `56a0df9`
+  - `?tags=a,b` with AND semantics via `HAVING count(distinct tag.id) = N` subquery per junction. `buildSelect` refactored to take junction info. Feed filters row: top 20 by usage + Show all + Clear. Empty state differentiates.
+- **2c — tag integrity + admin UX** ✅ `f95907f`
+  - All 7 tag write functions wrapped in `db.transaction()`. `mergeTags` repoints all three junction tables. `deleteTag` checks all three. `getAllTagsWithCounts` uses per-junction subqueries, excludes drafts. Admin actions surface errors, redirect with `?success=`/`?error=`. `<details>` two-step confirmations for delete/merge. Banners render.
+- **2d — guide/review editor tagging** ⏳ pending
+  - `setGuideTags`/`setReviewTags` exist but no UI calls them. Add `TagInput` to guide/review edit forms. Extract `tagNames` from formData, call the setters.
+- **2e — flat aliasing** ⏳ pending
+  - `tag_aliases` table (`alias_tag_id` UNIQUE, `canonical_tag_id`, CHECK alias ≠ canonical). Filter expands aliases before querying. Admin alias management UI. Merge and Alias as separate actions. Delete rules. No chains, no cycles.
+- **Merge `feat/blog-system` → `main` after 2e ships**
+
+### Open security items (from this session)
+
+- **`public/uploads/library/1789075535993-DSLAP-Japan-Travel-Itinerary-2026.pdf` is tracked in a PUBLIC GitHub repo.** Verified via GitHub API (unauthenticated request returned 200). **Needs answer: is this real client data or test data?**
+  - If real: make repo private on GitHub immediately, then history cleanup (`git filter-repo`), notify client.
+  - If test: `git rm` and move on.
+- **`public/uploads/` is not in `.gitignore`.** 8 untracked files in `public/uploads/posts/`. Needs `public/uploads/*` + `!public/uploads/.gitkeep` in `.gitignore`.
+- **`public/uploads/` files won't serve after `next build` on the mini PC.** Dev works (live serving from `public/`); production build will 404 for any file added after the build. Fix: serve uploads from a route handler outside `public/`, or accept that uploads go through the app (not static). **Deferred to Phase 7.7** — not a blog-system blocker.
+
+### Outstanding from earlier sessions (still open)
+
+- **Rate-limit FINDINGs** from `auth-rate-limit.sh`: (1) successful login doesn't reset the counter, (2) no per-username limiter (distributed guess defense), (3) per-IP-only limiter has no protection against distributed attacks. Documented in the suite header. Not urgent, but real.
+- **PreviewPopout bounds clamping** — Bug #1 from earlier testing pass. Never re-verified this session.
+- **Body block Tab handler** — Bug #2 from earlier testing pass. Never re-verified this session.
+- **Gallery block upload** — Bug #3. Verified this session: Batch A **did** ship (Gallery block reuses `ImageSourcePicker`). **Close this item.**
 
 **Phase 7.6.8 (Notepad tag behaviour) is REJECTED** — see its section below for rationale. Not deferred, not scheduled.
 
-**Upcoming:** Phase 7.7 Launch Day (email + magic link go-live, TOTP enforcement, cron entries, backups, OS hardening). Then Phase 7.3 sweep. Phase 8 (social publishing) deferred to post-launch.
+**Upcoming after tag milestone:** Phase 7.7 Launch Day (email + magic link go-live, TOTP enforcement, cron entries, backups, OS hardening). Then Phase 7.3 sweep — but note: Publish Validation, Error Boundaries per block, and Responsive Preview are **all verified SHIPPED** this session (the Phase Status table below is stale on this). Phase 8 (social publishing) deferred to post-launch.
 
 ## Core Principle
 
@@ -86,8 +115,9 @@ Developer controls design. Template controls layout. Writer controls content. Se
 | 9 | ✅ Complete | Client Memory System (people, notes, trip history, portal purge, itinerary library) |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
 | Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
-| **Batch M** | **✅ Code-complete on `batch-m`** | **Auth + onboarding: user flags, seed-admin CLI, requireAuth split, 3-step wizard, cache bug fix, dashboard warmth. Merge pending after M.8/M.9.** |
-| **Batch build** | **🔄 Current** | **H shipped. I shipped (Media Library Picker). Batch J next (admin library page + folders).** |
+| **Batch M** | **✅ SHIPPED on `main`** | **Auth + onboarding: user flags, seed-admin CLI, requireAuth split, 3-step wizard, cache bug fix, dashboard warmth, localhost bind, auth-rate-limit audit suite. Merged at `60420df`.** |
+| **Batch build** | ✅ Complete | H1 (Gallery Collage) shipped, I (Media Library Picker) shipped, J (admin library + folders) shipped |
+| **Tag System** | **🔄 Current** | **2a/2b/2c shipped on `feat/blog-system` (`61d6651`, `56a0df9`, `f95907f`). 2d (guide/review editor tagging) and 2e (flat aliasing) pending. Merge to main after 2e.** |
 | 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
 | 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
 | 8 | ⏳ Future | Options segments, cruise mode, People table — post-launch |
@@ -184,7 +214,7 @@ See `docs/BATCH-H-PLAN.md` for full spec.
 
 ---
 
-## Itinerary Client Experience (SPECCED — not built)
+## Itinerary Client Experience (SHIPPED)
 
 Two client-facing views derived entirely from existing itinerary data. **No authoring surface.** Myah builds the detailed itinerary once; the Glance and Today's Plan fall out automatically. Zero marginal work.
 
@@ -434,6 +464,10 @@ Do not schedule until Launch Day completes.
 3. **`schema.sql` outdated** — Use `scripts/setup-db.js`.
 4. **Codespace Node version** — Codespace runs Node 24; local runs Node 22 LTS. Minor drift; both work. Local is deployment-target.
 5. **`TESTING.md` coverage gaps** — break-session features covered at `65f857f`. Still uncovered: block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Each batch fixes its own gap going forward.
+6. **PDF exposure in public repo** — `public/uploads/library/1789075535993-DSLAP-Japan-Travel-Itinerary-2026.pdf` tracked in a public GitHub repo. Needs decision: real client data (make private + history cleanup + notify) or test data (`git rm`). See "Open security items" above.
+7. **`public/uploads/` not in `.gitignore`** — 8 untracked files in `public/uploads/posts/`. Fix `.gitignore` pattern: `public/uploads/*` + `!public/uploads/.gitkeep`.
+8. **Uploads 404 after `next build`** — files in `public/` added after build won't serve under `next start`. Affects mini PC deploy. Fix deferred to Phase 7.7.
+9. **Rate-limit FINDINGs** — 3 policy observations from `auth-rate-limit.sh`: successful login doesn't reset counter, no per-username limiter, no distributed-attack defense. Documented in suite header. Not urgent.
 
 ---
 
@@ -458,4 +492,4 @@ Do not schedule until Launch Day completes.
 
 ---
 
-**Last Updated:** October 26, 2026
+**Last Updated:** November 11, 2026
