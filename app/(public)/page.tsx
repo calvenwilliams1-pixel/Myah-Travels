@@ -1,9 +1,29 @@
 import React from "react";
 import FeedPage from "@/components/feed/FeedPage";
-import { getFeedItems, getCategories } from "@/lib/feed";
+import { getFeedItems } from "@/lib/feed";
 import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
+
+const VALID_TYPES = ["all", "post", "guide", "review"] as const;
+const VALID_SORTS = ["newest", "oldest", "pinned"] as const;
+
+type FeedType = (typeof VALID_TYPES)[number];
+type FeedSort = (typeof VALID_SORTS)[number];
+
+function normaliseType(raw: unknown): FeedType {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  return typeof v === "string" && (VALID_TYPES as readonly string[]).includes(v)
+    ? (v as FeedType)
+    : "all";
+}
+
+function normaliseSort(raw: unknown): FeedSort {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  return typeof v === "string" && (VALID_SORTS as readonly string[]).includes(v)
+    ? (v as FeedSort)
+    : "pinned";
+}
 
 export async function generateMetadata() {
   const settings = await getAllSettings();
@@ -13,9 +33,14 @@ export async function generateMetadata() {
   };
 }
 
-export default async function HomePage() {
-  const items = await getFeedItems("all", "pinned", "all", 50, 0);
-  const categories = await getCategories();
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: { type?: string | string[]; sort?: string | string[] };
+}) {
+  const type = normaliseType(searchParams.type);
+  const sort = normaliseSort(searchParams.sort);
+  const items = await getFeedItems(type, sort, 50, 0);
 
-  return <FeedPage initialItems={items} categories={categories} />;
+  return <FeedPage initialItems={items} initialType={type} initialSort={sort} />;
 }

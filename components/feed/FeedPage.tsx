@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useTransition } from "react";
 import FeedFilters from "./FeedFilters";
 import InfiniteFeed from "./InfiniteFeed";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,39 +8,38 @@ import { FeedItem } from "./types";
 
 interface FeedPageProps {
   initialItems: FeedItem[];
-  categories: string[];
+  initialType: string;
+  initialSort: string;
 }
 
-export default function FeedPage({ initialItems, categories }: FeedPageProps) {
+export default function FeedPage({
+  initialItems,
+  initialType,
+  initialSort,
+}: FeedPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedSort, setSelectedSort] = useState("newest");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  // URL is the source of truth — server re-fetches on navigation.
+  // initialType/initialSort come from the server render and match the URL.
+  const selectedType = searchParams.get("type") ?? initialType;
+  const selectedSort = searchParams.get("sort") ?? initialSort;
 
-  useEffect(() => {
-    setSelectedType(searchParams.get("type") || "all");
-    setSelectedSort(searchParams.get("sort") || "newest");
-    setSelectedCategory(searchParams.get("category") || "all");
-  }, [searchParams]);
-
-  const updateFilters = (updates: { type?: string; sort?: string; category?: string }) => {
-    const newType = updates.type ?? selectedType;
-    const newSort = updates.sort ?? selectedSort;
-    const newCategory = updates.category ?? selectedCategory;
-
-    setSelectedType(newType);
-    setSelectedSort(newSort);
-    setSelectedCategory(newCategory);
-
-    const params = new URLSearchParams();
-    if (newType !== "all") params.set("type", newType);
-    if (newSort !== "newest") params.set("sort", newSort);
-    if (newCategory !== "all") params.set("category", newCategory);
-
+  const updateFilters = (updates: { type?: string; sort?: string }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (updates.type !== undefined) {
+      if (updates.type === "all") params.delete("type");
+      else params.set("type", updates.type);
+    }
+    if (updates.sort !== undefined) {
+      if (updates.sort === "pinned") params.delete("sort");
+      else params.set("sort", updates.sort);
+    }
     const queryString = params.toString();
-    router.push(queryString ? `?${queryString}` : "/", { scroll: false });
+    startTransition(() => {
+      router.push(queryString ? `/?${queryString}` : "/", { scroll: false });
+    });
   };
 
   return (
@@ -50,17 +49,14 @@ export default function FeedPage({ initialItems, categories }: FeedPageProps) {
         onTypeChange={(type) => updateFilters({ type })}
         selectedSort={selectedSort}
         onSortChange={(sort) => updateFilters({ sort })}
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={(category) => updateFilters({ category })}
       />
 
-      <div className="mt-6">
+      <div className={`mt-6 ${isPending ? "opacity-50" : ""}`}>
         <InfiniteFeed
+          key={`${selectedType}-${selectedSort}`}
           initialItems={initialItems}
           selectedType={selectedType}
           selectedSort={selectedSort}
-          selectedCategory={selectedCategory}
         />
       </div>
     </div>

@@ -8,7 +8,6 @@ interface InfiniteFeedProps {
   initialItems: FeedItem[];
   selectedType: string;
   selectedSort: string;
-  selectedCategory: string;
 }
 
 const PAGE_SIZE = 10;
@@ -18,54 +17,14 @@ export default function InfiniteFeed({
   initialItems,
   selectedType,
   selectedSort,
-  selectedCategory,
 }: InfiniteFeedProps) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [offset, setOffset] = useState(initialItems.length);
-  const [hasMore, setHasMore] = useState(initialItems.length === PAGE_SIZE);
+  const [hasMore, setHasMore] = useState(initialItems.length >= PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    loadingRef.current = true;
-    setIsLoading(true);
-
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const params = new URLSearchParams();
-    params.set("type", selectedType);
-    params.set("sort", selectedSort);
-    params.set("category", selectedCategory);
-    params.set("limit", String(PAGE_SIZE));
-    params.set("offset", "0");
-
-    fetch(`/api/feed?${params.toString()}`, { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        const newItems = data.items || [];
-        setItems(newItems);
-        setOffset(newItems.length);
-        setHasMore(newItems.length === PAGE_SIZE);
-      })
-      .catch((err) => {
-        if (err.name !== "AbortError") {
-          console.error("Failed to reset feed:", err);
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-        loadingRef.current = false;
-      });
-
-    return () => controller.abort();
-  }, [selectedType, selectedSort, selectedCategory]);
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore) return;
@@ -76,7 +35,6 @@ export default function InfiniteFeed({
     const params = new URLSearchParams();
     params.set("type", selectedType);
     params.set("sort", selectedSort);
-    params.set("category", selectedCategory);
     params.set("limit", String(PAGE_SIZE));
     params.set("offset", String(offset));
 
@@ -98,7 +56,7 @@ export default function InfiniteFeed({
       setIsLoading(false);
       loadingRef.current = false;
     }
-  }, [hasMore, offset, selectedType, selectedSort, selectedCategory]);
+  }, [hasMore, offset, selectedType, selectedSort]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

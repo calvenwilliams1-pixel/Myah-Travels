@@ -7,9 +7,6 @@ interface FeedFiltersProps {
   onTypeChange: (type: string) => void;
   selectedSort: string;
   onSortChange: (sort: string) => void;
-  categories: string[];
-  selectedCategory: string;
-  onCategoryChange: (category: string) => void;
 }
 
 const CONTENT_TYPES = [
@@ -30,9 +27,6 @@ export default function FeedFilters({
   onTypeChange,
   selectedSort,
   onSortChange,
-  categories,
-  selectedCategory,
-  onCategoryChange,
 }: FeedFiltersProps) {
   return (
     <div className="space-y-3">
@@ -66,33 +60,6 @@ export default function FeedFilters({
         </div>
       </div>
 
-      {categories.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => onCategoryChange("all")}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-              selectedCategory === "all"
-                ? "bg-gray-800 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            All Topics
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => onCategoryChange(cat)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                selectedCategory === cat
-                  ? "bg-gray-800 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

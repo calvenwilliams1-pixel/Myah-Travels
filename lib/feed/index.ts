@@ -18,7 +18,6 @@ export interface FeedItem {
 export async function getFeedItems(
   contentType: string = "all",
   sort: string = "newest",
-  category: string = "all",
   limit: number = 20,
   offset: number = 0
 ): Promise<FeedItem[]> {
@@ -82,10 +81,13 @@ export async function getFeedItems(
     }));
   }
 
-  // Multiple queries - use UNION ALL
-  const unionQuery = queries[0];
+  // Multiple queries — use UNION ALL
+  // Note: Drizzle's unionAll mutates the builder in place and returns it.
+  // Reassigning is defensive — if the library changes to return a new object,
+  // this loop still works.
+  let unionQuery = queries[0];
   for (let i = 1; i < queries.length; i++) {
-    unionQuery.unionAll(queries[i]);
+    unionQuery = unionQuery.unionAll(queries[i]);
   }
 
   const result = await unionQuery
