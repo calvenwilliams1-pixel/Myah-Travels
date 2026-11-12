@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { tags } from "@/drizzle/schema/tags";
 import { tagAliases } from "@/drizzle/schema/tag-aliases";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import { postTags } from "@/drizzle/schema/post-tags";
 import { guideTags } from "@/drizzle/schema/guide-tags";
 import { reviewTags } from "@/drizzle/schema/review-tags";
@@ -19,6 +19,57 @@ import { reviewTags } from "@/drizzle/schema/review-tags";
  *   - alias cannot itself have aliases (would create a chain)
  *   - createAlias / deleteCanonicalSafe / mergeTagsWithAliases run in transactions
  */
+
+export interface AliasMapEntry {
+  /** If this tag is an alias, the canonical tag it points at. */
+  isAliasOf?: { id: number; name: string; slug: string };
+  /** If this tag is canonical, the aliases pointing at it. */
+  aliasesOf: { id: number; name: string; slug: string }[];
+}
+
+/**
+ * One-query lookup of all alias relationships, keyed by tag id.
+ * Used by the admin tags page to render "Alias of #x" and "Aliases: #a, #b"
+ * without N+1 queries.
+ */
+export async function getAliasMap(): Promise<Map<number, AliasMapEntry>> {
+  const allAliases = await db.select().from(tagAliases);
+  if (allAliases.length === 0) {
+    return new Map();
+  }
+
+  const tagIds = new Set<number>();
+  for (const a of allAliases) {
+    tagIds.add(a.aliasTagId);
+    tagIds.add(a.canonicalTagId);
+  }
+
+  const tagRows = await db
+    .select({ id: tags.id, name: tags.name, slug: tags.slug })
+    .from(tags)
+    .where(inArray(tags.id, Array.from(tagIds)));
+
+  const tagLookup = new Map<number, { id: number; name: string; slug: string }>();
+  for (const t of tagRows) tagLookup.set(t.id, t);
+
+  const result = new Map<number, AliasMapEntry>();
+
+  for (const a of allAliases) {
+    const aliasTag = tagLookup.get(a.aliasTagId);
+    const canonicalTag = tagLookup.get(a.canonicalTagId);
+    if (!aliasTag || !canonicalTag) continue;
+
+    const aliasEntry = result.get(a.aliasTagId) ?? { aliasesOf: [] };
+    aliasEntry.isAliasOf = canonicalTag;
+    result.set(a.aliasTagId, aliasEntry);
+
+    const canonEntry = result.get(a.canonicalTagId) ?? { aliasesOf: [] };
+    canonEntry.aliasesOf.push(aliasTag);
+    result.set(a.canonicalTagId, canonEntry);
+  }
+
+  return result;
+}
 
 export interface AliasRow {
   id: number;

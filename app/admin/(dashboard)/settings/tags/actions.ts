@@ -1,7 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/lib/auth";
-import { toggleTagFavourite, deleteTag, renameTag, mergeTags } from "@/lib/content";
+import { toggleTagFavourite, renameTag } from "@/lib/content";
+import { deleteCanonicalSafe, mergeTagsWithAliases, createAlias, removeAlias } from "@/lib/tags/aliases";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -15,7 +16,7 @@ export async function toggleTagFavouriteAction(formData: FormData) {
 export async function deleteTagAction(formData: FormData) {
   await requireAuth();
   const tagId = Number(formData.get("tagId"));
-  const result = await deleteTag(tagId);
+  const result = await deleteCanonicalSafe(tagId);
   revalidatePath("/admin/settings/tags");
   if (result && "error" in result && result.error) {
     redirect(`/admin/settings/tags?error=${encodeURIComponent(result.error)}`);
@@ -44,10 +45,38 @@ export async function mergeTagsAction(formData: FormData) {
     redirect(`/admin/settings/tags?error=${encodeURIComponent("Select a target tag to merge into")}`);
   }
 
-  const result = await mergeTags(sourceId, targetId);
+  const result = await mergeTagsWithAliases(sourceId, targetId);
   revalidatePath("/admin/settings/tags");
   if (result && "error" in result && result.error) {
     redirect(`/admin/settings/tags?error=${encodeURIComponent(result.error)}`);
   }
   redirect(`/admin/settings/tags?success=${encodeURIComponent("Tag merged")}`);
+}
+
+export async function addAliasAction(formData: FormData) {
+  await requireAuth();
+  const aliasId = Number(formData.get("aliasId"));
+  const canonicalId = Number(formData.get("canonicalId"));
+
+  if (!aliasId || !canonicalId) {
+    redirect(`/admin/settings/tags?error=${encodeURIComponent("Select a tag to alias")}`);
+  }
+
+  const result = await createAlias(aliasId, canonicalId);
+  revalidatePath("/admin/settings/tags");
+  if (result && "error" in result && result.error) {
+    redirect(`/admin/settings/tags?error=${encodeURIComponent(result.error)}`);
+  }
+  redirect(`/admin/settings/tags?success=${encodeURIComponent("Alias created")}`);
+}
+
+export async function removeAliasAction(formData: FormData) {
+  await requireAuth();
+  const aliasId = Number(formData.get("aliasId"));
+  const result = await removeAlias(aliasId);
+  revalidatePath("/admin/settings/tags");
+  if (result && "error" in result && result.error) {
+    redirect(`/admin/settings/tags?error=${encodeURIComponent(result.error)}`);
+  }
+  redirect(`/admin/settings/tags?success=${encodeURIComponent("Alias removed")}`);
 }
