@@ -10,15 +10,27 @@ I am building a website called **MyCalTravels** for a travel writer/agent (Myah)
 
 ---
 
-## Current Status (as of November 6, 2026)
+## Current Status (as of November 12, 2026)
 
 **Architecture:** Block-based content (posts) + Portal Wall (client delivery) + Itinerary Builder + Admin Notepad + Autosave infrastructure + Data Entry Automation + Client Memory System + popup preview.
 
-All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**, and **Batch M (auth + onboarding) is code-complete on the `batch-m` branch** — not yet merged to `main`. 143 vitest tests passing, `tsc` clean. The current work is a **large accumulated-testing pass** — features were shipped in sequence without incremental browser verification, and the testing debt is being worked off. See `docs/TESTING.md` for the checklist.
+All planned phases (7.6, 7.8, 7.9, 9, 9.5) are **code-complete**.
 
-Two client-facing features are **specced but unbuilt** — the Itinerary Client Experience (Glance + Today's Plan card). Both derive from existing itinerary data, no authoring surface. Full spec in `docs/TODO.md`.
+**Batch M (auth + onboarding) SHIPPED on `main`** — merged at `60420df`.
 
-**Three outstanding bugs** from the last testing session (PreviewPopout bounds, Body Tab handler, Gallery block upload) are documented in `docs/TODO.md` under "Outstanding bugs from testing pass".
+**Itinerary Client Experience (Glance + Today's Plan) SHIPPED.** Verified in code: `lib/itineraries/derive.ts` (`deriveGlance` + `deriveDayByDay`), `components/portal/glance/ItineraryGlanceView.tsx`, `attachDerivedItems()`, `PortalWall.tsx` renders both variants, migration `0019_itinerary_timezone.sql` applied. This document previously described it as "specced but unbuilt" — that was stale.
+
+**Tag System milestone COMPLETE on `feat/blog-system`** — 9 commits (2a through 2e-3), branched from `main` at `60420df`, ready to merge. Chips on cards, URL-driven filtering with AND semantics, integrity/transaction pass on all tag write paths, guide/review editor coverage, flat alias model with 4 DB-level triggers, alias-aware filtering, admin alias management UI. Full details in `docs/TODO.md`.
+
+**179 vitest tests passing, `tsc` clean.**
+
+**Outstanding from earlier sessions:**
+- Three bug items from a prior testing pass (PreviewPopout bounds, Body Tab handler, Gallery block upload). Gallery upload was verified shipped (Batch A) — closed. The other two remain unverified.
+- Three rate-limit FINDINGs from `auth-rate-limit.sh` (success-login counter reset, no per-username limiter, no distributed-attack defense).
+- `public/uploads/` is not in `.gitignore`, and files in `public/` added after `next build` will 404 in production. Both deferred to Phase 7.7.
+- `public/uploads/library/*.pdf` is tracked in a public GitHub repo — needs decision: real client data (make private + history cleanup + notify) or test data (`git rm`).
+
+**Post-milestone polish (pending):** 2e-4 favourite tag improvement (see `docs/TODO.md`).
 
 **Recently completed (September 18 session):**
 - TipTap rendering bug closed: replaced `@tiptap/html` (zeed-dom drops inline styles) with `getSchema` + `DOMSerializer` + jsdom on server, browser `document` on client
@@ -336,6 +348,43 @@ Canvas-in-TipTap was fully removed (CanvasBlockNode, CanvasBlockRenderer, Canvas
 - **`TOTP_ENFORCEMENT=true`** — production launch flag. Read by the dashboard layout. Enforces `/admin/enroll-2fa` before any dashboard access.
 - **`npm start` binds to `127.0.0.1`** — `package.json` sets `next start -H 127.0.0.1`. Required behind Cloudflare Tunnel so LAN devices cannot forge `cf-connecting-ip` and bypass rate limits. Audits run against `npm run dev` and are unaffected.
 - **Account management is CLI-only** via `scripts/seed-admin.ts` (create-admin / create-temp / reset-password / promote). Note: create-admin mode sets `mustChangePassword: true` — even admins must change their password on first login. Refuses to run in `NODE_ENV=production`. No Users admin UI (M.6 dropped this session — fine for single-admin + dev; add UI if selling deployments).
+
+### Tag System (2a-2e-3)
+
+Shipped on `feat/blog-system` (9 commits, ready to merge to `main`).
+
+**Data model:**
+- `tags` — `name` (UNIQUE), `slug` (UNIQUE), `is_favourite`, `last_used_at`, `created_at`
+- `post_tags`, `guide_tags`, `review_tags` — junction tables, composite PK, both FKs CASCADE
+- `tag_aliases` — flat alias model. `alias_tag_id` UNIQUE + CASCADE, `canonical_tag_id` RESTRICT, CHECK alias ≠ canonical
+  - 4 triggers enforce flat model at DB level: no alias-of-alias (INSERT/UPDATE), no alias-that-has-aliases (INSERT/UPDATE)
+  - A tag is either canonical or alias, never both. No chains, no cycles.
+  - `PRAGMA foreign_keys = ON` is set in `lib/db/index.ts` — RESTRICT/CASCADE only work because of this; a test guards against its removal
+
+**Lib:**
+- `lib/content/index.ts` — `getPostTags`/`getGuideTags`/`getReviewTags`, `updatePostTags`/`updateGuideTags`/`updateReviewTags`, `setPostTags`/`setGuideTags`/`setReviewTags`, `mergeTags`, `deleteTag`, `getAllTagsWithCounts` (per-junction subqueries, excludes drafts + soft-deleted), `getTagSuggestions`
+- All tag write functions wrapped in `db.transaction()` (better-sqlite3 sync transactions — tag names resolved outside the tx)
+- `lib/tags/aliases.ts` — flat alias model: `getAliasesFor`, `getCanonicalFor`, `resolveFamily`, `createAlias`, `removeAlias`, `deleteCanonicalSafe` (refuses if aliases exist), `mergeTagsWithAliases` (repoints aliases + content junctions in one tx, resolves target to canonical first, dedupes), `getAliasMap` (one-query lookup for admin page)
+
+**Feed filtering (`lib/feed/index.ts`):**
+- `getFeedItems(contentType, sort, limit, offset, tagSlugs)` — 5th param is requested tags
+- Aliases resolved once at top of `getFeedItems` via `resolveFamily`. Families deduped by resolved set.
+- Filtering uses `EXISTS` per family in `buildSelect` — AND across families, OR within a family
+- No other tag-filtering code path exists yet (no `/tags/[slug]` pages, no tag search, no RSS/sitemap tag filter) — if one is added, it must use `resolveFamily` too
+
+**Admin UI (`app/admin/(dashboard)/settings/tags/`):**
+- Table with columns: Name, Slug, Usage, Alias, Fav, Rename, Merge, Delete
+- Alias column: shows "→ alias of #canonical" with remove, or list of aliases with remove, or "Add alias" `<details>` with dropdown of alias candidates
+- `deleteTagAction` → `deleteCanonicalSafe` (RESTRICT enforced + app-level refusal with blocking-alias list)
+- `mergeTagsAction` → `mergeTagsWithAliases` (aliases follow the merge)
+- `addAliasAction` / `removeAliasAction` — call `createAlias` / `removeAlias`
+- All actions: `requireAuth()`, check return values, redirect with `?success=` / `?error=`, page renders banner
+
+**Guardrails:**
+- Flat alias model — no chains, no cycles, a tag is canonical XOR alias. Enforced at 3 layers (DB constraints + triggers, lib validation, tests).
+- Merge and Alias are separate operations with different semantics: Merge is destructive (source tag deleted, content repointed), Alias is non-destructive (both tags persist, filtering crosses the family).
+- Tag filtering must go through `resolveFamily` — otherwise aliases silently don't work.
+- Suggestion ordering: `is_favourite` first, then `last_used_at` DESC, then name. Only affects autocomplete when user has typed a query; does not auto-populate on empty input (see 2e-4 in TODO for improvement).
 
 ---
 
