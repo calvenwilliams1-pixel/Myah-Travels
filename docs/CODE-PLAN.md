@@ -156,6 +156,11 @@ blocks/
 ├── styles.ts              # Template style definitions
 ├── templates.ts           # STARTER_TEMPLATES
 └── template-store.ts      # DB persistence for templates
+tags/
+└── aliases.ts             # Flat alias model: resolveFamily, createAlias, removeAlias,
+                           #   deleteCanonicalSafe, mergeTagsWithAliases, getAliasMap
+folders/                   # Media/content folder hierarchy
+ui/                        # Shared UI helpers
 canvas/                    # FROZEN — Canvas system (unwired, pending deletion)
 ```
 
@@ -664,7 +669,19 @@ lib/editor/
 components/editor/renderers/
 └── CleanTipTapRenderer.test.tsx        # 26 render + sanitisation tests
 
-Total: 6 files, 143 tests passing.
+lib/auth/
+└── require-auth.test.ts                # 8 auth tests (checkSetupRequired x4, requireAuth env x3, requireSession bypass x1)
+
+lib/content/
+└── slug.test.ts                        # 11 slug generation tests
+
+lib/tags/
+└── aliases.test.ts                     # 20 alias model tests (create, reject, family, delete safety, merge, DB constraints)
+
+lib/feed/
+└── index.test.ts                       # 5 alias-aware filter tests
+
+Total: 10 files, 179 tests passing.
 ```
 
 ### Migrations (`drizzle/migrations/`)
@@ -685,7 +702,20 @@ Total: 6 files, 143 tests passing.
 0013_instruction_snippets.sql
 0014_color_presets.sql
 0015_people.sql
+0018_portal_items_source_type_expansion.sql
+0019_itinerary_timezone.sql
+0020_portal_items_is_visible.sql
+0021_itinerary_sections_timezone.sql
+0022_notepad_person_links.sql
+0023_folders.sql
+0024_media_is_library.sql
+0025_email_queue_error_message.sql
+0026_users_onboarding.sql
+0027_users_is_admin.sql
+0028_tag_aliases.sql
+0029_aliases_constraints.sql
 ```
+Note: 0016 and 0017 were never created (reserved numbers).
 
 ### Types (`types/`)
 
