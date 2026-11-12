@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { posts, guides, reviews, categories, tags, postTags, guideTags, reviewTags } from "@/drizzle/schema";
-import { eq, and, isNull, desc, asc, sql, inArray } from "drizzle-orm";
+import { eq, and, isNull, desc, asc, sql, inArray, exists } from "drizzle-orm";
+import { resolveFamily } from "@/lib/tags/aliases";
 
 export interface FeedTag {
   id: number;
@@ -90,6 +91,22 @@ export async function getFeedItems(
       ? sql`published_at ASC`
       : sql`published_at DESC`;
 
+  // Resolve tag families once. Each requested slug expands to its family
+  // (canonical + aliases). Dedupe families that resolve to the same set so
+  // ?tags=disney,disneyland does not double-filter on the same family.
+  let families: string[][] = [];
+  if (tagSlugs.length > 0) {
+    const resolved = await Promise.all(tagSlugs.map((s) => resolveFamily(s)));
+    const seen = new Set<string>();
+    for (const fam of resolved) {
+      const key = [...fam].sort().join(",");
+      if (!seen.has(key)) {
+        seen.add(key);
+        families.push(fam);
+      }
+    }
+  }
+
   const buildSelect = (
     table: any,
     type: string,
@@ -98,15 +115,16 @@ export async function getFeedItems(
   ) => {
     const conditions = [eq(table.status, "published"), isNull(table.deletedAt)];
 
-    if (tagSlugs.length > 0) {
-      const matchingIds = db
-        .select({ id: junctionFk })
-        .from(junctionTable)
-        .innerJoin(tags, eq(junctionTable.tagId, tags.id))
-        .where(inArray(tags.slug, tagSlugs))
-        .groupBy(junctionFk)
-        .having(sql`count(distinct ${tags.id}) = ${tagSlugs.length}`);
-      conditions.push(inArray(table.id, matchingIds));
+    for (const family of families) {
+      conditions.push(
+        exists(
+          db
+            .select({ x: sql`1` })
+            .from(junctionTable)
+            .innerJoin(tags, eq(junctionTable.tagId, tags.id))
+            .where(and(eq(junctionFk, table.id), inArray(tags.slug, family)))
+        )
+      );
     }
 
     return db
