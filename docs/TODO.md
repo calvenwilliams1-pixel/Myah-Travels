@@ -10,21 +10,34 @@
 
 **Itinerary Client Experience (Glance + Today's Plan) SHIPPED.** Verified in code this session: `lib/itineraries/derive.ts` (`deriveGlance` + `deriveDayByDay`), `components/portal/glance/ItineraryGlanceView.tsx`, `attachDerivedItems()`, `PortalWall.tsx` renders both variants, 3 test files. Migration `0019_itinerary_timezone.sql` applied. **This TODO's "SPECCED — not built" claim was stale — the code exists.**
 
-**Current work: Tag System milestone on `feat/blog-system`** (branched from `main` at `60420df`).
+**Tag System milestone COMPLETE on `feat/blog-system`** (branched from `main` at `60420df`). 9 commits: 2a through 2e-3. Ready to merge to `main`. 179 vitest tests passing.
 
-### Tag System Milestone (in progress)
+### Tag System Milestone ✅ COMPLETE on `feat/blog-system`
 
 - **2a — tag chips on feed cards** ✅ `61d6651`
   - `FeedTag` type, `tags: FeedTag[]` on `FeedItem`, batched hydration (3 queries, no N+1), chips below excerpt on `FeedCard`
 - **2b — URL-driven tag filtering** ✅ `56a0df9`
-  - `?tags=a,b` with AND semantics via `HAVING count(distinct tag.id) = N` subquery per junction. `buildSelect` refactored to take junction info. Feed filters row: top 20 by usage + Show all + Clear. Empty state differentiates.
+  - `?tags=a,b` with AND semantics. Feed filters row: top 20 by usage + Show all + Clear. Empty state differentiates.
 - **2c — tag integrity + admin UX** ✅ `f95907f`
-  - All 7 tag write functions wrapped in `db.transaction()`. `mergeTags` repoints all three junction tables. `deleteTag` checks all three. `getAllTagsWithCounts` uses per-junction subqueries, excludes drafts. Admin actions surface errors, redirect with `?success=`/`?error=`. `<details>` two-step confirmations for delete/merge. Banners render.
-- **2d — guide/review editor tagging** ⏳ pending
-  - `setGuideTags`/`setReviewTags` exist but no UI calls them. Add `TagInput` to guide/review edit forms. Extract `tagNames` from formData, call the setters.
-- **2e — flat aliasing** ⏳ pending
-  - `tag_aliases` table (`alias_tag_id` UNIQUE, `canonical_tag_id`, CHECK alias ≠ canonical). Filter expands aliases before querying. Admin alias management UI. Merge and Alias as separate actions. Delete rules. No chains, no cycles.
-- **Merge `feat/blog-system` → `main` after 2e ships**
+  - All 7 tag write functions wrapped in `db.transaction()`. `mergeTags` repoints all three junction tables. `deleteTag` checks all three. `getAllTagsWithCounts` uses per-junction subqueries, excludes drafts. Admin actions surface errors. `<details>` confirmations. Banners render.
+- **2d — guide/review editor tagging** ✅ `3d772f9` (browser verified after)
+  - `TagInput` added to guide/review edit forms. `getGuideTags`/`getReviewTags`/`updateGuideTags`/`updateReviewTags` in `lib/content`. Cross-type filtering works.
+- **2e-1 — flat alias schema + lib + tests** ✅ `f0b265e`
+  - Migration `0028_tag_aliases.sql`. `lib/tags/aliases.ts` (7 functions). 14 tests.
+- **2e-1b — constraint hardening** ✅ `0373c97`
+  - Migration `0029_aliases_constraints.sql`. `canonical_tag_id ON DELETE RESTRICT` (was CASCADE). 4 triggers enforce flat model at DB level. 6 new tests.
+- **2e-2 — alias-aware filtering** ✅ `a141dee`
+  - `EXISTS` per family in `buildSelect`. Families resolved once at top of `getFeedItems`, deduped. 5 tests.
+- **2e-3 — admin alias management UI** ✅ `7c092fc`
+  - `getAliasMap()` for one-query lookup. Alias column with add/remove controls. `deleteTagAction` uses `deleteCanonicalSafe`, `mergeTagsAction` uses `mergeTagsWithAliases`. `addAliasAction` + `removeAliasAction` new. Simplified UI (one intent per row).
+- **Merge `feat/blog-system` → `main`** ⏳ pending
+
+### Post-milestone polish (pending)
+
+- **2e-4 — favourite tag improvement** ⏳
+  - Current: `isFavourite` sorts favourite tags higher in autocomplete *when the user has typed at least one character*. It does not auto-populate on empty input, has no visual indicator in the dropdown, and `lastUsedAt` recency dominates the sort order.
+  - Planned: empty query returns favourite tags (up to 10) instead of `[]`. Favourites sorted above all others in the list. Suggestion dropdown shows ⭐ next to favourites.
+  - Decision: implement after tag milestone merges, as a single small commit.
 
 ### Open security items (from this session)
 
@@ -117,7 +130,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 | Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
 | **Batch M** | **✅ SHIPPED on `main`** | **Auth + onboarding: user flags, seed-admin CLI, requireAuth split, 3-step wizard, cache bug fix, dashboard warmth, localhost bind, auth-rate-limit audit suite. Merged at `60420df`.** |
 | **Batch build** | ✅ Complete | H1 (Gallery Collage) shipped, I (Media Library Picker) shipped, J (admin library + folders) shipped |
-| **Tag System** | **🔄 Current** | **2a/2b/2c shipped on `feat/blog-system` (`61d6651`, `56a0df9`, `f95907f`). 2d (guide/review editor tagging) and 2e (flat aliasing) pending. Merge to main after 2e.** |
+| **Tag System** | **✅ Code-complete on `feat/blog-system`** | **2a-2e-3 shipped. 9 commits (`61d6651` through `7c092fc`). 179 tests passing. Merge to main pending.** |
 | 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
 | 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
 | 8 | ⏳ Future | Options segments, cruise mode, People table — post-launch |
