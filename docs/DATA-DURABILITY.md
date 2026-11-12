@@ -151,6 +151,64 @@ Users table carries four flags added in Batch M: `is_admin`, `is_active`, `must_
 - [ ] Verify backup → restore round-trip on mini PC
 - [ ] Confirm `deleteMediaAction` / `cleanup-daily.sh` protect referenced files
 
+## Tag alias model (2a-2e-3)
+
+Flat alias model. A tag is either canonical (may have aliases) or alias (points at exactly one canonical). Never both. No chains, no cycles.
+
+### Data model
+
+`tag_aliases` table:
+- `id` — PK
+- `alias_tag_id` — UNIQUE, FK `tags(id) ON DELETE CASCADE`
+- `canonical_tag_id` — FK `tags(id) ON DELETE RESTRICT`
+- `created_at` — DEFAULT CURRENT_TIMESTAMP
+- `CHECK (alias_tag_id <> canonical_tag_id)`
+
+Migrations: `0028_tag_aliases.sql` (initial table), `0029_aliases_constraints.sql` (RESTRICT + triggers).
+
+### FK semantics
+
+- **Delete a tag that is an alias** → `alias_tag_id` CASCADE removes its alias row. The canonical tag stays. Clean.
+- **Delete a tag that is canonical with aliases** → `canonical_tag_id` RESTRICT refuses the delete. `deleteCanonicalSafe()` in lib catches this first and returns a blocking-alias list; if bypassed, the DB itself refuses.
+- **Delete a standalone tag** → no FK involvement, row removed.
+
+### Flat-model triggers (DB level)
+
+Four triggers enforce the flat model regardless of whether the app calls lib functions:
+
+- `tag_aliases_prevent_alias_of_alias_insert` — BEFORE INSERT, rejects if `NEW.canonical_tag_id` is itself an alias
+- `tag_aliases_prevent_chain_insert` — BEFORE INSERT, rejects if `NEW.alias_tag_id` already has aliases pointing at it
+- `tag_aliases_prevent_alias_of_alias_update` — BEFORE UPDATE OF alias_tag_id, canonical_tag_id, same check as INSERT version
+- `tag_aliases_prevent_chain_update` — BEFORE UPDATE OF alias_tag_id, canonical_tag_id, same check
+
+Together these prevent: chains (A→B→C), cycles (A→B→A), and dual-role tags (a tag that is both canonical and alias). The UPDATE triggers specifically guard `mergeTagsWithAliases`, which repoints rows via `UPDATE tag_aliases SET canonical_tag_id = ...`.
+
+### `PRAGMA foreign_keys = ON`
+
+Set in `lib/db/index.ts` at connection setup. **Without this, RESTRICT and CASCADE do nothing.** A test in `lib/tags/aliases.test.ts` (`PRAGMA foreign_keys is enabled on the app connection`) guards against future removal. If a future change ever moves the DB connection, that pragma must follow.
+
+### Application-level rules (`lib/tags/aliases.ts`)
+
+Belt-and-suspenders with the DB triggers:
+
+- `createAlias(aliasId, canonicalId)` — validates: not self, alias exists, canonical exists, canonical not itself an alias, alias doesn't already have aliases, alias isn't already an alias. Throws on violation with descriptive message.
+- `deleteCanonicalSafe(canonicalId)` — refuses if aliases exist, returns `{ error, blockingAliases: [...] }`. If no aliases, deletes the tag in a transaction.
+- `mergeTagsWithAliases(sourceId, targetId)` — one transaction. Resolves target to its canonical first if target is an alias (avoids creating chain via merge). Repoints source's aliases to target, dedupes when an alias would land on the same canonical, repoints content junctions (post/guide/review), deletes source.
+- `removeAlias(aliasId)` — safe, deletes the alias row, tag stays as standalone.
+
+### Migrations and data
+
+Adding new columns/tables to the tag system requires:
+1. New migration file in `drizzle/migrations/` (auto-discovered by `scripts/setup-db.js`)
+2. Update Drizzle schema in `drizzle/schema/tag-aliases.ts` and export from `drizzle/schema/index.ts`
+3. Run migration manually on dev DB (`sqlite3 data/site.db < drizzle/migrations/NNNN_*.sql`) until `setup-db.js` is re-run on a fresh install
+4. Add test in `lib/tags/aliases.test.ts` if behavior is novel
+
+### Known gaps
+
+- No cascade from `tags` delete to `tag_aliases` at the *reverse* layer: deleting a tag that has aliases is refused (RESTRICT), so no orphans can form. But if a future `DELETE FROM tags` bypasses `deleteCanonicalSafe` and gets through (e.g. if someone disables foreign_keys), orphan `tag_aliases` rows could exist. `integrity.sh` does not currently check tag_aliases for orphans — worth adding to the audit suite as a future hardening.
+- `getAllTagsWithCounts` returns counts per tag, not per alias family. A tag `#disney` with alias `#disneyland` shows its own content count; the alias family's total is not aggregated. This is documented behavior, not a bug — filtering uses families, counts show per-tag usage.
+
 ## Rate limiting
 
 `lib/security/index.ts` — in-memory rate limiting. loginRateLimit: 5/15min. magicLinkRateLimit: 5/hour. formRateLimit: 3/hour. apiRateLimit: 100/min. `getClientIp` reads cf-connecting-ip → x-forwarded-for → x-real-ip → "unknown" (correct for Cloudflare Tunnel). Caveats: in-memory (resets on restart), single-instance only, not tested.
