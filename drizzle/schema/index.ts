@@ -28,6 +28,7 @@ export { revisions } from "./revisions";
 export { postTags } from "./post-tags";
 export { guideTags } from "./guide-tags";
 export { reviewTags } from "./review-tags";
+export { tagAliases } from "./tag-aliases";
 export { relatedContent } from "./related-content";
 export { assets } from "./assets";
 export { templates } from "./templates";
