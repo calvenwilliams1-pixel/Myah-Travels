@@ -12,7 +12,7 @@ export const tagAliases = sqliteTable(
       .references(() => tags.id, { onDelete: "cascade" }),
     canonicalTagId: integer("canonical_tag_id")
       .notNull()
-      .references(() => tags.id, { onDelete: "cascade" }),
+      .references(() => tags.id, { onDelete: "restrict" }),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({

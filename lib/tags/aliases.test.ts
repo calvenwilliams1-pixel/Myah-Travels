@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { db } from "@/lib/db";
+import { db, sqlite } from "@/lib/db";
 import { tags } from "@/drizzle/schema/tags";
 import { tagAliases } from "@/drizzle/schema/tag-aliases";
 import { posts } from "@/drizzle/schema/posts";
@@ -214,6 +214,85 @@ describe("tag aliases", () => {
       expect(result.mergedInto).toBe(root); // resolved target
     }
     await cleanup({ tagIds: [root, middleAlias], postIds: [] });
+  });
+
+  it("PRAGMA foreign_keys is enabled on the app connection", async () => {
+    const result = sqlite.pragma("foreign_keys", { simple: true });
+    expect(result).toBe(1);
+  });
+
+  it("raw DELETE FROM tags on canonical with aliases is refused (RESTRICT)", async () => {
+    const canonical = await makeTag("RestrictCanon");
+    const alias = await makeTag("RestrictAlias");
+    await createAlias(alias, canonical);
+    let threw = false;
+    try {
+      await db.delete(tags).where(eq(tags.id, canonical));
+    } catch (err) {
+      threw = true;
+    }
+    expect(threw).toBe(true);
+    // Canonical should still exist
+    const check = await db.select().from(tags).where(eq(tags.id, canonical)).limit(1);
+    expect(check.length).toBe(1);
+  });
+
+  it("raw DELETE FROM tags on alias tag cascades alias row", async () => {
+    const canonical = await makeTag("CascadeCanon");
+    const alias = await makeTag("CascadeAlias");
+    await createAlias(alias, canonical);
+    await db.delete(tags).where(eq(tags.id, alias));
+    // Alias row should be gone
+    const aliasRow = await db.select().from(tagAliases).where(eq(tagAliases.aliasTagId, alias)).limit(1);
+    expect(aliasRow.length).toBe(0);
+    // Canonical should remain
+    const canonRow = await db.select().from(tags).where(eq(tags.id, canonical)).limit(1);
+    expect(canonRow.length).toBe(1);
+  });
+
+  it("raw INSERT alias-of-alias is refused by trigger", async () => {
+    const root = await makeTag("TrigRoot");
+    const mid = await makeTag("TrigMid");
+    const leaf = await makeTag("TrigLeaf");
+    await createAlias(mid, root);
+    let threw = false;
+    try {
+      await db.insert(tagAliases).values({ aliasTagId: leaf, canonicalTagId: mid });
+    } catch (err) {
+      threw = true;
+    }
+    expect(threw).toBe(true);
+  });
+
+  it("raw INSERT alias-that-has-aliases is refused by trigger", async () => {
+    const hasKids = await makeTag("TrigHasKids");
+    const kid = await makeTag("TrigKid");
+    await createAlias(kid, hasKids);
+    const newCanon = await makeTag("TrigNewCanon");
+    let threw = false;
+    try {
+      await db.insert(tagAliases).values({ aliasTagId: hasKids, canonicalTagId: newCanon });
+    } catch (err) {
+      threw = true;
+    }
+    expect(threw).toBe(true);
+  });
+
+  it("raw UPDATE creating alias-of-alias is refused by trigger", async () => {
+    const root2 = await makeTag("UpdRoot");
+    const mid2 = await makeTag("UpdMid");
+    const otherAlias = await makeTag("UpdOther");
+    const otherCanon = await makeTag("UpdOtherCanon");
+    await createAlias(mid2, root2);
+    await createAlias(otherAlias, otherCanon);
+    // Try to repoint otherAlias at mid2 (which is itself an alias)
+    let threw = false;
+    try {
+      await db.update(tagAliases).set({ canonicalTagId: mid2 }).where(eq(tagAliases.aliasTagId, otherAlias));
+    } catch (err) {
+      threw = true;
+    }
+    expect(threw).toBe(true);
   });
 
   it("mergeTagsWithAliases is transactional (source stays if merge fails partway)", async () => {
