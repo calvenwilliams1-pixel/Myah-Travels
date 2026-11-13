@@ -51,6 +51,7 @@
     "oslo": "^1.2.0",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-moveable": "^0.56.0",

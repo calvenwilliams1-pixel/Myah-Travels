@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function EnrollTotpForm() {
   const router = useRouter();
@@ -49,19 +50,18 @@ export default function EnrollTotpForm() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-gray-50 p-3 rounded border border-gray-200">
-        <p className="text-xs text-gray-500 mb-1">Manual entry secret:</p>
-        <p className="font-mono text-sm break-all">{secret}</p>
-      </div>
-
       {otpauthUrl && (
-        <div className="bg-gray-50 p-3 rounded border border-gray-200">
-          <p className="text-xs text-gray-500 mb-1">
-            Or if you prefer to copy the otpauth URL into your authenticator:
-          </p>
-          <p className="font-mono text-xs break-all">{otpauthUrl}</p>
+        <div className="flex justify-center p-4 bg-white rounded border border-gray-200">
+          <QRCodeSVG value={otpauthUrl} size={220} level="M" includeMargin />
         </div>
       )}
+
+      <div className="bg-gray-50 p-3 rounded border border-gray-200">
+        <p className="text-xs text-gray-500 mb-1">
+          Can&apos;t scan? Enter this secret manually in your authenticator:
+        </p>
+        <p className="font-mono text-sm break-all">{secret}</p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
