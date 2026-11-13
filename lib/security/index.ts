@@ -212,7 +212,7 @@ export const securityHeaders: Record<string, string> = {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://img.youtube.com https://*.ytimg.com",
+    "img-src 'self' data: blob: https:",
     "font-src 'self' https://fonts.gstatic.com",
     "connect-src 'self' https://fonts.googleapis.com https://challenges.cloudflare.com",
     "frame-src 'self' https://www.youtube.com https://www.instagram.com https://challenges.cloudflare.com",
