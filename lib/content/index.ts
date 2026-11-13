@@ -142,7 +142,16 @@ export async function getAllTagsWithCounts() {
 
 export async function getTagSuggestions(query: string) {
   const slugQuery = normaliseTagName(query);
-  
+
+  if (slugQuery === "") {
+    // Empty query — return favourites so the dropdown is useful on focus.
+    return db.select()
+      .from(tags)
+      .where(eq(tags.isFavourite, true))
+      .orderBy(tags.name)
+      .limit(10);
+  }
+
   return db.select()
     .from(tags)
     .where(sql`lower(${tags.slug}) LIKE ${"%" + slugQuery + "%"}`)

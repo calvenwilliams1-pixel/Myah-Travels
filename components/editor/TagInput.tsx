@@ -36,20 +36,44 @@ export default function TagInput({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hasInteractedRef = useRef(false);
 
   useEffect(() => {
     setHighlightIndex(0);
   }, [suggestions]);
 
+  // Close the dropdown when the user clicks outside this component.
   useEffect(() => {
-    if (input.trim() === "") {
-      setSuggestions([]);
-      setShowSuggestions(false);
+    function onPointerDown(e: MouseEvent | TouchEvent) {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Do not auto-open the dropdown on mount. Only fetch/show suggestions
+    // after the user has actually focused or clicked the input.
+    if (!hasInteractedRef.current && input.trim() === "") {
       return;
     }
 
-    // Local filter path — used by notepad (member names + distinct tags)
+    // Local filter path — used by notepad (member names + distinct tags).
+    // Empty input -> hide suggestions (local mode has no "favourites" concept).
     if (autocompleteSource) {
+      if (input.trim() === "") {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
       const q = input.trim().toLowerCase();
       const already = new Set(selectedTags.map((t) => t.toLowerCase()));
       const matches = autocompleteSource
@@ -60,21 +84,40 @@ export default function TagInput({
       return;
     }
 
-    // API path — used by post tag editor
+    // API path — used by post tag editor.
+    // Empty input -> fetch favourites so the dropdown is useful on focus.
     const fetchSuggestions = async () => {
       try {
         const res = await fetch(`/api/tags/suggest?q=${encodeURIComponent(input)}`);
         const data = await res.json();
         setSuggestions(data.tags || []);
-        setShowSuggestions(true);
+        setShowSuggestions((data.tags || []).length > 0);
       } catch {
         setSuggestions([]);
       }
     };
 
-    const timeout = setTimeout(fetchSuggestions, 200);
+    const timeout = setTimeout(fetchSuggestions, input.trim() === "" ? 0 : 200);
     return () => clearTimeout(timeout);
   }, [input, autocompleteSource, selectedTags]);
+
+  const openSuggestions = async () => {
+    hasInteractedRef.current = true;
+    // Called on focus/click — populate with favourites if the input is empty.
+    if (input.trim() !== "") return;  // typed content is handled by useEffect
+    if (autocompleteSource) return;   // local mode handles its own lifecycle
+    try {
+      const res = await fetch(`/api/tags/suggest?q=`);
+      const data = await res.json();
+      const tags = data.tags || [];
+      if (tags.length > 0) {
+        setSuggestions(tags);
+        setShowSuggestions(true);
+      }
+    } catch {
+      // silent — suggestions are optional
+    }
+  };
 
   const handleAddTag = (tag: string) => {
     const slug = normaliseForCompare(tag);
@@ -88,7 +131,7 @@ export default function TagInput({
   };
 
   return (
-    <div>
+    <div ref={containerRef}>
       <div className="flex flex-wrap gap-2 mb-2">
         {selectedTags.map((tag) => (
           <span
@@ -111,6 +154,8 @@ export default function TagInput({
           ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onFocus={() => { void openSuggestions(); }}
+          onClick={() => { void openSuggestions(); }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
               e.preventDefault();
@@ -144,7 +189,7 @@ export default function TagInput({
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
         />
 
-        {showSuggestions && input.trim() !== "" && (
+        {showSuggestions && hasInteractedRef.current && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
             {suggestions.map((tag, i) => (
               <button
@@ -157,12 +202,14 @@ export default function TagInput({
                 #{tag}
               </button>
             ))}
-            <button
-              onClick={() => handleAddTag(input)}
-              className="w-full text-left px-3 py-2 text-sm text-primary border-t border-gray-100"
-            >
-              Create new tag: #{input}
-            </button>
+            {input.trim() !== "" && (
+              <button
+                onClick={() => handleAddTag(input)}
+                className="w-full text-left px-3 py-2 text-sm text-primary border-t border-gray-100"
+              >
+                Create new tag: #{input}
+              </button>
+            )}
           </div>
         )}
       </div>
