@@ -15,6 +15,16 @@ interface FeedCardProps {
   tags?: { id: number; name: string; slug: string }[];
 }
 
+const TYPE_LABELS = { post: "Post", guide: "Guide", review: "Review" } as const;
+
+const TYPE_STYLES = {
+  post: "bg-blue-50 text-blue-700 border-blue-100",
+  guide: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  review: "bg-amber-50 text-amber-700 border-amber-100",
+} as const;
+
+const MAX_VISIBLE_TAGS = 4;
+
 export default function FeedCard({
   id,
   type,
@@ -28,18 +38,6 @@ export default function FeedCard({
   category,
   tags = [],
 }: FeedCardProps) {
-  const typeLabels = {
-    post: "Post",
-    guide: "Guide",
-    review: "Review",
-  };
-
-  const typeColors = {
-    post: "bg-blue-100 text-blue-700",
-    guide: "bg-primary/10 text-primary",
-    review: "bg-amber-100 text-amber-700",
-  };
-
   const href =
     type === "post"
       ? `/blog/${slug}`
@@ -55,74 +53,131 @@ export default function FeedCard({
       })
     : "";
 
+  const visibleTags = tags.slice(0, MAX_VISIBLE_TAGS);
+  const overflowCount = tags.length - visibleTags.length;
+
   return (
     <article
-      className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-shadow hover:shadow-md ${
-        isHighlighted ? "border-primary ring-2 ring-primary/20" : "border-gray-200"
+      className={`group bg-white rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg ${
+        isHighlighted
+          ? "border border-primary/40 ring-1 ring-primary/10"
+          : "border border-gray-200"
       }`}
     >
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+      {/* Image frame — 16:9, real image or placeholder cover */}
+      <Link href={href} className="block relative aspect-[16/9] overflow-hidden">
+        {featuredImage ? (
+          <img
+            src={featuredImage}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+        ) : (
+          <PlaceholderCover title={title} type={type} />
+        )}
+      </Link>
+
+      {/* Metadata row */}
+      <div className="flex items-center gap-2 px-5 pt-4 pb-2 flex-wrap">
         {isPinned && (
-          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
-            📌 Pinned
+          <span className="text-[11px] font-medium bg-gray-900 text-white px-2 py-0.5 rounded-full tracking-wide">
+            Pinned
           </span>
         )}
         {isHighlighted && (
           <span
-            className="text-xs px-2 py-1 rounded-full"
+            className="text-[11px] font-medium px-2 py-0.5 rounded-full tracking-wide"
             style={{
               backgroundColor: "color-mix(in srgb, var(--color-accent) 15%, transparent)",
               color: "var(--color-accent)",
             }}
           >
-            ⭐ Featured
+            Featured
           </span>
         )}
-        <span className={`text-xs px-2 py-1 rounded-full ${typeColors[type]}`}>
-          {typeLabels[type]}
+        <span
+          className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${TYPE_STYLES[type]}`}
+        >
+          {TYPE_LABELS[type]}
         </span>
         {category && (
-          <span className="text-xs text-gray-500">{category}</span>
+          <span className="text-[11px] text-gray-500 uppercase tracking-wider">
+            {category}
+          </span>
         )}
         {displayDate && (
-          <span className="text-xs text-gray-400 ml-auto">{displayDate}</span>
+          <span className="text-[11px] text-gray-400 ml-auto">{displayDate}</span>
         )}
       </div>
 
-      {featuredImage && (
+      {/* Title + excerpt */}
+      <div className="px-5 pb-3">
         <Link href={href}>
-          <img
-            src={featuredImage}
-            alt={title}
-            className="w-full h-64 object-cover"
-            loading="lazy"
-          />
-        </Link>
-      )}
-
-      <div className="p-4">
-        <Link href={href}>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
+          <h2 className="font-serif text-xl sm:text-2xl leading-snug text-gray-900 line-clamp-2 group-hover:text-primary transition-colors">
             {title}
           </h2>
         </Link>
         {excerpt && (
-          <p className="text-sm text-gray-600 line-clamp-3">{excerpt}</p>
-        )}
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {tags.map((tag) => (
-              <Link
-                key={tag.id}
-                href={`/?tags=${encodeURIComponent(tag.slug)}`}
-                className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-              >
-                #{tag.name}
-              </Link>
-            ))}
-          </div>
+          <p className="mt-2 text-sm text-gray-600 leading-relaxed line-clamp-3">
+            {excerpt}
+          </p>
         )}
       </div>
+
+      {/* Tags */}
+      {tags.length > 0 && (
+        <div className="px-5 pb-4 flex flex-wrap items-center gap-1.5">
+          {visibleTags.map((tag) => (
+            <Link
+              key={tag.id}
+              href={`/?tags=${encodeURIComponent(tag.slug)}`}
+              className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              #{tag.name}
+            </Link>
+          ))}
+          {overflowCount > 0 && (
+            <span className="text-[11px] text-gray-400 ml-0.5">
+              +{overflowCount}
+            </span>
+          )}
+        </div>
+      )}
     </article>
+  );
+}
+
+function PlaceholderCover({ title, type }: { title: string; type: "post" | "guide" | "review" }) {
+  return (
+    <div
+      className="w-full h-full flex items-center justify-center p-8 relative"
+      style={{
+        backgroundColor: "color-mix(in srgb, var(--color-primary) 12%, white)",
+      }}
+    >
+      {/* Soft diagonal accent */}
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          background: `linear-gradient(135deg, transparent 40%, color-mix(in srgb, var(--color-primary) 25%, transparent) 100%)`,
+        }}
+        aria-hidden
+      />
+      <p
+        className="relative font-serif text-2xl sm:text-3xl text-center leading-snug line-clamp-4"
+        style={{
+          color: "color-mix(in srgb, var(--color-primary) 85%, black)",
+        }}
+      >
+        {title}
+      </p>
+      <span
+        className="absolute bottom-3 right-4 text-[10px] uppercase tracking-[0.2em] font-medium opacity-70"
+        style={{ color: "var(--color-primary)" }}
+      >
+        {type === "post" ? "Story" : type === "guide" ? "Guide" : "Review"}
+      </span>
+    </div>
   );
 }
