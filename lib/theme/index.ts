@@ -19,7 +19,7 @@ export function sanitizeBackgroundImage(path: string | undefined | null): string
   if (lower.startsWith("data:")) return "";
   if (lower.startsWith("vbscript:")) return "";
   
-  if (lower.startsWith("/uploads/")) return trimmed;
+  if (lower.startsWith("/api/uploads/")) return trimmed;
   
   try {
     const url = new URL(trimmed);

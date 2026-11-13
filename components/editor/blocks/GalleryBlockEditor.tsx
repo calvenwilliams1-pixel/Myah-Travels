@@ -192,7 +192,7 @@ function BulkUploadZone({ onUploaded, uploading, setUploading }: BulkUploadZoneP
         const data = await res.json();
         const publicUrl = data.filePath?.startsWith("/")
           ? data.filePath
-          : `/uploads/${data.filePath}`;
+          : `/api/uploads/${data.filePath}`;
         urls.push(publicUrl);
       } catch {
         newFailures.push(`${file.name} (network error)`);

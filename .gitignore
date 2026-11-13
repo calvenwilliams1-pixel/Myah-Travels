@@ -40,3 +40,10 @@ yarn-error.log*
 
 # Backups
 backups/
+
+# Uploads: files are served through /api/uploads with auth checks.
+# Never store runtime uploads in public/ or track them in git.
+public/uploads/*
+!public/uploads/.gitkeep
+data/uploads/*
+!data/uploads/.gitkeep

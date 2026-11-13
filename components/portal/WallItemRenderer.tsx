@@ -58,7 +58,7 @@ export default function WallItemRenderer({
         )}
         {resolvedFilePath && (
           <a
-            href={`/uploads/${resolvedFilePath}`}
+            href={`/api/uploads/${resolvedFilePath}`}
             className="inline-block mt-3 text-sm text-primary hover:underline"
             target="_blank"
             rel="noopener noreferrer"
@@ -75,7 +75,7 @@ export default function WallItemRenderer({
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         {resolvedFilePath && (
           <img
-            src={`/uploads/${resolvedFilePath}`}
+            src={`/api/uploads/${resolvedFilePath}`}
             alt={resolvedTitle}
             className="w-full h-auto"
           />

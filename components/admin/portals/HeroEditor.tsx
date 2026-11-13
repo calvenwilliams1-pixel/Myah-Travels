@@ -73,7 +73,7 @@ export default function HeroEditor({
         {heroImage ? (
           <div className="space-y-2">
             <img
-              src={heroImage.startsWith("/") ? heroImage : "/uploads/" + heroImage}
+              src={heroImage.startsWith("/") ? heroImage : "/api/uploads/" + heroImage}
               alt="Hero preview"
               className="w-full h-40 object-cover rounded-lg border border-gray-200"
             />

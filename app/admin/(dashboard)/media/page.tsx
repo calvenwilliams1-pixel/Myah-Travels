@@ -124,7 +124,7 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
                   accessor: (item: any) => (
                     item.fileType?.startsWith("image/") ? (
                       <img
-                        src={`/uploads/${item.filePath}`}
+                        src={`/api/uploads/${item.filePath}`}
                         alt={item.altText || item.fileName}
                         className="w-16 h-16 object-cover rounded"
                       />

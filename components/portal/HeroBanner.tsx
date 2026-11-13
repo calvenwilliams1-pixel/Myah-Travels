@@ -23,7 +23,7 @@ export default function HeroBanner({ title, subtitle, image, preset }: HeroBanne
     return (
       <div className="relative w-full h-64 md:h-80 overflow-hidden">
         <img
-          src={image.startsWith("/") ? image : `/uploads/${image}`}
+          src={image.startsWith("/") ? image : `/api/uploads/${image}`}
           alt={title}
           className="w-full h-full object-cover"
         />
