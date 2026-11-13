@@ -48,16 +48,30 @@ export async function saveFile(
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const detectedType = await fileTypeFromBuffer(buffer);
-    
-    if (detectedType) {
-      const detectedExt = `.${detectedType.ext}`;
-      const claimedExt = path.extname(file.name).toLowerCase();
-      
-      if (detectedExt !== claimedExt && !(claimedExt === ".jpg" && detectedExt === ".jpeg")) {
-        return { success: false, error: "File content does not match extension" };
-      }
-    } else {
+
+    if (!detectedType) {
       return { success: false, error: "Unrecognized file format" };
+    }
+
+    // Allow only content whose actual detected type is in the supported list.
+    // The claimed filename extension is ignored — browsers, Google, and phones
+    // routinely save WebP or PNG files with .jpg names.
+    const ALLOWED_IMAGE_EXTS = ["jpg", "jpeg", "png", "webp"];
+    const ALLOWED_DOC_EXTS = ["pdf", "doc", "docx", "xls", "xlsx", "txt"];
+
+    const isImage = ALLOWED_IMAGE_EXTS.includes(detectedType.ext);
+    const isDoc = ALLOWED_DOC_EXTS.includes(detectedType.ext);
+
+    if (!isImage && !isDoc) {
+      return { success: false, error: `Unsupported file type: ${detectedType.ext}` };
+    }
+
+    // Size limit based on detected type, not claimed extension
+    if (isImage && buffer.length > MAX_IMAGE_SIZE) {
+      return { success: false, error: "Image file size exceeds limit" };
+    }
+    if (isDoc && buffer.length > MAX_DOC_SIZE) {
+      return { success: false, error: "Document file size exceeds limit" };
     }
 
     const folderPath = path.join(UPLOADS_DIR, safeFolder);
