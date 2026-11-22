@@ -6,6 +6,26 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/../.."
 
+# Preflight: these suites make UNAUTHENTICATED API calls and only work
+# against a dev server started with DISABLE_AUTH=true. Against a normally
+# secured server every suite fails at once, which looks like catastrophic
+# product breakage when it is really a harness configuration problem.
+# Probe one gated endpoint: bypass mode answers 200, a secured server
+# answers 401/403/500. Abort with an explanation instead of ~36 fake failures.
+BASE="${BASE:-http://localhost:3000}"
+probe_code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/folders" 2>/dev/null || echo "000")
+if [ "$probe_code" = "000" ]; then
+  echo "FATAL: no server reachable at $BASE. Start the dev server first (with DISABLE_AUTH=true — see below)."
+  exit 1
+fi
+if [ "$probe_code" != "200" ]; then
+  echo "FATAL: the server at $BASE is NOT in auth-bypass mode (GET /api/folders -> $probe_code)."
+  echo "The audit suites send no credentials and require a dev server started with DISABLE_AUTH=true, e.g.:"
+  echo "  DISABLE_AUTH=true npm run dev"
+  echo "Aborting so the failures below are not mistaken for product bugs."
+  exit 1
+fi
+
 TOTAL_PASS=0
 TOTAL_FAIL=0
 FAILED_SUITES=()

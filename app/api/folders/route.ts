@@ -1,26 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getFolderTree, createFolder, getFolderById } from "@/lib/folders";
 
-export async function GET() {
+export async function GET() { try {
   try {
     await requireAuth();
     const tree = await getFolderTree();
     return NextResponse.json({ tree });
-  } catch (e) {
+  } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } 
     console.error("GET /api/folders failed:", e);
     return NextResponse.json({ error: "Failed to load folders" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) { try {
   try {
     await requireAuth();
 
     let body: any;
     try {
       body = await req.json();
-    } catch {
+    } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
       return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
 
     const created = await createFolder({ name, parentId });
     return NextResponse.json({ folder: created[0] });
-  } catch (e) {
+  } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } 
     console.error("POST /api/folders failed:", e);
     return NextResponse.json({ error: "Failed to create folder" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

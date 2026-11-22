@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { searchAirports, searchAirlines } from "@/lib/suggestions/statics";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
@@ -7,7 +7,7 @@ import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 // be prerendered at build time.
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) { try {
   await requireAuth();
 
   const url = new URL(req.url);
@@ -29,4 +29,4 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ items: [] });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

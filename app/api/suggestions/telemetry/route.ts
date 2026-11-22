@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { suggestionEvents } from "@/drizzle/schema";
 
@@ -10,13 +10,13 @@ import { suggestionEvents } from "@/drizzle/schema";
 // after a few weeks of real usage.
 // ============================================================
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) { try {
   await requireAuth();
 
   let body: any = {};
   try {
     body = await req.json();
-  } catch {
+  } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
       event,
       valuePreview,
     });
-  } catch (err) {
+  } catch (err) { if (err instanceof AuthError) { return NextResponse.json({ error: err.message }, { status: err.status }); } 
     console.warn("[suggestion-telemetry] insert failed:", (err as Error).message);
     // Do not surface failure to the client — telemetry is best-effort.
   }
 
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

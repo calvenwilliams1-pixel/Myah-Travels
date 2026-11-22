@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { removePortalItem } from "@/lib/portal-items";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string; itemId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string; itemId: string } }) { try {
   const user = await requireAuth();
 
   const itemId = Number(params.itemId);
@@ -11,4 +11,4 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   await removePortalItem(itemId);
 
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

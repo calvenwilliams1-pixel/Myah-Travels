@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import {
   getNotepadEntries,
   searchNotepadEntries,
@@ -7,7 +7,7 @@ import {
   getDistinctNotepadTags,
 } from "@/lib/notepad";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const portalId = Number(params.id);
   if (!portalId) return NextResponse.json({ error: "Invalid portal ID" }, { status: 400 });
@@ -22,9 +22,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const distinctTags = await getDistinctNotepadTags(portalId);
 
   return NextResponse.json({ entries, distinctTags });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const portalId = Number(params.id);
   if (!portalId) return NextResponse.json({ error: "Invalid portal ID" }, { status: 400 });
@@ -37,4 +37,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const result = await addNotepadEntry(portalId, content, tags);
   return NextResponse.json({ success: true, entry: result[0] });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

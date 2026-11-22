@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { media } from "@/drizzle/schema";
 import { and, eq, isNull } from "drizzle-orm";
@@ -7,7 +7,7 @@ import { and, eq, isNull } from "drizzle-orm";
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
-) {
+) { try {
   try {
     await requireAuth();
 
@@ -19,7 +19,7 @@ export async function PATCH(
     let body: any;
     try {
       body = await req.json();
-    } catch {
+    } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
       return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
@@ -46,8 +46,8 @@ export async function PATCH(
       .where(eq(media.id, id));
 
     return NextResponse.json({ id, isLibrary: body.isLibrary });
-  } catch (error) {
+  } catch (error) { if (error instanceof AuthError) { return NextResponse.json({ error: error.message }, { status: error.status }); } 
     console.error("PATCH /api/media/[id] failed:", error);
     return NextResponse.json({ error: "Failed to update media" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

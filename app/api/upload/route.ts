@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { saveFile, addMediaRecord } from "@/lib/media";
 import { logActivity } from "@/lib/logging";
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) { try {
   try {
     const user = await requireAuth();
 
@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
       mediaId: record[0]?.id,
       filePath: result.filePath,
     });
-  } catch (error) {
+  } catch (error) { if (error instanceof AuthError) { return NextResponse.json({ error: error.message }, { status: error.status }); } 
     console.error("Upload failed:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

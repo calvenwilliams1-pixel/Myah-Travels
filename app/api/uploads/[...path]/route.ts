@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
 import { validatePortalSession } from "@/lib/portal";
 import { db } from "@/lib/db";
-import { portalItems, contentLibrary, media, portalMembers } from "@/drizzle/schema";
-import { eq, and, like } from "drizzle-orm";
+import { portalItems, contentLibrary, media, portalMembers, posts, guides, reviews } from "@/drizzle/schema";
+import { eq, and, like, or, isNull, sql } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
 
@@ -59,8 +59,56 @@ export async function GET(
     }
   }
 
+  // Auth 3 — public content. Files referenced by published, non-deleted
+  // posts/guides/reviews (block image URLs in the content JSON, featured and
+  // header images) are public by definition: the pages that embed them are
+  // served to anonymous visitors, so the files must be too. Everything else
+  // (portal documents, unreferenced uploads) stays gated behind Auth 1/2.
   if (!isAdmin && portalIdForSession === null) {
-    return new NextResponse("Unauthorized", { status: 401 });
+    const needle = `/api/uploads/${rel}`;
+    const referenced = (col: unknown) => sql`instr(${col}, ${needle}) > 0`;
+    const [inPosts, inGuides, inReviews] = await Promise.all([
+      db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(
+          and(
+            eq(posts.status, "published"),
+            isNull(posts.deletedAt),
+            or(referenced(posts.content), referenced(posts.featuredImage))
+          )
+        )
+        .limit(1),
+      db
+        .select({ id: guides.id })
+        .from(guides)
+        .where(
+          and(
+            eq(guides.status, "published"),
+            isNull(guides.deletedAt),
+            or(
+              referenced(guides.content),
+              referenced(guides.featuredImage),
+              referenced(guides.headerImage)
+            )
+          )
+        )
+        .limit(1),
+      db
+        .select({ id: reviews.id })
+        .from(reviews)
+        .where(
+          and(
+            eq(reviews.status, "published"),
+            isNull(reviews.deletedAt),
+            or(referenced(reviews.content), referenced(reviews.featuredImage))
+          )
+        )
+        .limit(1),
+    ]);
+    if (inPosts.length === 0 && inGuides.length === 0 && inReviews.length === 0) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
   }
 
   // If portal session (not admin), verify this file is attached to their portal

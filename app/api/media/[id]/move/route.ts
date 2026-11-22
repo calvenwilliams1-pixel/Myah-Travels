@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { moveFileToFolder } from "@/lib/folders";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
-) {
+) { try {
   try {
     await requireAuth();
 
@@ -17,7 +17,7 @@ export async function POST(
     let body: any;
     try {
       body = await req.json();
-    } catch {
+    } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
       return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
@@ -29,11 +29,11 @@ export async function POST(
     try {
       await moveFileToFolder(id, folderId);
       return NextResponse.json({ success: true, id, folderId });
-    } catch (err: any) {
+    } catch (err: any) { if (err instanceof AuthError) { return NextResponse.json({ error: err.message }, { status: err.status }); } 
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
-  } catch (e) {
+  } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } 
     console.error("POST /api/media/[id]/move failed:", e);
     return NextResponse.json({ error: "Failed to move file" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

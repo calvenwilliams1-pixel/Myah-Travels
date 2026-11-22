@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getSectionById, extendSectionByOneDay } from "@/lib/itineraries";
 import { recordOperation, OPERATION_TYPES } from "@/lib/operations/record";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const sectionId = Number(params.id);
   if (!sectionId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -16,4 +16,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   recordOperation(OPERATION_TYPES.EXTEND_DAY, [day.id], { sectionId });
   return NextResponse.json({ success: true, day });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

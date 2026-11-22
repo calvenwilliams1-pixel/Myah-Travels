@@ -5,6 +5,7 @@ import { users, sessions } from "@/drizzle/schema";
 import { hash, compare } from "bcryptjs";
 import { authenticator } from "otplib";
 import { cookies } from "next/headers";
+import { randomBytes } from "crypto";
 
 const adapter = new DrizzleSQLiteAdapter(db, sessions as any, users as any);
 
@@ -90,6 +91,81 @@ export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
   const sessionCookie = lucia.createBlankSessionCookie();
   cookieStore.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+}
+
+// --- Pending TOTP (pre-2FA) login state -------------------------------------
+// When a TOTP-enabled user passes the password check, login must NOT create
+// a session yet. Instead it parks a short-lived pending record here and sets
+// an httpOnly cookie; POST /api/auth/verify-totp exchanges the pending record
+// for a real session once the code checks out. In-memory, matching the rate
+// limiter in lib/security — the deployment is a single Node process.
+export const TOTP_PENDING_COOKIE = "totp_pending";
+const TOTP_PENDING_TTL_MS = 5 * 60 * 1000;
+const TOTP_PENDING_MAX_ATTEMPTS = 5;
+
+interface PendingTotp {
+  userId: number;
+  expiresAt: number;
+  attempts: number;
+}
+
+const pendingTotpStore = new Map<string, PendingTotp>();
+
+export async function createPendingTotp(userId: number): Promise<void> {
+  const token = randomBytes(32).toString("hex");
+  pendingTotpStore.set(token, {
+    userId,
+    expiresAt: Date.now() + TOTP_PENDING_TTL_MS,
+    attempts: 0,
+  });
+  const cookieStore = await cookies();
+  cookieStore.set(TOTP_PENDING_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: TOTP_PENDING_TTL_MS / 1000,
+  });
+}
+
+export async function readPendingTotp(): Promise<
+  ({ token: string } & PendingTotp) | null
+> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(TOTP_PENDING_COOKIE)?.value;
+  if (!token) return null;
+  const pending = pendingTotpStore.get(token);
+  if (!pending) return null;
+  if (pending.expiresAt < Date.now()) {
+    pendingTotpStore.delete(token);
+    return null;
+  }
+  return { token, ...pending };
+}
+
+/** Record a failed code attempt. Returns false when the pending login is exhausted/cancelled. */
+export async function failPendingTotp(token: string): Promise<boolean> {
+  const pending = pendingTotpStore.get(token);
+  if (!pending) return false;
+  pending.attempts += 1;
+  if (pending.attempts >= TOTP_PENDING_MAX_ATTEMPTS) {
+    await clearPendingTotp();
+    return false;
+  }
+  return true;
+}
+
+export async function clearPendingTotp(): Promise<void> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(TOTP_PENDING_COOKIE)?.value;
+  if (token) pendingTotpStore.delete(token);
+  cookieStore.set(TOTP_PENDING_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 // Request-scoped memo for getCurrentUser. Replaces React.cache so this

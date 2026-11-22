@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getItineraryById } from "@/lib/itineraries";
 import { getBlockById, updateBlock, deleteBlock } from "@/lib/itineraries/blocks";
 import { UpdateItineraryBlockSchema } from "@/lib/validation/itinerary";
 
-export async function PATCH(req: NextRequest, { params }: { params: { blockId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: { blockId: string } }) { try {
   await requireAuth();
   const blockId = Number(params.blockId);
   if (!blockId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -24,9 +24,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { blockId: s
 
   const block = await updateBlock(blockId, parsed.data);
   return NextResponse.json({ success: true, block });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function DELETE(req: NextRequest, { params }: { params: { blockId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { blockId: string } }) { try {
   await requireAuth();
   const blockId = Number(params.blockId);
   if (!blockId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -39,4 +39,4 @@ export async function DELETE(req: NextRequest, { params }: { params: { blockId: 
 
   await deleteBlock(blockId);
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

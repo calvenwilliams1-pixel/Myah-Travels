@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getDayById, duplicateDay } from "@/lib/itineraries";
 import { recordOperation, OPERATION_TYPES } from "@/lib/operations/record";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const id = Number(params.id);
   if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const body = await req.json();
     if (body?.newDate) newDate = String(body.newDate);
     if (typeof body?.newDayNumber === "number") newNumber = body.newDayNumber;
-  } catch {
+  } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
     // no body — use defaults
   }
 
@@ -34,4 +34,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   recordOperation(OPERATION_TYPES.DUPLICATE_DAY, [copy.id], { sourceId: id });
   return NextResponse.json({ success: true, day: copy });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

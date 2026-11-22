@@ -88,6 +88,10 @@ export async function changePasswordAction(formData: FormData) {
     return { error: `Current password is incorrect. ${MAX_ATTEMPTS - newCount} attempts remaining.` };
   }
 
+  if (await verifyPassword(newPassword, currentUser[0].passwordHash)) {
+    return { error: "New password must be different from your current password." };
+  }
+
   // Reset attempts on success
   setAttempts({ count: 0 });
 

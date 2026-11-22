@@ -10,7 +10,7 @@ import {
 } from "@/drizzle/schema";
 import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import crypto from "crypto";
-import { queueEmail, queueBulkEmails } from "@/lib/email";
+import { queueEmail, queueBulkEmails, isEmailSuppressed } from "@/lib/email";
 import { magicLinkEmail, portalNoticeEmail, globalAnnouncementEmail } from "@/lib/email/templates";
 import { logActivity } from "@/lib/logging";
 import { upsertPersonByEmail, recordTrip } from "@/lib/clients/people";
@@ -283,6 +283,13 @@ export async function unbanMember(memberId: number): Promise<void> {
 // MAGIC LINK MANAGEMENT
 // ============================================
 
+// Tokens and portal session IDs are stored SHA-256 hashed: the database
+// alone should not hand out live client links. Callers always work with
+// the raw value (emailed link, session cookie); only the hash is at rest.
+export function hashToken(raw: string): string {
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
 export function getMagicLinkExpiry(portal: { returnDate?: string | null }): Date {
   if (portal.returnDate) {
     const expiry = new Date(portal.returnDate + "T23:59:59");
@@ -320,7 +327,7 @@ export async function generateMagicLink(
   await db.insert(portalMagicLinks).values({
     portalId,
     memberId,
-    token,
+    token: hashToken(token),
     expiresAt,
     ipAddress: ipAddress ?? null,
     userAgent: userAgent ?? null,
@@ -332,7 +339,7 @@ export async function generateMagicLink(
 export async function validateMagicLink(token: string) {
   const result = await db.select().from(portalMagicLinks)
     .where(and(
-      eq(portalMagicLinks.token, token),
+      eq(portalMagicLinks.token, hashToken(token)),
       isNull(portalMagicLinks.usedAt),
       isNull(portalMagicLinks.revokedAt)
     ))
@@ -376,7 +383,7 @@ export async function consumeMagicLink(token: string) {
   const sessionId = crypto.randomBytes(32).toString("base64url");
 
   await db.insert(portalSessions).values({
-    id: sessionId,
+    id: hashToken(sessionId),
     portalId: link.portalId,
     memberId: link.memberId,
     expiresAt: sessionExpiry.toISOString(),
@@ -397,23 +404,52 @@ export async function consumeMagicLink(token: string) {
   };
 }
 
-export async function sendMagicLinkEmails(portalId: number) {
+/**
+ * Queue a fresh magic-link email for ONE member. Returns false without
+ * changing anything when the member's email is suppressed — the check has
+ * to happen BEFORE generateMagicLink, because generating revokes the
+ * member's previous link. Checking later (at queue time) would leave the
+ * client with no working link and no email telling them anything.
+ */
+export async function sendMagicLinkToMember(
+  portalId: number,
+  memberId: number
+): Promise<boolean> {
   const portal = await getPortalById(portalId);
-  if (!portal) return;
+  if (!portal) return false;
 
   const members = await getPortalMembers(portalId);
-  const emails = [];
+  const member = members.find((m) => m.id === memberId);
+  if (!member) return false;
 
-  for (const member of members) {
-    const token = await generateMagicLink(portalId, member.id);
-    if (!token) continue;
-
-    const linkUrl = `${process.env.SITE_URL || "http://localhost:3000"}/portal/access/${token}`;
-    const email = magicLinkEmail(member.name, portal.name, linkUrl);
-    emails.push({ toEmail: member.email, subject: email.subject, body: email.html });
+  if (await isEmailSuppressed(member.email)) {
+    console.log(`Magic link email suppressed, link not regenerated: ${member.email}`);
+    return false;
   }
 
-  await queueBulkEmails(emails);
+  const token = await generateMagicLink(portalId, member.id);
+  if (!token) return false;
+
+  const linkUrl = `${process.env.SITE_URL || "http://localhost:3000"}/portal/access/${token}`;
+  const expiresOnLabel = getMagicLinkExpiry(portal).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  const email = magicLinkEmail(member.name, portal.name, linkUrl, expiresOnLabel);
+  const id = await queueEmail({
+    toEmail: member.email,
+    subject: email.subject,
+    body: email.html,
+  });
+  return id !== null;
+}
+
+export async function sendMagicLinkEmails(portalId: number) {
+  const members = await getPortalMembers(portalId);
+  for (const member of members) {
+    await sendMagicLinkToMember(portalId, member.id);
+  }
 }
 
 // ============================================
@@ -518,7 +554,7 @@ export async function addPortalFaq(
 
 export async function validatePortalSession(sessionId: string) {
   const result = await db.select().from(portalSessions)
-    .where(eq(portalSessions.id, sessionId))
+    .where(eq(portalSessions.id, hashToken(sessionId)))
     .limit(1);
 
   if (result.length === 0) return null;
@@ -539,5 +575,5 @@ export async function validatePortalSession(sessionId: string) {
 }
 
 export async function destroyPortalSession(sessionId: string) {
-  return db.delete(portalSessions).where(eq(portalSessions.id, sessionId));
+  return db.delete(portalSessions).where(eq(portalSessions.id, hashToken(sessionId)));
 }

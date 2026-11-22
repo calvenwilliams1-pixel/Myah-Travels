@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { posts, guides, reviews } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 
 const tableMap = {
   posts,
@@ -13,7 +13,7 @@ const tableMap = {
 export async function POST(
   request: NextRequest,
   { params }: { params: { type: string; id: string } }
-) {
+) { try {
   const user = await requireAuth();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,7 +29,7 @@ export async function POST(
   let body: any;
   try {
     body = await request.json();
-  } catch {
+  } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
@@ -61,4 +61,4 @@ export async function POST(
   const updated = await db.select().from(table).where(eq(table.id, postId)).limit(1);
 
   return NextResponse.json(updated[0]);
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

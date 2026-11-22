@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import {
   getItineraryById,
   getDayById,
@@ -14,7 +14,7 @@ import { recordOperation, OPERATION_TYPES } from "@/lib/operations/record";
 // from sourceSegmentId (in body) into targetDayId (in body), both of
 // which are validated against the target itinerary below.
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const targetItineraryId = Number(params.id);
   if (!targetItineraryId) return NextResponse.json({ error: "Invalid target ID" }, { status: 400 });
@@ -52,4 +52,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     targetDayId,
   });
   return NextResponse.json({ success: true, segment: copy });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

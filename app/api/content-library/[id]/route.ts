@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { softDeleteLibraryItem } from "@/lib/content-library";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) { try {
   const user = await requireAuth();
 
   const id = Number(params.id);
@@ -11,4 +11,4 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   await softDeleteLibraryItem(id);
 
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

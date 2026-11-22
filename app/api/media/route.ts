@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { media } from "@/drizzle/schema";
 import { and, isNull, like, desc, eq, sql } from "drizzle-orm";
@@ -8,7 +8,7 @@ function escapeLike(q: string): string {
   return q.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) { try {
   try {
     await requireAuth();
 
@@ -57,8 +57,8 @@ export async function GET(req: NextRequest) {
     const total = Number(totalResult[0]?.count ?? 0);
 
     return NextResponse.json({ items, total });
-  } catch (error) {
+  } catch (error) { if (error instanceof AuthError) { return NextResponse.json({ error: error.message }, { status: error.status }); } 
     console.error("GET /api/media failed:", error);
     return NextResponse.json({ error: "Failed to list media" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

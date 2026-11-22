@@ -32,6 +32,11 @@ export async function changePasswordAction(formData: FormData) {
   if (newPassword !== confirmPassword) {
     return { error: "Passwords do not match." };
   }
+  // A forced change that accepts the current password defeats the flag —
+  // accounts are created with a known starter password that must actually change.
+  if (await verifyPassword(newPassword, user.passwordHash)) {
+    return { error: "New password must be different from your current password." };
+  }
 
   const newHash = await hashPassword(newPassword);
   await db.update(users).set({ passwordHash: newHash, mustChangePassword: false }).where(eq(users.id, user.id));
