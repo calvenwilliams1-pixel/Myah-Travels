@@ -1,20 +1,79 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
 import { emailQueue, emailSuppressions } from "@/drizzle/schema";
 import { eq, and, or, lte, asc, inArray, sql } from "drizzle-orm";
 
+// Delivery transports. Two ways to actually send, chosen by configuration:
+// 1. SMTP — e.g. a Gmail account signing in with an app password — when
+//    SMTP_USER and SMTP_PASS are set. No sending domain or ESP account
+//    needed. SMTP wins when both transports are configured.
+// 2. Resend, when RESEND_API_KEY is set.
+// With neither configured, emails still queue, but every send attempt fails
+// with a clear "not configured" error instead of vanishing.
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+const smtpTransport =
+  SMTP_USER && SMTP_PASS
+    ? nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465,
+        auth: { user: SMTP_USER, pass: SMTP_PASS },
+      })
+    : null;
+
 const RESEND_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
 
-if (!RESEND_KEY) {
+if (!smtpTransport && !resend) {
   console.warn(
-    "[email] RESEND_API_KEY is not set — emails will queue but not send. " +
-    "Set it in .env to enable delivery."
+    "[email] No email transport configured — emails will queue but not send. " +
+    "Set SMTP_USER/SMTP_PASS (Gmail app password) or RESEND_API_KEY in .env to enable delivery."
   );
 }
 
 const EMAIL_FROM =
-  process.env.EMAIL_FROM || "MyCalTravels <notifications@myahtravels.com>";
+  process.env.EMAIL_FROM ||
+  (SMTP_USER
+    ? `MyCalTravels <${SMTP_USER}>`
+    : "MyCalTravels <notifications@myahtravels.com>");
+
+/**
+ * Deliver one queued email through whichever transport is configured.
+ * Throws on failure so the caller can record the error and retry later.
+ */
+async function deliverEmail(email: {
+  toEmail: string;
+  subject: string;
+  body: string;
+}): Promise<void> {
+  if (smtpTransport) {
+    await smtpTransport.sendMail({
+      from: EMAIL_FROM,
+      to: email.toEmail,
+      subject: email.subject,
+      html: email.body,
+    });
+    return;
+  }
+  if (resend) {
+    const result = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email.toEmail,
+      subject: email.subject,
+      html: email.body,
+    });
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+    return;
+  }
+  throw new Error(
+    "No email transport configured (set SMTP_USER/SMTP_PASS or RESEND_API_KEY)"
+  );
+}
 
 const MAX_ATTEMPTS = 3;
 const RATE_LIMIT_MS = 500;
@@ -324,28 +383,14 @@ export async function processEmailQueue(batchSize = 50): Promise<{
 
   for (const email of emails) {
     try {
-      if (!resend) {
-        await markEmailFailed(email.id, "RESEND_API_KEY not configured");
-        failed += 1;
-        continue;
-      }
-
-      const result = await resend.emails.send({
-        from: EMAIL_FROM,
-        to: email.toEmail,
-        subject: email.subject,
-        html: email.body,
-      });
-
-      if (result.error) {
-        await markEmailFailed(email.id, result.error.message);
-        failed += 1;
-      } else {
-        await markEmailSent(email.id);
-        sent += 1;
-      }
+      await deliverEmail(email);
+      await markEmailSent(email.id);
+      sent += 1;
     } catch (error) {
-      await markEmailFailed(email.id, String(error));
+      await markEmailFailed(
+        email.id,
+        error instanceof Error ? error.message : String(error)
+      );
       failed += 1;
     }
 
