@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { verifyPassword, createSession } from "@/lib/auth";
+import { verifyPassword, createSession, createPendingTotp } from "@/lib/auth";
 import { logActivity } from "@/lib/logging";
 import { loginRateLimit, getClientIp } from "@/lib/security";
 
@@ -75,6 +75,23 @@ export async function POST(request: NextRequest) {
         userAgent,
       });
       return NextResponse.json({ error: "Invalid username or password." }, { status: 401 });
+    }
+
+    // TOTP: a correct password alone is not a login for enrolled users.
+    // Park the attempt in a pending state; /api/auth/verify-totp creates
+    // the session once the code checks out.
+    if (foundUser.totpEnabled && foundUser.totpSecret) {
+      await createPendingTotp(foundUser.id);
+      await logActivity({
+        userId: foundUser.id,
+        actionType: "login_totp_pending",
+        entityType: "user",
+        entityId: foundUser.id,
+        details: "Password accepted — awaiting TOTP verification",
+        ipAddress: ip,
+        userAgent,
+      });
+      return NextResponse.json({ success: true, requiresTotp: true });
     }
 
     // Create session

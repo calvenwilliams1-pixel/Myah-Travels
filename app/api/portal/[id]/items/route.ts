@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getPortalItemsWithContent, attachLibraryItemToPortal, addPortalSpecificItem } from "@/lib/portal-items";
 import { AttachLibraryItemSchema, AddPortalSpecificItemSchema } from "@/lib/validation/portal";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) { try {
   const user = await requireAuth();
 
   const portalId = Number(params.id);
@@ -12,9 +12,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const items = await getPortalItemsWithContent(portalId);
 
   return NextResponse.json({ items });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   const user = await requireAuth();
 
   const portalId = Number(params.id);
@@ -38,4 +38,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
   const item = await addPortalSpecificItem(portalId, parsed.data);
   return NextResponse.json({ success: true, itemId: item[0].id });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

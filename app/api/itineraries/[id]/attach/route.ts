@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { portalItems } from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
@@ -14,7 +14,7 @@ const SOURCE_TYPE_MAP: Record<ViewType, string> = {
   today: "itinerary_today",
 };
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const itineraryId = Number(params.id);
   if (!itineraryId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -65,4 +65,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }).returning();
 
   return NextResponse.json({ success: true, portalItemId: result[0].id });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

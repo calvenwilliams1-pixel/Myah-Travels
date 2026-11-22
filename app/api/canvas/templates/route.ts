@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getAllTemplates, saveTemplate } from "@/lib/canvas";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) { try {
   const user = await requireAuth();
   const userId = Number(user.id);
   const contentType = req.nextUrl.searchParams.get("type") || "post";
   const templates = await getAllTemplates(contentType, userId);
   return NextResponse.json({ templates });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) { try {
   const user = await requireAuth();
   const userId = Number(user.id);
   const body = await req.json();
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     if (parsed.schemaVersion !== 1 || !Array.isArray(parsed.elements)) {
       return NextResponse.json({ error: "Invalid layoutData" }, { status: 400 });
     }
-  } catch {
+  } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
@@ -36,4 +36,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ template });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getFolderById, renameFolder, moveFolder, softDeleteFolder } from "@/lib/folders";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
-) {
+) { try {
   try {
     await requireAuth();
 
@@ -22,7 +22,7 @@ export async function PATCH(
     let body: any;
     try {
       body = await req.json();
-    } catch {
+    } catch (authErr) { if (authErr instanceof AuthError) { return NextResponse.json({ error: authErr.message }, { status: authErr.status }); } 
       return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
@@ -43,22 +43,22 @@ export async function PATCH(
       }
       try {
         await moveFolder(id, body.parentId);
-      } catch (err: any) {
+      } catch (err: any) { if (err instanceof AuthError) { return NextResponse.json({ error: err.message }, { status: err.status }); } 
         return NextResponse.json({ error: err.message }, { status: 400 });
       }
     }
 
     return NextResponse.json({ success: true, id });
-  } catch (e) {
+  } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } 
     console.error("PATCH /api/folders/[id] failed:", e);
     return NextResponse.json({ error: "Failed to update folder" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
-) {
+) { try {
   try {
     await requireAuth();
 
@@ -74,8 +74,8 @@ export async function DELETE(
 
     await softDeleteFolder(id);
     return NextResponse.json({ success: true, id });
-  } catch (e) {
+  } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } 
     console.error("DELETE /api/folders/[id] failed:", e);
     return NextResponse.json({ error: "Failed to delete folder" }, { status: 500 });
   }
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

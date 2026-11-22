@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { db } from "@/lib/db";
 import { emailQueue, emailSuppressions } from "@/drizzle/schema";
-import { eq, and, or, lte, asc, inArray } from "drizzle-orm";
+import { eq, and, or, lte, asc, inArray, sql } from "drizzle-orm";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
@@ -246,11 +246,72 @@ export async function retryFailedEmails(): Promise<number> {
   }
 }
 
+const STUCK_PROCESSING_MS = 15 * 60 * 1000;
+
+function parseDbTime(stamp: string): number {
+  // Rows carry two formats: SQLite CURRENT_TIMESTAMP defaults
+  // ("YYYY-MM-DD HH:MM:SS", UTC) and ISO strings written by this app.
+  const iso = stamp.includes("T") ? stamp : stamp.replace(" ", "T") + "Z";
+  return new Date(iso).getTime();
+}
+
+/**
+ * A send batch takes well under a minute (50 emails max, 500ms pacing plus
+ * API time). Anything still "processing" after 15 minutes belongs to a run
+ * that died mid-batch — return it to "pending" so it gets retried instead
+ * of being stranded forever (previously nothing ever looked at the status
+ * again, so a crashed run silently ate those emails).
+ */
+export async function recoverStuckProcessingEmails(): Promise<number> {
+  try {
+    const stuck = await db
+      .select()
+      .from(emailQueue)
+      .where(eq(emailQueue.status, "processing"));
+
+    let recovered = 0;
+    for (const row of stuck) {
+      const stamp = row.lastAttemptAt ?? row.createdAt;
+      if (stamp && Date.now() - parseDbTime(stamp) > STUCK_PROCESSING_MS) {
+        await db
+          .update(emailQueue)
+          .set({ status: "pending" })
+          .where(eq(emailQueue.id, row.id));
+        recovered += 1;
+      }
+    }
+    return recovered;
+  } catch (error) {
+    console.error("Failed to recover stuck emails:", error);
+    return 0;
+  }
+}
+
+export async function getEmailQueueCounts(): Promise<{
+  pending: number;
+  processing: number;
+  sent: number;
+  failed: number;
+}> {
+  const rows = await db
+    .select({ status: emailQueue.status, count: sql<number>`count(*)` })
+    .from(emailQueue)
+    .groupBy(emailQueue.status);
+  const counts = { pending: 0, processing: 0, sent: 0, failed: 0 };
+  for (const row of rows) {
+    if (row.status && row.status in counts) {
+      counts[row.status as keyof typeof counts] = row.count;
+    }
+  }
+  return counts;
+}
+
 export async function processEmailQueue(batchSize = 50): Promise<{
   processed: number;
   sent: number;
   failed: number;
 }> {
+  await recoverStuckProcessingEmails();
   const claimedIds = await claimEmailsForProcessing(batchSize);
 
   if (claimedIds.length === 0) {

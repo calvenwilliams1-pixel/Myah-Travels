@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { reorderPortalItems } from "@/lib/portal-items";
 import { ReorderItemsSchema } from "@/lib/validation/portal";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   const user = await requireAuth();
 
   const portalId = Number(params.id);
@@ -19,4 +19,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   await reorderPortalItems(portalId, parsed.data.orderedIds);
 
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

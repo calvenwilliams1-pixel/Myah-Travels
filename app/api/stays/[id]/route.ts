@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { updateStay, deleteStay } from "@/lib/itineraries";
 import { recordStayFields } from "@/lib/suggestions/record";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const id = Number(params.id);
   if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -16,13 +16,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     notes: body.notes,
   });
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const id = Number(params.id);
   if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   await deleteStay(id);
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

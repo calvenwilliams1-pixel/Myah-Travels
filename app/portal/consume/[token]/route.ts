@@ -7,7 +7,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const headersList = await headers();
   const ip = getClientIp(headersList);
 
-  const rateLimitResult = magicLinkRateLimit(ip);
+  const rateLimitResult = magicLinkRateLimit(ip, params.token);
   if (!rateLimitResult.success) {
     return new NextResponse("Too many attempts. Please try again later.", { status: 429 });
   }

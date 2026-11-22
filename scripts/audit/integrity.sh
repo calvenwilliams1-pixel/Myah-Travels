@@ -10,6 +10,12 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR/../..")"
 
 suite_begin "integrity"
 
+# The app serves/stores uploads from UPLOADS_DIR (default data/uploads —
+# see app/api/uploads/[...path]/route.ts). This script previously checked
+# public/uploads, which the app does not use, so every real media row
+# looked orphaned once the library was non-empty.
+UPLOADS_DIR_CHECK="${UPLOADS_DIR:-data/uploads}"
+
 # --- Orphaned media rows (DB row, no disk file) ---
 echo
 echo "-- Orphaned media rows --"
@@ -17,7 +23,7 @@ ORPHAN_ROWS=$(db_query "SELECT file_path FROM media WHERE deleted_at IS NULL;")
 ORPHAN_COUNT=0
 while IFS= read -r fp; do
   [ -z "$fp" ] && continue
-  if [ ! -f "public/uploads/$fp" ]; then
+  if [ ! -f "$UPLOADS_DIR_CHECK/$fp" ]; then
     ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
     echo "    orphaned DB row: media.file_path=$fp (no disk file)"
   fi
@@ -28,15 +34,15 @@ check "media rows all have disk files" "0" "$ORPHAN_COUNT"
 echo
 echo "-- Orphaned disk files --"
 DISK_ORPHAN=0
-if [ -d "public/uploads/posts" ]; then
+if [ -d "$UPLOADS_DIR_CHECK/posts" ]; then
   while IFS= read -r f; do
-    relpath="${f#public/uploads/}"
+    relpath="${f#$UPLOADS_DIR_CHECK/}"
     exists=$(db_count "SELECT COUNT(*) FROM media WHERE file_path = '$relpath' AND deleted_at IS NULL;")
     if [ "$exists" = "0" ]; then
       DISK_ORPHAN=$((DISK_ORPHAN + 1))
-      echo "    orphaned disk file: public/uploads/$relpath (no DB row)"
+      echo "    orphaned disk file: $UPLOADS_DIR_CHECK/$relpath (no DB row)"
     fi
-  done < <(find public/uploads/posts -type f 2>/dev/null)
+  done < <(find "$UPLOADS_DIR_CHECK/posts" -type f 2>/dev/null)
 fi
 check "disk files all have media rows" "0" "$DISK_ORPHAN"
 
@@ -114,10 +120,10 @@ check "no duplicate folder names in same parent" "0" "${DUP_FOLDER_NAMES:-0}"
 # --- Disk quota sanity ---
 echo
 echo "-- Disk usage --"
-if [ -d "public/uploads" ]; then
-  UPLOAD_SIZE=$(du -sm public/uploads 2>/dev/null | awk '{print $1}')
-  check "uploads dir present" "1" "$([ -d public/uploads ] && echo 1 || echo 0)"
-  echo "    (info) public/uploads total size: ${UPLOAD_SIZE:-0} MB"
+if [ -d "$UPLOADS_DIR_CHECK" ]; then
+  UPLOAD_SIZE=$(du -sm "$UPLOADS_DIR_CHECK" 2>/dev/null | awk '{print $1}')
+  check "uploads dir present" "1" "$([ -d "$UPLOADS_DIR_CHECK" ] && echo 1 || echo 0)"
+  echo "    (info) $UPLOADS_DIR_CHECK total size: ${UPLOAD_SIZE:-0} MB"
 fi
 
 suite_end

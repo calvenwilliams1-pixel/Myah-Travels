@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { itineraries, portals } from "@/drizzle/schema";
 import { and, isNull, eq, or, like, desc } from "drizzle-orm";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 // SECURITY: Single-admin system — requireAuth() only.
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) { try {
   await requireAuth();
 
   const url = new URL(req.url);
@@ -47,4 +47,4 @@ export async function GET(req: NextRequest) {
     .limit(200);
 
   return NextResponse.json({ itineraries: rows });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

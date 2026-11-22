@@ -82,8 +82,11 @@ export const loginRateLimit = (ip: string) =>
 export const formRateLimit = (ip: string) =>
   rateLimit(ip, { maxRequests: 3, windowSeconds: 3600, prefix: "form" });
 
-export const magicLinkRateLimit = (ip: string) =>
-  rateLimit(ip, { maxRequests: 5, windowSeconds: 3600, prefix: "magic-link" });
+// Scoped per IP + token when a token is known: a household sharing one IP
+// (several clients, each with their own link) shouldn't share one budget,
+// while brute force against a single link still hits the same limit.
+export const magicLinkRateLimit = (ip: string, token?: string) =>
+  rateLimit(token ? `${ip}:${token}` : ip, { maxRequests: 5, windowSeconds: 3600, prefix: "magic-link" });
 
 export const apiRateLimit = (ip: string) =>
   rateLimit(ip, { maxRequests: 100, windowSeconds: 60, prefix: "api" });

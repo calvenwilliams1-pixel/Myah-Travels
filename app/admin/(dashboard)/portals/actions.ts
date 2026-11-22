@@ -11,6 +11,7 @@ import {
   addPortalMember,
   removePortalMember,
   sendMagicLinkEmails,
+  sendMagicLinkToMember,
   banMember,
   unbanMember,
 } from "@/lib/portal";
@@ -50,7 +51,19 @@ export async function addMemberAction(formData: FormData) {
 
   if (!portalId || !email) throw new Error("Email required");
 
-  await addPortalMember(portalId, email, name || undefined);
+  const added = await addPortalMember(portalId, email, name || undefined);
+
+  // The client gets their access link as soon as they're added — there is
+  // no separate Send step to forget. Best-effort: a queue problem must not
+  // fail the member add itself.
+  const newMember = added[0];
+  if (newMember?.id) {
+    try {
+      await sendMagicLinkToMember(portalId, newMember.id);
+    } catch (err) {
+      console.error("Failed to queue magic link for new member:", err);
+    }
+  }
 
   await logActivity({
     userId: Number(user.id),
@@ -127,6 +140,13 @@ export async function unbanMemberAction(formData: FormData) {
   if (!portalId || !memberId) throw new Error("Portal and member ID required");
 
   await unbanMember(memberId);
+
+  // Their old link was revoked when they were banned — send a fresh one.
+  try {
+    await sendMagicLinkToMember(portalId, memberId);
+  } catch (err) {
+    console.error("Failed to queue magic link for unbanned member:", err);
+  }
 
   await logActivity({
     userId: Number(user.id),

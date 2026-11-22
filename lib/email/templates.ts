@@ -41,10 +41,12 @@ function baseTemplate(content: string): string {
 export function magicLinkEmail(
   memberName: string | null,
   portalName: string,
-  magicLinkUrl: string
+  magicLinkUrl: string,
+  expiresOnLabel: string
 ): { subject: string; html: string } {
   const displayName = escapeHtml(memberName || "there");
   const safePortalName = escapeHtml(portalName);
+  const safeExpiryLabel = escapeHtml(expiresOnLabel);
 
   const content = `
     <h2 style="color: #333; font-size: 20px;">Your Portal Access Link</h2>
@@ -61,7 +63,7 @@ export function magicLinkEmail(
       </a>
     </div>
     <p style="color: #999; font-size: 14px;">
-      This link expires in 7 days. If you need a new link, contact Myah.
+      This link expires on ${safeExpiryLabel}. If you need a new link, contact Myah.
     </p>
   `;
 

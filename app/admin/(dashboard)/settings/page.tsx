@@ -162,6 +162,15 @@ export default async function SettingsPage() {
               Entities used once and untouched for 90+ days. Safe to prune.
             </p>
           </Link>
+          <Link
+            href="/admin/settings/email"
+            className="block px-3 py-2 rounded border border-gray-200 hover:border-primary hover:bg-primary/5"
+          >
+            <p className="font-medium text-sm">Email queue</p>
+            <p className="text-xs text-gray-500">
+              Magic links and notifications waiting to send, plus any that failed and need a retry.
+            </p>
+          </Link>
         </div>
       </Card>
 

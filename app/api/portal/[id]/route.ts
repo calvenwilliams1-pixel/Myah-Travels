@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getPortalById, getPortalMembers } from "@/lib/portal";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const portalId = Number(params.id);
   if (!portalId) return NextResponse.json({ error: "Invalid portal ID" }, { status: 400 });
@@ -13,4 +13,4 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const members = await getPortalMembers(portalId);
 
   return NextResponse.json({ portal, members });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

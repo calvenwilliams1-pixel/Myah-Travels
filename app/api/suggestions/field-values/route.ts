@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { searchFieldValues } from "@/lib/suggestions/field-values";
 
 // Force dynamic: this route reads the DB and requires auth. Must not
 // be prerendered at build time.
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) { try {
   await requireAuth();
 
   const url = new URL(req.url);
@@ -22,4 +22,4 @@ export async function GET(req: NextRequest) {
 
   const items = await searchFieldValues(field, q, 5);
   return NextResponse.json({ items });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

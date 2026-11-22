@@ -875,26 +875,37 @@ export async function restoreRevision(revisionId: number) {
 export function extractTextFromTipTap(json: string): string {
   try {
     const doc = JSON.parse(json);
-    const texts: string[] = [];
-    
-    function extractFromNode(node: any) {
-      if (node.text) {
-        texts.push(node.text);
+
+    // Inline nodes carry text directly and must join with NO separator —
+    // TipTap splits a run of text into separate nodes at every formatting
+    // boundary (bold word, link, colour change), and joining those with " "
+    // mangles "Hello " + "World" into "Hello  World". Block-level siblings
+    // are separated by a space so paragraphs/list items don't run together.
+    const INLINE_TYPES = new Set(["text", "hardBreak"]);
+
+    function extractFromNode(node: any): string {
+      if (typeof node?.text === "string") {
+        return node.text;
       }
-      if (node.content && Array.isArray(node.content)) {
-        for (const child of node.content) {
-          extractFromNode(child);
-        }
+      if (!node?.content || !Array.isArray(node.content)) {
+        return "";
       }
+      const parts = node.content.map(extractFromNode);
+      const hasBlockChild = node.content.some(
+        (child: any) => child?.type && !INLINE_TYPES.has(child.type)
+      );
+      return parts.join(hasBlockChild ? " " : "");
     }
-    
+
     if (doc.content && Array.isArray(doc.content)) {
-      for (const node of doc.content) {
-        extractFromNode(node);
-      }
+      return doc.content
+        .map(extractFromNode)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
-    
-    return texts.join(" ").trim();
+
+    return "";
   } catch {
     return "";
   }

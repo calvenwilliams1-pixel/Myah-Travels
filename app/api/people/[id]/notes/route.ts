@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { listNotesForPerson, createNote } from "@/lib/clients/people";
 
 // SECURITY: Single-admin system — requireAuth() only.
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const personId = Number(params.id);
   if (!personId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -15,9 +15,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const notes = await listNotesForPerson(personId, portalId);
   return NextResponse.json({ notes });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const personId = Number(params.id);
   if (!personId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -31,4 +31,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const note = await createNote(personId, content, portalId);
   if (!note) return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   return NextResponse.json({ success: true, note });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

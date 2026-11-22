@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { updatePortalItemVisibility } from "@/lib/portal-items";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string; itemId: string } }
-) {
+) { try {
   await requireAuth();
 
   const portalId = Number(params.id);
@@ -31,4 +31,4 @@ export async function PATCH(
   }
 
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

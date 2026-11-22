@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession, verifyTotp } from "@/lib/auth";
+import { AuthError, requireSession, verifyTotp } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 // SECURITY: Single-admin system — requireSession() only.
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) { try {
   const user = await requireSession();
   const body = await req.json();
   const code = String(body?.code || "").trim();
@@ -30,4 +30,4 @@ export async function POST(req: NextRequest) {
     .where(eq(users.id, Number(user.id)));
 
   return NextResponse.json({ success: true });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

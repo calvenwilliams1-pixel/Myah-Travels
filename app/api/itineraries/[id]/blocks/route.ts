@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth } from "@/lib/auth";
 import { getItineraryById } from "@/lib/itineraries";
 import { getBlocksForItinerary, createBlock } from "@/lib/itineraries/blocks";
 import { CreateItineraryBlockSchema } from "@/lib/validation/itinerary";
 import { getSectionById, getDayById } from "@/lib/itineraries";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const itineraryId = Number(params.id);
   if (!itineraryId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -15,9 +15,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const blocks = await getBlocksForItinerary(itineraryId);
   return NextResponse.json({ blocks });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
   await requireAuth();
   const itineraryId = Number(params.id);
   if (!itineraryId) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -52,4 +52,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const block = await createBlock(parsed.data);
   return NextResponse.json({ success: true, block });
-}
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
