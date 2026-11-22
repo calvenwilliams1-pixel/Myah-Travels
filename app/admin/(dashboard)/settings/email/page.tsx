@@ -29,7 +29,8 @@ export default async function EmailQueuePage({
       <p className="text-sm text-gray-500">
         Everything the site emails — portal magic links, inquiry notifications — goes
         through this queue. The send job runs every minute; if counts stop moving,
-        check that the server cron job and the Resend API key are in place.
+        check that the server cron job is running and the email settings
+        (Gmail app password or Resend API key) are in place.
       </p>
 
       {successMsg && (
