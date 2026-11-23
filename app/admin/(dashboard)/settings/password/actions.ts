@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
+import { getCurrentUser, hashPassword, verifyPassword, revokeTrustedDevices } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
@@ -100,6 +100,10 @@ export async function changePasswordAction(formData: FormData) {
   await db.update(users)
     .set({ passwordHash: newHash })
     .where(eq(users.id, userId));
+
+  // A password change revokes every trusted device — they'll be asked
+  // for a TOTP code at next login and can re-trust.
+  await revokeTrustedDevices(userId);
 
   return { success: true };
 }

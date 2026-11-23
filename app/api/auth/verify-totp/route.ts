@@ -9,6 +9,7 @@ import {
   readPendingTotp,
   failPendingTotp,
   clearPendingTotp,
+  createTrustedDevice,
 } from "@/lib/auth";
 import { logActivity } from "@/lib/logging";
 import { getClientIp } from "@/lib/security";
@@ -85,6 +86,12 @@ export async function POST(request: NextRequest) {
 
     await clearPendingTotp();
     await createSession(user.id);
+
+    // "Trust this device" — remember this browser for 30 days so the
+    // code prompt is skipped at login (password still required).
+    if (body?.trustDevice === true) {
+      await createTrustedDevice(user.id, userAgent);
+    }
 
     await logActivity({
       userId: user.id,

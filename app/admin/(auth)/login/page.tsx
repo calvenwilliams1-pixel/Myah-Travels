@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [trustDevice, setTrustDevice] = useState(true);
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +66,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/verify-totp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, trustDevice }),
       });
 
       const data = await res.json();
@@ -109,6 +110,15 @@ export default function LoginPage() {
               required
               autoFocus
             />
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={trustDevice}
+                onChange={(e) => setTrustDevice(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              Trust this device for 30 days (skip the code on this device)
+            </label>
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <Button type="submit" variant="solid" isLoading={isLoading} className="w-full">
               Verify

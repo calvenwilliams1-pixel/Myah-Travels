@@ -5,7 +5,7 @@ import { users, sessions } from "@/drizzle/schema";
 import { hash, compare } from "bcryptjs";
 import { authenticator } from "otplib";
 import { cookies } from "next/headers";
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 
 const adapter = new DrizzleSQLiteAdapter(db, sessions as any, users as any);
 
@@ -166,6 +166,88 @@ export async function clearPendingTotp(): Promise<void> {
     path: "/",
     maxAge: 0,
   });
+}
+
+// --- Trusted devices (remember this device) ---------------------------------
+// After one successful TOTP verification, the browser can be trusted for
+// 30 days: the login route then skips the code prompt for that device
+// (the password is still required every login). The cookie holds a random
+// token; the DB stores only its SHA-256 hash, mirroring portal sessions.
+// Changing the password revokes every trusted device for the user.
+export const TRUSTED_DEVICE_COOKIE = "trusted_device";
+const TRUSTED_DEVICE_TTL_DAYS = 30;
+
+function hashDeviceToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+export async function createTrustedDevice(
+  userId: number,
+  userAgent: string | null
+): Promise<void> {
+  const { trustedDevices } = await import("@/drizzle/schema");
+  const token = randomBytes(32).toString("base64url");
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + TRUSTED_DEVICE_TTL_DAYS);
+
+  await db.insert(trustedDevices).values({
+    id: hashDeviceToken(token),
+    userId,
+    userAgent: userAgent ?? null,
+    expiresAt: expiresAt.toISOString(),
+    lastUsedAt: new Date().toISOString(),
+  });
+
+  const cookieStore = await cookies();
+  cookieStore.set(TRUSTED_DEVICE_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: TRUSTED_DEVICE_TTL_DAYS * 24 * 60 * 60,
+  });
+}
+
+/**
+ * True when the current browser carries a valid, unexpired trusted-device
+ * cookie for this user. Touches last_used_at on success; deletes expired
+ * rows it encounters.
+ */
+export async function validateTrustedDevice(userId: number): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(TRUSTED_DEVICE_COOKIE)?.value;
+    if (!token) return false;
+
+    const { trustedDevices } = await import("@/drizzle/schema");
+    const { eq, and } = await import("drizzle-orm");
+    const id = hashDeviceToken(token);
+    const rows = await db
+      .select()
+      .from(trustedDevices)
+      .where(and(eq(trustedDevices.id, id), eq(trustedDevices.userId, userId)))
+      .limit(1);
+    if (rows.length === 0) return false;
+
+    if (new Date(rows[0].expiresAt) < new Date()) {
+      await db.delete(trustedDevices).where(eq(trustedDevices.id, id));
+      return false;
+    }
+
+    await db
+      .update(trustedDevices)
+      .set({ lastUsedAt: new Date().toISOString() })
+      .where(eq(trustedDevices.id, id));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function revokeTrustedDevices(userId: number): Promise<void> {
+  const { trustedDevices } = await import("@/drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  await db.delete(trustedDevices).where(eq(trustedDevices.userId, userId));
 }
 
 // Request-scoped memo for getCurrentUser. Replaces React.cache so this
