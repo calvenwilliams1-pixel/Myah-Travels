@@ -15,6 +15,7 @@ export { portalMembers } from "./portal-members";
 export { portalMagicLinks } from "./portal-magic-links";
 export { portalSessions } from "./portal-sessions";
 export { trustedDevices } from "./trusted-devices";
+export { passwordResetTokens } from "./password-reset-tokens";
 export { portalNotices } from "./portal-notices";
 export { portalDocuments } from "./portal-documents";
 export { portalFaqs } from "./portal-faqs";

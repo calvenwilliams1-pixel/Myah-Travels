@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser, hashPassword, verifyPassword, revokeTrustedDevices } from "@/lib/auth";
+import { revokePasswordResetTokens } from "@/lib/auth/password-reset";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
@@ -104,6 +105,9 @@ export async function changePasswordAction(formData: FormData) {
   // A password change revokes every trusted device — they'll be asked
   // for a TOTP code at next login and can re-trust.
   await revokeTrustedDevices(userId);
+
+  // Any outstanding forgot-password links die with the old password.
+  await revokePasswordResetTokens(userId);
 
   return { success: true };
 }
