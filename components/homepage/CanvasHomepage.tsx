@@ -6,29 +6,17 @@ import { parseCanvasDocument } from "@/lib/canvas";
 export default async function CanvasHomepage() {
   const homepageJson = await getSetting("homepage_canvas");
 
+  // Nothing designed yet (or a broken document): render nothing, so the
+  // homepage is simply the feed until the owner designs a welcome section
+  // in the admin Homepage Editor.
   if (!homepageJson) {
-    return (
-      <div className="max-w-4xl mx-auto py-20 text-center">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-          Welcome to MyCalTravels
-        </h2>
-        <p className="text-gray-500">
-          Homepage content coming soon.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   const doc = parseCanvasDocument(homepageJson);
 
   if (!doc) {
-    return (
-      <div className="max-w-4xl mx-auto py-20 text-center">
-        <p className="text-gray-500">
-          Invalid homepage configuration. Please contact the administrator.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return <CanvasRenderer document={doc} />;

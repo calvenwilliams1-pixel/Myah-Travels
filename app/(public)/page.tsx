@@ -1,5 +1,6 @@
 import React from "react";
 import FeedPage from "@/components/feed/FeedPage";
+import CanvasHomepage from "@/components/homepage/CanvasHomepage";
 import { getFeedItems } from "@/lib/feed";
 import { getAllTagsWithCounts } from "@/lib/content";
 import { getAllSettings } from "@/lib/settings";
@@ -62,13 +63,25 @@ export default async function HomePage({
     getAllTagsWithCounts(),
   ]);
 
+  // The designed welcome section (admin Homepage Editor) shows only on
+  // the plain homepage — not when a visitor is filtering or sorting the
+  // feed, where it would just be in the way.
+  const isDefaultView = type === "all" && sort === "pinned" && tagSlugs.length === 0;
+
   return (
-    <FeedPage
-      initialItems={items}
-      initialType={type}
-      initialSort={sort}
-      initialTags={tagSlugs}
-      availableTags={availableTags}
-    />
+    <>
+      {isDefaultView && (
+        <div className="max-w-5xl mx-auto px-4 pt-8">
+          <CanvasHomepage />
+        </div>
+      )}
+      <FeedPage
+        initialItems={items}
+        initialType={type}
+        initialSort={sort}
+        initialTags={tagSlugs}
+        availableTags={availableTags}
+      />
+    </>
   );
 }

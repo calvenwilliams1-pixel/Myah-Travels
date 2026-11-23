@@ -8,6 +8,7 @@ const NAV_LINKS: { href: string; label: string; external?: boolean }[] = [
   { href: "/admin", label: "Dashboard" },
   { href: "/", label: "View Site ↗", external: true },
   { href: "/admin/posts", label: "Posts" },
+  { href: "/admin/homepage", label: "Homepage" },
   { href: "/admin/templates", label: "Templates" },
   { href: "/admin/media", label: "Media" },
   { href: "/admin/content-library", label: "Content Library" },
