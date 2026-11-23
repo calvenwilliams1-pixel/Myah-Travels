@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { verifyPassword, createSession, createPendingTotp } from "@/lib/auth";
+import { verifyPassword, createSession, createPendingTotp, validateTrustedDevice } from "@/lib/auth";
 import { logActivity } from "@/lib/logging";
 import { loginRateLimit, getClientIp } from "@/lib/security";
 
@@ -77,10 +77,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid username or password." }, { status: 401 });
     }
 
-    // TOTP: a correct password alone is not a login for enrolled users.
-    // Park the attempt in a pending state; /api/auth/verify-totp creates
-    // the session once the code checks out.
+    // TOTP: a correct password alone is not a login for enrolled users —
+    // unless this browser is a trusted device (it passed TOTP within the
+    // last 30 days and the user chose "trust this device").
     if (foundUser.totpEnabled && foundUser.totpSecret) {
+      if (await validateTrustedDevice(foundUser.id)) {
+        await createSession(foundUser.id);
+        await logActivity({
+          userId: foundUser.id,
+          actionType: "login_success",
+          entityType: "user",
+          entityId: foundUser.id,
+          details: "Login successful (trusted device — TOTP skipped)",
+          ipAddress: ip,
+          userAgent,
+        });
+        const requiresSetup =
+          !!foundUser.mustChangePassword || !foundUser.hasCompletedSetup;
+        return NextResponse.json({ success: true, requiresSetup });
+      }
+
+      // Park the attempt in a pending state; /api/auth/verify-totp creates
+      // the session once the code checks out.
       await createPendingTotp(foundUser.id);
       await logActivity({
         userId: foundUser.id,
