@@ -17,6 +17,8 @@ export const posts = sqliteTable(
     deletedAt: text("deleted_at"),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
+    instagramUrl: text("instagram_url"),
+    youtubeUrl: text("youtube_url"),
     isVisible: integer("is_visible", { mode: "boolean" }).default(true),
     isPinned: integer("is_pinned", { mode: "boolean" }).default(false),
     isHighlighted: integer("is_highlighted", { mode: "boolean" }).default(false),

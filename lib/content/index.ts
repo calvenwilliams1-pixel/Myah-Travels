@@ -371,6 +371,8 @@ export async function createPost(data: {
   featuredImage?: string;
   seoTitle?: string;
   seoDescription?: string;
+  instagramUrl?: string | null;
+  youtubeUrl?: string | null;
 }) {
   const baseSlug = data.slug || generateSlug(data.title);
   const postSlug = await generateUniqueSlug(baseSlug, "post");
@@ -385,6 +387,8 @@ export async function createPost(data: {
     featuredImage: data.featuredImage ?? null,
     seoTitle: data.seoTitle ?? null,
     seoDescription: data.seoDescription ?? null,
+    instagramUrl: data.instagramUrl ?? null,
+    youtubeUrl: data.youtubeUrl ?? null,
   }).returning();
   
   return result[0];
@@ -401,6 +405,8 @@ export async function updatePost(
     featuredImage: string;
     seoTitle: string;
     seoDescription: string;
+    instagramUrl: string | null;
+    youtubeUrl: string | null;
     publishedAt: string;
   }>,
   options?: { skipRevision?: boolean }

@@ -27,6 +27,8 @@ export default function NewPostForm({ templates, onSaveAsTemplate }: NewPostForm
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [status, setStatus] = useState<PostStatus>("draft");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +93,30 @@ export default function NewPostForm({ templates, onSaveAsTemplate }: NewPostForm
           onChange={(e) => setExcerpt(e.target.value)}
           placeholder="Short summary"
         />
+      </Card>
+
+      <Card>
+        <div className="space-y-4">
+          <Input
+            label="Instagram post link (optional)"
+            name="instagramUrl"
+            value={instagramUrl}
+            onChange={(e) => setInstagramUrl(e.target.value)}
+            placeholder="https://www.instagram.com/p/…"
+          />
+          <Input
+            label="YouTube video link (optional)"
+            name="youtubeUrl"
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=…"
+          />
+          <p className="text-sm text-gray-600">
+            If this post has a matching Instagram post or YouTube video, paste
+            its link — the video plays right on the post page, and the
+            Instagram link appears with it.
+          </p>
+        </div>
       </Card>
 
       <Card>
