@@ -4,7 +4,7 @@ import React, { useTransition } from "react";
 import FeedFilters from "./FeedFilters";
 import InfiniteFeed from "./InfiniteFeed";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FeedItem } from "./types";
+import { FeedItem, FeedTemplateFilter } from "./types";
 
 interface TagWithCount {
   id: number;
@@ -19,6 +19,7 @@ interface FeedPageProps {
   initialSort: string;
   initialTags: string[];
   availableTags: TagWithCount[];
+  templateFilters: FeedTemplateFilter[];
 }
 
 export default function FeedPage({
@@ -27,6 +28,7 @@ export default function FeedPage({
   initialSort,
   initialTags,
   availableTags,
+  templateFilters,
 }: FeedPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -70,6 +72,7 @@ export default function FeedPage({
         availableTags={availableTags}
         selectedTags={selectedTags}
         onTagsChange={(tags) => updateFilters({ tags })}
+        templateFilters={templateFilters}
       />
 
       <div className={`mt-6 ${isPending ? "opacity-50" : ""}`}>

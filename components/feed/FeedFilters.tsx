@@ -17,14 +17,9 @@ interface FeedFiltersProps {
   availableTags: TagWithCount[];
   selectedTags: string[];
   onTagsChange: (tags: string[]) => void;
+  /** One pill per template with published posts (type overhaul). */
+  templateFilters: { id: string; name: string; count: number }[];
 }
-
-const CONTENT_TYPES = [
-  { value: "all", label: "All" },
-  { value: "post", label: "Posts" },
-  { value: "guide", label: "Guides" },
-  { value: "review", label: "Reviews" },
-];
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
@@ -40,7 +35,12 @@ export default function FeedFilters({
   availableTags,
   selectedTags,
   onTagsChange,
+  templateFilters,
 }: FeedFiltersProps) {
+  const contentTypes = [
+    { value: "all", label: "All" },
+    ...templateFilters.map((t) => ({ value: t.id, label: t.name })),
+  ];
   const [showAllTags, setShowAllTags] = useState(false);
   const topTags = availableTags.slice(0, 20);
   const visibleTags = showAllTags ? availableTags : topTags;
@@ -57,7 +57,7 @@ export default function FeedFilters({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        {CONTENT_TYPES.map((type) => (
+        {contentTypes.map((type) => (
           <button
             key={type.value}
             onClick={() => onTypeChange(type.value)}

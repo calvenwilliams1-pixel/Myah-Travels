@@ -5,7 +5,7 @@ import { tagAliases } from "@/drizzle/schema/tag-aliases";
 import { posts } from "@/drizzle/schema/posts";
 import { postTags } from "@/drizzle/schema/post-tags";
 import { eq, inArray, sql } from "drizzle-orm";
-import { getFeedItems } from "./index";
+import { getFeedItems, getFeedTemplateFilters, templateIdFromContent } from "./index";
 
 const runId = Date.now().toString(36);
 
@@ -20,12 +20,16 @@ async function makeTag(name: string): Promise<number> {
 }
 
 async function makePost(title: string): Promise<number> {
-  const slug = testSlug(title.toLowerCase().replace(/[^a-z0-9]/g, ""));
+  return makePostWith(title, "story", "published");
+}
+
+async function makePostWith(title: string, templateId: string, status: string): Promise<number> {
+  const slug = testSlug(title.toLowerCase().replace(/[^a-z0-9]/g, "") + templateId);
   const [row] = await db.insert(posts).values({
     title: `${title}-${runId}`,
     slug,
-    content: JSON.stringify({ blocks: [], templateId: "story" }),
-    status: "published",
+    content: JSON.stringify({ blocks: [], templateId }),
+    status,
     publishedAt: new Date().toISOString(),
   }).returning();
   return row.id;
@@ -120,5 +124,48 @@ describe("getFeedItems — tag filtering", () => {
     const items = await getFeedItems("all", "newest", 20, 0, [`nonexistent-${runId}`]);
     expect(Array.isArray(items)).toBe(true);
     expect(items.length).toBe(0);
+  });
+});
+
+describe("type overhaul — the template is the type", () => {
+  it("templateIdFromContent parses, and survives junk", () => {
+    expect(templateIdFromContent('{"blocks":[],"templateId":"story"}')).toBe("story");
+    expect(templateIdFromContent('{"blocks":[]}')).toBeNull();
+    expect(templateIdFromContent("not json")).toBeNull();
+    expect(templateIdFromContent(null)).toBeNull();
+  });
+
+  it("filtering by a template slug returns only that template's posts, with its name", async () => {
+    const storyPost = await makePostWith("Tmpl Story", "story", "published");
+    const guidePost = await makePostWith("Tmpl Guide", "travel-guide", "published");
+
+    const storyItems = await getFeedItems("story", "newest", 50, 0, []);
+    const ids = storyItems.map((i) => i.id);
+    expect(ids).toContain(storyPost);
+    expect(ids).not.toContain(guidePost);
+    const mine = storyItems.find((i) => i.id === storyPost);
+    expect(mine?.templateId).toBe("story");
+    expect(mine?.templateName).toBe("Story");
+    expect(mine?.type).toBe("post");
+  });
+
+  it("an invalid type value returns empty instead of throwing", async () => {
+    const items = await getFeedItems('x"; DROP TABLE posts;--', "newest", 20, 0, []);
+    expect(items).toEqual([]);
+  });
+
+  it("template filters list only templates with published posts", async () => {
+    await makePostWith("Filter Story", "story", "published");
+    await makePostWith("Filter Draft", "review", "draft");
+
+    const filters = await getFeedTemplateFilters();
+    const story = filters.find((f) => f.id === "story");
+    expect(story).toBeDefined();
+    expect(story!.count).toBeGreaterThanOrEqual(1);
+    // 'review' has only a draft in this run — it must not appear
+    // because of that draft (it may legitimately appear from other
+    // fixtures only if they published under it, which none do).
+    const review = filters.find((f) => f.id === "review");
+    expect(review).toBeUndefined();
   });
 });

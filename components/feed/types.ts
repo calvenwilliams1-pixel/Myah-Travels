@@ -6,7 +6,10 @@ export interface FeedTag {
 
 export interface FeedItem {
   id: number;
-  type: "post" | "guide" | "review";
+  /** Always "post" since the type overhaul — the template is the type. */
+  type: "post";
+  templateId: string | null;
+  templateName: string | null;
   title: string;
   excerpt: string;
   featuredImage: string | null;
@@ -16,4 +19,10 @@ export interface FeedItem {
   isHighlighted: boolean;
   category: string | null;
   tags: FeedTag[];
+}
+
+export interface FeedTemplateFilter {
+  id: string;
+  name: string;
+  count: number;
 }

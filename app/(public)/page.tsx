@@ -1,23 +1,25 @@
 import React from "react";
 import FeedPage from "@/components/feed/FeedPage";
 import WelcomeSection from "@/components/homepage/WelcomeSection";
-import { getFeedItems } from "@/lib/feed";
+import { getFeedItems, getFeedTemplateFilters } from "@/lib/feed";
 import { getAllTagsWithCounts } from "@/lib/content";
 import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
-const VALID_TYPES = ["all", "post", "guide", "review"] as const;
 const VALID_SORTS = ["newest", "oldest", "pinned"] as const;
 
-type FeedType = (typeof VALID_TYPES)[number];
 type FeedSort = (typeof VALID_SORTS)[number];
 
-function normaliseType(raw: unknown): FeedType {
+/**
+ * The ?type= param is now a template slug (the type overhaul: a
+ * post's template is its type). "all" or any slug-shaped value is
+ * accepted; anything else falls back to "all". Whether the slug
+ * matches real posts is the feed query's business.
+ */
+function normaliseType(raw: unknown): string {
   const v = Array.isArray(raw) ? raw[0] : raw;
-  return typeof v === "string" && (VALID_TYPES as readonly string[]).includes(v)
-    ? (v as FeedType)
-    : "all";
+  return typeof v === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v) ? v : "all";
 }
 
 function normaliseSort(raw: unknown): FeedSort {
@@ -58,9 +60,10 @@ export default async function HomePage({
   const sort = normaliseSort(searchParams.sort);
   const tagSlugs = normaliseTags(searchParams.tags);
 
-  const [items, availableTags] = await Promise.all([
+  const [items, availableTags, templateFilters] = await Promise.all([
     getFeedItems(type, sort, 50, 0, tagSlugs),
     getAllTagsWithCounts(),
+    getFeedTemplateFilters(),
   ]);
 
   // The designed welcome section (admin Homepage Editor) shows only on
@@ -77,6 +80,7 @@ export default async function HomePage({
         initialSort={sort}
         initialTags={tagSlugs}
         availableTags={availableTags}
+        templateFilters={templateFilters}
       />
     </>
   );

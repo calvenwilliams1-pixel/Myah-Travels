@@ -3,7 +3,10 @@ import Link from "next/link";
 
 interface FeedCardProps {
   id: number;
-  type: "post" | "guide" | "review";
+  type: "post";
+  /** The post's template is its type (type overhaul, Nov 23, 2026). */
+  templateId?: string | null;
+  templateName?: string | null;
   title: string;
   excerpt: string;
   featuredImage?: string | null;
@@ -15,19 +18,12 @@ interface FeedCardProps {
   tags?: { id: number; name: string; slug: string }[];
 }
 
-const TYPE_LABELS = { post: "Post", guide: "Guide", review: "Review" } as const;
-
-const TYPE_STYLES = {
-  post: "bg-blue-50 text-blue-700 border-blue-100",
-  guide: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  review: "bg-amber-50 text-amber-700 border-amber-100",
-} as const;
-
 const MAX_VISIBLE_TAGS = 4;
 
 export default function FeedCard({
   id,
   type,
+  templateName,
   title,
   excerpt,
   featuredImage,
@@ -38,12 +34,8 @@ export default function FeedCard({
   category,
   tags = [],
 }: FeedCardProps) {
-  const href =
-    type === "post"
-      ? `/blog/${slug}`
-      : type === "guide"
-      ? `/guides/${slug}`
-      : `/reviews/${slug}`;
+  const href = `/blog/${slug}`;
+  const typeLabel = templateName ?? "Post";
 
   const displayDate = publishedAt
     ? new Date(publishedAt).toLocaleDateString("en-US", {
@@ -74,7 +66,7 @@ export default function FeedCard({
             loading="lazy"
           />
         ) : (
-          <PlaceholderCover title={title} type={type} />
+          <PlaceholderCover title={title} label={typeLabel} />
         )}
       </Link>
 
@@ -96,10 +88,8 @@ export default function FeedCard({
             Featured
           </span>
         )}
-        <span
-          className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${TYPE_STYLES[type]}`}
-        >
-          {TYPE_LABELS[type]}
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-100">
+          {typeLabel}
         </span>
         {category && (
           <span className="text-[11px] text-gray-500 uppercase tracking-wider">
@@ -148,7 +138,7 @@ export default function FeedCard({
   );
 }
 
-function PlaceholderCover({ title, type }: { title: string; type: "post" | "guide" | "review" }) {
+function PlaceholderCover({ title, label }: { title: string; label: string }) {
   return (
     <div
       className="w-full h-full flex items-center justify-center p-8 relative"
@@ -176,7 +166,7 @@ function PlaceholderCover({ title, type }: { title: string; type: "post" | "guid
         className="absolute bottom-3 right-4 text-[10px] uppercase tracking-[0.2em] font-medium opacity-70"
         style={{ color: "var(--color-primary)" }}
       >
-        {type === "post" ? "Story" : type === "guide" ? "Guide" : "Review"}
+        {label}
       </span>
     </div>
   );
