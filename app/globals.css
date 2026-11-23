@@ -5,9 +5,11 @@
 /*
  * UI style plan, Pass 1a — design tokens.
  *
- * Font pairing: the live pairing is chosen HERE. Point these two
- * variables at the -a pair (Playfair Display + Inter) or the -b pair
- * (Fraunces + Source Sans 3); everything else follows. One-line flip.
+ * Font pairing: the static default is pairing A (Playfair Display +
+ * Inter). ThemeProvider overrides these two variables from the
+ * owner's `font_pairing` setting (Settings → Font Style, six
+ * curated pairings — lib/theme/font-pairings.ts); this default is
+ * what anything outside the provider gets.
  */
 :root {
   --font-display: var(--font-display-a);

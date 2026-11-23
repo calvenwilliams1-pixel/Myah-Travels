@@ -1,9 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth";
 import { setMultipleSettings, addCertification, deleteCertification } from "@/lib/settings";
 import { logActivity } from "@/lib/logging";
+import { isFontPairingId } from "@/lib/theme/font-pairings";
 
 function isValidHexColor(color: string): boolean {
   return /^#[0-9a-fA-F]{6}$/.test(color);
@@ -24,6 +26,7 @@ export async function saveSettingsAction(formData: FormData) {
     "secondary_color",
     "accent_color",
     "font_family",
+    "font_pairing",
     "admin_email",
     "footer_text",
     "logo_path",
@@ -50,6 +53,13 @@ export async function saveSettingsAction(formData: FormData) {
     throw new Error("Invalid email format for admin email");
   }
 
+  // Font pairing must be one of the curated ids — anything else is
+  // dropped so a hand-crafted post can't store a junk value
+  // (ThemeProvider would fall back to Classic anyway).
+  if (settingsData.font_pairing && !isFontPairingId(settingsData.font_pairing)) {
+    delete settingsData.font_pairing;
+  }
+
   await setMultipleSettings(settingsData);
 
   await logActivity({
@@ -58,6 +68,12 @@ export async function saveSettingsAction(formData: FormData) {
     entityType: "settings",
     details: "Updated site settings",
   });
+
+  // Brand settings (colours, fonts) render through the public
+  // layout's ThemeProvider, which is ISR-cached for an hour —
+  // revalidate on save so a change shows on the site right away
+  // instead of whenever the cache happens to roll over.
+  revalidatePath("/", "layout");
 
   redirect("/admin/settings");
 }

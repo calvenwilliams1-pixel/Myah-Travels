@@ -3,6 +3,7 @@ import Image from "next/image";
 import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
 import { getPalette } from "@/lib/theme/palettes";
 import { palettePairings } from "@/lib/theme/pairings";
+import { fontPairingOverrideVars } from "@/lib/theme/font-pairings";
 import { computeConnectionGaps, legCrossesDate } from "@/lib/itineraries/legMath";
 import { stayKindIcon, staySleepName, staySubline } from "@/lib/itineraries/stayDisplay";
 import { tripSummaryStrip } from "@/lib/itineraries/tripSummary";
@@ -105,6 +106,8 @@ interface Itinerary {
   id: number;
   title: string;
   themePreset: string | null;
+  /** Per-itinerary font pairing; null/absent = site font. */
+  fontPairing?: string | null;
   sections: Section[];
 }
 
@@ -164,7 +167,10 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
   const totalDays = itinerary.sections.reduce((sum, s) => sum + s.days.length, 0);
 
   return (
-    <div className="itinerary-print min-h-screen bg-gray-50 print:bg-white">
+    <div
+      className="itinerary-print font-sans min-h-screen bg-gray-50 print:bg-white"
+      style={fontPairingOverrideVars(itinerary.fontPairing)}
+    >
       {mode === "admin-preview" && (
         <div className="bg-gray-900 text-white px-6 py-3 flex items-center justify-between print:hidden">
           <span className="text-sm font-medium">Admin Preview — this is what your client sees.</span>

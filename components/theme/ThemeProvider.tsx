@@ -1,6 +1,7 @@
 import React from "react";
 import { getAllSettings } from "@/lib/settings";
 import { clampOpacity, sanitizeBackgroundImage, hexToRgba, darkenHex, hexToRgb } from "@/lib/theme";
+import { fontPairingVars } from "@/lib/theme/font-pairings";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -41,11 +42,20 @@ export default async function ThemeProvider({ children }: ThemeProviderProps) {
     ["--color-accent-rgb" as string]: accentRgb,
     ["--color-accent-dark-rgb" as string]: accentDarkRgb,
     ["--color-background" as string]: backgroundColor,
+    // The owner's font pairing (Settings → Font Style). Falls back
+    // to Classic when unset or invalid; globals.css carries the
+    // same default for anything outside this provider.
+    ...fontPairingVars(settings.font_pairing),
     backgroundColor,
   };
 
   return (
-    <div style={style} className="theme-wrapper min-h-screen relative">
+    // font-sans on the wrapper itself: text that inherits its font
+    // (most body copy) must inherit from HERE, where the owner's
+    // font_pairing variables live — the <body> font-sans resolves
+    // against the static :root default and would otherwise win by
+    // inheritance for everything without its own font utility.
+    <div style={style} className="theme-wrapper font-sans min-h-screen relative">
       <div className="relative z-10">{children}</div>
     </div>
   );

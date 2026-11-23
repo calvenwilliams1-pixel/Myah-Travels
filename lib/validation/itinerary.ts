@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isFontPairingId } from "@/lib/theme/font-pairings";
 
 const SEGMENT_TYPES = ["activity", "travel", "meal", "free_day"] as const;
 
@@ -27,6 +28,11 @@ export const CreateItinerarySchema = z.object({
 export const UpdateItinerarySchema = z.object({
   title: z.string().min(1).optional(),
   themePreset: z.string().nullable().optional(),
+  fontPairing: z
+    .string()
+    .refine((v) => isFontPairingId(v), { message: "Unknown font pairing" })
+    .nullable()
+    .optional(),
   timezone: TimezoneSchema,
 });
 

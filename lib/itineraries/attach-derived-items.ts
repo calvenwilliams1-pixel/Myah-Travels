@@ -26,6 +26,7 @@ export async function attachDerivedItems<T extends PortalItemLike>(
 ): Promise<(T & {
   glance?: GlanceData;
   dayByDay?: DayByDayState;
+  itineraryFontPairing?: string | null;
   derivedError?: boolean;
 })[]> {
   return Promise.all(
@@ -53,7 +54,7 @@ export async function attachDerivedItems<T extends PortalItemLike>(
 
         if (isGlance) {
           const glance = deriveGlance(full);
-          return { ...item, glance };
+          return { ...item, glance, itineraryFontPairing: full.fontPairing ?? null };
         }
 
         // itinerary_today
@@ -62,7 +63,7 @@ export async function attachDerivedItems<T extends PortalItemLike>(
           full.title ||
           "your trip";
         const dayByDay = deriveDayByDay(full, new Date(), destination);
-        return { ...item, dayByDay };
+        return { ...item, dayByDay, itineraryFontPairing: full.fontPairing ?? null };
       } catch (err) {
         console.error(
           `[attach-derived-items] derive failed for portal_item ${item.id} (itinerary ${item.itineraryId}):`,

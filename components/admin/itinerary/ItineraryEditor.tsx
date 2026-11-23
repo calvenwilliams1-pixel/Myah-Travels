@@ -8,6 +8,7 @@ import AddSectionForm from "./AddSectionForm";
 import ThemeSelector from "./ThemeSelector";
 import SectionEditor from "./SectionEditor";
 import TripChecksPanel from "./TripChecksPanel";
+import { FONT_PAIRINGS, resolveFontPairing } from "@/lib/theme/font-pairings";
 
 // ============================================
 // TYPES
@@ -122,6 +123,7 @@ export interface Itinerary {
   portalId: number;
   title: string;
   themePreset: string | null;
+  fontPairing: string | null;
   timezone: string | null;
   sections: Section[];
 }
@@ -186,6 +188,15 @@ export default function ItineraryEditor({
     fetchItinerary();
   }
 
+  async function updateFontPairing(fontPairing: string | null) {
+    await fetch(`/api/itineraries/${itineraryId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fontPairing }),
+    });
+    fetchItinerary();
+  }
+
   async function updateTimezone(timezone: string | null) {
     await fetch(`/api/itineraries/${itineraryId}`, {
       method: "PATCH",
@@ -244,6 +255,45 @@ export default function ItineraryEditor({
           inheritLabel="Inherit site default"
           helperText="Applied to all sections. Sections can override individually."
         />
+      </Card>
+
+      {/* Font selector — per-itinerary pairing; clients see the
+          change on the published portal as soon as it's saved. */}
+      <Card>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Itinerary Font
+          </label>
+          <select
+            value={itinerary.fontPairing ?? ""}
+            onChange={(e) =>
+              updateFontPairing(e.target.value === "" ? null : e.target.value)
+            }
+            className="form-control"
+          >
+            <option value="">Same as the site font (Settings)</option>
+            {FONT_PAIRINGS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.blurb}
+              </option>
+            ))}
+          </select>
+          {itinerary.fontPairing && (
+            <p
+              className="mt-3 text-lg text-gray-700"
+              style={{
+                fontFamily: `var(--font-display-${itinerary.fontPairing})`,
+              }}
+            >
+              This trip in {resolveFontPairing(itinerary.fontPairing).name} —
+              Cancún awaits.
+            </p>
+          )}
+          <p className="mt-2 text-xs text-gray-500">
+            Applies to this itinerary only, including after it's published —
+            change it any time and clients see the new font right away.
+          </p>
+        </div>
       </Card>
 
       {/* Timezone selector */}
