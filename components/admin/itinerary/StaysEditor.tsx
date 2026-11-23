@@ -7,11 +7,14 @@ import AutosaveDateField from "@/components/ui/autosave/AutosaveDateField";
 import AutosaveTimeField from "@/components/ui/autosave/AutosaveTimeField";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AutosaveSelectField from "@/components/ui/autosave/AutosaveSelectField";
+import { portLineFromTitle } from "@/lib/itineraries/sailingTitles";
+import { daysBetweenISODate } from "@/lib/itineraries/dates";
 import type { Stay } from "./ItineraryEditor";
 
 interface StaysEditorProps {
   sectionId: number;
   stays: Stay[];
+  days: Array<{ date: string; title: string | null }>;
   onChanged: () => void;
 }
 
@@ -33,6 +36,7 @@ const MEAL_PLAN_OPTIONS = [
 export default function StaysEditor({
   sectionId,
   stays,
+  days,
   onChanged,
 }: StaysEditorProps) {
   if (stays.length === 0) {
@@ -46,17 +50,27 @@ export default function StaysEditor({
   return (
     <div className="space-y-3">
       {stays.map((stay) => (
-        <StayRow key={stay.id} stay={stay} onChanged={onChanged} />
+        <StayRow
+          key={stay.id}
+          sectionId={sectionId}
+          stay={stay}
+          days={days}
+          onChanged={onChanged}
+        />
       ))}
     </div>
   );
 }
 
 function StayRow({
+  sectionId,
   stay,
+  days,
   onChanged,
 }: {
+  sectionId: number;
   stay: Stay;
+  days: Array<{ date: string; title: string | null }>;
   onChanged: () => void;
 }) {
   const kind = stay.kind || "hotel";
@@ -255,6 +269,122 @@ function StayRow({
           draftKey={`stay:${stay.id}:checkOutTime`}
           helperText="e.g., 11:00"
         />
+      </div>
+
+      {isCruise && (
+        <SailingDaysPanel
+          sectionId={sectionId}
+          stay={stay}
+          days={days}
+          onChanged={onChanged}
+        />
+      )}
+    </div>
+  );
+}
+
+function SailingDaysPanel({
+  sectionId,
+  stay,
+  days,
+  onChanged,
+}: {
+  sectionId: number;
+  stay: Stay;
+  days: Array<{ date: string; title: string | null }>;
+  onChanged: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const nights = daysBetweenISODate(stay.checkInDate, stay.checkOutDate) ?? 0;
+  const expected = nights + 1;
+
+  function prefill(): string {
+    const inRange = days
+      .filter((d) => d.date >= stay.checkInDate && d.date <= stay.checkOutDate)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (inRange.length > 0) {
+      return inRange.map((d) => portLineFromTitle(d.title)).join("\n");
+    }
+    const lines = Array.from({ length: expected }, () => "");
+    if (stay.embarkPort) lines[0] = stay.embarkPort;
+    if (stay.disembarkPort && expected > 1) lines[expected - 1] = stay.disembarkPort;
+    return lines.join("\n");
+  }
+
+  async function run() {
+    setBusy(true);
+    setError(null);
+    setMsg(null);
+    const res = await fetch(`/api/sections/${sectionId}/sailing-days`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stayId: stay.id, ports: text.split("\n") }),
+    });
+    const data = await res.json();
+    setBusy(false);
+    if (data.success) {
+      setMsg(
+        `Laid out: ${data.created} new day${data.created === 1 ? "" : "s"}, ${data.retitled} retitled. Anything you already added to those days was left alone.`
+      );
+      onChanged();
+    } else {
+      setError(data.error || "Could not lay out the sailing days");
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setText(prefill());
+          setOpen(true);
+        }}
+        className="text-xs px-2 py-1 bg-primary text-white rounded hover:opacity-90"
+      >
+        🚢 Lay out sailing days
+      </button>
+    );
+  }
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2">
+      <p className="text-xs text-gray-600">
+        One port per line, in sailing order — <strong>{expected} lines</strong> for this{" "}
+        {nights}-night sailing, embark day first and disembark day last. Write{" "}
+        <em>At sea</em> for sea days. Re-running rebuilds the day titles only; segments
+        you have added stay put.
+      </p>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={Math.min(expected + 1, 12)}
+        className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm font-mono"
+        placeholder={"Miami, Florida\nAt sea\nNassau, Bahamas\n…"}
+      />
+      {error && <p className="text-red-600 text-xs">{error}</p>}
+      {msg && <p className="text-green-700 text-xs">{msg}</p>}
+      <div className="flex gap-2 justify-end">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="text-xs px-2 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+        >
+          Close
+        </button>
+        <button
+          type="button"
+          onClick={run}
+          disabled={busy}
+          className="text-xs px-2 py-1 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50"
+        >
+          {busy ? "Laying out..." : "Lay out the days"}
+        </button>
       </div>
     </div>
   );
