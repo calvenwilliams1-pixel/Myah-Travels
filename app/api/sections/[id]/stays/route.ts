@@ -27,6 +27,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     hotelName: parsed.data.hotelName,
     address: parsed.data.address,
     notes: parsed.data.notes,
+    kind: parsed.data.kind,
+    cruiseLine: parsed.data.cruiseLine,
+    resortBrand: parsed.data.resortBrand,
   });
   return NextResponse.json({ success: true, stay: result[0] });
  } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }

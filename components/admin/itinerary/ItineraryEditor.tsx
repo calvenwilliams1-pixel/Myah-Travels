@@ -89,6 +89,16 @@ export interface Stay {
   checkInTime: string | null;
   checkOutTime: string | null;
   notes: string | null;
+  kind: string;
+  cruiseLine: string | null;
+  cabin: string | null;
+  deck: string | null;
+  embarkPort: string | null;
+  disembarkPort: string | null;
+  resortBrand: string | null;
+  mealPlan: string | null;
+  transfersIncluded: boolean | null;
+  transfersNote: string | null;
 }
 
 export interface Section {

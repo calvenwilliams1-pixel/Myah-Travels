@@ -107,6 +107,18 @@ export const itineraryStays = sqliteTable(
     checkInTime: text("check_in_time"),
     checkOutTime: text("check_out_time"),
     notes: text("notes"),
+    // Phase 8 Batch 1: stay kinds. For a cruise, hotelName holds the
+    // ship's name (the display name every view already reads).
+    kind: text("kind").notNull().default("hotel"),
+    cruiseLine: text("cruise_line"),
+    cabin: text("cabin"),
+    deck: text("deck"),
+    embarkPort: text("embark_port"),
+    disembarkPort: text("disembark_port"),
+    resortBrand: text("resort_brand"),
+    mealPlan: text("meal_plan"),
+    transfersIncluded: integer("transfers_included", { mode: "boolean" }),
+    transfersNote: text("transfers_note"),
   },
   (table) => ({
     idxSectionId: index("idx_stays_section_id").on(table.sectionId),

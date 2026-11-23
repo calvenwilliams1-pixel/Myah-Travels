@@ -146,6 +146,10 @@ export interface DayByDaySegment {
 
 export interface DayByDayStay {
   hotelName: string;
+  kind: string;
+  cruiseLine: string | null;
+  resortBrand: string | null;
+  mealPlan: string | null;
   checkInTime: string | null;
   checkOutTime: string | null;
   isCheckinDay: boolean;
@@ -373,6 +377,10 @@ export function deriveDayByDay(
     const stay: DayByDayStay | null = stayRow
       ? {
           hotelName: stayRow.hotelName,
+          kind: stayRow.kind ?? "hotel",
+          cruiseLine: stayRow.cruiseLine ?? null,
+          resortBrand: stayRow.resortBrand ?? null,
+          mealPlan: stayRow.mealPlan ?? null,
           checkInTime: stayRow.checkInTime ?? null,
           checkOutTime: stayRow.checkOutTime ?? null,
           isCheckinDay: stayRow.checkInDate === today,

@@ -53,12 +53,20 @@ export function useSuggestions() {
         .then((r) => r.json())
         .then((d) =>
           (d.items || []).map((it: any) => ({
-            value: it.iata ? it.iata + " · " + it.name : it.name,
-            subtitle: it.city ? it.city + ", " + it.country : it.country,
-            // Airports carry their IANA timezone; accepting one lets the
-            // form auto-fill the matching timezone field (leg origin →
-            // departure timezone) instead of making her pick it by hand.
-            payload: it.timezone ? { timezone: it.timezone } : undefined,
+            // Airports render "CODE · Name"; ships arrive as {ship, line};
+            // everything else carries a plain name.
+            value: it.iata ? it.iata + " · " + it.name : (it.name ?? it.ship),
+            subtitle: it.city ? it.city + ", " + it.country : (it.country ?? it.line),
+            // Accepting a suggestion can fill a sibling field: an airport
+            // carries its IANA timezone (→ the leg's timezone field), a
+            // ship carries its cruise line (→ the stay's line field).
+            payload:
+              it.timezone || it.line
+                ? {
+                    ...(it.timezone ? { timezone: it.timezone } : {}),
+                    ...(it.line ? { line: it.line } : {}),
+                  }
+                : undefined,
             source: "static" as const,
           }))
         )

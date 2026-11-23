@@ -338,7 +338,7 @@ export async function getStayById(id: number) {
   return result[0] ?? null;
 }
 
-export async function createStay(sectionId: number, data: {
+export interface StayData {
   hotelName: string;
   address?: string;
   checkInDate: string;
@@ -346,7 +346,19 @@ export async function createStay(sectionId: number, data: {
   checkInTime?: string;
   checkOutTime?: string;
   notes?: string;
-}) {
+  kind?: string;
+  cruiseLine?: string;
+  cabin?: string;
+  deck?: string;
+  embarkPort?: string;
+  disembarkPort?: string;
+  resortBrand?: string;
+  mealPlan?: string;
+  transfersIncluded?: boolean;
+  transfersNote?: string;
+}
+
+export async function createStay(sectionId: number, data: StayData) {
   return db.insert(itineraryStays).values({
     sectionId,
     hotelName: data.hotelName,
@@ -356,18 +368,20 @@ export async function createStay(sectionId: number, data: {
     checkInTime: data.checkInTime ?? null,
     checkOutTime: data.checkOutTime ?? null,
     notes: data.notes ?? null,
+    kind: data.kind ?? "hotel",
+    cruiseLine: data.cruiseLine ?? null,
+    cabin: data.cabin ?? null,
+    deck: data.deck ?? null,
+    embarkPort: data.embarkPort ?? null,
+    disembarkPort: data.disembarkPort ?? null,
+    resortBrand: data.resortBrand ?? null,
+    mealPlan: data.mealPlan ?? null,
+    transfersIncluded: data.transfersIncluded ?? null,
+    transfersNote: data.transfersNote ?? null,
   }).returning();
 }
 
-export async function updateStay(id: number, data: Partial<{
-  hotelName: string;
-  address: string;
-  checkInDate: string;
-  checkOutDate: string;
-  checkInTime: string;
-  checkOutTime: string;
-  notes: string;
-}>) {
+export async function updateStay(id: number, data: Partial<StayData>) {
   return db.update(itineraryStays).set(data).where(eq(itineraryStays.id, id)).returning();
 }
 
