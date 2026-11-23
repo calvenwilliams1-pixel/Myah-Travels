@@ -159,6 +159,11 @@ export default function LoginPage() {
             <Button type="submit" variant="solid" isLoading={isLoading} className="w-full">
               Continue
             </Button>
+            <p className="text-center">
+              <a href="/admin/forgot-password" className="text-sm text-gray-500 hover:underline">
+                Forgot your password?
+              </a>
+            </p>
           </form>
         )}
       </Card>

@@ -1329,3 +1329,23 @@ Environment requirements:
 - **No users admin page.** Account management is CLI-only via `scripts/seed-admin.ts`. Documented in DATA-DURABILITY.md. Deferred — fine for single-admin + dev, needs UI if selling deployments.
 - **Rate limit is in-memory.** Resets on server restart. Fine for single instance.
 - **No TOTP in onboarding.** Deferred to Phase 7.7. `totp_secret`/`totp_enabled` columns exist, wizard doesn't prompt.
+
+## Password Reset (forgot password) — Nov 23, 2026
+
+Automated: `lib/auth/password-reset.test.ts` (vitest, local DB).
+
+- [ ] Login page shows a "Forgot your password?" link under the sign-in form
+- [ ] `/admin/forgot-password` accepts a username and always shows the same
+      "if that account exists" message, known or unknown username
+- [ ] A reset email lands in the EMAIL_ADMIN_TO inbox within ~1 minute with a
+      "Reset Password" button linking to `/admin/reset-password?token=...`
+- [ ] The DB stores only the token's SHA-256 hash (`password_reset_tokens`)
+- [ ] The link opens a working set-new-password form; an expired, used, or
+      invented token shows the invalid-link message instead
+- [ ] After a reset: sign-in works with the new password, the old one fails,
+      a forced password change (must_change_password) is cleared, trusted
+      devices are revoked, and existing sessions are ended
+- [ ] Requesting a second link kills the first one
+- [ ] Changing the password in Settings → Password also kills outstanding
+      reset links
+- [ ] Forgot-password requests are rate-limited per IP (form limiter, 3/hour)

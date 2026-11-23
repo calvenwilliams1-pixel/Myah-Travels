@@ -73,6 +73,38 @@ export function magicLinkEmail(
   };
 }
 
+export function passwordResetEmail(
+  username: string,
+  resetUrl: string
+): { subject: string; html: string } {
+  const safeUsername = escapeHtml(username);
+
+  const content = `
+    <h2 style="color: #333; font-size: 20px;">Reset Your Password</h2>
+    <p style="color: #555; font-size: 16px; line-height: 1.6;">
+      Hi ${safeUsername},
+    </p>
+    <p style="color: #555; font-size: 16px; line-height: 1.6;">
+      Someone asked to reset the password for your MyCalTravels admin
+      account. Click the button below to choose a new one.
+    </p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetUrl}" style="display: inline-block; background-color: ${BRAND_COLOR}; color: #ffffff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 600;">
+        Reset Password
+      </a>
+    </div>
+    <p style="color: #999; font-size: 14px;">
+      This link works for 1 hour and can only be used once. If you didn't
+      ask for it, you can ignore this email — your password won't change.
+    </p>
+  `;
+
+  return {
+    subject: "Reset your MyCalTravels password",
+    html: baseTemplate(content),
+  };
+}
+
 export function inquiryNotificationEmail(
   clientName: string,
   destination: string | null,
