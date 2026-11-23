@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 24)
+# MyCalTravels — TODO.md (Revision 25)
 
 ## Status
 
@@ -76,7 +76,7 @@ Closed Nov 23, 2026:
 - **Phase 7.5 demo content** — the Japan/Cruise/Singapore seeds were test scaffolding, not product work. Dropped.
 - **Japan PDF history question** — the file was test data (owner confirmed). No history cleanup needed. Closed.
 
-**Phase 8 — shelved, now SCOPED (Nov 23, 2026), awaiting the owner's decisions and go-ahead.** The itinerary-builder scope lives in the goal files (`Itinerary_Builder_Scope_2026-11-23.md`): five batches — stay kinds (hotel/resort/cruise), generated sailing days, wider booking-paste coverage, trip-check accuracy warnings, and mixed-trip output polish — under the owner's goals (save data-entry time, extra care for accuracy, simplicity, an attractive finished product) and the one-trip-one-itinerary rule. Four owner decisions (D1–D4) are recorded in the scope; nothing is built until he answers and says go. The other Phase 8 notes below (People table, portal enhancements) remain separate, unscoped ideas.
+**Phase 8 — shelved, now SCOPED (Nov 23, 2026), awaiting the owner's decisions and go-ahead.** The itinerary-builder scope lives in the goal files (`Itinerary_Builder_Scope_2026-11-23.md`): six batches — a reference-data backfill first (airports/airlines widened from the current 64/45 starter sets, a new curated cruise lines + ships catalog, resort brands), then stay kinds (hotel/resort/cruise), generated sailing days, wider booking-paste coverage, trip-check accuracy warnings, and mixed-trip output polish — under the owner's goals (save data-entry time, extra care for accuracy, simplicity, an attractive finished product) and the one-trip-one-itinerary rule. Four owner decisions (D1–D4) are recorded in the scope; nothing is built until he answers and says go. The other Phase 8 notes below (People table, portal enhancements) remain separate, unscoped ideas.
 
 ## Core Principle
 
