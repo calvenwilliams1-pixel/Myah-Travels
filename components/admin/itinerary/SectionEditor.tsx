@@ -43,7 +43,7 @@ export default function SectionEditor({
     <Card className="space-y-4">
       {/* Section header */}
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <AutosaveTextField
             value={section.title}
             onSave={(v) => updateSection({ title: v })}
@@ -55,7 +55,7 @@ export default function SectionEditor({
           variant="ghost"
           size="sm"
           onClick={onDelete}
-          className="text-red-500"
+          className="text-red-500 shrink-0"
         >
           Delete Section
         </Button>
@@ -74,7 +74,7 @@ export default function SectionEditor({
       />
 
       {/* Dates */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <AutosaveDateField
           label="Start Date"
           value={section.startDate || ""}

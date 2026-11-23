@@ -26,7 +26,7 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold">{portal.name}</h2>
           <p className="text-sm text-gray-500">
@@ -45,14 +45,14 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
             <Button variant="secondary" size="sm">Preview Wall ↗</Button>
           </Link>
 
-          <span className="w-px h-6 bg-gray-200 mx-2" />
+          <span className="hidden sm:block w-px h-6 bg-gray-200 mx-2" />
 
           {/* Primary action */}
           <Link href={`/admin/portals/${portal.id}/edit`}>
             <Button size="sm">Edit Wall</Button>
           </Link>
 
-          <span className="w-px h-6 bg-gray-200 mx-2" />
+          <span className="hidden sm:block w-px h-6 bg-gray-200 mx-2" />
 
           {/* Danger group */}
           <form action={archivePortalAction}>

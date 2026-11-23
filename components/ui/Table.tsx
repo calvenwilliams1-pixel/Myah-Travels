@@ -47,7 +47,7 @@ export function Table<T>({
         <thead>
           <tr className="border-b border-gray-200">
             {columns.map((col, i) => (
-              <th key={i} className="text-left py-3 px-4 font-medium text-gray-600">
+              <th key={i} className="text-left py-3 px-3 sm:px-4 font-medium text-gray-600">
                 {col.header}
               </th>
             ))}
@@ -61,7 +61,7 @@ export function Table<T>({
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((col, i) => (
-                <td key={i} className={`py-3 px-4 ${col.className || ""}`}>
+                <td key={i} className={`py-3 px-3 sm:px-4 ${col.className || ""}`}>
                   {col.accessor(row)}
                 </td>
               ))}

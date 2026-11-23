@@ -44,26 +44,30 @@ export default function AddMemberForm({ portalId, action }: AddMemberFormProps) 
   return (
     <form action={action} className="flex flex-col gap-3 mb-4">
       <input type="hidden" name="portalId" value={portalId} />
-      <div className="flex gap-3">
-        <Input
-          name="email"
-          type="email"
-          placeholder="member@email.com"
-          required
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setLookupMessage(null);
-          }}
-          onBlur={handleEmailBlur}
-        />
-        <Input
-          name="name"
-          placeholder="Name (optional)"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Button type="submit" variant="secondary">Add</Button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 min-w-0">
+          <Input
+            name="email"
+            type="email"
+            placeholder="member@email.com"
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setLookupMessage(null);
+            }}
+            onBlur={handleEmailBlur}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <Input
+            name="name"
+            placeholder="Name (optional)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <Button type="submit" variant="secondary" className="shrink-0">Add</Button>
       </div>
       <div aria-live="polite" className="text-xs">
         {lookupPending && <p className="text-gray-400">Looking up...</p>}

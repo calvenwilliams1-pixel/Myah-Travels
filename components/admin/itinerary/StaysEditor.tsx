@@ -88,7 +88,7 @@ function StayRow({
         fieldKey={FIELD_KEYS.STAY_ADDRESS}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <AutosaveDateField
           label="Check-in"
           value={stay.checkInDate}
@@ -103,7 +103,7 @@ function StayRow({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <AutosaveTimeField
           label="Check-in Time"
           value={stay.checkInTime || ""}
