@@ -18,6 +18,9 @@ import ProsConsBlockEditor from "./ProsConsBlockEditor";
 import VerdictBlockEditor from "./VerdictBlockEditor";
 import PreviewPopout from "../PreviewPopout";
 import { usePreviewPopup } from "@/lib/hooks/usePreviewPopup";
+import { useRouter } from "next/navigation";
+import { sectionsFromLayout } from "@/lib/blocks/layout";
+import type { Template } from "@/types/blocks";
 
 const IMPLEMENTED_BLOCKS: BlockType[] = [
   "title",
@@ -37,6 +40,11 @@ interface BlockEditorProps {
   initialTemplateId?: string;
   onChange?: (blocks: BlockData[], templateId: string) => void;
   templates?: import("@/types/blocks").Template[];
+  /** Server action that persists a template (from the templates admin). */
+  onSaveAsTemplate?: (
+    template: import("@/types/blocks").Template,
+    mode: "create" | "update"
+  ) => Promise<{ ok: true; id: string } | { ok: false; error: string }>;
 }
 
 export default function BlockEditor({
@@ -44,12 +52,22 @@ export default function BlockEditor({
   initialTemplateId = "story",
   onChange,
   templates,
+  onSaveAsTemplate,
 }: BlockEditorProps) {
   const [blocks, setBlocks] = useState<BlockData[]>(initialBlocks);
   const [templateId, setTemplateId] = useState(initialTemplateId);
   const [isInitialised, setIsInitialised] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const popup = usePreviewPopup();
+  const router = useRouter();
+  const [showSavePanel, setShowSavePanel] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveState, setSaveState] = useState<
+    | { kind: "idle" }
+    | { kind: "saving" }
+    | { kind: "error"; message: string }
+    | { kind: "saved"; name: string }
+  >({ kind: "idle" });
 
   function handlePreviewClick() {
     const currentTemplate = resolveTemplate(templateId) ?? listTemplates()[0];
@@ -82,26 +100,79 @@ export default function BlockEditor({
 
     const newBlocks: BlockData[] = [];
 
-    // Defensive: some legacy rows may have sections undefined.
-    const sections = Array.isArray(template.sections) ? template.sections : [];
-    sections.forEach((section) => {
-      if (section.state !== "required") return;
-      const def = getBlockDefinition(section.type);
+    const pushDefault = (type: BlockType) => {
+      const def = getBlockDefinition(type);
       if (!def || typeof def.getDefaultData !== "function") {
-        // Malformed section type — skip it rather than crashing the
+        // Malformed block type — skip it rather than crashing the
         // whole editor. Log so it's diagnosable if it happens again.
         console.warn(
           "[BlockEditor] unknown block type in template " + template.id + ":",
-          section.type
+          type
         );
         return;
       }
       newBlocks.push(def.getDefaultData());
-    });
+    };
+
+    if (Array.isArray(template.layout) && template.layout.length > 0) {
+      // Saved layout: place the full arrangement, in order, duplicates
+      // included — this is the setup the writer actually made.
+      template.layout.forEach(pushDefault);
+    } else {
+      // Rules-only template: seed the required blocks.
+      // Defensive: some legacy rows may have sections undefined.
+      const sections = Array.isArray(template.sections) ? template.sections : [];
+      sections.forEach((section) => {
+        if (section.state !== "required") return;
+        pushDefault(section.type);
+      });
+    }
 
     setBlocks(newBlocks);
     setTemplateId(newTemplateId);
     onChange?.(newBlocks, newTemplateId);
+  };
+
+  /**
+   * "Save as template": snapshot the current arrangement (block types
+   * in order) as a brand-new template — which, since the overhaul, is
+   * also a new post type with its own homepage filter.
+   */
+  const handleSaveAsTemplate = async () => {
+    if (!onSaveAsTemplate) return;
+    const name = saveName.trim();
+    if (!name) {
+      setSaveState({ kind: "error", message: "Give the template a name first." });
+      return;
+    }
+    if (blocks.length === 0) {
+      setSaveState({ kind: "error", message: "Add at least one block first." });
+      return;
+    }
+    setSaveState({ kind: "saving" });
+    const layout = blocks.map((b) => b.type);
+    const current = resolveTemplate(templateId);
+    const template: Template = {
+      id: "",
+      name,
+      description: "",
+      themeVariant: current?.themeVariant ?? "minimal",
+      sections: sectionsFromLayout(layout),
+      layout,
+    };
+    const result = await onSaveAsTemplate(template, "create");
+    if (!result.ok) {
+      setSaveState({ kind: "error", message: result.error });
+      return;
+    }
+    setSaveState({ kind: "saved", name });
+    setShowSavePanel(false);
+    setSaveName("");
+    // This post now belongs to the new type; its blocks already match
+    // the saved layout, so nothing resets.
+    setTemplateId(result.id);
+    onChange?.(blocks, result.id);
+    router.refresh();
   };
 
   // Auto-load required blocks on first render
@@ -289,7 +360,65 @@ export default function BlockEditor({
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
         </select>
+        {onSaveAsTemplate && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowSavePanel((v) => !v);
+              setSaveState({ kind: "idle" });
+            }}
+            className="px-3 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            title="Save this arrangement of blocks as a new template you can reuse"
+          >
+            Save as template
+          </button>
+        )}
       </div>
+
+      {onSaveAsTemplate && showSavePanel && (
+        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-3">
+          <p className="text-sm text-gray-600">
+            Save these {blocks.length} blocks, in this order, as a new template.
+            New posts can start from it — and it becomes a filter on your homepage
+            once a post using it is published.
+          </p>
+          <div className="flex gap-2 items-center flex-wrap">
+            <input
+              type="text"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              placeholder="Template name — e.g. Stories"
+              maxLength={100}
+              className="form-control max-w-xs"
+            />
+            <button
+              type="button"
+              onClick={handleSaveAsTemplate}
+              disabled={saveState.kind === "saving"}
+              className="btn-primary"
+            >
+              {saveState.kind === "saving" ? "Saving…" : "Save template"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSavePanel(false)}
+              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+          {saveState.kind === "error" && (
+            <p className="text-sm text-red-600">{saveState.message}</p>
+          )}
+        </div>
+      )}
+
+      {saveState.kind === "saved" && !showSavePanel && (
+        <p className="text-sm text-green-700">
+          Saved as the “{saveState.name}” template — this post uses it now, and
+          it&apos;s in the Template list above for future posts.
+        </p>
+      )}
 
       <div className="space-y-3">
         {blocks.map((block, index) => (

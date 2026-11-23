@@ -10,6 +10,7 @@ import {
   countPostsUsingTemplate,
 } from "@/lib/blocks/template-store";
 import { STARTER_TEMPLATES } from "@/lib/blocks/templates";
+import { isValidLayout } from "@/lib/blocks/layout";
 import type { Template, TemplateSection, BlockType } from "@/types/blocks";
 
 const VALID_THEMES = ["minimal", "travel", "review"] as const;
@@ -75,6 +76,16 @@ function sanitizeTemplate(
     });
   }
 
+  // A saved layout (from "Save as template" in the post editor) is
+  // optional; when present it must be a clean list of block types.
+  let layout: BlockType[] | undefined;
+  if (raw.layout !== undefined) {
+    if (!isValidLayout(raw.layout)) {
+      return { ok: false, error: "Invalid layout" };
+    }
+    layout = raw.layout;
+  }
+
   return {
     ok: true,
     template: {
@@ -83,6 +94,7 @@ function sanitizeTemplate(
       description,
       themeVariant: theme,
       sections,
+      ...(layout ? { layout } : {}),
     },
   };
 }

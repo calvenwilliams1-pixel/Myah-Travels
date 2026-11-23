@@ -12,11 +12,17 @@ import type { Template } from "@/types/blocks";
 
 type PostStatus = "draft" | "published" | "hidden";
 
+type SaveTemplateFn = (
+  template: Template,
+  mode: "create" | "update"
+) => Promise<{ ok: true; id: string } | { ok: false; error: string }>;
+
 interface NewPostFormProps {
   templates: Template[];
+  onSaveAsTemplate?: SaveTemplateFn;
 }
 
-export default function NewPostForm({ templates }: NewPostFormProps) {
+export default function NewPostForm({ templates, onSaveAsTemplate }: NewPostFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -105,6 +111,7 @@ export default function NewPostForm({ templates }: NewPostFormProps) {
 
         <BlockEditor
           templates={templates}
+          onSaveAsTemplate={onSaveAsTemplate}
           onChange={(blocks, templateId) => setContent(JSON.stringify({ blocks, templateId }))}
         />
       </Card>

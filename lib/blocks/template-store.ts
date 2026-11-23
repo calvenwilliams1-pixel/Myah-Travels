@@ -3,6 +3,7 @@ import { templates } from "@/drizzle/schema/templates";
 import { and, eq } from "drizzle-orm";
 import { Template } from "@/types/blocks";
 import { STARTER_TEMPLATES } from "./templates";
+import { isValidLayout } from "./layout";
 
 export interface StoredTemplateMetadata {
   version: number;
@@ -10,6 +11,8 @@ export interface StoredTemplateMetadata {
   description: string;
   themeVariant: "minimal" | "travel" | "review";
   sections: Template["sections"];
+  /** Ordered block types saved from a real post (see lib/blocks/layout). */
+  layout?: Template["layout"];
 }
 
 export async function saveTemplateToDb(template: Template): Promise<number> {
@@ -19,6 +22,7 @@ export async function saveTemplateToDb(template: Template): Promise<number> {
     description: template.description,
     themeVariant: template.themeVariant || "minimal",
     sections: template.sections,
+    ...(template.layout && template.layout.length > 0 ? { layout: template.layout } : {}),
   };
 
   const existing = await db
@@ -72,6 +76,7 @@ export async function loadTemplatesFromDb(): Promise<Template[]> {
           description: parsed.description || t.name,
           sections: parsed.sections,
           themeVariant: parsed.themeVariant || "minimal",
+          ...(isValidLayout(parsed.layout) ? { layout: parsed.layout } : {}),
         };
       } catch {
         return null;

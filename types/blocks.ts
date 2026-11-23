@@ -172,6 +172,13 @@ export interface Template {
   description: string;
   sections: TemplateSection[];
   themeVariant?: "minimal" | "travel" | "review";
+  /**
+   * The exact starting layout saved from a real post (type overhaul,
+   * Nov 23, 2026): an ordered list of block types, duplicates
+   * included. When present, applying the template places these blocks
+   * in this order; `sections` remains the rules layer on top.
+   */
+  layout?: BlockType[];
 }
 
 export interface BlockPost {

@@ -95,7 +95,7 @@ export async function getGuideSteps(): Promise<GuideStep[]> {
     {
       id: "post",
       title: "Write your first post",
-      line: "Stories, guides and reviews show up on your homepage for everyone to read.",
+      line: "Posts show up on your homepage for everyone to read, sorted by the template you wrote them with.",
       actionLabel: "Write a post",
       href: "/admin/posts/new",
       done: (postRows[0]?.c ?? 0) > 0,
