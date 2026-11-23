@@ -1,3 +1,12 @@
+// Load .env explicitly: this script runs under tsx, outside Next.js, so
+// nothing else loads it. Without this, ADMIN_PASSWORD was never seen and
+// the seed silently fell back to a default password (fixed 2026-11-22).
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file — rely on the ambient environment instead.
+}
+
 import { db } from "../lib/db";
 import { users } from "../drizzle/schema/users";
 import { categories } from "../drizzle/schema/categories";
@@ -10,7 +19,14 @@ import { hash } from "bcryptjs";
 async function seed() {
   console.log("Seeding database...");
 
-  const adminPassword = process.env.ADMIN_PASSWORD || "changeme";
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    console.error(
+      "ADMIN_PASSWORD must be set (in .env or the environment) before seeding. " +
+        "Refusing to seed an admin account with a default password."
+    );
+    process.exit(1);
+  }
   const passwordHash = await hash(adminPassword, 12);
   
   await db.insert(users)
