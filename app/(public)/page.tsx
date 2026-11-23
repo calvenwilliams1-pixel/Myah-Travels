@@ -1,6 +1,6 @@
 import React from "react";
 import FeedPage from "@/components/feed/FeedPage";
-import CanvasHomepage from "@/components/homepage/CanvasHomepage";
+import WelcomeSection from "@/components/homepage/WelcomeSection";
 import { getFeedItems } from "@/lib/feed";
 import { getAllTagsWithCounts } from "@/lib/content";
 import { getAllSettings } from "@/lib/settings";
@@ -70,11 +70,7 @@ export default async function HomePage({
 
   return (
     <>
-      {isDefaultView && (
-        <div className="max-w-5xl mx-auto px-4 pt-8">
-          <CanvasHomepage />
-        </div>
-      )}
+      {isDefaultView && <WelcomeSection />}
       <FeedPage
         initialItems={items}
         initialType={type}
