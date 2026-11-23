@@ -155,6 +155,7 @@ export default function SectionEditor({
         <StaysEditor
           sectionId={section.id}
           stays={section.stays}
+          days={section.days}
           onChanged={onChanged}
         />
       </div>
