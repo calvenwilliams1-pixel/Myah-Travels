@@ -76,6 +76,14 @@ export default async function HomePage({
     <>
       {isDefaultView && <WelcomeSection />}
       {isDefaultView && <PromoDeals />}
+      {isDefaultView && (
+        <div className="mx-auto max-w-2xl px-4">
+          <h2 className="text-h2 font-display">More from me</h2>
+          <p className="mt-1 text-gray-600">
+            Stories, guides and notes from my travels.
+          </p>
+        </div>
+      )}
       <FeedPage
         initialItems={items}
         initialType={type}
