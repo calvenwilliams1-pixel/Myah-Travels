@@ -14,7 +14,7 @@ export default async function RecentActivity() {
         <ul className="space-y-2">
           {activities.map((activity) => (
             <li key={activity.id} className="text-sm text-gray-600 flex items-start gap-2">
-              <span className="text-gray-400 flex-shrink-0">
+              <span className="text-gray-500 flex-shrink-0">
                 {activity.createdAt ? new Date(activity.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "--"}
               </span>
               <span className="truncate min-w-0">{activity.details || activity.actionType}</span>

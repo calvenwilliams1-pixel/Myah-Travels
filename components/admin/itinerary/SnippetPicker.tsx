@@ -142,7 +142,7 @@ export default function SnippetPicker({ onInsert }: SnippetPickerProps) {
                   title={s.content}
                 >
                   <span className="block font-medium">{s.title}</span>
-                  <span className="block text-gray-400 truncate">{s.content}</span>
+                  <span className="block text-gray-500 truncate">{s.content}</span>
                 </button>
               ))}
               <button

@@ -161,7 +161,7 @@ export default function CopySegmentModal({
         ) : step === "portal" ? (
           <div className="overflow-y-auto flex-1 space-y-1">
             {portals.length === 0 && (
-              <p className="text-sm text-gray-400 italic py-4">No portals found.</p>
+              <p className="text-sm text-gray-500 italic py-4">No portals found.</p>
             )}
             {portals.map((p) => (
               <button
@@ -177,7 +177,7 @@ export default function CopySegmentModal({
         ) : step === "itinerary" ? (
           <div className="overflow-y-auto flex-1 space-y-1">
             {itineraries.length === 0 && (
-              <p className="text-sm text-gray-400 italic py-4">No itineraries on this portal.</p>
+              <p className="text-sm text-gray-500 italic py-4">No itineraries on this portal.</p>
             )}
             {itineraries.map((it) => (
               <button
@@ -193,7 +193,7 @@ export default function CopySegmentModal({
         ) : (
           <div className="overflow-y-auto flex-1 space-y-1">
             {segments.length === 0 && (
-              <p className="text-sm text-gray-400 italic py-4">No segments in this itinerary.</p>
+              <p className="text-sm text-gray-500 italic py-4">No segments in this itinerary.</p>
             )}
             {segments.map((s) => (
               <button
@@ -203,7 +203,7 @@ export default function CopySegmentModal({
                 onClick={() => copySegment(s)}
                 className="w-full text-left px-3 py-2 rounded hover:bg-primary/10 disabled:opacity-50"
               >
-                <span className="text-xs text-gray-400 mr-2">
+                <span className="text-xs text-gray-500 mr-2">
                   Day {s.dayNumber} ({s.dayDate})
                 </span>
                 <span>{s.title}</span>

@@ -41,7 +41,7 @@ export default function StaysEditor({
 }: StaysEditorProps) {
   if (stays.length === 0) {
     return (
-      <p className="text-xs text-gray-400 pl-2">
+      <p className="text-xs text-gray-500 pl-2">
         No stays added yet.
       </p>
     );

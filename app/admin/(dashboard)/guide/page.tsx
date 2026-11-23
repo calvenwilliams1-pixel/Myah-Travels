@@ -52,7 +52,7 @@ export default async function GuidePage() {
           <div className="min-w-0 flex-1">
             <h2
               className={`text-lg font-semibold ${
-                step.done ? "text-gray-400 line-through" : ""
+                step.done ? "text-gray-500 line-through" : ""
               }`}
             >
               {step.title}

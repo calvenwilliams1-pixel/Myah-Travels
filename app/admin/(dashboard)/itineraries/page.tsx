@@ -86,7 +86,7 @@ export default async function ItineraryLibraryPage({
 
       {rows.length === 0 ? (
         <Card>
-          <p className="text-gray-400 italic text-center py-8">No itineraries found.</p>
+          <p className="text-gray-500 italic text-center py-8">No itineraries found.</p>
         </Card>
       ) : (
         <div className="space-y-2">

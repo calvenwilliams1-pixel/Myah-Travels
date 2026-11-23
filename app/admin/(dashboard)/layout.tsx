@@ -40,7 +40,11 @@ export default async function DashboardLayout({
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-gray-50">
+      {/* --admin-header-h: the sticky AdminHeader's measured height
+          (89px at lg+ where the nav wraps inline, ~65–73px below).
+          Sticky section headers in long editors offset by it
+          (UI Pass 3). */}
+      <div className="min-h-screen bg-gray-50 [--admin-header-h:4.5rem] lg:[--admin-header-h:5.75rem]">
         <AdminHeader username={user.username} onLogout={handleLogout} />
         <main className="px-4 sm:px-6 py-6">{children}</main>
       </div>
