@@ -102,9 +102,15 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
           Today's Plan · {itineraryTitle}
         </p>
         <p className="text-lg font-semibold text-gray-900">
-          Day {day.dayNumber} · {formatDate(day.date)}
+          {day.title === "At Sea"
+            ? "Day at sea"
+            : day.title
+              ? `Day ${day.dayNumber} — ${day.title.replace(/^(Embark|Disembark) — /, "")}`
+              : `Day ${day.dayNumber} · ${formatDate(day.date)}`}
         </p>
-        <p className="text-xs text-gray-500">{day.sectionTitle}</p>
+        <p className="text-xs text-gray-500">
+          {day.title ? `${formatDate(day.date)} · ${day.sectionTitle}` : day.sectionTitle}
+        </p>
       </div>
 
       <div className="p-6 space-y-4">

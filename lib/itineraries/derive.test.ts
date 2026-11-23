@@ -368,6 +368,8 @@ describe("deriveGlance", () => {
       "date",
       "dayNumber",
       "sectionTitle",
+      "stayKind",
+      "stayLine",
       "stayName",
       "transport",
     ]);

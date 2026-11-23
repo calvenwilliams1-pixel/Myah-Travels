@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { GlanceData, GlanceTransport } from "@/lib/itineraries/derive";
+import { stayKindIcon, staySleepName } from "@/lib/itineraries/stayDisplay";
 
 interface ItineraryGlanceViewProps {
   glance: GlanceData;
@@ -88,8 +89,11 @@ export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps
             <ul className="space-y-1 text-sm text-gray-700">
               {day.stayName && (
                 <li>
-                  <span className="mr-2">🏨</span>
-                  {day.stayName}
+                  <span className="mr-2">{stayKindIcon(day.stayKind)}</span>
+                  {staySleepName({ hotelName: day.stayName, kind: day.stayKind })}
+                  {day.stayKind === "cruise" && day.stayLine && (
+                    <span className="text-gray-500"> · {day.stayLine}</span>
+                  )}
                 </li>
               )}
               {day.transport.map((t, i) => (
