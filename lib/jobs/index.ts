@@ -11,15 +11,15 @@ export async function runEmailProcessor(batchSize = 50) {
 }
 
 export async function cleanupExpiredMagicLinks() {
-  const now = new Date().toISOString();
+  // Links are reusable until expiry (2026-11-22), so purge keys off
+  // expiresAt alone: a link goes once it has been expired for 90 days,
+  // whether or not it was ever used. (The old usedAt-based clause could
+  // delete a still-valid link 90 days after its first click.)
   const cutoff90 = new Date();
   cutoff90.setDate(cutoff90.getDate() - 90);
 
   const result = await db.delete(portalMagicLinks)
-    .where(or(
-      and(lte(portalMagicLinks.expiresAt, now), isNull(portalMagicLinks.usedAt)),
-      and(isNotNull(portalMagicLinks.usedAt), lte(portalMagicLinks.usedAt, cutoff90.toISOString()))
-    ));
+    .where(lte(portalMagicLinks.expiresAt, cutoff90.toISOString()));
   return result.changes ?? 0;
 }
 

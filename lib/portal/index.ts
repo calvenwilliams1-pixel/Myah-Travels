@@ -337,10 +337,14 @@ export async function generateMagicLink(
 }
 
 export async function validateMagicLink(token: string) {
+  // Links are reusable until they expire (product decision, 2026-11-22):
+  // clients routinely re-open the email link in a different browser/app
+  // than the first click, and a single-use link locked them out with an
+  // "expired or invalid" message. Expiry, revocation, and the ban check
+  // below still bound access; usedAt now records first use only.
   const result = await db.select().from(portalMagicLinks)
     .where(and(
       eq(portalMagicLinks.token, hashToken(token)),
-      isNull(portalMagicLinks.usedAt),
       isNull(portalMagicLinks.revokedAt)
     ))
     .limit(1);
@@ -365,9 +369,12 @@ export async function consumeMagicLink(token: string) {
   const link = await validateMagicLink(token);
   if (!link) return null;
 
-  await db.update(portalMagicLinks)
-    .set({ usedAt: new Date().toISOString() })
-    .where(eq(portalMagicLinks.id, link.id));
+  // Stamp first use only; later consumes leave usedAt untouched.
+  if (!link.usedAt) {
+    await db.update(portalMagicLinks)
+      .set({ usedAt: new Date().toISOString() })
+      .where(eq(portalMagicLinks.id, link.id));
+  }
 
   const portal = await getPortalById(link.portalId);
   
