@@ -2,6 +2,7 @@ import React from "react";
 import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
 import { getPalette } from "@/lib/theme/palettes";
 import { computeConnectionGaps, legCrossesDate } from "@/lib/itineraries/legMath";
+import { stayKindIcon, staySleepName, staySubline } from "@/lib/itineraries/stayDisplay";
 import PrintButton from "./PrintButton";
 
 interface Segment {
@@ -74,6 +75,16 @@ interface Stay {
   checkOutDate: string;
   checkInTime: string | null;
   checkOutTime: string | null;
+  kind: string;
+  cruiseLine: string | null;
+  cabin: string | null;
+  deck: string | null;
+  embarkPort: string | null;
+  disembarkPort: string | null;
+  resortBrand: string | null;
+  mealPlan: string | null;
+  transfersIncluded: boolean | null;
+  transfersNote: string | null;
 }
 
 interface Section {
@@ -230,14 +241,41 @@ function SectionView({
               key={stay.id}
               className="bg-white border border-gray-200 rounded-lg p-3 flex items-start gap-3 print:border-gray-300"
             >
-              <span className="text-xl">🏨</span>
+              <span className="text-xl">{stayKindIcon(stay.kind)}</span>
               <div className="flex-1">
                 <p className="font-medium">{stay.hotelName}</p>
+                {staySubline(stay) && (
+                  <p className="text-xs text-gray-500">{staySubline(stay)}</p>
+                )}
                 {stay.address && <p className="text-xs text-gray-500">{stay.address}</p>}
+                {stay.kind === "cruise" && (stay.cabin || stay.deck) && (
+                  <p className="text-xs text-gray-500">
+                    {[stay.cabin && `Cabin ${stay.cabin}`, stay.deck && `Deck ${stay.deck}`]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                )}
+                {stay.kind === "cruise" && (stay.embarkPort || stay.disembarkPort) && (
+                  <p className="text-xs text-gray-500">
+                    {stay.embarkPort && `Embark ${stay.embarkPort}`}
+                    {stay.embarkPort && stay.disembarkPort && " → "}
+                    {stay.disembarkPort && `Disembark ${stay.disembarkPort}`}
+                  </p>
+                )}
+                {stay.kind === "resort" && stay.mealPlan && (
+                  <p className="text-xs text-gray-500">{stay.mealPlan}</p>
+                )}
+                {stay.kind === "resort" && stay.transfersIncluded && (
+                  <p className="text-xs text-gray-500">
+                    Airport transfers included{stay.transfersNote ? ` · ${stay.transfersNote}` : ""}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 mt-1">
                   {formatDate(stay.checkInDate)} → {formatDate(stay.checkOutDate)}
-                  {stay.checkInTime && ` · Check-in ${stay.checkInTime}`}
-                  {stay.checkOutTime && ` · Check-out ${stay.checkOutTime}`}
+                  {stay.checkInTime &&
+                    ` · ${stay.kind === "cruise" ? "Boarding" : "Check-in"} ${stay.checkInTime}`}
+                  {stay.checkOutTime &&
+                    ` · ${stay.kind === "cruise" ? "Disembark" : "Check-out"} ${stay.checkOutTime}`}
                 </p>
               </div>
             </div>
@@ -275,7 +313,8 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
         </div>
         {stayTonight && (
           <p className="text-xs text-gray-500 mt-2">
-            🏨 Sleeping at: <span className="font-medium">{stayTonight.hotelName}</span>
+            {stayKindIcon(stayTonight.kind)} Sleeping at:{" "}
+            <span className="font-medium">{staySleepName(stayTonight)}</span>
           </p>
         )}
       </div>

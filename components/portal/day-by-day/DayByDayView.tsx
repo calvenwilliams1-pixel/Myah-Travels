@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { DayByDayState, DayByDayTransport } from "@/lib/itineraries/derive";
+import { stayKindIcon, staySubline } from "@/lib/itineraries/stayDisplay";
 
 interface DayByDayViewProps {
   dayByDay: DayByDayState;
@@ -109,15 +110,27 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
       <div className="p-6 space-y-4">
         {day.stay && (
           <div className="flex items-start gap-3 pb-3 border-b border-gray-100">
-            <span className="text-xl">🏨</span>
+            <span className="text-xl">{stayKindIcon(day.stay.kind)}</span>
             <div className="flex-1">
               <p className="font-medium text-gray-900">{day.stay.hotelName}</p>
+              {staySubline(day.stay) && (
+                <p className="text-xs text-gray-500">{staySubline(day.stay)}</p>
+              )}
+              {day.stay.kind === "resort" && day.stay.mealPlan && (
+                <p className="text-xs text-gray-500">{day.stay.mealPlan}</p>
+              )}
               <div className="text-xs text-gray-500 space-x-3">
                 {day.stay.isCheckinDay && day.stay.checkInTime && (
-                  <span>Check-in {formatTime(day.stay.checkInTime)}</span>
+                  <span>
+                    {day.stay.kind === "cruise" ? "Boarding" : "Check-in"}{" "}
+                    {formatTime(day.stay.checkInTime)}
+                  </span>
                 )}
                 {day.stay.isCheckoutDay && day.stay.checkOutTime && (
-                  <span>Check-out {formatTime(day.stay.checkOutTime)}</span>
+                  <span>
+                    {day.stay.kind === "cruise" ? "Disembark" : "Check-out"}{" "}
+                    {formatTime(day.stay.checkOutTime)}
+                  </span>
                 )}
               </div>
             </div>

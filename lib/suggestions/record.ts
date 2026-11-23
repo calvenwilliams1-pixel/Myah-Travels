@@ -33,14 +33,28 @@ export async function recordStayFields(stay: {
   hotelName?: string | null;
   address?: string | null;
   notes?: string | null;
+  kind?: string | null;
+  cruiseLine?: string | null;
+  resortBrand?: string | null;
 }): Promise<void> {
   const tasks: Promise<void>[] = [];
-  if (stay.hotelName) tasks.push(upsertFieldValue({ fieldKey: FIELD_KEYS.STAY_HOTEL_NAME, value: stay.hotelName }));
+  const isCruise = stay.kind === "cruise";
+  if (stay.hotelName) {
+    tasks.push(
+      upsertFieldValue({
+        fieldKey: isCruise ? FIELD_KEYS.STAY_SHIP : FIELD_KEYS.STAY_HOTEL_NAME,
+        value: stay.hotelName,
+      })
+    );
+  }
   if (stay.address) tasks.push(upsertFieldValue({ fieldKey: FIELD_KEYS.STAY_ADDRESS, value: stay.address }));
   if (stay.notes) tasks.push(upsertFieldValue({ fieldKey: FIELD_KEYS.STAY_NOTES, value: stay.notes }));
+  if (stay.cruiseLine) tasks.push(upsertFieldValue({ fieldKey: FIELD_KEYS.STAY_CRUISE_LINE, value: stay.cruiseLine }));
+  if (stay.resortBrand) tasks.push(upsertFieldValue({ fieldKey: FIELD_KEYS.STAY_RESORT_BRAND, value: stay.resortBrand }));
 
-  // Upsert a hotel entity with identity metadata
-  if (stay.hotelName) {
+  // Upsert a hotel entity with identity metadata — properties only;
+  // a ship is not a hotel and must not land in the hotel memory.
+  if (stay.hotelName && !isCruise) {
     const identity: Record<string, string> = {};
     if (stay.address) identity.address = stay.address;
     tasks.push(

@@ -116,14 +116,26 @@ export const CreateSegmentSchema = z.object({
   { message: "End time must be after start time" }
 );
 
+export const STAY_KINDS = ["hotel", "resort", "cruise"] as const;
+
 export const CreateStaySchema = z.object({
-  hotelName: z.string().min(1, "Hotel name is required"),
+  hotelName: z.string().min(1, "A name is required (hotel, resort, or ship)"),
   address: z.string().optional(),
   checkInDate: z.string().min(1, "Check-in date is required"),
   checkOutDate: z.string().min(1, "Check-out date is required"),
   checkInTime: z.string().optional(),
   checkOutTime: z.string().optional(),
   notes: z.string().optional(),
+  kind: z.enum(STAY_KINDS).optional(),
+  cruiseLine: z.string().optional(),
+  cabin: z.string().optional(),
+  deck: z.string().optional(),
+  embarkPort: z.string().optional(),
+  disembarkPort: z.string().optional(),
+  resortBrand: z.string().optional(),
+  mealPlan: z.string().optional(),
+  transfersIncluded: z.boolean().optional(),
+  transfersNote: z.string().optional(),
 }).refine(
   (data) => data.checkInDate < data.checkOutDate,
   { message: "Check-out must be after check-in" }
