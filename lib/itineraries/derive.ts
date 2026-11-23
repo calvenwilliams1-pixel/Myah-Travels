@@ -14,6 +14,8 @@ export interface GlanceDay {
   date: string;
   sectionTitle: string;
   stayName: string | null;
+  stayKind: string | null;
+  stayLine: string | null;
   transport: GlanceTransport[];
   anchorActivity: string | null;
 }
@@ -72,6 +74,8 @@ export function deriveGlance(fullItinerary: FullItinerary): GlanceData {
         )
         .sort((a, b) => (b.checkInDate ?? "").localeCompare(a.checkInDate ?? ""));
       const stayName = matchingStays[0]?.hotelName ?? null;
+      const stayKind = (matchingStays[0] as any)?.kind ?? null;
+      const stayLine = (matchingStays[0] as any)?.cruiseLine ?? null;
 
       // Transport: one entry per travel segment, sorted by startTime (null last),
       // tiebreaker by segment id for deterministic output.
@@ -104,6 +108,8 @@ export function deriveGlance(fullItinerary: FullItinerary): GlanceData {
         date: day.date,
         sectionTitle: section.title,
         stayName,
+        stayKind,
+        stayLine,
         transport,
         anchorActivity,
       });
@@ -159,6 +165,7 @@ export interface DayByDayStay {
 export interface DayByDayData {
   dayNumber: number;
   date: string;
+  title: string | null;
   sectionTitle: string;
   segments: DayByDaySegment[];
   stay: DayByDayStay | null;
@@ -393,6 +400,7 @@ export function deriveDayByDay(
       day: {
         dayNumber: globalDayNumber,
         date: day.date,
+        title: day.title ?? null,
         sectionTitle: section.title,
         segments,
         stay,

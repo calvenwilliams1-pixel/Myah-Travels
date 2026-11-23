@@ -3,6 +3,7 @@ import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
 import { getPalette } from "@/lib/theme/palettes";
 import { computeConnectionGaps, legCrossesDate } from "@/lib/itineraries/legMath";
 import { stayKindIcon, staySleepName, staySubline } from "@/lib/itineraries/stayDisplay";
+import { tripSummaryStrip } from "@/lib/itineraries/tripSummary";
 import PrintButton from "./PrintButton";
 
 interface Segment {
@@ -177,6 +178,11 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-2">{itinerary.title}</h1>
+        {tripSummaryStrip(itinerary.sections) && (
+          <p className="text-base text-gray-700 font-medium mb-1">
+            {tripSummaryStrip(itinerary.sections)}
+          </p>
+        )}
         <p className="text-gray-500 mb-8">
           {itinerary.sections.length} section{itinerary.sections.length !== 1 ? "s" : ""} ·{" "}
           {itinerary.sections.reduce((sum, s) => sum + s.days.length, 0)} days
@@ -303,7 +309,7 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden print:border-gray-300 print:break-inside-avoid">
       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 print:bg-gray-100">
         <div className="flex items-center gap-2">
-          <span className="text-lg">🌹</span>
+          <span className="text-lg">{day.title === "At Sea" ? "🌊" : "🌹"}</span>
           <div>
             <p className="font-semibold">
               Day {day.dayNumber} · {formatDate(day.date)}
@@ -356,7 +362,13 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
           const hasContent = day.segments.length > 0 || blocks.length > 0;
 
           if (!hasContent) {
-            return (
+            return day.title === "At Sea" ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-4 text-center">
+                <p className="text-sm text-gray-600">
+                  🌊 Day at sea — nothing scheduled. Enjoy the ship.
+                </p>
+              </div>
+            ) : (
               <p className="text-sm text-gray-400 italic text-center py-4">
                 No activities scheduled
               </p>
