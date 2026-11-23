@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import AutocompleteInput from "@/components/ui/AutocompleteInput";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
+import { parseBooking } from "@/lib/suggestions/parseBooking";
 
 interface AddStayFormProps {
   sectionId: number;
@@ -52,6 +53,12 @@ export default function AddStayForm({
   const [transfersIncluded, setTransfersIncluded] = useState(false);
   const [transfersNote, setTransfersNote] = useState("");
 
+  // Booking-paste (Phase 8 Batch 3)
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteMsg, setPasteMsg] = useState<string | null>(null);
+  const [portsList, setPortsList] = useState("");
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +70,62 @@ export default function AddStayForm({
   function useSectionDates() {
     if (sectionStartDate) setCheckInDate(sectionStartDate);
     if (sectionEndDate) setCheckOutDate(sectionEndDate);
+  }
+
+  async function handlePasteParse() {
+    const result = parseBooking(pasteText);
+    const b = result.booking;
+    if (result.source === "unknown") {
+      setPasteMsg(result.warnings[0] ?? "Could not read that confirmation.");
+      return;
+    }
+    if (result.source === "cruise") {
+      setKind("cruise");
+      // Resolve the ship against the catalog for its canonical name + line.
+      if (b.ship) {
+        try {
+          const r = await fetch(
+            "/api/suggestions/statics?field=stay.ship&q=" + encodeURIComponent(b.ship)
+          );
+          const d = await r.json();
+          const hit = (d.items || []).find(
+            (it: { ship?: string }) => it.ship && it.ship.toLowerCase() === b.ship!.toLowerCase()
+          );
+          if (hit) {
+            b.ship = hit.ship;
+            if (hit.line) b.cruiseLine = hit.line;
+          }
+        } catch {
+          // Keep the parsed values.
+        }
+      }
+      if (b.ship) setHotelName(b.ship);
+      if (b.cruiseLine) setCruiseLine(b.cruiseLine);
+      if (b.cabin) setCabin(b.cabin);
+      if (b.deck) setDeck(b.deck);
+      if (b.embarkPort) setEmbarkPort(b.embarkPort);
+      if (b.disembarkPort) setDisembarkPort(b.disembarkPort);
+      if (b.checkInDate) setCheckInDate(b.checkInDate);
+      if (b.checkOutDate) setCheckOutDate(b.checkOutDate);
+      if (b.ports && b.ports.length > 0) {
+        setPortsList(b.ports.join("\n"));
+        setPasteMsg(
+          `Filled from the confirmation — ship, dates${b.cabin ? ", cabin" : ""}, and ${b.ports.length} ports. After you save, “Lay out sailing days” on the stay will build the days from those ports.`
+        );
+      } else {
+        setPasteMsg("Filled from the confirmation — check the fields below, then save.");
+      }
+      return;
+    }
+    if (result.source === "hotel-generic") {
+      if (b.hotelName) setHotelName(b.hotelName);
+      if (b.hotelAddress) setAddress(b.hotelAddress);
+      if (b.checkInDate) setCheckInDate(b.checkInDate);
+      if (b.checkOutDate) setCheckOutDate(b.checkOutDate);
+      setPasteMsg("Filled from the confirmation — check the fields below, then save.");
+      return;
+    }
+    setPasteMsg("That looks like a flight booking — paste it on the flight leg instead (Travel segment → Paste booking).");
   }
 
   async function handleSave() {
@@ -106,6 +169,7 @@ export default function AddStayForm({
         mealPlan: isResort ? mealPlan || undefined : undefined,
         transfersIncluded: isResort ? transfersIncluded : undefined,
         transfersNote: isResort && transfersIncluded ? transfersNote.trim() || undefined : undefined,
+        portsList: isCruise && portsList ? portsList : undefined,
       }),
     });
 
@@ -124,6 +188,45 @@ export default function AddStayForm({
     <Card className="mb-3 bg-gray-50">
       <h4 className="font-semibold text-sm mb-3">New Stay</h4>
       <div className="space-y-3">
+        {/* Booking paste — fills the form from a confirmation email */}
+        {!pasteOpen ? (
+          <button
+            type="button"
+            onClick={() => setPasteOpen(true)}
+            className="text-xs px-2 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+          >
+            📋 Paste a booking confirmation instead
+          </button>
+        ) : (
+          <div className="border border-gray-200 rounded-lg p-3 bg-white space-y-2">
+            <textarea
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              rows={6}
+              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs font-mono"
+              placeholder={"Paste the cruise or hotel confirmation here — ship, dates, cabin and ports fill themselves in."}
+            />
+            {pasteMsg && <p className="text-xs text-gray-600">{pasteMsg}</p>}
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setPasteOpen(false)}
+                className="text-xs px-2 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handlePasteParse}
+                disabled={!pasteText.trim()}
+                className="text-xs px-2 py-1 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50"
+              >
+                Fill the form
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Kind selector — the form only asks what the kind needs */}
         <div className="grid grid-cols-3 gap-1">
           {KIND_OPTIONS.map((opt) => (

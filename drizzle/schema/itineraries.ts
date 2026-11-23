@@ -119,6 +119,9 @@ export const itineraryStays = sqliteTable(
     mealPlan: text("meal_plan"),
     transfersIncluded: integer("transfers_included", { mode: "boolean" }),
     transfersNote: text("transfers_note"),
+    // Port list parsed from a cruise booking confirmation (Batch 3),
+    // one port per line — prefills "Lay out sailing days" (Batch 2).
+    portsList: text("ports_list"),
   },
   (table) => ({
     idxSectionId: index("idx_stays_section_id").on(table.sectionId),

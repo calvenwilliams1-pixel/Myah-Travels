@@ -136,6 +136,7 @@ export const CreateStaySchema = z.object({
   mealPlan: z.string().optional(),
   transfersIncluded: z.boolean().optional(),
   transfersNote: z.string().optional(),
+  portsList: z.string().optional(),
 }).refine(
   (data) => data.checkInDate < data.checkOutDate,
   { message: "Check-out must be after check-in" }

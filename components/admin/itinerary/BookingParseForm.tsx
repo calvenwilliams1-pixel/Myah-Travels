@@ -36,6 +36,43 @@ export default function BookingParseForm({ onApply, onClose }: BookingParseFormP
     if (b.origin) b.originTimezone = (await fill(b.origin, "leg.origin")) ?? b.originTimezone;
     if (b.destination)
       b.destinationTimezone = (await fill(b.destination, "leg.destination")) ?? b.destinationTimezone;
+
+    // An unfamiliar airline code still resolves to its full name from
+    // the catalog — she should never have to type it.
+    if (b.flightNumber && !b.airline) {
+      const code = b.flightNumber.slice(0, 2);
+      try {
+        const r = await fetch(
+          "/api/suggestions/statics?field=leg.operator&q=" + encodeURIComponent(code)
+        );
+        const d = await r.json();
+        const hit = (d.items || []).find(
+          (it: { iata?: string }) => it.iata && it.iata.toUpperCase() === code
+        );
+        if (hit?.name) b.airline = hit.name;
+      } catch {
+        // Catalog unreachable — the code alone still applies cleanly.
+      }
+    }
+
+    // A parsed ship resolves to its canonical name + cruise line.
+    if (result.source === "cruise" && b.ship) {
+      try {
+        const r = await fetch(
+          "/api/suggestions/statics?field=stay.ship&q=" + encodeURIComponent(b.ship)
+        );
+        const d = await r.json();
+        const hit = (d.items || []).find(
+          (it: { ship?: string }) => it.ship && it.ship.toLowerCase() === b.ship!.toLowerCase()
+        );
+        if (hit) {
+          b.ship = hit.ship;
+          if (hit.line) b.cruiseLine = hit.line;
+        }
+      } catch {
+        // Keep the parsed values as-is.
+      }
+    }
     setParsed(result);
   }
 
