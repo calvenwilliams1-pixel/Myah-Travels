@@ -1,6 +1,8 @@
 import React from "react";
+import Image from "next/image";
 import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
 import { getPalette } from "@/lib/theme/palettes";
+import { palettePairings } from "@/lib/theme/pairings";
 import { computeConnectionGaps, legCrossesDate } from "@/lib/itineraries/legMath";
 import { stayKindIcon, staySleepName, staySubline } from "@/lib/itineraries/stayDisplay";
 import { tripSummaryStrip } from "@/lib/itineraries/tripSummary";
@@ -112,6 +114,8 @@ interface ItineraryViewProps {
   mode?: "client" | "admin-preview";
   portalId?: number;
   sitePalette: { primary: string; accent: string };
+  /** Portal hero image, used as the cover photo when set (Pass 2a). */
+  coverImage?: string | null;
 }
 
 function resolveThemePalette(
@@ -137,7 +141,28 @@ const SEGMENT_STYLES: Record<string, { bg: string; border: string; icon: string;
   free_day: { bg: "bg-gray-50", border: "border-gray-200", icon: "🌴", label: "Free Day" },
 };
 
-export default function ItineraryView({ itinerary, portalSlug, mode = "client", portalId, sitePalette }: ItineraryViewProps) {
+export default function ItineraryView({ itinerary, portalSlug, mode = "client", portalId, sitePalette, coverImage }: ItineraryViewProps) {
+  // Cover header (Pass 2a): the trip's palette governs this surface
+  // (brand governs site chrome — the two never mix on one surface).
+  // The band shade comes from the pairing table, so white text on it
+  // always meets the 4.5:1 floor; a cover photo gets the hero rules
+  // (veil + scrim) instead.
+  const coverTheme = itinerary.sections[0]
+    ? resolveThemePalette(itinerary.sections[0], itinerary.themePreset, sitePalette)
+    : (getPalette(itinerary.themePreset) ?? sitePalette);
+  const coverPairings = palettePairings({
+    name: "cover",
+    primary: coverTheme.primary,
+    accent: coverTheme.accent,
+  });
+  const coverSrc = coverImage
+    ? coverImage.startsWith("/")
+      ? coverImage
+      : `/api/uploads/${coverImage}`
+    : null;
+  const summary = tripSummaryStrip(itinerary.sections);
+  const totalDays = itinerary.sections.reduce((sum, s) => sum + s.days.length, 0);
+
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
       {mode === "admin-preview" && (
@@ -154,7 +179,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
 
       {/* Print header — hidden on screen */}
       <div className="hidden print:block px-6 py-4 border-b border-gray-200">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-600">
           Printed {new Date().toLocaleString()} · View latest online: /portal/{portalSlug}/itinerary/{itinerary.id}
         </p>
       </div>
@@ -168,7 +193,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
                 ? `/admin/portals/${portalId}/preview`
                 : `/portal/${portalSlug}`
             }
-            className="text-sm text-gray-500 hover:text-primary print:hidden"
+            className="text-sm text-gray-600 hover:text-primary print:hidden"
           >
             ← Back to wall
           </a>
@@ -177,16 +202,42 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-2">{itinerary.title}</h1>
-        {tripSummaryStrip(itinerary.sections) && (
-          <p className="text-base text-gray-700 font-medium mb-1">
-            {tripSummaryStrip(itinerary.sections)}
-          </p>
-        )}
-        <p className="text-gray-500 mb-8">
-          {itinerary.sections.length} section{itinerary.sections.length !== 1 ? "s" : ""} ·{" "}
-          {itinerary.sections.reduce((sum, s) => sum + s.days.length, 0)} days
-        </p>
+        <div className="relative overflow-hidden rounded-2xl mb-10 print:rounded-none print:border print:border-gray-300">
+          {coverSrc ? (
+            <>
+              <Image
+                src={coverSrc}
+                alt=""
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 1024px"
+                className="object-cover print:hidden"
+              />
+              <div className="absolute inset-0 bg-black/25 print:hidden" aria-hidden="true" />
+              <div className="hero-scrim print:hidden" aria-hidden="true" />
+            </>
+          ) : (
+            <div
+              className="absolute inset-0 print:hidden"
+              style={{
+                background: `linear-gradient(135deg, ${coverTheme.primary} 0%, ${coverPairings.bandBackground} 100%)`,
+              }}
+              aria-hidden="true"
+            />
+          )}
+          <div className="relative px-6 py-10 md:px-10 md:py-12">
+            <h1 className="text-display font-bold text-white mb-2 print:text-gray-900">
+              {itinerary.title}
+            </h1>
+            {summary && (
+              <p className="text-lg text-white/90 font-medium mb-1 print:text-gray-700">{summary}</p>
+            )}
+            <p className="text-sm text-white print:text-gray-600">
+              {itinerary.sections.length} section{itinerary.sections.length !== 1 ? "s" : ""} ·{" "}
+              {totalDays} days
+            </p>
+          </div>
+        </div>
 
         {itinerary.sections.map((section) => (
           <SectionView
@@ -199,7 +250,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
       </div>
 
       {/* Print footer */}
-      <div className="hidden print:block px-6 py-4 border-t border-gray-200 text-xs text-gray-500">
+      <div className="hidden print:block px-6 py-4 border-t border-gray-200 text-xs text-gray-600">
         This itinerary is a snapshot. View latest online: /portal/{portalSlug}/itinerary/{itinerary.id}
       </div>
     </div>
@@ -216,6 +267,11 @@ function SectionView({
   sitePalette: { primary: string; accent: string };
 }) {
   const theme = resolveThemePalette(section, itineraryTheme, sitePalette);
+  const pairings = palettePairings({
+    name: section.title,
+    primary: theme.primary,
+    accent: theme.accent,
+  });
 
   return (
     <section
@@ -223,6 +279,9 @@ function SectionView({
       style={{
         ["--itinerary-primary" as string]: theme.primary,
         ["--itinerary-accent" as string]: theme.accent,
+        // Pairing-table shades: safe for small text / thin UI elements.
+        ["--itinerary-primary-text" as string]: pairings.smallTextOnWhite,
+        ["--itinerary-accent-ui" as string]: pairings.accentUiOnWhite,
       }}
     >
       <div className="mb-6 print:break-after-avoid">
@@ -231,10 +290,10 @@ function SectionView({
           style={{ color: "var(--itinerary-primary)" }}
         >{section.title}</h2>
         {section.baseCity && (
-          <p className="text-sm text-gray-500">Base city: {section.baseCity}</p>
+          <p className="text-sm text-gray-600">Base city: {section.baseCity}</p>
         )}
         {section.startDate && section.endDate && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-600">
             {formatDate(section.startDate)} – {formatDate(section.endDate)}
           </p>
         )}
@@ -251,32 +310,32 @@ function SectionView({
               <div className="flex-1">
                 <p className="font-medium">{stay.hotelName}</p>
                 {staySubline(stay) && (
-                  <p className="text-xs text-gray-500">{staySubline(stay)}</p>
+                  <p className="text-xs text-gray-600">{staySubline(stay)}</p>
                 )}
-                {stay.address && <p className="text-xs text-gray-500">{stay.address}</p>}
+                {stay.address && <p className="text-xs text-gray-600">{stay.address}</p>}
                 {stay.kind === "cruise" && (stay.cabin || stay.deck) && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-600">
                     {[stay.cabin && `Cabin ${stay.cabin}`, stay.deck && `Deck ${stay.deck}`]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
                 )}
                 {stay.kind === "cruise" && (stay.embarkPort || stay.disembarkPort) && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-600">
                     {stay.embarkPort && `Embark ${stay.embarkPort}`}
                     {stay.embarkPort && stay.disembarkPort && " → "}
                     {stay.disembarkPort && `Disembark ${stay.disembarkPort}`}
                   </p>
                 )}
                 {stay.kind === "resort" && stay.mealPlan && (
-                  <p className="text-xs text-gray-500">{stay.mealPlan}</p>
+                  <p className="text-xs text-gray-600">{stay.mealPlan}</p>
                 )}
                 {stay.kind === "resort" && stay.transfersIncluded && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-600">
                     Airport transfers included{stay.transfersNote ? ` · ${stay.transfersNote}` : ""}
                   </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   {formatDate(stay.checkInDate)} → {formatDate(stay.checkOutDate)}
                   {stay.checkInTime &&
                     ` · ${stay.kind === "cruise" ? "Boarding" : "Check-in"} ${stay.checkInTime}`}
@@ -306,7 +365,10 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
   const grouped = groupByTimeOfDay(day.segments);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden print:border-gray-300 print:break-inside-avoid">
+    <div
+      className="day-card print:border-gray-300 print:break-inside-avoid print:shadow-none"
+      style={{ borderLeft: "4px solid var(--itinerary-accent-ui, var(--itinerary-accent))" }}
+    >
       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 print:bg-gray-100">
         <div className="flex items-center gap-2">
           <span className="text-lg">{day.title === "At Sea" ? "🌊" : "🌹"}</span>
@@ -318,7 +380,7 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
           </div>
         </div>
         {stayTonight && (
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-600 mt-2">
             {stayKindIcon(stayTonight.kind)} Sleeping at:{" "}
             <span className="font-medium">{staySleepName(stayTonight)}</span>
           </p>
@@ -347,7 +409,7 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
             if (segs.length === 0) return null;
             return (
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                   {slotLabel(slot)}
                 </p>
                 <div className="space-y-3">
@@ -369,7 +431,7 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-gray-400 italic text-center py-4">
+              <p className="text-sm text-gray-600 italic text-center py-4">
                 No activities scheduled
               </p>
             );
@@ -403,7 +465,7 @@ function SegmentCard({ segment }: { segment: Segment }) {
   const highlightStyle = segment.isHighlighted
     ? {
         borderLeftWidth: "4px",
-        borderLeftColor: "var(--itinerary-accent, var(--color-accent))",
+        borderLeftColor: "var(--itinerary-accent-ui, var(--color-accent))",
       }
     : {};
 
@@ -418,7 +480,7 @@ function SegmentCard({ segment }: { segment: Segment }) {
           <div className="flex items-baseline gap-2 flex-wrap">
             <p className="font-medium">{segment.title}</p>
             {segment.startTime && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-600">
                 {segment.startTime}
                 {segment.endTime && ` – ${segment.endTime}`}
               </span>
@@ -435,7 +497,7 @@ function SegmentCard({ segment }: { segment: Segment }) {
           {segment.confirmation && (() => {
             const label = resolveReferenceLabel(segment.referenceType, segment.referenceLabel);
             return (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-600 mt-2">
                 {label ?? "Confirmation"}: <span className="font-mono">{segment.confirmation}</span>
               </p>
             );
@@ -462,7 +524,7 @@ function TravelCard({ segment }: { segment: Segment }) {
   const highlightStyle = segment.isHighlighted
     ? {
         borderLeftWidth: "4px",
-        borderLeftColor: "var(--itinerary-accent, var(--color-accent))",
+        borderLeftColor: "var(--itinerary-accent-ui, var(--color-accent))",
       }
     : {};
 
@@ -526,7 +588,7 @@ function LegRow({
           {leg.origin || "?"} → {leg.destination || "?"}
         </span>
         {(leg.operator || leg.identifier) && (
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-600">
             {leg.operator}
             {leg.operator && leg.identifier && " · "}
             {leg.identifier}
@@ -540,7 +602,7 @@ function LegRow({
             <p>
               Departs {formatDateTime(leg.departureAt)}
               {leg.originTimezone && (
-                <span className="text-gray-400"> ({leg.originTimezone})</span>
+                <span className="text-gray-600"> ({leg.originTimezone})</span>
               )}
             </p>
           )}
@@ -548,7 +610,7 @@ function LegRow({
             <p>
               Arrives {formatDateTime(leg.arrivalAt)}
               {leg.destinationTimezone && (
-                <span className="text-gray-400"> ({leg.destinationTimezone})</span>
+                <span className="text-gray-600"> ({leg.destinationTimezone})</span>
               )}
               {!sameDay && crossing.crosses && (
                 <span className="ml-1 text-amber-600 font-medium">
@@ -561,7 +623,7 @@ function LegRow({
       )}
 
       {leg.reference && (
-        <p className="text-xs text-gray-500 mt-1 font-mono">{leg.reference}</p>
+        <p className="text-xs text-gray-600 mt-1 font-mono">{leg.reference}</p>
       )}
     </div>
   );
@@ -578,7 +640,7 @@ function ConnectionGapRow({
 }) {
   const label = formatGap(minutes);
   return (
-    <div className="flex items-center justify-center gap-2 text-xs text-gray-500 py-0.5">
+    <div className="flex items-center justify-center gap-2 text-xs text-gray-600 py-0.5">
       <span className="h-px bg-gray-300 flex-1 max-w-[40px]" />
       <span>
         {label} connection
@@ -613,14 +675,14 @@ function LegacyTravelCard({ segment }: { segment: Segment }) {
               <div className="text-center">
                 <p className="text-lg font-bold">{segment.departureAirport || "?"}</p>
                 {segment.departureDatetime && (
-                  <p className="text-xs text-gray-500">{formatDateTime(segment.departureDatetime)}</p>
+                  <p className="text-xs text-gray-600">{formatDateTime(segment.departureDatetime)}</p>
                 )}
               </div>
-              <span className="text-gray-400">→</span>
+              <span className="text-gray-600">→</span>
               <div className="text-center">
                 <p className="text-lg font-bold">{segment.arrivalAirport || "?"}</p>
                 {segment.arrivalDatetime && (
-                  <p className="text-xs text-gray-500">{formatDateTime(segment.arrivalDatetime)}</p>
+                  <p className="text-xs text-gray-600">{formatDateTime(segment.arrivalDatetime)}</p>
                 )}
               </div>
             </div>
@@ -728,7 +790,7 @@ function BlockCard({ block }: { block: ItineraryBlock }) {
           />
         )}
         {block.imageAlt && (
-          <p className="text-xs text-gray-500 mt-1 text-center">{block.imageAlt}</p>
+          <p className="text-xs text-gray-600 mt-1 text-center">{block.imageAlt}</p>
         )}
       </div>
     );

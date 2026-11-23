@@ -96,7 +96,7 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
   // during-trip
   const day = dayByDay.day;
   return (
-    <div className="day-by-day-banner bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div className="day-by-day-banner day-card">
       <div className="bg-primary/5 border-b border-primary/20 px-6 py-3">
         <p className="text-xs uppercase tracking-wider text-primary font-semibold">
           Today's Plan · {itineraryTitle}
@@ -108,7 +108,7 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
               ? `Day ${day.dayNumber} — ${day.title.replace(/^(Embark|Disembark) — /, "")}`
               : `Day ${day.dayNumber} · ${formatDate(day.date)}`}
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-600">
           {day.title ? `${formatDate(day.date)} · ${day.sectionTitle}` : day.sectionTitle}
         </p>
       </div>
@@ -120,12 +120,12 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
             <div className="flex-1">
               <p className="font-medium text-gray-900">{day.stay.hotelName}</p>
               {staySubline(day.stay) && (
-                <p className="text-xs text-gray-500">{staySubline(day.stay)}</p>
+                <p className="text-xs text-gray-600">{staySubline(day.stay)}</p>
               )}
               {day.stay.kind === "resort" && day.stay.mealPlan && (
-                <p className="text-xs text-gray-500">{day.stay.mealPlan}</p>
+                <p className="text-xs text-gray-600">{day.stay.mealPlan}</p>
               )}
-              <div className="text-xs text-gray-500 space-x-3">
+              <div className="text-xs text-gray-600 space-x-3">
                 {day.stay.isCheckinDay && day.stay.checkInTime && (
                   <span>
                     {day.stay.kind === "cruise" ? "Boarding" : "Check-in"}{" "}
@@ -144,12 +144,12 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
         )}
 
         {day.segments.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">Nothing scheduled today.</p>
+          <p className="text-sm text-gray-600 italic">Nothing scheduled today.</p>
         ) : (
           <div className="space-y-3">
             {day.segments.map((seg, i) => (
               <div key={i} className="flex items-start gap-3">
-                <span className="text-sm text-gray-400 w-16 shrink-0">
+                <span className="text-sm text-gray-600 w-16 shrink-0">
                   {formatTime(seg.startTime)}
                 </span>
                 <div className="flex-1">
@@ -161,7 +161,7 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
                     <p className="text-xs text-gray-600">{formatTransport(seg.transport)}</p>
                   )}
                   {seg.location && (
-                    <p className="text-xs text-gray-500">📍 {seg.location}</p>
+                    <p className="text-xs text-gray-600">📍 {seg.location}</p>
                   )}
                 </div>
               </div>
