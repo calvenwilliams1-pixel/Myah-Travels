@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { getPortals, getDeletedPortals } from "@/lib/portal";
+import { getPortals, getDeletedPortals, getPromoPortal } from "@/lib/portal";
 import { requireAuth } from "@/lib/auth";
 import { Table } from "@/components/ui/Table";
 import { Card } from "@/components/ui/Card";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import ConfirmSubmitButton from "@/components/ui/ConfirmSubmitButton";
 import {
   archivePortalAction,
+  createPromoPortalAction,
   deletePortalAction,
   restorePortalAction,
 } from "./actions";
@@ -25,6 +26,7 @@ export default async function PortalsPage({
   const portals = showDeleted
     ? await getDeletedPortals()
     : await getPortals({ includeArchived: true });
+  const promoPortal = showDeleted ? null : await getPromoPortal();
 
   return (
     <div className="space-y-6">
@@ -57,6 +59,44 @@ export default async function PortalsPage({
           )}
         </div>
       </div>
+
+      {!showDeleted &&
+        (promoPortal ? (
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium text-gray-900">
+                  Promo portal:
+                </span>{" "}
+                {promoPortal.name} — permanent, for potential clients. Its
+                access links never expire.
+              </p>
+              <Link href={`/admin/portals/${promoPortal.id}`}>
+                <Button variant="secondary" size="sm">
+                  Open promo portal
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        ) : (
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium text-gray-900">
+                  No promo portal yet.
+                </span>{" "}
+                A promo portal is a permanent portal for potential clients —
+                post documents, promos and a sample itinerary, add emails,
+                and their access links never expire.
+              </p>
+              <form action={createPromoPortalAction}>
+                <Button size="sm" type="submit">
+                  Create promo portal
+                </Button>
+              </form>
+            </div>
+          </Card>
+        ))}
 
       <Card padding="none">
         <Table
@@ -102,12 +142,19 @@ export default async function PortalsPage({
                   {
                     header: "Name",
                     accessor: (portal: any) => (
-                      <Link
-                        href={`/admin/portals/${portal.id}`}
-                        className="font-medium hover:text-primary"
-                      >
-                        {portal.name}
-                      </Link>
+                      <>
+                        <Link
+                          href={`/admin/portals/${portal.id}`}
+                          className="font-medium hover:text-primary"
+                        >
+                          {portal.name}
+                        </Link>
+                        {portal.isPromo && (
+                          <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent-dark">
+                            Promo
+                          </span>
+                        )}
+                      </>
                     ),
                   },
                   {

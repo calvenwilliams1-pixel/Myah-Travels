@@ -71,6 +71,7 @@ export async function createPortal(data: {
   heroSubtitle?: string;
   heroImage?: string;
   heroPreset?: string;
+  isPromo?: boolean;
 }) {
   const baseSlug = data.name
     .toLowerCase()
@@ -91,7 +92,35 @@ export async function createPortal(data: {
     heroImage: data.heroImage ?? null,
     heroPreset: data.heroPreset ?? "minimal",
     isActive: true,
+    isPromo: data.isPromo ?? false,
   }).returning();
+}
+
+/** The one promo portal, if it has been created. */
+export async function getPromoPortal() {
+  const rows = await db
+    .select()
+    .from(portals)
+    .where(and(eq(portals.isPromo, true), isNull(portals.deletedAt)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Create the promo portal, or return the existing one — there is only
+ * ever one. It has no trip dates: nothing about it expires, and the
+ * purge job skips it explicitly.
+ */
+export async function createPromoPortal() {
+  const existing = await getPromoPortal();
+  if (existing) return [existing];
+  return createPortal({
+    name: "Explore Travel With Me",
+    heroTitle: "Explore Travel With Me",
+    heroSubtitle:
+      "Sample itineraries, travel ideas and a taste of what I can plan for you — browse any time.",
+    isPromo: true,
+  });
 }
 
 export async function updatePortal(
@@ -290,7 +319,18 @@ export function hashToken(raw: string): string {
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
 
-export function getMagicLinkExpiry(portal: { returnDate?: string | null }): Date {
+export function getMagicLinkExpiry(portal: {
+  returnDate?: string | null;
+  isPromo?: boolean | null;
+}): Date {
+  // The promo portal is permanent: its links (and the sessions they
+  // create) effectively never expire. A century out stands in for
+  // "never" in a NOT NULL column.
+  if (portal.isPromo) {
+    const never = new Date();
+    never.setFullYear(never.getFullYear() + 100);
+    return never;
+  }
   if (portal.returnDate) {
     const expiry = new Date(portal.returnDate + "T23:59:59");
     expiry.setDate(expiry.getDate() + 3);
@@ -337,14 +377,10 @@ export async function generateMagicLink(
 }
 
 export async function validateMagicLink(token: string) {
-  // Links are reusable until they expire (product decision, 2026-11-22):
-  // clients routinely re-open the email link in a different browser/app
-  // than the first click, and a single-use link locked them out with an
-  // "expired or invalid" message. Expiry, revocation, and the ban check
-  // below still bound access; usedAt now records first use only.
   const result = await db.select().from(portalMagicLinks)
     .where(and(
       eq(portalMagicLinks.token, hashToken(token)),
+      isNull(portalMagicLinks.usedAt),
       isNull(portalMagicLinks.revokedAt)
     ))
     .limit(1);
@@ -369,23 +405,15 @@ export async function consumeMagicLink(token: string) {
   const link = await validateMagicLink(token);
   if (!link) return null;
 
-  // Stamp first use only; later consumes leave usedAt untouched.
-  if (!link.usedAt) {
-    await db.update(portalMagicLinks)
-      .set({ usedAt: new Date().toISOString() })
-      .where(eq(portalMagicLinks.id, link.id));
-  }
+  await db.update(portalMagicLinks)
+    .set({ usedAt: new Date().toISOString() })
+    .where(eq(portalMagicLinks.id, link.id));
 
   const portal = await getPortalById(link.portalId);
-  
-  let sessionExpiry: Date;
-  if (portal?.returnDate) {
-    sessionExpiry = new Date(portal.returnDate + "T23:59:59");
-    sessionExpiry.setDate(sessionExpiry.getDate() + 3);
-  } else {
-    sessionExpiry = new Date();
-    sessionExpiry.setDate(sessionExpiry.getDate() + 30);
-  }
+
+  // One expiry rule for links and the sessions they create — the
+  // promo portal's sessions never expire either (see getMagicLinkExpiry).
+  const sessionExpiry = getMagicLinkExpiry(portal ?? {});
 
   const sessionId = crypto.randomBytes(32).toString("base64url");
 
@@ -438,11 +466,15 @@ export async function sendMagicLinkToMember(
   if (!token) return false;
 
   const linkUrl = `${process.env.SITE_URL || "http://localhost:3000"}/portal/access/${token}`;
-  const expiresOnLabel = getMagicLinkExpiry(portal).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  // Promo portal links never expire — the email says so instead of
+  // printing a date a century out.
+  const expiresOnLabel = portal.isPromo
+    ? null
+    : getMagicLinkExpiry(portal).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
   const email = magicLinkEmail(member.name, portal.name, linkUrl, expiresOnLabel);
   const id = await queueEmail({
     toEmail: member.email,

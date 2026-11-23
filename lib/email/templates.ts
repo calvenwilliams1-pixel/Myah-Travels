@@ -42,11 +42,20 @@ export function magicLinkEmail(
   memberName: string | null,
   portalName: string,
   magicLinkUrl: string,
-  expiresOnLabel: string
+  // null = the link never expires (the promo portal); the email says
+  // so instead of naming a date.
+  expiresOnLabel: string | null
 ): { subject: string; html: string } {
   const displayName = escapeHtml(memberName || "there");
   const safePortalName = escapeHtml(portalName);
-  const safeExpiryLabel = escapeHtml(expiresOnLabel);
+  const expiryParagraph =
+    expiresOnLabel === null
+      ? `<p style="color: #999; font-size: 14px;">
+      This link doesn't expire — save it and come back any time. If you lose it, contact Myah for a new one.
+    </p>`
+      : `<p style="color: #999; font-size: 14px;">
+      This link expires on ${escapeHtml(expiresOnLabel)}. If you need a new link, contact Myah.
+    </p>`;
 
   const content = `
     <h2 style="color: #333; font-size: 20px;">Your Portal Access Link</h2>
@@ -62,9 +71,7 @@ export function magicLinkEmail(
         Access Portal
       </a>
     </div>
-    <p style="color: #999; font-size: 14px;">
-      This link expires on ${safeExpiryLabel}. If you need a new link, contact Myah.
-    </p>
+    ${expiryParagraph}
   `;
 
   return {
