@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 21)
+# MyCalTravels — TODO.md (Revision 22)
 
 ## Status
 
-**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE and the site is LIVE** — launched Nov 22, 2026 at https://stgeammachine.tail2ba8aa.ts.net (Tailscale Funnel on the mini PC, Gmail SMTP). 184 vitest tests passing, `tsc` clean. Revision 21 (Nov 23, 2026) reconciles this file against the code and the live deployment — several items earlier revisions listed as pending had in fact shipped; they are now marked done, and the genuinely remaining work is collected under "What's left" below.
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE and the site is LIVE** — launched Nov 22, 2026 at https://stgeammachine.tail2ba8aa.ts.net (Tailscale Funnel on the mini PC, Gmail SMTP). 184 vitest tests passing, `tsc` clean. Revisions 21–22 (Nov 23, 2026) reconcile this file against the code, the live deployment, and the owner's dispositions — several items earlier revisions listed as pending had in fact shipped; they are now marked done, and the genuinely remaining work is collected under "What's left" below.
 
 **Batch M (auth + onboarding) SHIPPED on `main`** — merged at `60420df`. User flags (`is_admin`, `is_active`, `must_change_password`, `has_completed_setup`), `seed-admin.ts` CLI, `requireAuth`/`requireSession`/`requireAdmin` split, 3-step setup wizard, cache bug fix, dashboard warmth, `next start -H 127.0.0.1` bind, `auth-rate-limit.sh` audit suite.
 
@@ -39,7 +39,7 @@
 
 ### Open security items (from this session)
 
-- **Japan itinerary PDF in the repo** — RESOLVED as a tracked-file issue (verified Nov 23, 2026): no uploads are tracked on `main` anymore. One footnote remains: the file existed in git history, so **if it was real client data** (never answered), history cleanup (`git filter-repo`) is still owed. If it was test data, nothing further.
+- **Japan itinerary PDF in the repo** — CLOSED (Nov 23, 2026): no uploads are tracked on `main` anymore, and the owner confirmed the file was test data. It existed in git history, but as test data no history cleanup is needed.
 - **`public/uploads/` in `.gitignore`** ✅ FIXED — `public/uploads/*` + `!public/uploads/.gitkeep` (and the same for `data/uploads/`) are in `.gitignore`.
 - **Uploads serving after `next build`** ✅ RESOLVED by design — uploads are served through the authenticated route handler `app/api/uploads/[...path]`, not from `public/`, so files added after a build serve correctly.
 
@@ -58,17 +58,25 @@
 
 Shipped since launch, for the record: full mobile/tablet pass (PR #5), post-launch audit fixes — seed password guard, reusable magic links, draft recovery, post-editor autosave (PR #6), trusted-device 2FA (PR #7), security headers (PR #8), homepage welcome wiring (PR #9), dashboard greetings (PR #10), in-site Getting Started guide (PR #11), forgot-password reset flow (PR #12). 184/184 tests passing.
 
-Genuinely outstanding:
+Not tracked here: **Myah's first login + authenticator enrolment** — her own step, not project work. The account is ready (forced password change ON, verified Nov 23, 2026).
 
-1. **Myah's first login** — the account is ready: a forced password change is switched ON (verified Nov 23, 2026), so her first sign-in makes her set her own password, then enrol her authenticator. Production content is still empty (0 portals / posts / clients) until she starts.
-2. **Framework upgrade session** — Next 14.2.35, drizzle-orm, and sharp carry known advisories (see the Nov 22 security audit in the goal files). Needs a planned, tested upgrade session. Not started.
-3. **Off-disk backups** — nightly backups (`~/backup-site.sh`) land on the same 2TB disk as the site itself. One disk failure takes both. Needs an external or offsite target.
-4. **SSH key-only login on the mini PC** — password authentication still enabled. Owner's call.
-5. **Rate-limit findings (3)** — successful login doesn't reset the counter; no per-username limiter; no distributed-attack defense. Documented under "Outstanding from earlier sessions." Low urgency.
-6. **TESTING.md coverage gaps** — block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Ongoing; each batch appends its own section.
-7. **Phase 7.5 demo content** — Japan + Cruise demos still pending (Singapore seeded). Cosmetic.
-8. **Japan PDF history question** — the file is out of the tree; history cleanup is owed only if it was real client data (never answered). See Known Issues #6.
-9. **Phase 8** — deferred by design, post-launch future (see its section below).
+Still open, small:
+
+1. **SSH key-only login on the mini PC** — password authentication still enabled. Owner's call.
+2. **Rate-limit findings (3)** — successful login doesn't reset the counter; no per-username limiter; no distributed-attack defense. Documented under "Outstanding from earlier sessions." Low urgency.
+3. **TESTING.md checklists** — the features themselves were fully tested at launch (launch test report + post-launch audit; 184 automated tests). Only the written manual checklists for a few areas (blocks beyond Body, client-facing rendering, Content Library) were never added. Documentation debt only.
+
+Held in reserve:
+
+- **Framework upgrade (Next / drizzle / sharp)** — only if a future bug actually traces to the current versions. Not a standing task and not a priority.
+- **Off-disk backups** — genuinely good advice, not a priority: nightly backups (`~/backup-site.sh`) currently land on the same 2TB disk as the site itself.
+
+Closed Nov 23, 2026:
+
+- **Phase 7.5 demo content** — the Japan/Cruise/Singapore seeds were test scaffolding, not product work. Dropped.
+- **Japan PDF history question** — the file was test data (owner confirmed). No history cleanup needed. Closed.
+
+**Phase 8 — shelved, needs proper scoping before anything is built.** It is much larger than the one-line summaries below suggest. The actual goal, in the owner's words: streamline the itinerary builder so a mixed trip stays in ONE itinerary — a single trip can move between hotels, resorts, and a cruise, and each part needs its own scheduling/format handling inside the same document. Separate blanket "cruise" or "resort" itinerary documents for one trip would defeat the purpose (two documents for one trip). The point is saving the writer time and keeping a trip organized, not adding surface area. See the Phase 8 section.
 
 ## Core Principle
 
@@ -423,7 +431,7 @@ Operational checklist for the deployed system. Completed on the mini PC. This se
 
 ## Phase 8 — Deferred (post-launch)
 
-Do not schedule until Launch Day completes.
+**Shelved Nov 23, 2026 — do not build from this list without a proper scoping pass first.** The bullets below are raw notes, not a plan, and they understate the work considerably. The design intent that scoping must serve, in the owner's words: one trip = one itinerary, even when the trip mixes hotels, resorts, and a cruise — each part carries its own scheduling/format handling inside the single itinerary. Blanket per-type documents (a separate cruise itinerary, a separate resort itinerary) are explicitly NOT the goal; they would split one trip into two documents. The purpose is to streamline the builder, save the writer time, and keep a trip organized — not to add surface area.
 
 - **Itinerary V2:** options segments, cruise mode, overlapping stays, group splits
 - **People & Tagging V2:** triggered People table, per-person itinerary lookup, PII isolation
@@ -491,7 +499,7 @@ Do not schedule until Launch Day completes.
 3. **`schema.sql` outdated** — Use `scripts/setup-db.js`.
 4. **Codespace Node version** — Codespace runs Node 24; local runs Node 22 LTS. Minor drift; both work. Local is deployment-target.
 5. **`TESTING.md` coverage gaps** — break-session features covered at `65f857f`. Still uncovered: block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Each batch fixes its own gap going forward.
-6. **PDF exposure in public repo** — RESOLVED as a tracked file (no uploads tracked on `main`, verified Nov 23, 2026). The file may persist in git history; whether it was real client data was never answered — history cleanup is owed only if it was real. See "Open security items" above.
+6. **PDF exposure in public repo** — CLOSED. No uploads tracked on `main` (verified Nov 23, 2026), and the owner confirmed the file was test data, so its presence in git history needs no cleanup.
 7. **`public/uploads/` not in `.gitignore`** — FIXED. `.gitignore` carries `public/uploads/*` + `!public/uploads/.gitkeep` (and the `data/uploads/` pair).
 8. **Uploads 404 after `next build`** — RESOLVED. Uploads serve through `app/api/uploads/[...path]` with auth checks, outside `public/`.
 9. **Rate-limit FINDINGs** — 3 policy observations from `auth-rate-limit.sh`: successful login doesn't reset counter, no per-username limiter, no distributed-attack defense. Documented in suite header. Not urgent.
