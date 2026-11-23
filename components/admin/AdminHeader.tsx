@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 
 const NAV_LINKS: { href: string; label: string; external?: boolean }[] = [
   { href: "/admin", label: "Dashboard" },
+  { href: "/admin/guide", label: "Guide" },
   { href: "/", label: "View Site ↗", external: true },
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/homepage", label: "Homepage" },
