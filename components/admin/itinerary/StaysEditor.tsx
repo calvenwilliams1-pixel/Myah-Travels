@@ -304,6 +304,9 @@ function SailingDaysPanel({
   const expected = nights + 1;
 
   function prefill(): string {
+    // A port list parsed from the booking confirmation wins — it is
+    // the list exactly as the cruise line printed it.
+    if (stay.portsList && stay.portsList.trim()) return stay.portsList;
     const inRange = days
       .filter((d) => d.date >= stay.checkInDate && d.date <= stay.checkOutDate)
       .sort((a, b) => a.date.localeCompare(b.date));

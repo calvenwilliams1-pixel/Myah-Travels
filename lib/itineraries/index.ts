@@ -356,6 +356,7 @@ export interface StayData {
   mealPlan?: string;
   transfersIncluded?: boolean;
   transfersNote?: string;
+  portsList?: string;
 }
 
 export async function createStay(sectionId: number, data: StayData) {
@@ -378,6 +379,7 @@ export async function createStay(sectionId: number, data: StayData) {
     mealPlan: data.mealPlan ?? null,
     transfersIncluded: data.transfersIncluded ?? null,
     transfersNote: data.transfersNote ?? null,
+    portsList: data.portsList ?? null,
   }).returning();
 }
 

@@ -100,6 +100,7 @@ export interface Stay {
   mealPlan: string | null;
   transfersIncluded: boolean | null;
   transfersNote: string | null;
+  portsList: string | null;
 }
 
 export interface Section {
