@@ -1,6 +1,7 @@
 import React from "react";
 import FeedPage from "@/components/feed/FeedPage";
 import WelcomeSection from "@/components/homepage/WelcomeSection";
+import PromoDeals from "@/components/homepage/PromoDeals";
 import { getFeedItems, getFeedTemplateFilters } from "@/lib/feed";
 import { getAllTagsWithCounts } from "@/lib/content";
 import { getAllSettings } from "@/lib/settings";
@@ -74,6 +75,7 @@ export default async function HomePage({
   return (
     <>
       {isDefaultView && <WelcomeSection />}
+      {isDefaultView && <PromoDeals />}
       <FeedPage
         initialItems={items}
         initialType={type}
