@@ -164,7 +164,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
   const totalDays = itinerary.sections.reduce((sum, s) => sum + s.days.length, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 print:bg-white">
+    <div className="itinerary-print min-h-screen bg-gray-50 print:bg-white">
       {mode === "admin-preview" && (
         <div className="bg-gray-900 text-white px-6 py-3 flex items-center justify-between print:hidden">
           <span className="text-sm font-medium">Admin Preview — this is what your client sees.</span>
@@ -202,7 +202,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <div className="relative overflow-hidden rounded-2xl mb-10 print:rounded-none print:border print:border-gray-300">
+        <div className="cover-page relative overflow-hidden rounded-2xl mb-10 print:rounded-none print:border print:border-gray-300">
           {coverSrc ? (
             <>
               <Image
@@ -250,7 +250,7 @@ export default function ItineraryView({ itinerary, portalSlug, mode = "client", 
       </div>
 
       {/* Print footer */}
-      <div className="hidden print:block px-6 py-4 border-t border-gray-200 text-xs text-gray-600">
+      <div className="hidden print:block px-6 py-4 border-t border-gray-200 text-xs text-gray-600 print:break-inside-avoid">
         This itinerary is a snapshot. View latest online: /portal/{portalSlug}/itinerary/{itinerary.id}
       </div>
     </div>
@@ -275,7 +275,7 @@ function SectionView({
 
   return (
     <section
-      className="mb-12"
+      className="print-section mb-12"
       style={{
         ["--itinerary-primary" as string]: theme.primary,
         ["--itinerary-accent" as string]: theme.accent,
