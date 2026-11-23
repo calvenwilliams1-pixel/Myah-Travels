@@ -68,11 +68,11 @@ export default function ClientsPeopleList() {
 
       {isLoading ? (
         <Card>
-          <p className="text-sm text-gray-400 text-center py-6">Loading...</p>
+          <p className="text-sm text-gray-500 text-center py-6">Loading...</p>
         </Card>
       ) : people.length === 0 ? (
         <Card>
-          <p className="text-sm text-gray-400 text-center py-6">
+          <p className="text-sm text-gray-500 text-center py-6">
             {query ? "No matching clients." : "No clients yet. Adding a portal member creates a client record."}
           </p>
         </Card>
@@ -91,7 +91,7 @@ export default function ClientsPeopleList() {
                     <p className="text-sm text-gray-500">{p.email}</p>
                   </div>
                   {p.updatedAt && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       Updated {new Date(p.updatedAt).toLocaleDateString()}
                     </span>
                   )}

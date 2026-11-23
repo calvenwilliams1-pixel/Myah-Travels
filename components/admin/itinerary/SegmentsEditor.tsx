@@ -40,7 +40,7 @@ export default function SegmentsEditor({
   const [showCopyModal, setShowCopyModal] = React.useState(false);
   if (segments.length === 0) {
     return (
-      <p className="text-xs text-gray-400 pl-2 italic">
+      <p className="text-xs text-gray-500 pl-2 italic">
         No segments — will render as &quot;No activities scheduled&quot;
       </p>
     );
@@ -188,7 +188,7 @@ function SegmentRow({
       <div className="flex items-start gap-2">
         {orderMode === "manual" && (
           <span
-            className="text-base text-gray-400 cursor-grab active:cursor-grabbing select-none"
+            className="text-base text-gray-500 cursor-grab active:cursor-grabbing select-none"
             title="Drag to reorder"
           >
             ⋮⋮

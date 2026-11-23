@@ -21,7 +21,7 @@ export default function TripTabs({ trips }: TripTabsProps) {
   const [activeId, setActiveId] = useState<number | null>(trips[0]?.id ?? null);
 
   if (trips.length === 0) {
-    return <p className="text-sm text-gray-400 italic">No trips recorded yet.</p>;
+    return <p className="text-sm text-gray-500 italic">No trips recorded yet.</p>;
   }
 
   const active = trips.find((t) => t.id === activeId) ?? trips[0];
@@ -85,7 +85,7 @@ export default function TripTabs({ trips }: TripTabsProps) {
               View itinerary ↗
             </a>
           ) : !active.portalId ? (
-            <p className="text-xs text-gray-400 italic">
+            <p className="text-xs text-gray-500 italic">
               Portal purged — itinerary preserved. Open from the Itinerary Library.
             </p>
           ) : null}

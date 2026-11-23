@@ -177,7 +177,7 @@ export default function NotepadPage() {
                       </div>
                     );
                   })()}
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-gray-500 mt-2">
                     {new Date(entry.createdAt).toLocaleString()}
                   </p>
                 </div>

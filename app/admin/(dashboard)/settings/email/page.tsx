@@ -49,7 +49,7 @@ export default async function EmailQueuePage({
           <div key={card.label} className="border border-gray-200 rounded p-4">
             <p className="text-sm text-gray-500">{card.label}</p>
             <p className="text-3xl font-semibold">{card.value}</p>
-            <p className="text-xs text-gray-400 mt-1">{card.hint}</p>
+            <p className="text-xs text-gray-500 mt-1">{card.hint}</p>
           </div>
         ))}
       </div>

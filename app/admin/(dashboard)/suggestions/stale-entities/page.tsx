@@ -50,7 +50,7 @@ export default function StaleEntitiesPage() {
         {isLoading ? (
           <p className="text-sm text-gray-500 py-6 text-center">Loading...</p>
         ) : entities.length === 0 ? (
-          <p className="text-sm text-gray-400 italic py-6 text-center">
+          <p className="text-sm text-gray-500 italic py-6 text-center">
             Nothing stale — every entity has been used at least twice or has been touched recently.
           </p>
         ) : (

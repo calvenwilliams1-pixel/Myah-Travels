@@ -67,7 +67,7 @@ export default function BlockList({
 
       {Object.entries(grouped).map(([slot, slotBlocks]) => (
         <div key={slot} className="space-y-1">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">
+          <p className="text-xs text-gray-500 uppercase tracking-wide">
             {SLOT_LABELS[slot] || slot}
           </p>
           {slotBlocks.map((b) => (
@@ -84,7 +84,7 @@ export default function BlockList({
                   : (b.textContent || "Note")}
               </span>
               {b.paletteOverride && (
-                <span className="text-xs text-gray-400">{b.paletteOverride}</span>
+                <span className="text-xs text-gray-500">{b.paletteOverride}</span>
               )}
               <button
                 onClick={() => removeBlock(b.id)}

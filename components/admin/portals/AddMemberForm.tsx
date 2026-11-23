@@ -70,7 +70,7 @@ export default function AddMemberForm({ portalId, action }: AddMemberFormProps) 
         <Button type="submit" variant="secondary" className="shrink-0">Add</Button>
       </div>
       <div aria-live="polite" className="text-xs">
-        {lookupPending && <p className="text-gray-400">Looking up...</p>}
+        {lookupPending && <p className="text-gray-500">Looking up...</p>}
         {!lookupPending && lookupMessage && (
           <p className={lookupMessage.startsWith("Returning") ? "text-primary" : "text-gray-500"}>
             {lookupMessage}

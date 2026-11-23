@@ -134,7 +134,7 @@ export default async function TagsPage({
                           ) : (
                             <div className="text-xs text-gray-500">No available tags</div>
                           )}
-                          <p className="text-[10px] text-gray-400 leading-snug">
+                          <p className="text-[10px] text-gray-500 leading-snug">
                             Example: if <span className="font-medium">#tokyotrip</span> is an alias of <span className="font-medium">#{tag.name}</span>, then filtering by <span className="font-medium">#tokyotrip</span> finds content tagged <span className="font-medium">#{tag.name}</span>.
                           </p>
                         </div>
@@ -144,7 +144,7 @@ export default async function TagsPage({
                   <td className="px-3 py-2">
                     <form action={toggleTagFavouriteAction}>
                       <input type="hidden" name="tagId" value={tag.id} />
-                      <button className={tag.isFavourite ? "text-primary" : "text-gray-400"}>
+                      <button className={tag.isFavourite ? "text-primary" : "text-gray-500"}>
                         ★
                       </button>
                     </form>

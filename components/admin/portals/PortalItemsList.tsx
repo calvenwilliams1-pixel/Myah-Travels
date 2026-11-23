@@ -82,7 +82,7 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
             <button
               onClick={() => moveItem(index, "up")}
               disabled={index === 0}
-              className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+              className="text-gray-500 hover:text-gray-600 disabled:opacity-30"
               aria-label="Move up"
             >
               ↑
@@ -90,7 +90,7 @@ export default function PortalItemsList({ portalId, items, onChanged }: PortalIt
             <button
               onClick={() => moveItem(index, "down")}
               disabled={index === orderedItems.length - 1}
-              className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+              className="text-gray-500 hover:text-gray-600 disabled:opacity-30"
               aria-label="Move down"
             >
               ↓

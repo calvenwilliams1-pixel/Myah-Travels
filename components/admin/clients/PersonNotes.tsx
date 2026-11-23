@@ -79,9 +79,9 @@ export default function PersonNotes({ personId, portalId, scopeLabel }: PersonNo
       </Card>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-gray-500">Loading...</p>
       ) : notes.length === 0 ? (
-        <p className="text-sm text-gray-400 italic">No notes yet.</p>
+        <p className="text-sm text-gray-500 italic">No notes yet.</p>
       ) : (
         notes.map((n) => (
           <Card key={n.id}>
@@ -96,7 +96,7 @@ export default function PersonNotes({ personId, portalId, scopeLabel }: PersonNo
               </button>
             </div>
             {n.createdAt && (
-              <p className="text-xs text-gray-400 mt-2">{new Date(n.createdAt).toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-2">{new Date(n.createdAt).toLocaleString()}</p>
             )}
           </Card>
         ))

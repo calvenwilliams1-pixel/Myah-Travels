@@ -158,7 +158,7 @@ export default async function PortalsPage({
                           <ConfirmSubmitButton
                             confirmMessage={`Delete portal "${portal.name}"? It can be restored from the Deleted view.`}
                             title="Delete portal"
-                            className="text-gray-400 hover:text-red-600 text-base"
+                            className="text-gray-500 hover:text-red-600 text-base"
                           >
                             🗑
                           </ConfirmSubmitButton>

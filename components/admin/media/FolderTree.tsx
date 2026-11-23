@@ -172,7 +172,7 @@ export default function FolderTree({ onChanged }: FolderTreeProps) {
           ) : (
             <span className="flex-1 truncate">{node.name}</span>
           )}
-          <span className="text-xs text-gray-400">{node.fileCount}</span>
+          <span className="text-xs text-gray-500">{node.fileCount}</span>
           <button
             type="button"
             onClick={(e) => {

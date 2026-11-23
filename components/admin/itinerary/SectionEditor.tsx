@@ -41,8 +41,10 @@ export default function SectionEditor({
 
   return (
     <Card className="space-y-4">
-      {/* Section header */}
-      <div className="flex items-start justify-between gap-4">
+      {/* Section header — sticky (UI Pass 3): in a long section the
+          title and delete action stay visible under the admin
+          header while the days scroll. */}
+      <div className="sticky top-[var(--admin-header-h,4.25rem)] z-10 -mt-1 flex items-start justify-between gap-4 border-b border-gray-100 bg-white pb-2">
         <div className="flex-1 min-w-0">
           <AutosaveTextField
             value={section.title}

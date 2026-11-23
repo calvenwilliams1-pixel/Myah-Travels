@@ -33,7 +33,7 @@ export default async function GettingStartedCard() {
   return (
     <Card>
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
-        <h2 className="text-lg font-semibold">Start here — your first trip</h2>
+        <h2 className="text-h3 font-semibold">Start here — your first trip</h2>
         <span className="text-sm text-gray-500">
           {doneCount} of {steps.length} done
         </span>
@@ -67,7 +67,7 @@ export default async function GettingStartedCard() {
               <div className="min-w-0 flex-1">
                 <p
                   className={`font-medium ${
-                    step.done ? "text-gray-400 line-through" : "text-gray-800"
+                    step.done ? "text-gray-500 line-through" : "text-gray-800"
                   }`}
                 >
                   {step.title}

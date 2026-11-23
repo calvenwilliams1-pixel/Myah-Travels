@@ -77,13 +77,13 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
             </Link>
             {view === "unfiled" && (
               <>
-                <span className="text-gray-400">/</span>
+                <span className="text-gray-500">/</span>
                 <span className="text-gray-800">Unfiled</span>
               </>
             )}
             {breadcrumb.map((b) => (
               <React.Fragment key={b.id}>
-                <span className="text-gray-400">/</span>
+                <span className="text-gray-500">/</span>
                 <Link href={`/admin/media?folderId=${b.id}`} className="hover:text-primary">
                   {b.name}
                 </Link>
