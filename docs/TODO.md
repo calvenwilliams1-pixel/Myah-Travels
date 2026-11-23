@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 23)
+# MyCalTravels — TODO.md (Revision 24)
 
 ## Status
 
@@ -76,7 +76,7 @@ Closed Nov 23, 2026:
 - **Phase 7.5 demo content** — the Japan/Cruise/Singapore seeds were test scaffolding, not product work. Dropped.
 - **Japan PDF history question** — the file was test data (owner confirmed). No history cleanup needed. Closed.
 
-**Phase 8 — shelved, needs proper scoping before anything is built.** It is much larger than the one-line summaries below suggest. The actual goal, in the owner's words: streamline the itinerary builder so a mixed trip stays in ONE itinerary — a single trip can move between hotels, resorts, and a cruise, and each part needs its own scheduling/format handling inside the same document. Separate blanket "cruise" or "resort" itinerary documents for one trip would defeat the purpose (two documents for one trip). The point is saving the writer time and keeping a trip organized, not adding surface area. See the Phase 8 section.
+**Phase 8 — shelved, now SCOPED (Nov 23, 2026), awaiting the owner's decisions and go-ahead.** The itinerary-builder scope lives in the goal files (`Itinerary_Builder_Scope_2026-11-23.md`): five batches — stay kinds (hotel/resort/cruise), generated sailing days, wider booking-paste coverage, trip-check accuracy warnings, and mixed-trip output polish — under the owner's goals (save data-entry time, extra care for accuracy, simplicity, an attractive finished product) and the one-trip-one-itinerary rule. Four owner decisions (D1–D4) are recorded in the scope; nothing is built until he answers and says go. The other Phase 8 notes below (People table, portal enhancements) remain separate, unscoped ideas.
 
 ## Core Principle
 
@@ -431,7 +431,7 @@ Operational checklist for the deployed system. Completed on the mini PC. This se
 
 ## Phase 8 — Deferred (post-launch)
 
-**Shelved Nov 23, 2026 — do not build from this list without a proper scoping pass first.** The bullets below are raw notes, not a plan, and they understate the work considerably. The design intent that scoping must serve, in the owner's words: one trip = one itinerary, even when the trip mixes hotels, resorts, and a cruise — each part carries its own scheduling/format handling inside the single itinerary. Blanket per-type documents (a separate cruise itinerary, a separate resort itinerary) are explicitly NOT the goal; they would split one trip into two documents. The purpose is to streamline the builder, save the writer time, and keep a trip organized — not to add surface area.
+**Shelved Nov 23, 2026 — the itinerary-builder part is now scoped** in `Itinerary_Builder_Scope_2026-11-23.md` (goal files): five batches, four owner decisions (D1–D4), no building until the owner answers and says go. The design intent the scope serves, in the owner's words: one trip = one itinerary, even when the trip mixes hotels, resorts, and a cruise — each part carries its own scheduling/format handling inside the single itinerary. Blanket per-type documents (a separate cruise itinerary, a separate resort itinerary) are explicitly NOT the goal; they would split one trip into two documents. The purpose is to streamline the builder, save the writer time, and keep a trip organized — not to add surface area. The bullets below remain raw notes for the *other* Phase 8 ideas (People, portal enhancements), which are not part of the itinerary-builder scope.
 
 - **Itinerary V2:** options segments, cruise mode, overlapping stays, group splits
 - **People & Tagging V2:** triggered People table, per-person itinerary lookup, PII isolation
