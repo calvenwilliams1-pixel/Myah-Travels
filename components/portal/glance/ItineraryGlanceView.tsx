@@ -47,7 +47,7 @@ function formatDate(raw: string): string {
 
 export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps) {
   return (
-    <div className="glance-view bg-white p-6 border border-gray-200 rounded-lg">
+    <div className="glance-view day-card p-6">
       <div className="flex items-center justify-between mb-1 print:hidden">
         <p className="text-xs uppercase tracking-wider text-primary font-semibold">
           Trip Summary · At a Glance
@@ -66,7 +66,7 @@ export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps
       </h2>
 
       {glance.days.length === 0 && (
-        <p className="text-gray-500 italic">No days in this itinerary yet.</p>
+        <p className="text-gray-600 italic">No days in this itinerary yet.</p>
       )}
 
       <div className="space-y-4">
@@ -79,11 +79,11 @@ export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps
               <span className="font-semibold text-gray-900">
                 Day {day.dayNumber}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-600">
                 {formatDate(day.date)}
               </span>
             </div>
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+            <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">
               {day.sectionTitle}
             </p>
             <ul className="space-y-1 text-sm text-gray-700">
@@ -92,7 +92,7 @@ export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps
                   <span className="mr-2">{stayKindIcon(day.stayKind)}</span>
                   {staySleepName({ hotelName: day.stayName, kind: day.stayKind })}
                   {day.stayKind === "cruise" && day.stayLine && (
-                    <span className="text-gray-500"> · {day.stayLine}</span>
+                    <span className="text-gray-600"> · {day.stayLine}</span>
                   )}
                 </li>
               )}

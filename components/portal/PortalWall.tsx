@@ -104,7 +104,7 @@ export default function PortalWall({
                     itineraryTitle={item.resolvedTitle}
                   />
                 ) : (
-                  <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500">
+                  <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-600">
                     Today's plan unavailable
                   </div>
                 )}
@@ -118,7 +118,7 @@ export default function PortalWall({
         {visibleItems.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-2xl mb-2">📝</p>
-            <p className="text-gray-500">No content yet. Check back soon!</p>
+            <p className="text-gray-600">No content yet. Check back soon!</p>
           </div>
         ) : (
           <div className="lg:grid lg:grid-cols-[1fr,320px] lg:gap-6">
@@ -135,7 +135,7 @@ export default function PortalWall({
                   {glanceItem ? (
                     <ItineraryGlanceView glance={glanceItem.glance!} />
                   ) : (
-                    <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500">
+                    <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-600">
                       Summary unavailable
                     </div>
                   )}
@@ -145,7 +145,7 @@ export default function PortalWall({
               {/* Grid */}
               {gridItems.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No tiles yet.</p>
+                  <p className="text-gray-600">No tiles yet.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,7 +203,7 @@ export default function PortalWall({
                   {glanceItem ? (
                     <ItineraryGlanceView glance={glanceItem.glance!} />
                   ) : (
-                    <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-500">
+                    <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 text-center text-gray-600">
                       Summary unavailable
                     </div>
                   )}
@@ -215,7 +215,7 @@ export default function PortalWall({
       </div>
 
       <div data-portal-chrome className="text-center py-6 border-t border-gray-200">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-600">
           Contact Myah: myah@mycaltravels.com
         </p>
       </div>

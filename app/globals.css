@@ -32,6 +32,12 @@
   .card-surface {
     @apply rounded-2xl border border-gray-200 bg-white shadow-card;
   }
+  /* One day-card language across the full itinerary, the Glance
+     view and Today's Plan (UI Pass 2a): same shell everywhere, so
+     clients never re-learn the layout moving between views. */
+  .day-card {
+    @apply overflow-hidden rounded-xl border border-gray-200 bg-white shadow-card;
+  }
   /* One section spacing rhythm. */
   .section-y {
     @apply py-14 md:py-20;

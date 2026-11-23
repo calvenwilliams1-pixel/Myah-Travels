@@ -45,6 +45,7 @@ export default async function ClientItineraryPage({
     <ItineraryView
       itinerary={itinerary}
       portalSlug={params.portalSlug}
+      coverImage={portal.heroImage}
       sitePalette={{
         primary: settings.primary_color || "#4a7c59",
         accent: settings.accent_color || "#6b9ac4",

@@ -51,6 +51,7 @@ export default async function AdminItineraryPreviewPage({
         portalSlug={portal.slug}
         portalId={portalId}
         mode="admin-preview"
+        coverImage={portal.heroImage}
         sitePalette={{
           primary: settings.primary_color || "#4a7c59",
           accent: settings.accent_color || "#6b9ac4",
