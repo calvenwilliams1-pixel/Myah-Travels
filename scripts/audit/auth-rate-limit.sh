@@ -4,6 +4,7 @@
 # This suite owns IPv6 documentation range subnets:
 #   2001:db8:a::/48  (primary test IP, time-encoded)
 #   2001:db8:b::/48  (isolation test IP, time-encoded)
+#   2001:db8:c::/48  (distributed-guessing test IPs, time-encoded)
 # No other suite may send CF-Connecting-IP in these ranges.
 # If you add a suite that posts to /api/auth/login, set a unique
 # CF-Connecting-IP — otherwise all such calls share the "unknown" bucket
@@ -62,11 +63,33 @@ echo "-- attempt 1 from $ipB (expect 401, not rate-limited) --"
 code=$(hit "$ipB")
 check "different IP unaffected" "401" "$code"
 
+echo "-- distributed guessing: 10 fresh IPs against one username (expect 401 x10, then 429) --"
+distUser="audit-dist-${HEX}"
+for i in $(seq 1 10); do
+  code=$(curl -s -o /dev/null -w '%{http_code}' \
+    -X POST "$BASE/api/auth/login" \
+    -H 'Content-Type: application/json' \
+    -H "CF-Connecting-IP: 2001:db8:c::${HEX}${i}" \
+    -d "{\"username\":\"${distUser}\",\"password\":\"wrong\"}")
+  check "distributed attempt $i returns 401" "401" "$code"
+done
+code=$(curl -s -o /dev/null -w '%{http_code}' \
+  -X POST "$BASE/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -H "CF-Connecting-IP: 2001:db8:c::${HEX}11" \
+  -d "{\"username\":\"${distUser}\",\"password\":\"wrong\"}")
+check "distributed attempt 11 returns 429 (per-username limit)" "429" "$code"
+
 echo
-echo "FINDING: successful login does not reset the per-IP counter"
-echo "FINDING: no per-username limiter (distributed guessing on one account is undefended)"
-echo "FINDING: per-IP-only limiter has no defense against distributed guessing"
+echo "FIXED (Nov 23, 2026): successful login resets both login counters"
+echo "FIXED (Nov 23, 2026): per-username limiter (10 per 15 min across all"
+echo "  IPs) defends distributed guessing on one account"
 echo
-echo "These are policy observations, not test failures. See DATA-DURABILITY.md for hardening TODO."
+echo "Note: reset-on-success is covered by unit tests"
+echo "(lib/security/rate-limit.test.ts) — this suite uses a nonexistent"
+echo "user, so it cannot exercise a successful login. The shared audit"
+echo "username also carries a 10-per-15-min cross-IP bucket: rerunning"
+echo "the whole suite inside 15 minutes can collide with it, the same"
+echo "caveat as the per-IP buckets above."
 
 suite_end

@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { verifyPassword, createSession, createPendingTotp, validateTrustedDevice } from "@/lib/auth";
 import { logActivity } from "@/lib/logging";
-import { loginRateLimit, getClientIp } from "@/lib/security";
+import { loginRateLimit, loginUsernameRateLimit, resetLoginRateLimits, getClientIp } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,19 +13,21 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(headersList);
     const userAgent = headersList.get("user-agent") || "unknown";
 
-    // Rate limit
-    const rateLimitResult = loginRateLimit(ip);
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: "Too many login attempts. Please try again later." },
-        { status: 429 }
-      );
-    }
-
     const { username, password } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json({ error: "Invalid username or password." }, { status: 400 });
+    }
+
+    // Rate limits: per-IP (one source hammering) and per-username (many
+    // sources guessing at one account). Either one tripping blocks.
+    const ipLimit = loginRateLimit(ip);
+    const usernameLimit = loginUsernameRateLimit(username);
+    if (!ipLimit.success || !usernameLimit.success) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Please try again later." },
+        { status: 429 }
+      );
     }
 
     const user = await db
@@ -76,6 +78,11 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json({ error: "Invalid username or password." }, { status: 401 });
     }
+
+    // The password is proven — clear both login counters, so earlier
+    // typos (or someone else's guessing from this IP) don't eat into
+    // the legitimate user's budget.
+    resetLoginRateLimits(ip, username);
 
     // TOTP: a correct password alone is not a login for enrolled users —
     // unless this browser is a trusted device (it passed TOTP within the
