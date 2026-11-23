@@ -36,6 +36,8 @@ interface PostSnapshot {
   excerpt: string;
   status: PostStatus;
   tags: string[];
+  instagramUrl: string;
+  youtubeUrl: string;
 }
 
 function parseContent(raw: string): BlockContentShape {
@@ -64,6 +66,8 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
   const [blocks, setBlocks] = useState<BlockData[]>([]);
   const [templateId, setTemplateId] = useState("story");
   const [excerpt, setExcerpt] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [status, setStatus] = useState<PostStatus>("draft");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -85,6 +89,8 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
     excerpt,
     status,
     tags,
+    instagramUrl,
+    youtubeUrl,
   });
 
   useEffect(() => {
@@ -98,6 +104,8 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
           setTemplateId(shape.templateId);
           setContent(post.content);
           setExcerpt(post.excerpt || "");
+          setInstagramUrl(post.instagramUrl || "");
+          setYoutubeUrl(post.youtubeUrl || "");
           const postTags = await getPostTagsAction(postId);
           setTags(postTags);
           let loadedStatus: PostStatus = "draft";
@@ -115,6 +123,8 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
             excerpt: post.excerpt || "",
             status: loadedStatus,
             tags: postTags,
+            instagramUrl: post.instagramUrl || "",
+            youtubeUrl: post.youtubeUrl || "",
           };
           snapshotRef.current = JSON.stringify(loadedSnapshot);
           loadedRef.current = true;
@@ -169,6 +179,8 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
         excerpt,
         status,
         tagNames: tags,
+        instagramUrl,
+        youtubeUrl,
       });
 
       if (result.error) {
@@ -225,7 +237,7 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
     }, 2000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, content, excerpt, status, tags, isLoading]);
+  }, [title, content, excerpt, status, tags, instagramUrl, youtubeUrl, isLoading]);
 
   // Warn before leaving with unsaved changes.
   useEffect(() => {
@@ -247,6 +259,8 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
     setExcerpt(pendingDraft.excerpt);
     setStatus(pendingDraft.status);
     setTags(pendingDraft.tags);
+    setInstagramUrl(pendingDraft.instagramUrl || "");
+    setYoutubeUrl(pendingDraft.youtubeUrl || "");
     setPendingDraft(null);
     // The change effect marks it dirty, rewrites the draft, and autosaves.
   }
@@ -315,6 +329,30 @@ export default function EditPostForm({ postId, templates, onSaveAsTemplate }: Ed
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
         />
+      </Card>
+
+      <Card>
+        <div className="space-y-4">
+          <Input
+            label="Instagram post link (optional)"
+            name="instagramUrl"
+            value={instagramUrl}
+            onChange={(e) => setInstagramUrl(e.target.value)}
+            placeholder="https://www.instagram.com/p/…"
+          />
+          <Input
+            label="YouTube video link (optional)"
+            name="youtubeUrl"
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=…"
+          />
+          <p className="text-sm text-gray-600">
+            If this post has a matching Instagram post or YouTube video, paste
+            its link — the video plays right on the post page, and the
+            Instagram link appears with it.
+          </p>
+        </div>
       </Card>
 
       <Card>

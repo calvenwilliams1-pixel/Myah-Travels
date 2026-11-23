@@ -10,6 +10,7 @@ import { validatePost, validatePostUpdate } from "@/lib/security";
 import { validateRequiredBlocks } from "@/lib/blocks/validate";
 import { getEditorTemplates } from "@/lib/blocks/template-store";
 import { logActivity } from "@/lib/logging";
+import { cleanSocialUrl } from "@/lib/social";
 
 export async function createPostAction(formData: FormData) {
   const data = {
@@ -20,6 +21,15 @@ export async function createPostAction(formData: FormData) {
     mode: "story",
     tagNames: JSON.parse(String(formData.get("tagNames") || "[]")),
   };
+
+  let instagramUrl: string | null;
+  let youtubeUrl: string | null;
+  try {
+    instagramUrl = cleanSocialUrl(String(formData.get("instagramUrl") || ""), "instagram");
+    youtubeUrl = cleanSocialUrl(String(formData.get("youtubeUrl") || ""), "youtube");
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Invalid social link" };
+  }
 
   const user = await requireAuth();
 
@@ -47,6 +57,8 @@ export async function createPostAction(formData: FormData) {
     excerpt: data.excerpt,
     status: data.status,
     mode: (data.mode || "story") as "story" | "design",
+    instagramUrl,
+    youtubeUrl,
   });
 
   if (!post) {
@@ -76,9 +88,26 @@ export async function updatePostAction(
     excerpt?: string;
     status?: string;
     tagNames?: string[];
+    instagramUrl?: string;
+    youtubeUrl?: string;
   }
 ) {
   const user = await requireAuth();
+
+  let instagramUrl: string | null | undefined;
+  let youtubeUrl: string | null | undefined;
+  try {
+    instagramUrl =
+      data.instagramUrl === undefined
+        ? undefined
+        : cleanSocialUrl(data.instagramUrl, "instagram");
+    youtubeUrl =
+      data.youtubeUrl === undefined
+        ? undefined
+        : cleanSocialUrl(data.youtubeUrl, "youtube");
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Invalid social link" };
+  }
 
   // Update does not regenerate the slug — the post keeps its existing URL.
   const validation = validatePostUpdate({
@@ -116,6 +145,8 @@ export async function updatePostAction(
     content: data.content,
     excerpt: data.excerpt,
     status: data.status,
+    instagramUrl,
+    youtubeUrl,
     publishedAt: data.status === "published" ? new Date().toISOString() : undefined,
   });
 

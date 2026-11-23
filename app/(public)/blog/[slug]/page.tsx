@@ -3,6 +3,7 @@ import { getPostBySlug } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import PostRenderer from "@/components/editor/renderers/PostRenderer";
+import PostSocialLinks from "@/components/feed/PostSocialLinks";
 import { parsePostContent } from "@/lib/blocks/parse-post-content";
 
 export const revalidate = 3600;
@@ -45,6 +46,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
       ) : (
         <p className="text-gray-500 italic">Content unavailable.</p>
       )}
+      <PostSocialLinks instagramUrl={post.instagramUrl} youtubeUrl={post.youtubeUrl} />
     </article>
   );
 }
