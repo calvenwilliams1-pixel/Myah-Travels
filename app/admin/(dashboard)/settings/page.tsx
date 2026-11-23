@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import PalettePicker from "./PalettePicker";
+import FontPicker from "./FontPicker";
 import { saveSettingsAction, addCertificationAction, deleteCertificationAction } from "./actions";
 import { Table } from "@/components/ui/Table";
 
@@ -68,6 +69,9 @@ export default async function SettingsPage() {
           
           {/* Curated Palettes */}
           <PalettePicker />
+
+          {/* Curated font pairings */}
+          <FontPicker current={settings.font_pairing} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input

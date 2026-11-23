@@ -5,6 +5,7 @@ import ItineraryGlanceView from "@/components/portal/glance/ItineraryGlanceView"
 import DayByDayView from "@/components/portal/day-by-day/DayByDayView";
 import PortalPrintSetup from "@/components/portal/PortalPrintSetup";
 import type { GlanceData, DayByDayState } from "@/lib/itineraries/derive";
+import { fontPairingOverrideVars } from "@/lib/theme/font-pairings";
 
 export interface PortalWallPortal {
   id: number;
@@ -31,6 +32,8 @@ export interface PortalWallItem {
   isVisible?: boolean;
   glance?: GlanceData;
   dayByDay?: DayByDayState;
+  /** Per-itinerary font pairing, attached with the derived data. */
+  itineraryFontPairing?: string | null;
   derivedError?: boolean;
 }
 
@@ -97,7 +100,13 @@ export default function PortalWall({
         <div className="max-w-6xl mx-auto px-4 pt-6">
           <div className="space-y-4">
             {todayItems.map((item) => (
-              <div key={item.id} data-wall-item data-variant="today">
+              <div
+                key={item.id}
+                data-wall-item
+                data-variant="today"
+                className="font-sans"
+                style={fontPairingOverrideVars(item.itineraryFontPairing)}
+              >
                 {item.dayByDay ? (
                   <DayByDayView
                     dayByDay={item.dayByDay}
@@ -126,7 +135,7 @@ export default function PortalWall({
             <div>
               {/* Mobile: glance renders inline above grid */}
               {hasGlance && (
-                <div className={`lg:hidden mb-6 relative ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance">
+                <div className={`lg:hidden mb-6 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance" style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
                   {!isClient && glanceItem && glanceItem.isVisible === false && (
                     <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
                       Hidden
@@ -194,7 +203,7 @@ export default function PortalWall({
                 data-wall-item
                 data-variant="glance"
               >
-                <div className={`sticky top-4 relative ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`}>
+                <div className={`sticky top-4 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
                   {!isClient && glanceItem && glanceItem.isVisible === false && (
                     <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
                       Hidden
