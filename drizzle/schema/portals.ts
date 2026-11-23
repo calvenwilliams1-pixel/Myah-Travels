@@ -8,6 +8,9 @@ export const portals = sqliteTable(
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     isActive: integer("is_active", { mode: "boolean" }).default(true),
+    // The promo portal: one permanent portal for potential clients.
+    // Its magic links/sessions never expire and purge skips it.
+    isPromo: integer("is_promo", { mode: "boolean" }).default(false),
     departureDate: text("departure_date"),
     returnDate: text("return_date"),
     heroTitle: text("hero_title"),

@@ -60,6 +60,9 @@ export async function runPortalPurge(): Promise<PurgeResult> {
 
   const toPurge: number[] = [];
   for (const p of candidates) {
+    // The promo portal is permanent — never purge it, whatever dates
+    // or keep-until it may carry.
+    if (p.isPromo) continue;
     const purgeDate = computePurgeDate({
       returnDate: p.returnDate,
       keepUntil: p.keepUntil ?? null,

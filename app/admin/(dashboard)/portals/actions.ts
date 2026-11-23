@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import {
   createPortal,
+  createPromoPortal,
   updatePortal,
   archivePortal,
   softDeletePortal,
@@ -38,6 +39,22 @@ export async function createPortalAction(formData: FormData) {
     entityType: "portal",
     entityId: portal[0]?.id,
     details: `Created portal: ${name}`,
+  });
+
+  redirect(`/admin/portals/${portal[0]?.id}`);
+}
+
+export async function createPromoPortalAction() {
+  const user = await requireAuth();
+
+  const portal = await createPromoPortal();
+
+  await logActivity({
+    userId: Number(user.id),
+    actionType: "create",
+    entityType: "portal",
+    entityId: portal[0]?.id,
+    details: "Created the promo portal",
   });
 
   redirect(`/admin/portals/${portal[0]?.id}`);
