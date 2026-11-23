@@ -55,6 +55,10 @@ export function useSuggestions() {
           (d.items || []).map((it: any) => ({
             value: it.iata ? it.iata + " · " + it.name : it.name,
             subtitle: it.city ? it.city + ", " + it.country : it.country,
+            // Airports carry their IANA timezone; accepting one lets the
+            // form auto-fill the matching timezone field (leg origin →
+            // departure timezone) instead of making her pick it by hand.
+            payload: it.timezone ? { timezone: it.timezone } : undefined,
             source: "static" as const,
           }))
         )

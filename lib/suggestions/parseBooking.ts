@@ -10,6 +10,8 @@ export interface ParsedBooking {
   flightNumber?: string;
   origin?: string;
   destination?: string;
+  originTimezone?: string;
+  destinationTimezone?: string;
   departureAt?: string;
   arrivalAt?: string;
   reference?: string;

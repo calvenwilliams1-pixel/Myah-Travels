@@ -10,6 +10,7 @@ import {
 } from "@/drizzle/schema";
 import { eq, ne, and, isNull, desc, asc, inArray } from "drizzle-orm";
 import { getLegsForSegments, getLegsForSegment } from "./travelLegs";
+import { addDaysToISODate, todayISOInTimezone } from "./dates";
 import { getBlocksForDays } from "./blocks";
 
 // ============================================
@@ -34,6 +35,11 @@ export async function createItinerary(portalId: number, title: string, themePres
     portalId,
     title,
     themePreset: themePreset ?? null,
+    // New trips start on the home timezone instead of falling back to
+    // UTC when computing "today" — the UTC fallback flipped the
+    // portal's day on Toronto evenings. Sections override per leg of
+    // the trip, and the itinerary default stays editable.
+    timezone: "America/Toronto",
   }).returning();
 }
 
@@ -595,12 +601,22 @@ export async function extendSectionByOneDay(sectionId: number) {
   let newNumber: number;
 
   if (last) {
-    const d = new Date(last.date + "T00:00:00");
-    d.setDate(d.getDate() + 1);
-    newDate = d.toISOString().slice(0, 10);
+    // Pure calendar math — the old local-Date + toISOString mix made
+    // the result depend on the server's own timezone.
+    newDate = addDaysToISODate(last.date, 1) ?? last.date;
     newNumber = (last.dayNumber ?? 0) + 1;
   } else {
-    newDate = new Date().toISOString().slice(0, 10);
+    // "Today" in the section's own timezone (inheriting the
+    // itinerary's), not the server's UTC date.
+    const [section] = await db.select().from(itinerarySections)
+      .where(eq(itinerarySections.id, sectionId)).limit(1);
+    let tz = section?.timezone ?? null;
+    if (!tz && section) {
+      const [itin] = await db.select().from(itineraries)
+        .where(eq(itineraries.id, section.itineraryId)).limit(1);
+      tz = itin?.timezone ?? null;
+    }
+    newDate = todayISOInTimezone(tz);
     newNumber = 1;
   }
 

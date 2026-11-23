@@ -113,6 +113,8 @@ export default function TravelLegFields({
             if (booking.flightNumber) patch.identifier = booking.flightNumber;
             if (booking.origin) patch.origin = booking.origin;
             if (booking.destination) patch.destination = booking.destination;
+            if (booking.originTimezone) patch.originTimezone = booking.originTimezone;
+            if (booking.destinationTimezone) patch.destinationTimezone = booking.destinationTimezone;
             if (booking.reference) patch.reference = booking.reference;
             if (booking.departureAt) patch.departureAt = booking.departureAt;
             if (booking.arrivalAt) patch.arrivalAt = booking.arrivalAt;
@@ -151,6 +153,9 @@ export default function TravelLegFields({
           onChange={(v) => onChange({ origin: v })}
           placeholder={labels.originPh}
           fieldKey={FIELD_KEYS.LEG_ORIGIN}
+          onEntityAccept={(p) => {
+            if (p.timezone) onChange({ originTimezone: p.timezone });
+          }}
         />
         <AutocompleteInput
           label={labels.destination}
@@ -158,6 +163,9 @@ export default function TravelLegFields({
           onChange={(v) => onChange({ destination: v })}
           placeholder={labels.destPh}
           fieldKey={FIELD_KEYS.LEG_DESTINATION}
+          onEntityAccept={(p) => {
+            if (p.timezone) onChange({ destinationTimezone: p.timezone });
+          }}
         />
       </div>
 
@@ -179,7 +187,9 @@ export default function TravelLegFields({
         />
       </div>
 
-      {/* Timezones (cosmetic only) */}
+      {/* Timezones — auto-filled from the airport catalog when a
+          suggestion is picked or a booking is pasted; editable. They
+          state which zone each wall-clock time is written in. */}
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="block text-xs text-gray-500 mb-1">Departure Timezone (optional)</label>
