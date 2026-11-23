@@ -281,7 +281,7 @@ function SegmentRow({
           >
               {segment.type === "travel" ? (
                 <>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <AutosaveTextField
                       label="From"
                       value={segment.departureAirport || ""}
@@ -297,7 +297,7 @@ function SegmentRow({
                       placeholder="NRT"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <AutosaveTextField
                       label="Airline"
                       value={segment.airline || ""}
@@ -316,7 +316,7 @@ function SegmentRow({
                 </>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <AutosaveTextField
                       label="Start Time"
                       value={segment.startTime || ""}

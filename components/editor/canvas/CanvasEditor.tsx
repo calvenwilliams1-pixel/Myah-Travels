@@ -66,8 +66,14 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [undoStack, setUndoStack] = useState<CanvasDocument[]>([]);
   const [redoStack, setRedoStack] = useState<CanvasDocument[]>([]);
-  const [showCatalog, setShowCatalog] = useState(true);
-  const [showProperties, setShowProperties] = useState(true);
+  // Panels start open on desktop-width screens only; on phones/tablets they
+  // would crush the canvas, so they start closed (toggle buttons still work).
+  const [showCatalog, setShowCatalog] = useState(
+    () => typeof window === "undefined" || window.innerWidth >= 1024
+  );
+  const [showProperties, setShowProperties] = useState(
+    () => typeof window === "undefined" || window.innerWidth >= 1024
+  );
   const [showLayers, setShowLayers] = useState(true);
   const [showTemplates, setShowTemplates] = useState<"browse" | "manage" | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -597,7 +603,7 @@ export default function CanvasEditor({ initialDocument, contentType, onSave, ini
     <div className="flex h-screen">
       {showCatalog && <ElementCatalog onAddElement={addElement} />}
 
-      <div className="flex-1 overflow-auto bg-gray-100 p-8">
+      <div className="flex-1 overflow-auto bg-gray-100 p-3 sm:p-8">
         <div className="mb-4 flex gap-3 items-center flex-wrap">
           <button
             className="px-3 py-2 bg-gray-200 rounded-lg text-sm"

@@ -195,12 +195,12 @@ export default function ItineraryEditor({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 w-full min-w-0">
           <a href={`/admin/portals/${portalId}/itinerary`}>
             <Button variant="ghost">← Back</Button>
           </a>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <AutosaveTextField
               value={itinerary.title}
               onSave={updateTitle}
@@ -209,7 +209,7 @@ export default function ItineraryEditor({
             />
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 shrink-0">
           <a
             href={`/admin/portals/${portalId}/itinerary/${itineraryId}/preview`}
             target="_blank"
