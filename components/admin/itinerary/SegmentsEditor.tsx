@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
+import AutosaveTextareaField from "@/components/ui/autosave/AutosaveTextareaField";
 import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 import CopySegmentModal from "./CopySegmentModal";
@@ -396,10 +397,12 @@ function SegmentRow({
                     }}
                   />
                 </div>
-                <InstructionsField
+                <AutosaveTextareaField
                   value={segment.instructions || ""}
                   onSave={(v) => update({ instructions: v })}
                   draftKey={`segment:${segment.id}:instructions`}
+                  placeholder="Meet at hotel lobby 15 min early. Bring passport."
+                  rows={2}
                 />
               </div>
           </div>
@@ -409,33 +412,7 @@ function SegmentRow({
   );
 }
 
-function InstructionsField({
-  value,
-  onSave,
-  draftKey,
-}: {
-  value: string;
-  onSave: (v: string) => Promise<void>;
-  draftKey: string;
-}) {
-  const [localValue, setLocalValue] = useState(value);
 
-  // Defer to blur for save — textareas don't autosave well
-  return (
-    <textarea
-      value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
-      onBlur={() => {
-        if (localValue !== value) {
-          onSave(localValue);
-        }
-      }}
-      placeholder="Meet at hotel lobby 15 min early. Bring passport."
-      rows={2}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-sm"
-    />
-  );
-}
 
 
 // ============================================
