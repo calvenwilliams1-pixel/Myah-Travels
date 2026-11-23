@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthError, requireAuth } from "@/lib/auth";
-import { searchAirports, searchAirlines } from "@/lib/suggestions/statics";
+import { searchAirports, searchAirlines, searchCruiseLines, searchShips, searchResortBrands } from "@/lib/suggestions/statics";
 import { FIELD_KEYS } from "@/lib/suggestions/field-keys";
 
 // Force dynamic: this route reads the DB and requires auth. Must not
@@ -26,6 +26,15 @@ export async function GET(req: NextRequest) { try {
   }
   if (field === FIELD_KEYS.LEG_OPERATOR) {
     return NextResponse.json({ items: searchAirlines(q, 8) });
+  }
+  if (field === FIELD_KEYS.STAY_CRUISE_LINE) {
+    return NextResponse.json({ items: searchCruiseLines(q, 8) });
+  }
+  if (field === FIELD_KEYS.STAY_SHIP) {
+    return NextResponse.json({ items: searchShips(q, 8) });
+  }
+  if (field === FIELD_KEYS.STAY_RESORT_BRAND) {
+    return NextResponse.json({ items: searchResortBrands(q, 8) });
   }
 
   return NextResponse.json({ items: [] });
