@@ -173,74 +173,8 @@ export function deriveSegmentTravel(legs: TravelLeg[]): DerivedTravel {
   };
 }
 
-export interface ConnectionGap {
-  afterLegOrder: number;
-  minutes: number;
-  crossesDate: boolean;
-  daysCrossed: number;
-}
-
-/**
- * Parse a naive datetime string ("YYYY-MM-DDTHH:MM" or similar) into a
- * Date. No timezone conversion — the string is treated exactly as entered.
- */
-function parseNaive(s: string | null): Date | null {
-  if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-/**
- * Compute the connection gap between each consecutive pair of legs.
- * Times are treated as literal naive values — no timezone math.
- */
-export function computeConnectionGaps(legs: TravelLeg[]): ConnectionGap[] {
-  const sorted = [...legs].sort((a, b) => a.legOrder - b.legOrder);
-  const gaps: ConnectionGap[] = [];
-
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const a = sorted[i];
-    const b = sorted[i + 1];
-    const arrivalA = parseNaive(a.arrivalAt);
-    const departureB = parseNaive(b.departureAt);
-    if (!arrivalA || !departureB) continue;
-
-    const diffMs = departureB.getTime() - arrivalA.getTime();
-    const minutes = Math.round(diffMs / 60000);
-
-    const dateA = arrivalA.toISOString().slice(0, 10);
-    const dateB = departureB.toISOString().slice(0, 10);
-    const crossesDate = dateA !== dateB;
-    const daysCrossed = crossesDate
-      ? Math.round(
-          (new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000
-        )
-      : 0;
-
-    gaps.push({
-      afterLegOrder: a.legOrder,
-      minutes,
-      crossesDate,
-      daysCrossed,
-    });
-  }
-  return gaps;
-}
-
-/**
- * For a given leg, does arrival cross a calendar date from departure?
- * Used to show a "+N days" badge.
- */
-export function legCrossesDate(leg: TravelLeg): { crosses: boolean; days: number } {
-  const dep = parseNaive(leg.departureAt);
-  const arr = parseNaive(leg.arrivalAt);
-  if (!dep || !arr) return { crosses: false, days: 0 };
-
-  const dDep = dep.toISOString().slice(0, 10);
-  const dArr = arr.toISOString().slice(0, 10);
-  if (dDep === dArr) return { crosses: false, days: 0 };
-  const days = Math.round(
-    (new Date(dArr).getTime() - new Date(dDep).getTime()) / 86400000
-  );
-  return { crosses: true, days };
-}
+// The leg date math lives in legMath.ts — one pure implementation
+// shared with the client portal. Re-exported here so existing
+// imports from this module keep working.
+export { computeConnectionGaps, legCrossesDate } from "./legMath";
+export type { ConnectionGap } from "./legMath";

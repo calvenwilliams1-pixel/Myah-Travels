@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 26)
+# MyCalTravels — TODO.md (Revision 27)
 
 ## Status
 
@@ -73,6 +73,7 @@ Held in reserve:
 Closed Nov 23, 2026:
 
 - **Rate-limit findings (3)** — per-username login limiter added (10 / 15 min across all IPs) and a proven password now resets both login counters.
+- **Timezone unification (owner-requested audit)** — one pure date/wall-clock module now backs all leg math (the portal's duplicated copies are deleted; the old local-parse/UTC-readback mix made "+1 day" badges depend on the machine's timezone); the timezone picker is generated from the platform tz database and covers all 327 airport-catalog zones (was 80); leg timezones auto-fill from the airport catalog on suggestion pick and on booking paste; new itineraries default to America/Toronto instead of the UTC fallback; section extension uses calendar math in the section's own timezone.
 - **Phase 7.5 demo content** — the Japan/Cruise/Singapore seeds were test scaffolding, not product work. Dropped.
 - **Japan PDF history question** — the file was test data (owner confirmed). No history cleanup needed. Closed.
 

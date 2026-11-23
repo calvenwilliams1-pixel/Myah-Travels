@@ -1,6 +1,7 @@
 import React from "react";
 import { resolveReferenceLabel } from "@/lib/itineraries/referenceTypes";
 import { getPalette } from "@/lib/theme/palettes";
+import { computeConnectionGaps, legCrossesDate } from "@/lib/itineraries/legMath";
 import PrintButton from "./PrintButton";
 
 interface Segment {
@@ -585,48 +586,6 @@ function LegacyTravelCard({ segment }: { segment: Segment }) {
       </div>
     </div>
   );
-}
-
-// ─────────────────────────────────────────────────────────────
-// Local copies of the leg helpers (mirror lib/itineraries/travelLegs)
-// Kept in this file so the client renderer doesn't import server code.
-// ─────────────────────────────────────────────────────────────
-
-function parseNaive(s: string | null): Date | null {
-  if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-function computeConnectionGaps(legs: TravelLeg[]) {
-  const gaps: Array<{ afterLegOrder: number; minutes: number; crossesDate: boolean; daysCrossed: number }> = [];
-  for (let i = 0; i < legs.length - 1; i++) {
-    const a = legs[i];
-    const b = legs[i + 1];
-    const arr = parseNaive(a.arrivalAt);
-    const dep = parseNaive(b.departureAt);
-    if (!arr || !dep) continue;
-    const minutes = Math.round((dep.getTime() - arr.getTime()) / 60000);
-    const dateA = arr.toISOString().slice(0, 10);
-    const dateB = dep.toISOString().slice(0, 10);
-    const crossesDate = dateA !== dateB;
-    const daysCrossed = crossesDate
-      ? Math.round((new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000)
-      : 0;
-    gaps.push({ afterLegOrder: a.legOrder, minutes, crossesDate, daysCrossed });
-  }
-  return gaps;
-}
-
-function legCrossesDate(leg: TravelLeg): { crosses: boolean; days: number } {
-  const dep = parseNaive(leg.departureAt);
-  const arr = parseNaive(leg.arrivalAt);
-  if (!dep || !arr) return { crosses: false, days: 0 };
-  const dDep = dep.toISOString().slice(0, 10);
-  const dArr = arr.toISOString().slice(0, 10);
-  if (dDep === dArr) return { crosses: false, days: 0 };
-  const days = Math.round((new Date(dArr).getTime() - new Date(dDep).getTime()) / 86400000);
-  return { crosses: true, days };
 }
 
 // ============================================

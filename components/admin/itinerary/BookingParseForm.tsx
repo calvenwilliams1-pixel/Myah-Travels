@@ -13,8 +13,30 @@ export default function BookingParseForm({ onApply, onClose }: BookingParseFormP
   const [raw, setRaw] = useState("");
   const [parsed, setParsed] = useState<ReturnType<typeof parseBooking> | null>(null);
 
-  function handleParse() {
-    setParsed(parseBooking(raw));
+  async function handleParse() {
+    const result = parseBooking(raw);
+    // Fill the legs' timezones from the airport catalog so a pasted
+    // booking arrives with them set — no hand-picking afterwards.
+    const b = result.booking;
+    const fill = async (code: string | undefined, field: "leg.origin" | "leg.destination") => {
+      if (!code) return undefined;
+      try {
+        const r = await fetch(
+          "/api/suggestions/statics?field=" + encodeURIComponent(field) + "&q=" + encodeURIComponent(code)
+        );
+        const d = await r.json();
+        const hit = (d.items || []).find(
+          (it: { iata?: string }) => it.iata && it.iata.toUpperCase() === code.toUpperCase()
+        );
+        return hit?.timezone as string | undefined;
+      } catch {
+        return undefined;
+      }
+    };
+    if (b.origin) b.originTimezone = (await fill(b.origin, "leg.origin")) ?? b.originTimezone;
+    if (b.destination)
+      b.destinationTimezone = (await fill(b.destination, "leg.destination")) ?? b.destinationTimezone;
+    setParsed(result);
   }
 
   function handleApply() {

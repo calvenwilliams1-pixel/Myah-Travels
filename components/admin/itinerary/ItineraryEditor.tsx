@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AddSectionForm from "./AddSectionForm";
-import DraftRecoveryBanner from "./DraftRecoveryBanner";
 import ThemeSelector from "./ThemeSelector";
 import SectionEditor from "./SectionEditor";
 
@@ -195,8 +194,6 @@ export default function ItineraryEditor({
 
   return (
     <div className="space-y-6">
-      <DraftRecoveryBanner itinerary={itinerary} onRestored={fetchItinerary} />
-
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 sm:gap-4 flex-1 w-full min-w-0">
@@ -264,7 +261,7 @@ export default function ItineraryEditor({
                 ))}
           </select>
           <p className="text-xs text-gray-500 mt-1">
-            Default timezone for the trip. Sections can override. Used when computing "today" for the Day by Day tile. Auto falls back to UTC.
+            Default timezone for the trip. Sections can override. Used when computing "today" for the Day by Day tile. New trips start on America/Toronto (home); left blank, it falls back to UTC.
           </p>
         </div>
       </Card>
