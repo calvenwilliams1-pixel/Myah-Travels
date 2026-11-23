@@ -80,6 +80,32 @@
   transform-origin: top left;
 }
 
+/* Itinerary print rules (UI Pass 2b). Palette accents print where
+   the browser allows (print-color-adjust: exact); the components
+   also carry border and dark-text fallbacks, so the document stays
+   clear when backgrounds are stripped — the default. The cover
+   stands alone as page one, sections start on fresh pages, and a
+   day card never splits across a page break. */
+@media print {
+  .itinerary-print {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .itinerary-print .cover-page {
+    break-after: page;
+  }
+  /* Only later sections break — the first follows the cover, and
+     stacking break-after + break-before can blank a page. */
+  .itinerary-print .print-section + .print-section {
+    break-before: page;
+  }
+  .itinerary-print .day-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+}
+
 /* Portal wall print rules — only active when a glance is present. */
 @media print {
   body[data-portal-print="glance"] header {
