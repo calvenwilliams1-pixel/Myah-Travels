@@ -1,8 +1,8 @@
-# MyCalTravels — TODO.md (Revision 20)
+# MyCalTravels — TODO.md (Revision 21)
 
 ## Status
 
-**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE.** 154 vitest tests passing, `tsc` clean.
+**All planned phases (7.6, 7.8, 7.9, 9, 9.5) are CODE-COMPLETE and the site is LIVE** — launched Nov 22, 2026 at https://stgeammachine.tail2ba8aa.ts.net (Tailscale Funnel on the mini PC, Gmail SMTP). 184 vitest tests passing, `tsc` clean. Revision 21 (Nov 23, 2026) reconciles this file against the code and the live deployment — several items earlier revisions listed as pending had in fact shipped; they are now marked done, and the genuinely remaining work is collected under "What's left" below.
 
 **Batch M (auth + onboarding) SHIPPED on `main`** — merged at `60420df`. User flags (`is_admin`, `is_active`, `must_change_password`, `has_completed_setup`), `seed-admin.ts` CLI, `requireAuth`/`requireSession`/`requireAdmin` split, 3-step setup wizard, cache bug fix, dashboard warmth, `next start -H 127.0.0.1` bind, `auth-rate-limit.sh` audit suite.
 
@@ -30,33 +30,45 @@
   - `EXISTS` per family in `buildSelect`. Families resolved once at top of `getFeedItems`, deduped. 5 tests.
 - **2e-3 — admin alias management UI** ✅ `7c092fc`
   - `getAliasMap()` for one-query lookup. Alias column with add/remove controls. `deleteTagAction` uses `deleteCanonicalSafe`, `mergeTagsAction` uses `mergeTagsWithAliases`. `addAliasAction` + `removeAliasAction` new. Simplified UI (one intent per row).
-- **Merge `feat/blog-system` → `main`** ⏳ pending
+- **Merge `feat/blog-system` → `main`** ✅ merged Nov 22, 2026 (PR #3)
 
 ### Post-milestone polish (pending)
 
-- **2e-4 — favourite tag improvement** ⏳
-  - Current: `isFavourite` sorts favourite tags higher in autocomplete *when the user has typed at least one character*. It does not auto-populate on empty input, has no visual indicator in the dropdown, and `lastUsedAt` recency dominates the sort order.
-  - Planned: empty query returns favourite tags (up to 10) instead of `[]`. Favourites sorted above all others in the list. Suggestion dropdown shows ⭐ next to favourites.
-  - Decision: implement after tag milestone merges, as a single small commit.
+- **2e-4 — favourite tag improvement** ✅ DONE (verified in code Nov 23, 2026)
+  - `getTagSuggestions` returns favourite tags (up to 10) on an empty query instead of `[]`, and sorts favourites above recency in non-empty results.
 
 ### Open security items (from this session)
 
-- **`public/uploads/library/1789075535993-DSLAP-Japan-Travel-Itinerary-2026.pdf` is tracked in a PUBLIC GitHub repo.** Verified via GitHub API (unauthenticated request returned 200). **Needs answer: is this real client data or test data?**
-  - If real: make repo private on GitHub immediately, then history cleanup (`git filter-repo`), notify client.
-  - If test: `git rm` and move on.
-- **`public/uploads/` is not in `.gitignore`.** 8 untracked files in `public/uploads/posts/`. Needs `public/uploads/*` + `!public/uploads/.gitkeep` in `.gitignore`.
-- **`public/uploads/` files won't serve after `next build` on the mini PC.** Dev works (live serving from `public/`); production build will 404 for any file added after the build. Fix: serve uploads from a route handler outside `public/`, or accept that uploads go through the app (not static). **Deferred to Phase 7.7** — not a blog-system blocker.
+- **Japan itinerary PDF in the repo** — RESOLVED as a tracked-file issue (verified Nov 23, 2026): no uploads are tracked on `main` anymore. One footnote remains: the file existed in git history, so **if it was real client data** (never answered), history cleanup (`git filter-repo`) is still owed. If it was test data, nothing further.
+- **`public/uploads/` in `.gitignore`** ✅ FIXED — `public/uploads/*` + `!public/uploads/.gitkeep` (and the same for `data/uploads/`) are in `.gitignore`.
+- **Uploads serving after `next build`** ✅ RESOLVED by design — uploads are served through the authenticated route handler `app/api/uploads/[...path]`, not from `public/`, so files added after a build serve correctly.
 
 ### Outstanding from earlier sessions (still open)
 
-- **Rate-limit FINDINGs** from `auth-rate-limit.sh`: (1) successful login doesn't reset the counter, (2) no per-username limiter (distributed guess defense), (3) per-IP-only limiter has no protection against distributed attacks. Documented in the suite header. Not urgent, but real.
-- **PreviewPopout bounds clamping** — Bug #1 from earlier testing pass. Never re-verified this session.
-- **Body block Tab handler** — Bug #2 from earlier testing pass. Never re-verified this session.
-- **Gallery block upload** — Bug #3. Verified this session: Batch A **did** ship (Gallery block reuses `ImageSourcePicker`). **Close this item.**
+- **Rate-limit FINDINGs** from `auth-rate-limit.sh`: (1) successful login doesn't reset the counter, (2) no per-username limiter (distributed guess defense), (3) per-IP-only limiter has no protection against distributed attacks. Documented in the suite header. Not urgent, but real. **Still open (Nov 23, 2026).**
+- **PreviewPopout bounds clamping** — Bug #1. ✅ Verified SHIPPED Nov 23, 2026 (`clampPosition`/`clampSize` in `PreviewPopout.tsx`, applied on mount and drag). Closed.
+- **Body block Tab handler** — Bug #2. ✅ Verified SHIPPED Nov 23, 2026 (`sinkListItem`/`liftListItem` handler in `TipTapEditor.tsx`). Closed.
+- **Gallery block upload** — Bug #3. Batch A shipped (Gallery block reuses `ImageSourcePicker`). Closed.
 
 **Phase 7.6.8 (Notepad tag behaviour) is REJECTED** — see its section below for rationale. Not deferred, not scheduled.
 
-**Upcoming after tag milestone:** Phase 7.7 Launch Day (email + magic link go-live, TOTP enforcement, cron entries, backups, OS hardening). Then Phase 7.3 sweep — but note: Publish Validation, Error Boundaries per block, and Responsive Preview are **all verified SHIPPED** this session (the Phase Status table below is stale on this). Phase 8 (social publishing) deferred to post-launch.
+**Upcoming after tag milestone:** Phase 7.7 Launch Day — ✅ COMPLETE Nov 22, 2026 (see the Phase 7.7 section note for the route actually taken). Phase 7.3 sweep — ✅ COMPLETE: Publish Validation, Error Boundaries per block, and Responsive Preview all shipped in Batch F. Phase 8 (social publishing) deferred to post-launch.
+
+## What's left (as of Nov 23, 2026)
+
+Shipped since launch, for the record: full mobile/tablet pass (PR #5), post-launch audit fixes — seed password guard, reusable magic links, draft recovery, post-editor autosave (PR #6), trusted-device 2FA (PR #7), security headers (PR #8), homepage welcome wiring (PR #9), dashboard greetings (PR #10), in-site Getting Started guide (PR #11), forgot-password reset flow (PR #12). 184/184 tests passing.
+
+Genuinely outstanding:
+
+1. **Myah's first login** — the account is ready: a forced password change is switched ON (verified Nov 23, 2026), so her first sign-in makes her set her own password, then enrol her authenticator. Production content is still empty (0 portals / posts / clients) until she starts.
+2. **Framework upgrade session** — Next 14.2.35, drizzle-orm, and sharp carry known advisories (see the Nov 22 security audit in the goal files). Needs a planned, tested upgrade session. Not started.
+3. **Off-disk backups** — nightly backups (`~/backup-site.sh`) land on the same 2TB disk as the site itself. One disk failure takes both. Needs an external or offsite target.
+4. **SSH key-only login on the mini PC** — password authentication still enabled. Owner's call.
+5. **Rate-limit findings (3)** — successful login doesn't reset the counter; no per-username limiter; no distributed-attack defense. Documented under "Outstanding from earlier sessions." Low urgency.
+6. **TESTING.md coverage gaps** — block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Ongoing; each batch appends its own section.
+7. **Phase 7.5 demo content** — Japan + Cruise demos still pending (Singapore seeded). Cosmetic.
+8. **Japan PDF history question** — the file is out of the tree; history cleanup is owed only if it was real client data (never answered). See Known Issues #6.
+9. **Phase 8** — deferred by design, post-launch future (see its section below).
 
 ## Core Principle
 
@@ -127,12 +139,12 @@ Developer controls design. Template controls layout. Writer controls content. Se
 | 7.9 | ✅ Complete | Post Editor and Writing Tools (toolbar, colour presets, pop-out preview, YouTube embed, social handles) |
 | 9 | ✅ Complete | Client Memory System (people, notes, trip history, portal purge, itinerary library) |
 | 9.5 | ✅ Complete | Polish Pass + Security Audit |
-| Itinerary Client Experience | 📋 Specced | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
+| Itinerary Client Experience | ✅ Complete | Glance + Today's Plan card — derived from itinerary data, no authoring surface |
 | **Batch M** | **✅ SHIPPED on `main`** | **Auth + onboarding: user flags, seed-admin CLI, requireAuth split, 3-step wizard, cache bug fix, dashboard warmth, localhost bind, auth-rate-limit audit suite. Merged at `60420df`.** |
 | **Batch build** | ✅ Complete | H1 (Gallery Collage) shipped, I (Media Library Picker) shipped, J (admin library + folders) shipped |
-| **Tag System** | **✅ Code-complete on `feat/blog-system`** | **2a-2e-3 shipped. 9 commits (`61d6651` through `7c092fc`). 179 tests passing. Merge to main pending.** |
-| 7.3 | ⏳ Pending | Sweep first to confirm what's still needed; then build survivors |
-| 7.7 | ⏳ Pending | Launch Day — email + magic link go-live, TOTP enforcement, cron, backups |
+| **Tag System** | **✅ Complete on `main`** | **2a-2e-4 shipped. Merged to main Nov 22, 2026 (PR #3).** |
+| 7.3 | ✅ Complete | Sweep done; the three survivors shipped in Batch F |
+| 7.7 | ✅ Complete | Launch Day — launched Nov 22, 2026 (Tailscale Funnel + Gmail SMTP; see Phase 7.7 note) |
 | 8 | ⏳ Future | Options segments, cruise mode, People table — post-launch |
 
 ---
@@ -141,7 +153,7 @@ Developer controls design. Template controls layout. Writer controls content. Se
 
 Build order, then testing pass. Every batch updates `docs/TESTING.md` with its test cases before commit. Every batch is a heredoc, verified, committed, pushed.
 
-### Round 1 — Three outstanding bugs
+### Round 1 — Three outstanding bugs (all SHIPPED)
 
 **Batch A — Gallery block reuses ImageSourcePicker**
 - Swap Gallery's URL-only inputs for `ImageSourcePicker` per slot
@@ -187,7 +199,7 @@ Build order, then testing pass. Every batch updates `docs/TESTING.md` with its t
 
 ### Round 4 — Phase 7.3 sweep
 
-**Batch F — build the three survivors**
+**Batch F — build the three survivors (SHIPPED)**
 - Publish Validation (required blocks filled)
 - Error Boundaries per block
 - Responsive Preview (desktop / tablet / mobile)
@@ -203,7 +215,7 @@ Build order, then testing pass. Every batch updates `docs/TESTING.md` with its t
 - `46b16e5` - `docs/TESTING.md` - Batch H1 section (test cases + known limitations)
 - Verified: tsc clean, 139 vitest tests passing, defaults render identically to pre-H1
 
-**H2 - editor UX (PENDING, next batch, ~8h)**
+**H2 - editor UX (DONE — shipped; verified in code Nov 23, 2026)**
 - `GalleryBlockEditor.tsx` - bulk upload zone, thumbnail strip + drag reorder, layout controls header, per-image detail collapse
 - `docs/TESTING.md` - Batch H2 section
 - H2 is what makes the H1 layouts reachable from the admin UI
@@ -271,7 +283,7 @@ Expansion: modal (consistent with existing admin patterns), reuses `ItineraryVie
 
 ## Outstanding bugs from testing pass
 
-Three bugs found in the last testing session, not fixed. They are Batches A, B, C.
+Three bugs found in the last testing session. **All three are fixed** — Batches A, B, and C shipped, and B and C were re-verified in code on Nov 23, 2026. Kept below for the record.
 
 ### 1. PreviewPopout bounds clamping
 
@@ -312,9 +324,9 @@ The autocomplete from portal members already handles discovery. Phase 7.6.8 adds
 | 3 | Preview popup (modal → floating → fullscreen) | **DONE** | `PreviewPopout.tsx` ships floating + fullscreen. |
 | 4 | Target surface token conversion | **DROPPED** | 144 gray tokens found (not ~20-30 as originally estimated). Earlier 7.9 plan already dropped this — neutral greys work fine. |
 | 5 | Undo / Redo (global stack, capped 50) | **EDITOR-ONLY DONE** | TipTap toolbar has per-editor undo/redo. App-wide stack dropped — significant architecture for low value in single-admin. |
-| 6 | Publish Validation (required blocks filled) | **STILL NEEDED** | Build in Batch F. |
-| 7 | Error Boundaries per block | **STILL NEEDED** | Component exists at `components/ErrorBoundary.tsx`, not wired. Build in Batch F — wrap each block. |
-| 8 | Responsive Preview (desktop/tablet/mobile) | **STILL NEEDED** | Build in Batch F — width presets in PreviewPopout. |
+| 6 | Publish Validation (required blocks filled) | **DONE** | Shipped in Batch F (`lib/blocks/validate.ts`); verified Nov 23, 2026. |
+| 7 | Error Boundaries per block | **DONE** | Shipped in Batch F — `BlockEditor.tsx` wraps each block in `<ErrorBoundary>`; verified Nov 23, 2026. |
+| 8 | Responsive Preview (desktop/tablet/mobile) | **DONE** | Shipped in Batch F — 768px / 375px presets in PreviewPopout; verified Nov 23, 2026. |
 
 **Batch F scope (3 items):**
 - #6 Publish Validation — reject publish if any `required` block is empty. ~2h.
@@ -326,6 +338,8 @@ The autocomplete from portal members already handles discovery. Phase 7.6.8 adds
 ---
 
 ## Phase 7.7 — Launch Day (Batch G)
+
+✅ **COMPLETED Nov 22, 2026** — by a different route than the checklist below planned: the site is served via **Tailscale Funnel** (not Cloudflare Tunnel) and email runs on **Gmail SMTP** (not Resend — no domain was purchased). Items that only applied to the planned route (Resend account/DNS, Cloudflare checks, LUKS encryption, the dedicated `myahtravels` user) were bypassed rather than done. What does run: localhost-bound app behind the Funnel, TOTP enforcement, per-minute email-queue cron, nightly backups via `~/backup-site.sh` (to the same disk — an off-disk target is still open, see "What's left"), daily portal purge, fail2ban, automatic security updates. The checklist below is kept as the record of the original plan.
 
 Operational checklist for the deployed system. Completed on the mini PC. This section is the compressed version; the full checklist lives in this document below the summary if needed.
 
@@ -477,9 +491,9 @@ Do not schedule until Launch Day completes.
 3. **`schema.sql` outdated** — Use `scripts/setup-db.js`.
 4. **Codespace Node version** — Codespace runs Node 24; local runs Node 22 LTS. Minor drift; both work. Local is deployment-target.
 5. **`TESTING.md` coverage gaps** — break-session features covered at `65f857f`. Still uncovered: block system beyond Body, client-facing post rendering, Content Library, admin dashboard. Each batch fixes its own gap going forward.
-6. **PDF exposure in public repo** — `public/uploads/library/1789075535993-DSLAP-Japan-Travel-Itinerary-2026.pdf` tracked in a public GitHub repo. Needs decision: real client data (make private + history cleanup + notify) or test data (`git rm`). See "Open security items" above.
-7. **`public/uploads/` not in `.gitignore`** — 8 untracked files in `public/uploads/posts/`. Fix `.gitignore` pattern: `public/uploads/*` + `!public/uploads/.gitkeep`.
-8. **Uploads 404 after `next build`** — files in `public/` added after build won't serve under `next start`. Affects mini PC deploy. Fix deferred to Phase 7.7.
+6. **PDF exposure in public repo** — RESOLVED as a tracked file (no uploads tracked on `main`, verified Nov 23, 2026). The file may persist in git history; whether it was real client data was never answered — history cleanup is owed only if it was real. See "Open security items" above.
+7. **`public/uploads/` not in `.gitignore`** — FIXED. `.gitignore` carries `public/uploads/*` + `!public/uploads/.gitkeep` (and the `data/uploads/` pair).
+8. **Uploads 404 after `next build`** — RESOLVED. Uploads serve through `app/api/uploads/[...path]` with auth checks, outside `public/`.
 9. **Rate-limit FINDINGs** — 3 policy observations from `auth-rate-limit.sh`: successful login doesn't reset counter, no per-username limiter, no distributed-attack defense. Documented in suite header. Not urgent.
 
 ---
@@ -505,4 +519,4 @@ Do not schedule until Launch Day completes.
 
 ---
 
-**Last Updated:** November 11, 2026
+**Last Updated:** November 23, 2026
