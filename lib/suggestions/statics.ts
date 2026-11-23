@@ -24,6 +24,20 @@ export interface Airline {
   country: string;
 }
 
+export interface CruiseLine {
+  name: string;
+  ships: string[];
+}
+
+export interface ShipMatch {
+  ship: string;
+  line: string;
+}
+
+export interface ResortBrand {
+  name: string;
+}
+
 interface StaticFile<T> {
   _generated: boolean;
   _source?: string;
@@ -33,6 +47,8 @@ interface StaticFile<T> {
 
 let airportsCache: Airport[] | null = null;
 let airlinesCache: Airline[] | null = null;
+let cruiseLinesCache: CruiseLine[] | null = null;
+let resortBrandsCache: ResortBrand[] | null = null;
 let lastLoadError: string | null = null;
 
 /**
@@ -72,28 +88,80 @@ export function getAirlines(): Airline[] {
   return airlinesCache;
 }
 
+export function getCruiseLines(): CruiseLine[] {
+  if (cruiseLinesCache === null) cruiseLinesCache = loadFile<CruiseLine>("cruise-lines.json");
+  return cruiseLinesCache;
+}
+
+export function getResortBrands(): ResortBrand[] {
+  if (resortBrandsCache === null) resortBrandsCache = loadFile<ResortBrand>("resort-brands.json");
+  return resortBrandsCache;
+}
+
 export function searchAirports(query: string, limit = 8): Airport[] {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
-  return getAirports()
-    .filter(
-      (a) =>
-        a.iata.toLowerCase().includes(q) ||
-        a.name.toLowerCase().includes(q) ||
-        (a.city && a.city.toLowerCase().includes(q))
+  // Rank exact code matches first: with thousands of airports, a typed
+  // IATA code is a substring of unrelated names/cities elsewhere, and
+  // the airport the code actually belongs to must win.
+  const exact: Airport[] = [];
+  const prefix: Airport[] = [];
+  const rest: Airport[] = [];
+  for (const a of getAirports()) {
+    const iata = a.iata.toLowerCase();
+    if (iata === q) exact.push(a);
+    else if (iata.startsWith(q)) prefix.push(a);
+    else if (
+      iata.includes(q) ||
+      a.name.toLowerCase().includes(q) ||
+      (a.city && a.city.toLowerCase().includes(q))
     )
-    .slice(0, limit);
+      rest.push(a);
+  }
+  return [...exact, ...prefix, ...rest].slice(0, limit);
 }
 
 export function searchAirlines(query: string, limit = 8): Airline[] {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
-  return getAirlines()
-    .filter(
-      (a) =>
-        a.iata.toLowerCase().includes(q) ||
-        a.icao.toLowerCase().includes(q) ||
-        a.name.toLowerCase().includes(q)
-    )
+  const exact: Airline[] = [];
+  const prefix: Airline[] = [];
+  const rest: Airline[] = [];
+  for (const a of getAirlines()) {
+    const iata = a.iata.toLowerCase();
+    const icao = a.icao.toLowerCase();
+    if (iata === q || icao === q) exact.push(a);
+    else if (iata.startsWith(q) || icao.startsWith(q)) prefix.push(a);
+    else if (iata.includes(q) || icao.includes(q) || a.name.toLowerCase().includes(q)) rest.push(a);
+  }
+  return [...exact, ...prefix, ...rest].slice(0, limit);
+}
+
+export function searchCruiseLines(query: string, limit = 8): CruiseLine[] {
+  if (!query.trim()) return [];
+  const q = query.toLowerCase();
+  return getCruiseLines()
+    .filter((l) => l.name.toLowerCase().includes(q))
+    .slice(0, limit);
+}
+
+export function searchShips(query: string, limit = 8): ShipMatch[] {
+  if (!query.trim()) return [];
+  const q = query.toLowerCase();
+  const out: ShipMatch[] = [];
+  for (const line of getCruiseLines()) {
+    for (const ship of line.ships) {
+      if (ship.toLowerCase().includes(q)) out.push({ ship, line: line.name });
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
+}
+
+export function searchResortBrands(query: string, limit = 8): ResortBrand[] {
+  if (!query.trim()) return [];
+  const q = query.toLowerCase();
+  return getResortBrands()
+    .filter((b) => b.name.toLowerCase().includes(q))
     .slice(0, limit);
 }

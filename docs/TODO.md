@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 25)
+# MyCalTravels — TODO.md (Revision 26)
 
 ## Status
 
@@ -76,7 +76,7 @@ Closed Nov 23, 2026:
 - **Phase 7.5 demo content** — the Japan/Cruise/Singapore seeds were test scaffolding, not product work. Dropped.
 - **Japan PDF history question** — the file was test data (owner confirmed). No history cleanup needed. Closed.
 
-**Phase 8 — shelved, now SCOPED (Nov 23, 2026), awaiting the owner's decisions and go-ahead.** The itinerary-builder scope lives in the goal files (`Itinerary_Builder_Scope_2026-11-23.md`): six batches — a reference-data backfill first (airports/airlines widened from the current 64/45 starter sets, a new curated cruise lines + ships catalog, resort brands), then stay kinds (hotel/resort/cruise), generated sailing days, wider booking-paste coverage, trip-check accuracy warnings, and mixed-trip output polish — under the owner's goals (save data-entry time, extra care for accuracy, simplicity, an attractive finished product) and the one-trip-one-itinerary rule. Four owner decisions (D1–D4) are recorded in the scope; nothing is built until he answers and says go. The other Phase 8 notes below (People table, portal enhancements) remain separate, unscoped ideas.
+**Phase 8 — shelved, now SCOPED (Nov 23, 2026), awaiting the owner's decisions and go-ahead.** The itinerary-builder scope lives in the goal files (`Itinerary_Builder_Scope_2026-11-23.md`): six batches — a reference-data backfill first (airports/airlines widened from the current 64/45 starter sets, a new curated cruise lines + ships catalog, resort brands), then stay kinds (hotel/resort/cruise), generated sailing days, wider booking-paste coverage, trip-check accuracy warnings, and mixed-trip output polish — under the owner's goals (save data-entry time, extra care for accuracy, simplicity, an attractive finished product) and the one-trip-one-itinerary rule. **Batch 0 SHIPPED Nov 23, 2026:** airports 64 → 4,571 (every one with an IANA timezone), airlines 45 → 992, new curated cruise catalog (29 lines, 275 ships) and resort brands (43), all served by the suggestions API under new stay field keys; airport/airline search now ranks exact code matches first. The regeneration script also gained an offline mode and a fix for its airline parser, which had never actually parsed upstream rows. Remaining: Batches 1–5, on the owner's go (cruise modelled as a stay kind with generated days; per-client cabins out; the parser batch waits on which booking confirmations Myah actually receives). Four owner decisions (D1–D4) are recorded in the scope; nothing is built until he answers and says go. The other Phase 8 notes below (People table, portal enhancements) remain separate, unscoped ideas.
 
 ## Core Principle
 

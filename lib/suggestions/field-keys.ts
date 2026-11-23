@@ -19,6 +19,9 @@ export const FIELD_KEYS = {
   STAY_HOTEL_NAME: "stay.hotel_name",
   STAY_ADDRESS: "stay.address",
   STAY_NOTES: "stay.notes",
+  STAY_CRUISE_LINE: "stay.cruise_line",
+  STAY_SHIP: "stay.ship",
+  STAY_RESORT_BRAND: "stay.resort_brand",
 
   SECTION_TITLE: "section.title",
   SECTION_BASE_CITY: "section.base_city",
