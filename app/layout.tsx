@@ -1,6 +1,7 @@
 import React from "react";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast/ToastProvider";
+import { fontVariables } from "@/lib/theme/fonts";
 
 export const metadata = {
   title: "MyCalTravels",
@@ -13,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-white text-gray-900 antialiased">
+    <html lang="en" className={fontVariables}>
+      <body className="min-h-screen bg-white font-sans text-gray-900 antialiased">
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

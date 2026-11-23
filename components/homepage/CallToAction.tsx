@@ -3,12 +3,12 @@ import Link from "next/link";
 
 export default function CallToAction() {
   return (
-    <section className="py-20 bg-primary">
+    <section className="section-y bg-primary">
       <div className="max-w-3xl mx-auto px-4 text-center">
-        <h2 className="text-3xl font-semibold text-white mb-4">
+        <h2 className="text-h1 font-semibold text-white mb-4">
           Ready to plan your trip?
         </h2>
-        <p className="text-primary/30 mb-8">
+        <p className="text-white/90 mb-8">
           Let's create something amazing together.
         </p>
         <Link

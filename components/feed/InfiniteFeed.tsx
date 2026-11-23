@@ -102,7 +102,7 @@ export default function InfiniteFeed({
       <div ref={sentinelRef} className="h-10" />
       {isLoading && (
         <div className="text-center py-8">
-          <p className="text-gray-400">Loading more...</p>
+          <p className="text-gray-500">Loading more...</p>
         </div>
       )}
       {error && (
@@ -117,7 +117,7 @@ export default function InfiniteFeed({
       )}
       {!hasMore && items.length > 0 && !error && (
         <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">You've reached the end 🎉</p>
+          <p className="text-gray-500 text-sm">You've reached the end 🎉</p>
         </div>
       )}
     </div>

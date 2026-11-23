@@ -36,7 +36,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
 
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-4">{post.title}</h1>
+      <h1 className="text-h1 font-semibold mb-4">{post.title}</h1>
       <p className="text-sm text-gray-500 mb-8">
         {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}
       </p>

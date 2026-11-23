@@ -15,7 +15,7 @@ export default async function ReviewsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-2">Reviews</h1>
+      <h1 className="text-h1 font-semibold mb-2">Reviews</h1>
       <p className="text-gray-600 mb-8">Honest reviews of travel products and experiences.</p>
 
       {reviews.length > 0 ? (
@@ -31,7 +31,7 @@ export default async function ReviewsPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-400 mb-2">{review.reviewType}</p>
+                <p className="text-xs text-gray-500 mb-2">{review.reviewType}</p>
                 {review.excerpt && (
                   <p className="text-gray-600 text-sm">{review.excerpt}</p>
                 )}

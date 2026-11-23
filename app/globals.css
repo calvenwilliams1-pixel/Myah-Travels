@@ -1,6 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * UI style plan, Pass 1a — design tokens.
+ *
+ * Font pairing: the live pairing is chosen HERE. Point these two
+ * variables at the -a pair (Playfair Display + Inter) or the -b pair
+ * (Fraunces + Source Sans 3); everything else follows. One-line flip.
+ */
+:root {
+  --font-display: var(--font-display-a);
+  --font-sans: var(--font-sans-a);
+}
+
+@layer base {
+  /* Headings wear the display face by default; components can still
+     opt out with font-sans. */
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  /* Contrast floor (Pass 1a item 4): body text never lighter than
+     gray-700 on white (gray-700 on white is ~7.5:1; the floor is
+     4.5:1 for small text). Muted/secondary text stops at gray-600. */
+}
+
+@layer components {
+  /* One card style: radius, border, shadow. */
+  .card-surface {
+    @apply rounded-2xl border border-gray-200 bg-white shadow-card;
+  }
+  /* One section spacing rhythm. */
+  .section-y {
+    @apply py-14 md:py-20;
+  }
+  .section-y-sm {
+    @apply py-10 md:py-14;
+  }
+  /* Button hierarchy — solid primary, outline secondary. Matches the
+     long-standing hero buttons so the default looks unchanged, just
+     shared. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary-dark;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-primary bg-white px-6 py-3 font-medium text-primary transition-colors hover:bg-primary/10;
+  }
+  /* Hero image rules (Pass 1a item 5). The scrim is a guaranteed
+     gradient over any hero/cover photo so overlay text stays
+     readable on dark, bright, or busy images. The fallback is the
+     brand treatment used when no photo is set. Focal-point rule:
+     hero images use object-position from the focal point recorded
+     with the image (default: center); the crop must keep the
+     subject on both phone and desktop aspect ratios. */
+  .hero-scrim {
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.62) 0%,
+      rgb(0 0 0 / 0.28) 45%,
+      rgb(0 0 0 / 0.08) 100%
+    );
+  }
+  .hero-fallback {
+    @apply bg-gradient-to-br from-primary to-primary-dark;
+  }
+}
+
 /* Canvas renderer - overflow handled by wrapper div */
 .canvas-wrapper {
   transform-origin: top left;

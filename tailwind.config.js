@@ -7,6 +7,23 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // The live pairing is chosen in globals.css (--font-display /
+        // --font-sans point at the A or B next/font variables).
+        display: ["var(--font-display)", "Georgia", "'Times New Roman'", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "-apple-system", "'Segoe UI'", "sans-serif"],
+      },
+      fontSize: {
+        // Type scale (UI style plan, Pass 1a item 2). Use these tokens
+        // instead of improvising sizes per component.
+        display: ["3rem", { lineHeight: "1.08", letterSpacing: "-0.01em" }],
+        h1: ["2.25rem", { lineHeight: "1.15" }],
+        h2: ["1.75rem", { lineHeight: "1.25" }],
+        h3: ["1.375rem", { lineHeight: "1.35" }],
+      },
+      boxShadow: {
+        card: "0 1px 3px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.05)",
+      },
       colors: {
         primary: "rgb(var(--color-primary-rgb) / <alpha-value>)",
         "primary-dark": "rgb(var(--color-primary-dark-rgb) / <alpha-value>)",

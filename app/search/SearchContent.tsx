@@ -49,7 +49,7 @@ export default function SearchContent() {
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-2">Search Results</h1>
+      <h1 className="text-h1 font-semibold mb-2">Search Results</h1>
       {query && (
         <p className="text-gray-600 mb-8">
           Results for: <strong>{query}</strong>

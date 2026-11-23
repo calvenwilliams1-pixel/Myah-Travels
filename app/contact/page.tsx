@@ -45,7 +45,7 @@ export default function ContactPage() {
     return (
       <div className="max-w-md mx-auto mt-20 text-center">
         <Card>
-          <h1 className="text-2xl font-semibold mb-4">Thank You!</h1>
+          <h1 className="text-h2 font-semibold mb-4">Thank You!</h1>
           <p className="text-gray-600 mb-6">
             Your inquiry has been received. Myah will be in touch soon.
           </p>
@@ -59,7 +59,7 @@ export default function ContactPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-2">Start Planning Your Trip</h1>
+      <h1 className="text-h1 font-semibold mb-2">Start Planning Your Trip</h1>
       <p className="text-gray-600 mb-8">
         Fill out what you're comfortable sharing. All fields are optional except your name and one way to contact you.
         Your information is never shared.

@@ -8,19 +8,19 @@ export default async function FeaturedContent() {
 
   if (!posts || posts.length === 0) {
     return (
-      <section className="py-16 bg-gray-50">
+      <section className="section-y bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-semibold mb-4">Latest Stories</h2>
-          <p className="text-gray-500">Stories coming soon!</p>
+          <h2 className="text-h2 font-semibold mb-4">Latest Stories</h2>
+          <p className="text-gray-600">Stories coming soon!</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="section-y bg-gray-50">
       <div className="max-w-4xl mx-auto px-4">
-        <h2 className="text-2xl font-semibold mb-8">Latest Stories</h2>
+        <h2 className="text-h2 font-semibold mb-8">Latest Stories</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {posts.map((post: any) => {
             const displayDate = post.publishedAt || post.createdAt;
@@ -40,7 +40,7 @@ export default async function FeaturedContent() {
                     <p className="text-sm text-gray-600 mb-3 line-clamp-3">{post.excerpt}</p>
                   )}
                   {formattedDate && (
-                    <p className="text-xs text-gray-400">{formattedDate}</p>
+                    <p className="text-xs text-gray-500">{formattedDate}</p>
                   )}
                 </Link>
               </Card>

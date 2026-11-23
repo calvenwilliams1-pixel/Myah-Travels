@@ -107,7 +107,7 @@ export default function FeedCard({
           </span>
         )}
         {displayDate && (
-          <span className="text-[11px] text-gray-400 ml-auto">{displayDate}</span>
+          <span className="text-[11px] text-gray-500 ml-auto">{displayDate}</span>
         )}
       </div>
 
@@ -138,7 +138,7 @@ export default function FeedCard({
             </Link>
           ))}
           {overflowCount > 0 && (
-            <span className="text-[11px] text-gray-400 ml-0.5">
+            <span className="text-[11px] text-gray-500 ml-0.5">
               +{overflowCount}
             </span>
           )}
