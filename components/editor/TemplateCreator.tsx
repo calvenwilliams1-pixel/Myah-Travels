@@ -38,6 +38,7 @@ export default function TemplateCreator({
   const [description, setDescription] = useState("");
   const [themeVariant, setThemeVariant] = useState<"minimal" | "travel" | "review">("minimal");
   const [sections, setSections] = useState<TemplateSection[]>([]);
+  const [layout, setLayout] = useState<BlockType[] | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>("");
 
@@ -51,6 +52,7 @@ export default function TemplateCreator({
         setDescription(template.description);
         setThemeVariant(template.themeVariant || "minimal");
         setSections(template.sections || []);
+        setLayout(template.layout);
       }
     }
   }, [selectedId, templates]);
@@ -61,6 +63,7 @@ export default function TemplateCreator({
     setDescription("");
     setThemeVariant("minimal");
     setSections([]);
+    setLayout(undefined);
   };
 
   const handleBlockStateChange = (blockType: BlockType, newState: "required" | "optional" | "disabled") => {
@@ -112,6 +115,9 @@ export default function TemplateCreator({
       description,
       themeVariant,
       sections: sections.filter((s) => s.state !== "disabled"),
+      // A layout saved from a post rides along untouched — editing the
+      // rules here must not silently drop the arrangement.
+      ...(layout && layout.length > 0 ? { layout } : {}),
     };
 
     try {
@@ -242,6 +248,16 @@ export default function TemplateCreator({
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
           <h2 className="font-semibold text-sm">Allowed Blocks</h2>
+          {layout && layout.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Saved from a post: using this template places these blocks in
+              order —{" "}
+              {layout
+                .map((t) => blockDefinitions.find((b) => b.type === t)?.label || t)
+                .join(" → ")}
+              . The rules below still apply on top.
+            </p>
+          )}
 
           {BLOCK_TYPES.map((blockType) => {
             const def = blockDefinitions.find((b) => b.type === blockType);

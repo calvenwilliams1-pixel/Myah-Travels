@@ -1,6 +1,7 @@
 import React from "react";
 import { getEditorTemplates } from "@/lib/blocks/template-store";
 import EditPostForm from "./EditPostForm";
+import { saveTemplateAction } from "@/app/admin/(dashboard)/templates/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,5 +17,5 @@ export default async function EditPostPage({
     return <div className="p-6 text-red-600">Invalid post ID</div>;
   }
 
-  return <EditPostForm postId={postId} templates={templates} />;
+  return <EditPostForm postId={postId} templates={templates} onSaveAsTemplate={saveTemplateAction} />;
 }

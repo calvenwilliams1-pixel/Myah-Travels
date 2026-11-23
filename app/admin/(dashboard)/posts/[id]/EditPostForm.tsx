@@ -14,9 +14,15 @@ import { writeDraft, readDraft, clearDraft } from "@/lib/drafts";
 
 type PostStatus = "draft" | "published" | "hidden";
 
+type SaveTemplateFn = (
+  template: Template,
+  mode: "create" | "update"
+) => Promise<{ ok: true; id: string } | { ok: false; error: string }>;
+
 interface EditPostFormProps {
   postId: number;
   templates: Template[];
+  onSaveAsTemplate?: SaveTemplateFn;
 }
 
 interface BlockContentShape {
@@ -50,7 +56,7 @@ function parseContent(raw: string): BlockContentShape {
   return { blocks: [], templateId: "story" };
 }
 
-export default function EditPostForm({ postId, templates }: EditPostFormProps) {
+export default function EditPostForm({ postId, templates, onSaveAsTemplate }: EditPostFormProps) {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -328,6 +334,7 @@ export default function EditPostForm({ postId, templates }: EditPostFormProps) {
         </label>
         <BlockEditor
           templates={templates}
+          onSaveAsTemplate={onSaveAsTemplate}
           initialBlocks={blocks}
           initialTemplateId={templateId}
           onChange={(newBlocks, newTemplateId) => {
