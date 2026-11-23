@@ -1,4 +1,4 @@
-# MyCalTravels — TODO.md (Revision 22)
+# MyCalTravels — TODO.md (Revision 23)
 
 ## Status
 
@@ -45,7 +45,7 @@
 
 ### Outstanding from earlier sessions (still open)
 
-- **Rate-limit FINDINGs** from `auth-rate-limit.sh`: (1) successful login doesn't reset the counter, (2) no per-username limiter (distributed guess defense), (3) per-IP-only limiter has no protection against distributed attacks. Documented in the suite header. Not urgent, but real. **Still open (Nov 23, 2026).**
+- **Rate-limit FINDINGs** from `auth-rate-limit.sh` — ✅ **FIXED Nov 23, 2026.** (1) A proven password now resets both login counters; (2)+(3) the login route also applies a per-username limiter (10 attempts / 15 min accumulated across all IPs), which is the distributed-guessing defense. Unit-tested in `lib/security/rate-limit.test.ts`; the audit suite gained a distributed-guessing section.
 - **PreviewPopout bounds clamping** — Bug #1. ✅ Verified SHIPPED Nov 23, 2026 (`clampPosition`/`clampSize` in `PreviewPopout.tsx`, applied on mount and drag). Closed.
 - **Body block Tab handler** — Bug #2. ✅ Verified SHIPPED Nov 23, 2026 (`sinkListItem`/`liftListItem` handler in `TipTapEditor.tsx`). Closed.
 - **Gallery block upload** — Bug #3. Batch A shipped (Gallery block reuses `ImageSourcePicker`). Closed.
@@ -63,8 +63,7 @@ Not tracked here: **Myah's first login + authenticator enrolment** — her own s
 Still open, small:
 
 1. **SSH key-only login on the mini PC** — password authentication still enabled. Owner's call.
-2. **Rate-limit findings (3)** — successful login doesn't reset the counter; no per-username limiter; no distributed-attack defense. Documented under "Outstanding from earlier sessions." Low urgency.
-3. **TESTING.md checklists** — the features themselves were fully tested at launch (launch test report + post-launch audit; 184 automated tests). Only the written manual checklists for a few areas (blocks beyond Body, client-facing rendering, Content Library) were never added. Documentation debt only.
+2. **TESTING.md checklists** — the features themselves were fully tested at launch (launch test report + post-launch audit; 184 automated tests). Only the written manual checklists for a few areas (blocks beyond Body, client-facing rendering, Content Library) were never added. Documentation debt only.
 
 Held in reserve:
 
@@ -73,6 +72,7 @@ Held in reserve:
 
 Closed Nov 23, 2026:
 
+- **Rate-limit findings (3)** — per-username login limiter added (10 / 15 min across all IPs) and a proven password now resets both login counters.
 - **Phase 7.5 demo content** — the Japan/Cruise/Singapore seeds were test scaffolding, not product work. Dropped.
 - **Japan PDF history question** — the file was test data (owner confirmed). No history cleanup needed. Closed.
 
@@ -502,7 +502,7 @@ Operational checklist for the deployed system. Completed on the mini PC. This se
 6. **PDF exposure in public repo** — CLOSED. No uploads tracked on `main` (verified Nov 23, 2026), and the owner confirmed the file was test data, so its presence in git history needs no cleanup.
 7. **`public/uploads/` not in `.gitignore`** — FIXED. `.gitignore` carries `public/uploads/*` + `!public/uploads/.gitkeep` (and the `data/uploads/` pair).
 8. **Uploads 404 after `next build`** — RESOLVED. Uploads serve through `app/api/uploads/[...path]` with auth checks, outside `public/`.
-9. **Rate-limit FINDINGs** — 3 policy observations from `auth-rate-limit.sh`: successful login doesn't reset counter, no per-username limiter, no distributed-attack defense. Documented in suite header. Not urgent.
+9. **Rate-limit FINDINGs** — FIXED Nov 23, 2026. Per-username limiter added; a proven password resets both counters. See "Outstanding from earlier sessions" above.
 
 ---
 

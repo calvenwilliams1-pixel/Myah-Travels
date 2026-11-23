@@ -75,9 +75,32 @@ export function rateLimit(
   };
 }
 
+/** Clear one key's counter (e.g. after a successful login). */
+export function resetRateLimit(key: string, prefix: string): void {
+  rateLimitStore.delete(`${prefix}:${key}`);
+}
+
 // Pre-configured rate limiters (each with unique prefix)
 export const loginRateLimit = (ip: string) =>
   rateLimit(ip, { maxRequests: 5, windowSeconds: 900, prefix: "login" });
+
+// Per-username login limiter: the backstop against distributed guessing,
+// where an attacker rotates IPs so the per-IP limit never trips. Attempts
+// against one account accumulate across all source IPs. The budget is
+// double the per-IP one, and a successful login clears it (below), so the
+// legitimate user only ever brushes it after a run of genuine typos.
+export const loginUsernameRateLimit = (username: string) =>
+  rateLimit(username.trim().toLowerCase(), {
+    maxRequests: 10,
+    windowSeconds: 900,
+    prefix: "login-user",
+  });
+
+/** A proven password clears both login counters for that user + IP. */
+export function resetLoginRateLimits(ip: string, username: string): void {
+  resetRateLimit(ip, "login");
+  resetRateLimit(username.trim().toLowerCase(), "login-user");
+}
 
 export const formRateLimit = (ip: string) =>
   rateLimit(ip, { maxRequests: 3, windowSeconds: 3600, prefix: "form" });
