@@ -13,9 +13,9 @@ export default async function FeaturedVideo() {
   if (!youtubeId) return null;
 
   return (
-    <section className="py-16">
+    <section className="section-y">
       <div className="max-w-4xl mx-auto px-4">
-        <h2 className="text-2xl font-semibold mb-8">Featured Video</h2>
+        <h2 className="text-h2 font-semibold mb-8">Featured Video</h2>
         <Card padding="sm">
           <div className="aspect-video rounded-lg overflow-hidden bg-black">
             <iframe

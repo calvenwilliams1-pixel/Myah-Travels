@@ -44,7 +44,7 @@ export default async function ReviewDetailPage({ params }: { params: { slug: str
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
       <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-3xl font-semibold">{review.title}</h1>
+        <h1 className="text-h1 font-semibold">{review.title}</h1>
         {review.ratingOverall != null && (
           <span className="text-amber-500 text-xl font-medium">
             {review.ratingOverall}/5

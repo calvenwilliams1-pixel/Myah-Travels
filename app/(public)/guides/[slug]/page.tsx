@@ -36,7 +36,7 @@ export default async function GuideDetailPage({ params }: { params: { slug: stri
 
   return (
     <article className="max-w-3xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-4">{guide.title}</h1>
+      <h1 className="text-h1 font-semibold mb-4">{guide.title}</h1>
       <p className="text-sm text-gray-500 mb-8">
         Last updated:{" "}
         {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}

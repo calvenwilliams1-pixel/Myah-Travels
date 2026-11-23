@@ -17,7 +17,7 @@ export default async function AboutPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-6">About Myah</h1>
+      <h1 className="text-h1 font-semibold mb-6">About Myah</h1>
       
       <Card>
         <p className="text-lg text-gray-700 leading-relaxed">

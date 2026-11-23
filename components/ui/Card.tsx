@@ -15,7 +15,7 @@ export function Card({ children, className = "", padding = "md" }: CardProps) {
   };
   
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 shadow-sm ${paddings[padding]} ${className}`}>
+    <div className={`bg-white rounded-2xl border border-gray-200 shadow-card ${paddings[padding]} ${className}`}>
       {children}
     </div>
   );

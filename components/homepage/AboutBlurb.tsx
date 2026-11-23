@@ -16,10 +16,10 @@ export default async function AboutBlurb() {
     : settings.bio_text;
 
   return (
-    <section className="py-16">
+    <section className="section-y">
       <div className="max-w-3xl mx-auto px-4">
         <Card padding="lg">
-          <h2 className="text-2xl font-semibold mb-4">Welcome</h2>
+          <h2 className="text-h2 font-semibold mb-4">Welcome</h2>
           <p className="text-gray-700 leading-relaxed mb-6">{bio}</p>
           <Link href="/about" className="text-primary font-medium hover:underline">
             Learn more about me →

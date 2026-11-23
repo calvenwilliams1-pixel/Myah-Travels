@@ -65,11 +65,11 @@ export default async function Footer() {
             © {year} {settings.site_name || "MyCalTravels"}. All rights reserved.
           </p>
           {settings.footer_text && (
-            <p className="text-xs text-gray-400 mt-1">{settings.footer_text}</p>
+            <p className="text-xs text-gray-500 mt-1">{settings.footer_text}</p>
           )}
           <Link
             href="/admin/login"
-            className="inline-block mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            className="inline-block mt-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Admin login"
           >
             Admin

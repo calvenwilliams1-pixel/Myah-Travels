@@ -15,7 +15,7 @@ export default async function GuidesPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-semibold mb-2">Destination Guides</h1>
+      <h1 className="text-h1 font-semibold mb-2">Destination Guides</h1>
       <p className="text-gray-600 mb-8">In-depth guides to help you plan.</p>
 
       {guides.length > 0 ? (
@@ -27,7 +27,7 @@ export default async function GuidesPage() {
                 {guide.excerpt && (
                   <p className="text-gray-600 text-sm mb-3">{guide.excerpt}</p>
                 )}
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   Updated: {(() => { const d = guide.updatedAt ?? guide.createdAt; return d ? new Date(d).toLocaleDateString() : 'Not available'; })()}
                 </p>
               </Link>
