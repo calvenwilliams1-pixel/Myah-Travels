@@ -62,6 +62,43 @@ export function wallMinutesBetween(a: string | null, b: string | null): number |
   return Math.round((msB - msA) / 60000);
 }
 
+/** UTC offset (ms) of a timezone at an instant, via Intl parts. */
+function tzOffsetMs(utcMs: number, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(utcMs));
+  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0);
+  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  return asUtc - Math.floor(utcMs / 1000) * 1000;
+}
+
+/**
+ * Absolute instant (epoch ms) of a wall-clock datetime
+ * ("YYYY-MM-DDTHH:MM") in the given IANA timezone. Two-pass offset
+ * correction handles DST boundaries. Null on bad input.
+ */
+export function zonedWallToUtcMs(wall: string, timeZone: string): number | null {
+  const m = DATETIME_RE.exec(wall?.trim() ?? "");
+  if (!m || !timeZone) return null;
+  const guess = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  try {
+    const off1 = tzOffsetMs(guess, timeZone);
+    let utc = guess - off1;
+    const off2 = tzOffsetMs(utc, timeZone);
+    if (off2 !== off1) utc = guess - off2;
+    return utc;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Today's date as "YYYY-MM-DD" in the given IANA timezone
  * (UTC when null/invalid). Same algorithm as derive.ts's

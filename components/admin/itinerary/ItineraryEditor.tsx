@@ -7,6 +7,7 @@ import AutosaveTextField from "@/components/ui/autosave/AutosaveTextField";
 import AddSectionForm from "./AddSectionForm";
 import ThemeSelector from "./ThemeSelector";
 import SectionEditor from "./SectionEditor";
+import TripChecksPanel from "./TripChecksPanel";
 
 // ============================================
 // TYPES
@@ -287,6 +288,9 @@ export default function ItineraryEditor({
           onCancel={() => setShowAddSection(false)}
         />
       )}
+
+      {/* Trip checks — advisory accuracy warnings, never blocking */}
+      <TripChecksPanel sections={itinerary.sections} />
 
       {/* Sections */}
       {itinerary.sections.length === 0 ? (
