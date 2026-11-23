@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
-import { posts, guides, reviews, categories, tags, postTags, guideTags, reviewTags } from "@/drizzle/schema";
-import { eq, and, isNull, desc, asc, sql, inArray, exists } from "drizzle-orm";
+import { posts, categories, tags, postTags } from "@/drizzle/schema";
+import { eq, and, isNull, sql, inArray, exists } from "drizzle-orm";
 import { resolveFamily } from "@/lib/tags/aliases";
+import { loadTemplatesFromDb } from "@/lib/blocks/template-store";
 
 export interface FeedTag {
   id: number;
@@ -11,7 +12,11 @@ export interface FeedTag {
 
 export interface FeedItem {
   id: number;
-  type: "post" | "guide" | "review";
+  /** Always "post" since the type overhaul — a post's template is its type. */
+  type: "post";
+  /** The template (post type) this post was written under, if any. */
+  templateId: string | null;
+  templateName: string | null;
   title: string;
   excerpt: string;
   featuredImage: string | null;
@@ -23,60 +28,49 @@ export interface FeedItem {
   tags: FeedTag[];
 }
 
+export interface FeedTemplateFilter {
+  id: string;
+  name: string;
+  count: number;
+}
+
+const TEMPLATE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Extract the templateId stored inside a post's content JSON. */
+export function templateIdFromContent(content: string | null): string | null {
+  if (!content) return null;
+  try {
+    const parsed = JSON.parse(content);
+    return typeof parsed?.templateId === "string" ? parsed.templateId : null;
+  } catch {
+    return null;
+  }
+}
+
 async function hydrateTags(items: FeedItem[]): Promise<FeedItem[]> {
   if (items.length === 0) return items;
 
-  const postIds = items.filter((i) => i.type === "post").map((i) => i.id);
-  const guideIds = items.filter((i) => i.type === "guide").map((i) => i.id);
-  const reviewIds = items.filter((i) => i.type === "review").map((i) => i.id);
-
-  const tagMap = new Map<string, FeedTag[]>();
-
-  if (postIds.length > 0) {
-    const rows = await db
-      .select({ itemId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug })
-      .from(postTags)
-      .innerJoin(tags, eq(postTags.tagId, tags.id))
-      .where(inArray(postTags.postId, postIds));
-    for (const r of rows) {
-      const key = `post-${r.itemId}`;
-      if (!tagMap.has(key)) tagMap.set(key, []);
-      tagMap.get(key)!.push({ id: r.id, name: r.name, slug: r.slug });
-    }
+  const postIds = items.map((i) => i.id);
+  const tagMap = new Map<number, FeedTag[]>();
+  const rows = await db
+    .select({ itemId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug })
+    .from(postTags)
+    .innerJoin(tags, eq(postTags.tagId, tags.id))
+    .where(inArray(postTags.postId, postIds));
+  for (const r of rows) {
+    if (!tagMap.has(r.itemId)) tagMap.set(r.itemId, []);
+    tagMap.get(r.itemId)!.push({ id: r.id, name: r.name, slug: r.slug });
   }
 
-  if (guideIds.length > 0) {
-    const rows = await db
-      .select({ itemId: guideTags.guideId, id: tags.id, name: tags.name, slug: tags.slug })
-      .from(guideTags)
-      .innerJoin(tags, eq(guideTags.tagId, tags.id))
-      .where(inArray(guideTags.guideId, guideIds));
-    for (const r of rows) {
-      const key = `guide-${r.itemId}`;
-      if (!tagMap.has(key)) tagMap.set(key, []);
-      tagMap.get(key)!.push({ id: r.id, name: r.name, slug: r.slug });
-    }
-  }
-
-  if (reviewIds.length > 0) {
-    const rows = await db
-      .select({ itemId: reviewTags.reviewId, id: tags.id, name: tags.name, slug: tags.slug })
-      .from(reviewTags)
-      .innerJoin(tags, eq(reviewTags.tagId, tags.id))
-      .where(inArray(reviewTags.reviewId, reviewIds));
-    for (const r of rows) {
-      const key = `review-${r.itemId}`;
-      if (!tagMap.has(key)) tagMap.set(key, []);
-      tagMap.get(key)!.push({ id: r.id, name: r.name, slug: r.slug });
-    }
-  }
-
-  return items.map((item) => ({
-    ...item,
-    tags: tagMap.get(`${item.type}-${item.id}`) ?? [],
-  }));
+  return items.map((item) => ({ ...item, tags: tagMap.get(item.id) ?? [] }));
 }
 
+/**
+ * Feed items. Since the type overhaul (Nov 23, 2026) the feed is posts
+ * only, and a post's "type" is its template: `contentType` is either
+ * "all" or a template slug, matched against the templateId stored in
+ * each post's content JSON.
+ */
 export async function getFeedItems(
   contentType: string = "all",
   sort: string = "newest",
@@ -84,6 +78,10 @@ export async function getFeedItems(
   offset: number = 0,
   tagSlugs: string[] = []
 ): Promise<FeedItem[]> {
+  if (contentType !== "all" && !TEMPLATE_SLUG.test(contentType)) {
+    return [];
+  }
+
   const orderByClause =
     sort === "pinned"
       ? sql`is_pinned DESC, is_highlighted DESC, published_at DESC`
@@ -107,108 +105,90 @@ export async function getFeedItems(
     }
   }
 
-  const buildSelect = (
-    table: any,
-    type: string,
-    junctionTable: any,
-    junctionFk: any
-  ) => {
-    const conditions = [eq(table.status, "published"), isNull(table.deletedAt)];
+  const conditions = [eq(posts.status, "published"), isNull(posts.deletedAt)];
 
-    for (const family of families) {
-      conditions.push(
-        exists(
-          db
-            .select({ x: sql`1` })
-            .from(junctionTable)
-            .innerJoin(tags, eq(junctionTable.tagId, tags.id))
-            .where(and(eq(junctionFk, table.id), inArray(tags.slug, family)))
-        )
-      );
-    }
-
-    return db
-      .select({
-        id: table.id,
-        title: table.title,
-        excerpt: table.excerpt,
-        featuredImage: table.featuredImage,
-        slug: table.slug,
-        publishedAt: table.publishedAt,
-        isPinned: table.isPinned,
-        isHighlighted: table.isHighlighted,
-        type: sql`'${sql.raw(type)}'`.as("type"),
-      })
-      .from(table)
-      .where(and(...conditions));
-  };
-
-  const queries: any[] = [];
-
-  if (contentType === "all" || contentType === "post") {
-    queries.push(buildSelect(posts, "post", postTags, postTags.postId));
-  }
-  if (contentType === "all" || contentType === "guide") {
-    queries.push(buildSelect(guides, "guide", guideTags, guideTags.guideId));
-  }
-  if (contentType === "all" || contentType === "review") {
-    queries.push(buildSelect(reviews, "review", reviewTags, reviewTags.reviewId));
+  if (contentType !== "all") {
+    conditions.push(sql`${posts.content} LIKE ${'%"templateId":"' + contentType + '"%'}`);
   }
 
-  if (queries.length === 0) {
-    return [];
+  for (const family of families) {
+    conditions.push(
+      exists(
+        db
+          .select({ x: sql`1` })
+          .from(postTags)
+          .innerJoin(tags, eq(postTags.tagId, tags.id))
+          .where(and(eq(postTags.postId, posts.id), inArray(tags.slug, family)))
+      )
+    );
   }
 
-  if (queries.length === 1) {
-    const result = await queries[0]
-      .orderBy(orderByClause)
-      .limit(limit)
-      .offset(offset);
-
-    const mapped = result.map((row: any) => ({
-      id: row.id,
-      type: row.type,
-      title: row.title,
-      excerpt: row.excerpt,
-      featuredImage: row.featuredImage,
-      slug: row.slug,
-      publishedAt: row.publishedAt,
-      isPinned: row.isPinned ?? false,
-      isHighlighted: row.isHighlighted ?? false,
-      category: null,
-      tags: [],
-    }));
-    return hydrateTags(mapped);
-  }
-
-  // Multiple queries — use UNION ALL
-  // Note: Drizzle's unionAll mutates the builder in place and returns it.
-  // Reassigning is defensive — if the library changes to return a new object,
-  // this loop still works.
-  let unionQuery = queries[0];
-  for (let i = 1; i < queries.length; i++) {
-    unionQuery = unionQuery.unionAll(queries[i]);
-  }
-
-  const result = await unionQuery
+  const result = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      excerpt: posts.excerpt,
+      featuredImage: posts.featuredImage,
+      slug: posts.slug,
+      publishedAt: posts.publishedAt,
+      isPinned: posts.isPinned,
+      isHighlighted: posts.isHighlighted,
+      content: posts.content,
+    })
+    .from(posts)
+    .where(and(...conditions))
     .orderBy(orderByClause)
     .limit(limit)
     .offset(offset);
 
-  const mapped = result.map((row: any) => ({
-    id: row.id,
-    type: row.type,
-    title: row.title,
-    excerpt: row.excerpt,
-    featuredImage: row.featuredImage,
-    slug: row.slug,
-    publishedAt: row.publishedAt,
-    isPinned: row.isPinned ?? false,
-    isHighlighted: row.isHighlighted ?? false,
-    category: null,
-    tags: [],
-  }));
+  // Template names for the badge on each card.
+  const templates = await loadTemplatesFromDb();
+  const nameById = new Map(templates.map((t) => [t.id, t.name]));
+
+  const mapped: FeedItem[] = result.map((row) => {
+    const templateId = templateIdFromContent(row.content);
+    return {
+      id: row.id,
+      type: "post" as const,
+      templateId,
+      templateName: templateId ? nameById.get(templateId) ?? null : null,
+      title: row.title,
+      excerpt: row.excerpt ?? "",
+      featuredImage: row.featuredImage,
+      slug: row.slug,
+      publishedAt: row.publishedAt ?? "",
+      isPinned: row.isPinned ?? false,
+      isHighlighted: row.isHighlighted ?? false,
+      category: null,
+      tags: [],
+    };
+  });
   return hydrateTags(mapped);
+}
+
+/**
+ * The homepage filter pills: one per template that has at least one
+ * published post (Cal's rule, Nov 23, 2026 — a filter appears when the
+ * template's first post is published, never as an empty shelf).
+ * Ordered by template name.
+ */
+export async function getFeedTemplateFilters(): Promise<FeedTemplateFilter[]> {
+  const templates = await loadTemplatesFromDb();
+  const published = await db
+    .select({ content: posts.content })
+    .from(posts)
+    .where(and(eq(posts.status, "published"), isNull(posts.deletedAt)));
+
+  const counts = new Map<string, number>();
+  for (const row of published) {
+    const id = templateIdFromContent(row.content);
+    if (id) counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+
+  return templates
+    .filter((t) => (counts.get(t.id) ?? 0) > 0)
+    .map((t) => ({ id: t.id, name: t.name, count: counts.get(t.id)! }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getCategories(): Promise<string[]> {

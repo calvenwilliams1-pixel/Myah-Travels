@@ -1,59 +1,11 @@
-import React from "react";
-import { getGuideBySlug } from "@/lib/content";
-import { notFound } from "next/navigation";
-import { cache } from "react";
-import PostRenderer from "@/components/editor/renderers/PostRenderer";
-import { parsePostContent } from "@/lib/blocks/parse-post-content";
+import { redirect } from "next/navigation";
 
-export const revalidate = 3600;
-
-const getGuide = cache(async (slug: string) => {
-  return getGuideBySlug(slug);
-});
-
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const guide = await getGuide(params.slug);
-  
-  if (!guide || guide.status !== "published" || guide.deletedAt) {
-    return { title: "Not Found" };
-  }
-  
-  return {
-    title: guide.seoTitle || `${guide.title} | MyCalTravels`,
-    description: guide.seoDescription || guide.excerpt || guide.title,
-  };
-}
-
-export default async function GuideDetailPage({ params }: { params: { slug: string } }) {
-  const guide = await getGuide(params.slug);
-
-  if (!guide || guide.status !== "published" || guide.deletedAt) {
-    notFound();
-  }
-
-  const dateString = guide.updatedAt ?? guide.createdAt;
-  const parsed = await parsePostContent(guide.content);
-
-  return (
-    <article className="max-w-3xl mx-auto py-12 px-4">
-      <h1 className="text-h1 font-semibold mb-4">{guide.title}</h1>
-      <p className="text-sm text-gray-500 mb-8">
-        Last updated:{" "}
-        {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}
-      </p>
-      
-      {guide.quickReference && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-8">
-          <h2 className="font-semibold mb-2">Quick Reference</h2>
-          <pre className="text-sm whitespace-pre-wrap">{guide.quickReference}</pre>
-        </div>
-      )}
-      
-      {parsed ? (
-        <PostRenderer blocks={parsed.blocks} template={parsed.template} isPreview={false} />
-      ) : (
-        <p className="text-gray-500 italic">Content unavailable.</p>
-      )}
-    </article>
-  );
+/**
+ * Retired in the type overhaul (Nov 23, 2026): guides and reviews are
+ * no longer separate content types — a post's template is its type,
+ * and everything lives in the homepage feed. These routes bounce to
+ * the homepage. (Production never had guide/review content.)
+ */
+export default function RetiredPage() {
+  redirect("/");
 }

@@ -1,72 +1,10 @@
-import React from "react";
-import Link from "next/link";
-import { getReviews } from "@/lib/content";
-import { Button } from "@/components/ui/Button";
-import { Table } from "@/components/ui/Table";
-import { Card } from "@/components/ui/Card";
-import FeedAdminControls from "@/components/admin/FeedAdminControls";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function ReviewsPage() {
-  const reviews = await getReviews();
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Reviews</h2>
-
-      </div>
-
-      <Card padding="none">
-        <Table
-          columns={[
-            {
-              header: "Title",
-              accessor: (review: any) => (
-                <Link href={`/admin/reviews/${review.id}`} className="font-medium hover:text-primary">
-                  {review.title}
-                </Link>
-              ),
-            },
-            {
-              header: "Type",
-              accessor: (review: any) => review.reviewType,
-            },
-            {
-              header: "Rating",
-              accessor: (review: any) =>
-                review.ratingOverall ? `${review.ratingOverall}/5` : "—",
-            },
-            {
-              header: "Status",
-              accessor: (review: any) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  review.status === "published" ? "bg-success/10 text-success" :
-                  review.status === "draft" ? "bg-gray-100 text-gray-600" :
-                  "bg-amber-100 text-amber-800"
-                }`}>
-                  {review.status}
-                </span>
-              ),
-            },
-            {
-              header: "Feed",
-              accessor: (review: any) => (
-                <FeedAdminControls
-                  postId={review.id}
-                  isPinned={review.isPinned || false}
-                  isHighlighted={review.isHighlighted || false}
-                  apiPath={`/api/admin/reviews/${review.id}/toggle`}
-                />
-              ),
-            },
-          ]}
-          data={reviews}
-          keyExtractor={(review) => review.id}
-          emptyMessage="No reviews yet."
-        />
-      </Card>
-    </div>
-  );
+/**
+ * Retired in the type overhaul (Nov 23, 2026): guides and reviews are
+ * no longer separate content types — a post's template is its type.
+ * Everything is written as a post now.
+ */
+export default function RetiredPage() {
+  redirect("/admin/posts");
 }

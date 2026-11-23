@@ -1,101 +1,11 @@
-import React from "react";
-import { getReviewBySlug } from "@/lib/content";
-import { notFound } from "next/navigation";
-import { cache } from "react";
-import PostRenderer from "@/components/editor/renderers/PostRenderer";
-import { parsePostContent } from "@/lib/blocks/parse-post-content";
+import { redirect } from "next/navigation";
 
-export const revalidate = 3600;
-
-const getReview = cache(async (slug: string) => {
-  return getReviewBySlug(slug);
-});
-
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const review = await getReview(params.slug);
-  
-  if (!review || review.status !== "published" || review.deletedAt) {
-    return { title: "Not Found" };
-  }
-  
-  return {
-    title: review.seoTitle || `${review.title} | MyCalTravels`,
-    description: review.seoDescription || review.excerpt || review.title,
-  };
-}
-
-export default async function ReviewDetailPage({ params }: { params: { slug: string } }) {
-  const review = await getReview(params.slug);
-
-  if (!review || review.status !== "published" || review.deletedAt) {
-    notFound();
-  }
-
-  const prosList = review.pros
-    ? review.pros.split("\n").map((s) => s.trim()).filter(Boolean)
-    : [];
-  const consList = review.cons
-    ? review.cons.split("\n").map((s) => s.trim()).filter(Boolean)
-    : [];
-
-  const dateString = review.publishedAt ?? review.createdAt;
-  const parsed = await parsePostContent(review.content);
-
-  return (
-    <article className="max-w-3xl mx-auto py-12 px-4">
-      <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-h1 font-semibold">{review.title}</h1>
-        {review.ratingOverall != null && (
-          <span className="text-amber-500 text-xl font-medium">
-            {review.ratingOverall}/5
-          </span>
-        )}
-      </div>
-      
-      <p className="text-sm text-gray-500 mb-8">
-        {review.reviewType} · {dateString ? new Date(dateString).toLocaleDateString() : "Not available"}
-      </p>
-
-      {prosList.length > 0 && (
-        <div className="mb-6">
-          <h2 className="font-semibold mb-2">Pros</h2>
-          <ul className="list-disc pl-6">
-            {prosList.map((pro, i) => (
-              <li key={i}>{pro}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {consList.length > 0 && (
-        <div className="mb-6">
-          <h2 className="font-semibold mb-2">Cons</h2>
-          <ul className="list-disc pl-6">
-            {consList.map((con, i) => (
-              <li key={i}>{con}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {review.wouldRecommend && (
-        <p className="mb-6">
-          <strong>Would Recommend:</strong> {review.wouldRecommend}
-        </p>
-      )}
-
-      {parsed ? (
-        <PostRenderer blocks={parsed.blocks} template={parsed.template} isPreview={false} />
-      ) : (
-        <p className="text-gray-500 italic">Content unavailable.</p>
-      )}
-
-      {review.finalVerdict && (
-        <div className="mt-8 bg-gray-50 rounded-lg p-4">
-          <h2 className="font-semibold mb-2">Final Verdict</h2>
-          <p>{review.finalVerdict}</p>
-        </div>
-      )}
-    </article>
-  );
+/**
+ * Retired in the type overhaul (Nov 23, 2026): guides and reviews are
+ * no longer separate content types — a post's template is its type,
+ * and everything lives in the homepage feed. These routes bounce to
+ * the homepage. (Production never had guide/review content.)
+ */
+export default function RetiredPage() {
+  redirect("/");
 }

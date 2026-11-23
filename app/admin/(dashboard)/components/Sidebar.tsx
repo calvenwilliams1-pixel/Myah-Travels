@@ -7,8 +7,6 @@ import { usePathname } from "next/navigation";
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/posts", label: "Blog Posts", icon: "📝" },
-  { href: "/admin/guides", label: "Guides", icon: "🗺️" },
-  { href: "/admin/reviews", label: "Reviews", icon: "⭐" },
   { href: "/admin/media", label: "Media", icon: "🖼️" },
   { href: "/admin/clients", label: "Clients", icon: "👥" },
   { href: "/admin/portals", label: "Portals", icon: "🔗" },
