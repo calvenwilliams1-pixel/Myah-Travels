@@ -16,7 +16,7 @@ export const portals = sqliteTable(
     heroTitle: text("hero_title"),
     heroSubtitle: text("hero_subtitle"),
     heroImage: text("hero_image"),
-    heroPreset: text("hero_preset").default("minimal"),
+    heroPreset: text("hero_preset").default("brand"),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     archivedAt: text("archived_at"),
     deletedAt: text("deleted_at"),

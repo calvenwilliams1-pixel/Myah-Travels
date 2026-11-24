@@ -93,7 +93,7 @@ export async function createPortal(data: {
     heroTitle: data.heroTitle ?? null,
     heroSubtitle: data.heroSubtitle ?? null,
     heroImage: data.heroImage ?? null,
-    heroPreset: data.heroPreset ?? "minimal",
+    heroPreset: data.heroPreset ?? "brand",
     isActive: true,
     isPromo: data.isPromo ?? false,
   }).returning();

@@ -10,6 +10,8 @@ import { getPortalItemsWithContent } from "@/lib/portal-items";
 import { attachDerivedItems } from "@/lib/itineraries/attach-derived-items";
 import { logActivity } from "@/lib/logging";
 import PortalWall from "@/components/portal/PortalWall";
+import { getAllSettings } from "@/lib/settings";
+import { darkenHex } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
@@ -71,10 +73,14 @@ export default async function AdminPreviewPage({ params }: { params: { id: strin
   const items = await getPortalItemsWithContent(portal.id);
   const itemsWithDerived = await attachDerivedItems(items);
 
+  const settings = await getAllSettings();
+  const primary = settings.primary_color || "#4a7c59";
+  const brand = { from: primary, to: darkenHex(primary, 0.72) };
+
   return (
     <AdminPreviewShell portalId={portal.id}>
       <PreviewBanner variant="info">Preview mode — this is what your client sees.</PreviewBanner>
-      <PortalWall portal={portal} items={itemsWithDerived} mode="admin-preview" />
+      <PortalWall portal={portal} items={itemsWithDerived} mode="admin-preview" brand={brand} />
     </AdminPreviewShell>
   );
 }
