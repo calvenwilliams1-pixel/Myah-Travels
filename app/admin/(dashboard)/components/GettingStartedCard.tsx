@@ -1,33 +1,32 @@
 import React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { getGuideSteps } from "@/lib/guide";
+import { getGuideSteps, isGuideOwner } from "@/lib/guide";
+import { getCurrentUser } from "@/lib/auth";
 
 /**
  * Dashboard getting-started checklist. Steps tick themselves off from
  * the real state of the site; the first unfinished step is highlighted
- * with its button. When everything is done it folds down to one line.
+ * with its button.
+ *
+ * Two disappearances, both deliberate (Cal, 2026-11-24): the card is
+ * part of the guide, so it shows only on the owner's account; and
+ * when every step is done it renders nothing at all — no folded-down
+ * line, no revisit link. A completed guide is simply gone.
  */
 export default async function GettingStartedCard() {
+  const user = await getCurrentUser();
+  if (!isGuideOwner(user?.username)) {
+    return null;
+  }
+
   const steps = await getGuideSteps();
   const doneCount = steps.filter((s) => s.done).length;
   const allDone = doneCount === steps.length;
   const currentId = steps.find((s) => !s.done)?.id;
 
   if (allDone) {
-    return (
-      <Card className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-700">
-          You&rsquo;re all set — your site is up and running.
-        </p>
-        <Link
-          href="/admin/guide"
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          Revisit the guide
-        </Link>
-      </Card>
-    );
+    return null;
   }
 
   return (

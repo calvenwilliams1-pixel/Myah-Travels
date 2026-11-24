@@ -102,3 +102,29 @@ export async function getGuideSteps(): Promise<GuideStep[]> {
     },
   ];
 }
+
+/**
+ * The guide belongs to the site owner's account only (Cal's call,
+ * 2026-11-24): it is written for Myah, in her words, around her jobs.
+ * On any other account (dev, a future second admin) it is not active
+ * at all — no nav link, no dashboard card, and the guide page itself
+ * turns the visitor away.
+ */
+export const GUIDE_OWNER_USERNAME = "myah";
+
+export function isGuideOwner(username: string | null | undefined): boolean {
+  return (username ?? "").toLowerCase() === GUIDE_OWNER_USERNAME;
+}
+
+/**
+ * True when every step is done. A completed guide disappears
+ * completely: the dashboard card renders nothing, the nav link goes
+ * away, and the guide page redirects to the dashboard. The steps are
+ * detected from the site's real state, so if a step genuinely comes
+ * undone (the only published post is deleted, say) the guide comes
+ * back — it is a state, not a dismissal.
+ */
+export async function isGuideComplete(): Promise<boolean> {
+  const steps = await getGuideSteps();
+  return steps.every((s) => s.done);
+}

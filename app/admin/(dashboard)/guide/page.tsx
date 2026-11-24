@@ -1,8 +1,10 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
-import { getGuideSteps } from "@/lib/guide";
+import { getGuideSteps, isGuideOwner } from "@/lib/guide";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +28,21 @@ const GOOD_TO_KNOW = [
 ];
 
 export default async function GuidePage() {
+  // The guide belongs to the owner's account only; on any other
+  // account it is not active at all. And once every step is done the
+  // guide is finished — there is nothing left to show, so the page
+  // itself goes away too and lands back on the dashboard.
+  const user = await getCurrentUser();
+  if (!isGuideOwner(user?.username)) {
+    redirect("/admin");
+  }
+
   const steps = await getGuideSteps();
   const doneCount = steps.filter((s) => s.done).length;
+
+  if (doneCount === steps.length) {
+    redirect("/admin");
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
