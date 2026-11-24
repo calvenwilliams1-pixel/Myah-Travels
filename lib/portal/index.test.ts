@@ -7,6 +7,7 @@ import { portalMagicLinks } from "@/drizzle/schema/portal-magic-links";
 import { portalSessions } from "@/drizzle/schema/portal-sessions";
 import {
   getMagicLinkExpiry,
+  getPublicBaseUrl,
   createPortal,
   addPortalMember,
   generateMagicLink,
@@ -33,6 +34,23 @@ describe("getMagicLinkExpiry", () => {
     const days = (expiry.getTime() - Date.now()) / (24 * 3600 * 1000);
     expect(days).toBeGreaterThan(29);
     expect(days).toBeLessThan(31);
+  });
+});
+
+describe("getPublicBaseUrl", () => {
+  it("prefers SITE_URL so redirects never land on the internal origin", () => {
+    expect(
+      getPublicBaseUrl("http://localhost:3000/portal/consume/x", "https://example.ts.net/")
+    ).toBe("https://example.ts.net");
+  });
+
+  it("falls back to the request origin when SITE_URL is unset", () => {
+    expect(getPublicBaseUrl("http://localhost:3000/portal/consume/x", "")).toBe(
+      "http://localhost:3000"
+    );
+    expect(getPublicBaseUrl("https://site.example/portal", null)).toBe(
+      process.env.SITE_URL?.replace(/\/+$/, "") || "https://site.example"
+    );
   });
 });
 

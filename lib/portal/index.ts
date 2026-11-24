@@ -322,6 +322,18 @@ export function hashToken(raw: string): string {
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
 
+/**
+ * The public base URL for redirects. Behind the Tailscale Funnel the
+ * request's own URL carries the internal origin (localhost:3000), so
+ * browser redirects must be built from SITE_URL whenever it is set —
+ * otherwise clients get sent to "localhost" on their own device.
+ */
+export function getPublicBaseUrl(reqUrl: string, siteUrl?: string | null): string {
+  const site = (siteUrl ?? process.env.SITE_URL ?? "").replace(/\/+$/, "");
+  if (site) return site;
+  return new URL(reqUrl).origin;
+}
+
 export function getMagicLinkExpiry(portal: {
   returnDate?: string | null;
   isPromo?: boolean | null;

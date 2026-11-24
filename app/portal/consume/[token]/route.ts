@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { consumeMagicLink, getPortalById, validatePortalSession } from "@/lib/portal";
+import { consumeMagicLink, getPortalById, validatePortalSession, getPublicBaseUrl } from "@/lib/portal";
 import { cookies, headers } from "next/headers";
 import { magicLinkRateLimit, getClientIp } from "@/lib/security";
 
@@ -15,12 +15,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const result = await consumeMagicLink(params.token);
 
   if (!result) {
-    return NextResponse.redirect(new URL(`/portal/access/${params.token}`, req.url));
+    return NextResponse.redirect(new URL(`/portal/access/${params.token}`, getPublicBaseUrl(req.url)));
   }
 
   const portal = await getPortalById(result.portalId);
   if (!portal) {
-    return NextResponse.redirect(new URL(`/portal/access/${params.token}`, req.url));
+    return NextResponse.redirect(new URL(`/portal/access/${params.token}`, getPublicBaseUrl(req.url)));
   }
 
   // Calculate cookie maxAge from session expiry
@@ -37,5 +37,5 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     maxAge,
   });
 
-  return NextResponse.redirect(new URL(`/portal/${portal.slug}`, req.url));
+  return NextResponse.redirect(new URL(`/portal/${portal.slug}`, getPublicBaseUrl(req.url)));
 }
