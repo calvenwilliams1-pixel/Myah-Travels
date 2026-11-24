@@ -14,6 +14,10 @@ export const metadata: Metadata = {
 
 const GOOD_TO_KNOW = [
   {
+    title: "Finding things",
+    line: "The top of the page is just Home and More now. Everything else lives under More, grouped by the job: Clients, Content, Setup.",
+  },
+  {
     title: "Everything saves as you type",
     line: "There's no Save button to hunt for. If your phone dies mid-sentence, your words are kept — the editor even offers to restore them.",
   },

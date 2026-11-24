@@ -4,36 +4,29 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
+/**
+ * The header nav (R4 of the UI overhaul): Home, More, View Site.
+ * The old 12-link header's destinations all live on the More page
+ * now, grouped under Clients, Content, and Setup; the parity test
+ * in tests/more-links.test.ts pins that none were lost. The Guide
+ * keeps its own rule on the More page: owner's account only, and
+ * gone once the guide is complete.
+ */
 const NAV_LINKS: { href: string; label: string; external?: boolean }[] = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/guide", label: "Guide" },
+  { href: "/admin", label: "Home" },
+  { href: "/admin/more", label: "More" },
   { href: "/", label: "View Site ↗", external: true },
-  { href: "/admin/posts", label: "Posts" },
-  { href: "/admin/homepage", label: "Homepage" },
-  { href: "/admin/templates", label: "Templates" },
-  { href: "/admin/media", label: "Media" },
-  { href: "/admin/content-library", label: "Content Library" },
-  { href: "/admin/clients", label: "Clients" },
-  { href: "/admin/portals", label: "Portals" },
-  { href: "/admin/itineraries", label: "Itinerary Library" },
-  { href: "/admin/settings", label: "Settings" },
 ];
 
 interface AdminHeaderProps {
   username: string;
   onLogout: () => Promise<void>;
-  /**
-   * Whether the Guide link shows at all. The layout computes it: the
-   * guide belongs to the owner's account, and only until it is
-   * complete — a finished guide disappears completely, link included.
-   */
-  showGuide?: boolean;
 }
 
-export default function AdminHeader({ username, onLogout, showGuide = false }: AdminHeaderProps) {
+export default function AdminHeader({ username, onLogout }: AdminHeaderProps) {
   const [open, setOpen] = useState(false);
   const displayName = username.charAt(0).toUpperCase() + username.slice(1);
-  const navLinks = NAV_LINKS.filter((l) => l.href !== "/admin/guide" || showGuide);
+  const navLinks = NAV_LINKS;
 
   const linkCls = "text-sm text-gray-600 hover:text-primary";
   const mobileLinkCls =

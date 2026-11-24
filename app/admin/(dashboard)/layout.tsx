@@ -1,7 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { getCurrentUser, destroySession, getUserTotpStatus } from "@/lib/auth";
-import { isGuideOwner, isGuideComplete } from "@/lib/guide";
 import ThemeProvider from "@/components/theme/ThemeProvider";
 import AdminHeader from "@/components/admin/AdminHeader";
 
@@ -39,11 +38,6 @@ export default async function DashboardLayout({
     redirect("/admin/login");
   }
 
-  // The guide is the owner's only, and only until she has finished
-  // it: on any other account, or once every step is done, there is
-  // no Guide link anywhere.
-  const showGuide = isGuideOwner(user.username) && !(await isGuideComplete());
-
   return (
     <ThemeProvider>
       {/* --admin-header-h: the sticky AdminHeader's measured height
@@ -51,7 +45,7 @@ export default async function DashboardLayout({
           Sticky section headers in long editors offset by it
           (UI Pass 3). */}
       <div className="min-h-screen bg-gray-50 [--admin-header-h:4.5rem] lg:[--admin-header-h:5.75rem]">
-        <AdminHeader username={user.username} onLogout={handleLogout} showGuide={showGuide} />
+        <AdminHeader username={user.username} onLogout={handleLogout} />
         <main className="px-4 sm:px-6 py-6">{children}</main>
       </div>
     </ThemeProvider>
