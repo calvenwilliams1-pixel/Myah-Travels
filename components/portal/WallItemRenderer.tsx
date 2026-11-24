@@ -1,4 +1,7 @@
 import React from "react";
+import DOMPurify from "isomorphic-dompurify";
+import { PURIFY_CONFIG } from "@/lib/editor/extensions";
+import DocumentViewer from "./DocumentViewer";
 
 interface WallItemProps {
   item: {
@@ -49,6 +52,12 @@ export default function WallItemRenderer({
   const icon = getIcon(resolvedCategory, resolvedType);
 
   if (resolvedType === "pdf") {
+    // "pdf" is the uploaded-document type generally: PDFs and plain
+    // text read right here in the portal; Office files (Word, Excel)
+    // can't render in a browser, so those stay download-to-open.
+    const ext = (resolvedFilePath ?? "").split(".").pop()?.toLowerCase() ?? "";
+    const embeddable = ext === "pdf" || ext === "txt";
+    const fileUrl = resolvedFilePath ? `/api/uploads/${resolvedFilePath}` : null;
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
         <div className="text-4xl mb-3">{icon}</div>
@@ -56,26 +65,36 @@ export default function WallItemRenderer({
         {resolvedDescription && (
           <p className="text-sm text-gray-600 mt-1">{resolvedDescription}</p>
         )}
-        {resolvedFilePath && (
-          <a
-            href={`/api/uploads/${resolvedFilePath}`}
-            className="inline-block mt-3 text-sm text-primary hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download
-          </a>
+        {!embeddable && fileUrl && (
+          <p className="text-xs text-gray-500 mt-1">
+            {ext === "doc" || ext === "docx" ? "Word document" : "Office document"} — download to open.
+          </p>
+        )}
+        {fileUrl && (
+          <div className="flex items-center gap-4">
+            {embeddable && (
+              <DocumentViewer title={resolvedTitle} url={fileUrl} kind="embed" triggerLabel="View" />
+            )}
+            <a
+              href={fileUrl}
+              download
+              className="inline-block mt-3 text-sm text-primary hover:underline"
+            >
+              Download
+            </a>
+          </div>
         )}
       </div>
     );
   }
 
   if (resolvedType === "image") {
+    const fileUrl = resolvedFilePath ? `/api/uploads/${resolvedFilePath}` : null;
     return (
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-        {resolvedFilePath && (
+        {fileUrl && (
           <img
-            src={`/api/uploads/${resolvedFilePath}`}
+            src={fileUrl}
             alt={resolvedTitle}
             className="w-full h-auto"
           />
@@ -87,6 +106,9 @@ export default function WallItemRenderer({
           </h3>
           {resolvedDescription && (
             <p className="text-sm text-gray-600 mt-1">{resolvedDescription}</p>
+          )}
+          {fileUrl && (
+            <DocumentViewer title={resolvedTitle} url={fileUrl} kind="image" triggerLabel="Enlarge" />
           )}
         </div>
       </div>
@@ -135,9 +157,19 @@ export default function WallItemRenderer({
       {resolvedDescription && (
         <p className="text-sm text-gray-600 mt-1">{resolvedDescription}</p>
       )}
-      {resolvedTextContent && (
-        <p className="text-sm text-gray-800 mt-2 whitespace-pre-wrap">{resolvedTextContent}</p>
-      )}
+      {resolvedTextContent &&
+        (/<\/?(p|h[1-6]|ul|ol|li|strong|em|b|i|a|br|blockquote|div|span)\b/i.test(resolvedTextContent) ? (
+          // Written in the rich text editor: render the formatting,
+          // sanitized with the same rules as every other renderer.
+          <div
+            className="prose prose-sm max-w-none mt-2 text-gray-800"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(resolvedTextContent, PURIFY_CONFIG),
+            }}
+          />
+        ) : (
+          <p className="text-sm text-gray-800 mt-2 whitespace-pre-wrap">{resolvedTextContent}</p>
+        ))}
     </div>
   );
 }
