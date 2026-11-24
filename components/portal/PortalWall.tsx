@@ -140,7 +140,7 @@ export default function PortalWall({
             <div>
               {/* Mobile: glance renders inline above grid */}
               {hasGlance && (
-                <div className={`lg:hidden mb-6 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance" style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
+                <div className={`lg:hidden md:max-h-[calc(100vh-2rem)] md:overflow-y-auto mb-6 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance" style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
                   {!isClient && glanceItem && glanceItem.isVisible === false && (
                     <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
                       Hidden
@@ -208,7 +208,7 @@ export default function PortalWall({
                 data-wall-item
                 data-variant="glance"
               >
-                <div className={`sticky top-4 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
+                <div className={`sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
                   {!isClient && glanceItem && glanceItem.isVisible === false && (
                     <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
                       Hidden

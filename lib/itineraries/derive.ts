@@ -52,9 +52,13 @@ function mapTravelMode(raw: string | undefined): GlanceTransport["mode"] {
  * else — times, addresses, references, instructions, phone numbers —
  * is deliberately dropped. This is the spec's core promise.
  */
-export function deriveGlance(fullItinerary: FullItinerary): GlanceData {
+export function deriveGlance(
+  fullItinerary: FullItinerary,
+  options?: { todayISO?: string }
+): GlanceData {
   const days: GlanceDay[] = [];
   let globalDayNumber = 1;
+  const todayISO = options?.todayISO;
 
   for (const section of fullItinerary.sections) {
     // Sort days by date, don't rely on upstream ordering.
@@ -63,6 +67,14 @@ export function deriveGlance(fullItinerary: FullItinerary): GlanceData {
     );
 
     for (const day of sortedDays) {
+      // The glance condenses as the trip unfolds: once a day is
+      // finished it drops out, so the summary always shows what's
+      // still ahead (today included). Day numbers stay the trip's
+      // own — a remaining day keeps its real number.
+      const dayNumber = globalDayNumber++;
+      if (todayISO && day.date && day.date < todayISO) {
+        continue;
+      }
       // Stay: checkIn <= day.date < checkOut. Latest checkIn wins on tie.
       const matchingStays = section.stays
         .filter(
@@ -104,7 +116,7 @@ export function deriveGlance(fullItinerary: FullItinerary): GlanceData {
       const anchorActivity = anchorSeg?.title ?? null;
 
       days.push({
-        dayNumber: globalDayNumber++,
+        dayNumber,
         date: day.date,
         sectionTitle: section.title,
         stayName,
