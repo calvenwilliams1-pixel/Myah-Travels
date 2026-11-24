@@ -22,11 +22,18 @@ const NAV_LINKS: { href: string; label: string; external?: boolean }[] = [
 interface AdminHeaderProps {
   username: string;
   onLogout: () => Promise<void>;
+  /**
+   * Whether the Guide link shows at all. The layout computes it: the
+   * guide belongs to the owner's account, and only until it is
+   * complete — a finished guide disappears completely, link included.
+   */
+  showGuide?: boolean;
 }
 
-export default function AdminHeader({ username, onLogout }: AdminHeaderProps) {
+export default function AdminHeader({ username, onLogout, showGuide = false }: AdminHeaderProps) {
   const [open, setOpen] = useState(false);
   const displayName = username.charAt(0).toUpperCase() + username.slice(1);
+  const navLinks = NAV_LINKS.filter((l) => l.href !== "/admin/guide" || showGuide);
 
   const linkCls = "text-sm text-gray-600 hover:text-primary";
   const mobileLinkCls =
@@ -42,7 +49,7 @@ export default function AdminHeader({ username, onLogout }: AdminHeaderProps) {
         {/* Desktop: inline nav + user block (unchanged layout on lg+) */}
         <div className="hidden lg:flex items-center gap-6">
           <nav className="flex items-center gap-4 flex-wrap">
-            {NAV_LINKS.map((l) =>
+            {navLinks.map((l) =>
               l.external ? (
                 <a
                   key={l.href}
@@ -95,7 +102,7 @@ export default function AdminHeader({ username, onLogout }: AdminHeaderProps) {
       {open && (
         <div className="lg:hidden border-t border-gray-100 px-4 py-2 bg-white">
           <nav className="flex flex-col">
-            {NAV_LINKS.map((l) =>
+            {navLinks.map((l) =>
               l.external ? (
                 <a
                   key={l.href}
