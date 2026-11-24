@@ -13,7 +13,18 @@ import {
   generateMagicLink,
   validateMagicLink,
   consumeMagicLink,
+  portalSessionCookieName,
+  isPortalSessionCookieName,
+  LEGACY_PORTAL_SESSION_COOKIE,
 } from "./index";
+import { addLibraryItem, softDeleteLibraryItem } from "@/lib/content-library";
+import {
+  attachLibraryItemToPortal,
+  getPortalItems,
+  getPortalItemsWithContent,
+} from "@/lib/portal-items";
+import { portalItems } from "@/drizzle/schema/portal-items";
+import { contentLibrary } from "@/drizzle/schema/content-library";
 
 describe("getMagicLinkExpiry", () => {
   it("promo portal links effectively never expire", () => {
@@ -55,21 +66,22 @@ describe("getPublicBaseUrl", () => {
 });
 
 describe("magic link reuse", () => {
-  let portalId: number | undefined;
+  const portalIds: number[] = [];
 
   afterAll(async () => {
-    if (portalId === undefined) return;
-    await db.delete(portalSessions).where(eq(portalSessions.portalId, portalId));
-    await db.delete(portalMagicLinks).where(eq(portalMagicLinks.portalId, portalId));
-    await db.delete(portalMembers).where(eq(portalMembers.portalId, portalId));
-    await db.delete(portals).where(eq(portals.id, portalId));
+    for (const portalId of portalIds) {
+      await db.delete(portalSessions).where(eq(portalSessions.portalId, portalId));
+      await db.delete(portalMagicLinks).where(eq(portalMagicLinks.portalId, portalId));
+      await db.delete(portalMembers).where(eq(portalMembers.portalId, portalId));
+      await db.delete(portals).where(eq(portals.id, portalId));
+    }
   });
 
   it("a link still works after it has been used once", async () => {
     const [portal] = await createPortal({
       name: `Reuse Test ${Date.now().toString(36)}`,
     });
-    portalId = portal.id;
+    portalIds.push(portal.id);
     const [member] = await addPortalMember(portal.id, `reuse-${Date.now()}@example.com`);
     const token = await generateMagicLink(portal.id, member.id);
     expect(token).toBeTruthy();
@@ -84,5 +96,77 @@ describe("magic link reuse", () => {
     const second = await consumeMagicLink(token!);
     expect(second).not.toBeNull();
     expect(second!.sessionId).not.toBe(first!.sessionId);
+  });
+
+  it("generating a new link revokes the member's earlier link, even a used one", async () => {
+    const [portal] = await createPortal({
+      name: `Resend Test ${Date.now().toString(36)}`,
+    });
+    portalIds.push(portal.id);
+    const [member] = await addPortalMember(portal.id, `resend-${Date.now()}@example.com`);
+    const first = await generateMagicLink(portal.id, member.id);
+    expect(first).toBeTruthy();
+    await consumeMagicLink(first!);
+    expect(await validateMagicLink(first!)).not.toBeNull();
+
+    const second = await generateMagicLink(portal.id, member.id);
+    expect(second).toBeTruthy();
+    expect(await validateMagicLink(first!)).toBeNull();
+    expect(await validateMagicLink(second!)).not.toBeNull();
+  });
+});
+
+describe("portal session cookies", () => {
+  it("names cookies per portal and recognizes the legacy name", () => {
+    expect(portalSessionCookieName(7)).toBe("portal_session_7");
+    expect(isPortalSessionCookieName("portal_session_7")).toBe(true);
+    expect(isPortalSessionCookieName(LEGACY_PORTAL_SESSION_COOKIE)).toBe(true);
+    expect(isPortalSessionCookieName("portal_session")).toBe(true);
+    expect(isPortalSessionCookieName("portal_session_x")).toBe(false);
+    expect(isPortalSessionCookieName("session")).toBe(false);
+  });
+});
+
+describe("library attachments on the wall", () => {
+  let portalId: number | undefined;
+  let libraryId: number | undefined;
+
+  afterAll(async () => {
+    if (portalId !== undefined) {
+      await db.delete(portalItems).where(eq(portalItems.portalId, portalId));
+      await db.delete(portals).where(eq(portals.id, portalId));
+    }
+    if (libraryId !== undefined) {
+      await db.delete(contentLibrary).where(eq(contentLibrary.id, libraryId));
+    }
+  });
+
+  it("attaching the same item twice keeps one card, and deleting the item marks it missing", async () => {
+    const [portal] = await createPortal({
+      name: `Attach Test ${Date.now().toString(36)}`,
+    });
+    portalId = portal.id;
+    const [lib] = await addLibraryItem({
+      title: "Attach Test Doc",
+      type: "pdf",
+      filePath: "library/attach-test.pdf",
+    });
+    libraryId = lib.id;
+
+    await attachLibraryItemToPortal(portal.id, lib.id);
+    await attachLibraryItemToPortal(portal.id, lib.id);
+    const attached = (await getPortalItems(portal.id)).filter(
+      (i) => i.contentLibraryId === lib.id
+    );
+    expect(attached.length).toBe(1);
+
+    let resolved = await getPortalItemsWithContent(portal.id);
+    expect(resolved.find((i) => i.contentLibraryId === lib.id)?.isMissing).toBe(false);
+
+    await softDeleteLibraryItem(lib.id);
+    resolved = await getPortalItemsWithContent(portal.id);
+    const ghost = resolved.find((i) => i.contentLibraryId === lib.id);
+    expect(ghost?.isMissing).toBe(true);
+    expect(ghost?.resolvedFilePath).toBeNull();
   });
 });

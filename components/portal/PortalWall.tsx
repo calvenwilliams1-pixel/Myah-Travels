@@ -30,6 +30,10 @@ export interface PortalWallItem {
   resolvedTextContent: string | null;
   itineraryId?: number | null;
   isVisible?: boolean;
+  /** The thing this card points at was deleted (library item or
+   * itinerary). Clients never see these; admin preview keeps them
+   * visible as a flag to remove the attachment. */
+  isMissing?: boolean;
   glance?: GlanceData;
   dayByDay?: DayByDayState;
   /** Per-itinerary font pairing, attached with the derived data. */
@@ -52,7 +56,9 @@ export default function PortalWall({
   brand,
 }: PortalWallProps) {
   const isClient = mode === "client";
-  const visibleItems = isClient ? items.filter((i) => i.isVisible !== false) : items;
+  const visibleItems = isClient
+    ? items.filter((i) => i.isVisible !== false && !i.isMissing)
+    : items;
 
   const todayItems = visibleItems.filter(
     (i) =>

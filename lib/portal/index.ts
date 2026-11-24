@@ -323,6 +323,24 @@ export function hashToken(raw: string): string {
 }
 
 /**
+ * Sessions live in PER-PORTAL cookies, so a client with two portals
+ * (a trip portal and the promo portal, say) can be signed into both
+ * in one browser instead of each link kicking out the other portal.
+ * The bare "portal_session" cookie is the legacy name from before
+ * per-portal cookies existed; readers still accept it so a deploy
+ * doesn't sign every client out.
+ */
+export const LEGACY_PORTAL_SESSION_COOKIE = "portal_session";
+
+export function portalSessionCookieName(portalId: number): string {
+  return `portal_session_${portalId}`;
+}
+
+export function isPortalSessionCookieName(name: string): boolean {
+  return name === LEGACY_PORTAL_SESSION_COOKIE || /^portal_session_\d+$/.test(name);
+}
+
+/**
  * The public base URL for redirects. Behind the Tailscale Funnel the
  * request's own URL carries the internal origin (localhost:3000), so
  * browser redirects must be built from SITE_URL whenever it is set —
@@ -368,11 +386,14 @@ export async function generateMagicLink(
   const belongsToPortal = await isMemberOfPortal(memberId, portalId);
   if (!belongsToPortal) return null;
 
+  // A fresh link supersedes ALL of the member's earlier links,
+  // including ones already clicked — links are reusable, so without
+  // this a resend (e.g. because a link went to the wrong inbox) would
+  // leave the old one working alongside the new one.
   await db.update(portalMagicLinks)
     .set({ revokedAt: new Date().toISOString() })
     .where(and(
       eq(portalMagicLinks.memberId, memberId),
-      isNull(portalMagicLinks.usedAt),
       isNull(portalMagicLinks.revokedAt)
     ));
 

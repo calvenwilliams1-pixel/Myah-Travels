@@ -1,6 +1,6 @@
 import React from "react";
 import { cookies } from "next/headers";
-import { validatePortalSession, getPortalBySlug } from "@/lib/portal";
+import { validatePortalSession, getPortalBySlug, portalSessionCookieName, LEGACY_PORTAL_SESSION_COOKIE } from "@/lib/portal";
 import { getPortalItemsWithContent } from "@/lib/portal-items";
 import { attachDerivedItems } from "@/lib/itineraries/attach-derived-items";
 import { logActivity } from "@/lib/logging";
@@ -11,8 +11,15 @@ import { darkenHex } from "@/lib/theme";
 export const dynamic = "force-dynamic";
 
 export default async function PortalDashboardPage({ params }: { params: { portalSlug: string } }) {
+  const portal = await getPortalBySlug(params.portalSlug);
+
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get("portal_session")?.value;
+  // Per-portal cookie first; the legacy single cookie is still
+  // accepted so this deploy doesn't sign existing clients out.
+  const sessionId = portal
+    ? cookieStore.get(portalSessionCookieName(portal.id))?.value ??
+      cookieStore.get(LEGACY_PORTAL_SESSION_COOKIE)?.value
+    : cookieStore.get(LEGACY_PORTAL_SESSION_COOKIE)?.value;
 
   if (!sessionId) {
     return <SessionExpired />;
@@ -23,8 +30,6 @@ export default async function PortalDashboardPage({ params }: { params: { portal
   if (!session) {
     return <SessionExpired />;
   }
-
-  const portal = await getPortalBySlug(params.portalSlug);
 
   if (!portal || portal.id !== session.portalId || !portal.isActive) {
     return (

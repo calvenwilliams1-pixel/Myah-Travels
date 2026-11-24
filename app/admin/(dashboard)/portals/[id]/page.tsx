@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { getPortalById, getPortalMembers, getPortalDocuments, getPortalFaqs } from "@/lib/portal";
+import { getPortalById, getPortalMembers } from "@/lib/portal";
 import { requireAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -17,8 +17,6 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
 
   const portal = await getPortalById(Number(params.id));
   const members = await getPortalMembers(Number(params.id));
-  const documents = await getPortalDocuments(Number(params.id));
-  const faqs = await getPortalFaqs(Number(params.id));
 
   if (!portal) {
     return <div>Portal not found</div>;
@@ -149,40 +147,6 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
         )}
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="font-semibold mb-4">Documents ({documents.length})</h3>
-          {documents.length > 0 ? (
-            <ul className="space-y-2">
-              {documents.map((doc) => (
-                <li key={doc.id}>
-                  <a href={`/api/uploads/${doc.filePath}`} className="text-primary hover:underline">
-                    📄 {doc.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 text-sm">No documents yet.</p>
-          )}
-        </Card>
-
-        <Card>
-          <h3 className="font-semibold mb-4">FAQs ({faqs.length})</h3>
-          {faqs.length > 0 ? (
-            <ul className="space-y-2">
-              {faqs.map((faq) => (
-                <li key={faq.id}>
-                  <p className="font-medium">{faq.question}</p>
-                  <p className="text-sm text-gray-600">{faq.answer}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 text-sm">No FAQs yet.</p>
-          )}
-        </Card>
-      </div>
     </div>
   );
 }

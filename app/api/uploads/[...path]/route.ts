@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
-import { validatePortalSession } from "@/lib/portal";
+import { validatePortalSession, isPortalSessionCookieName } from "@/lib/portal";
 import { db } from "@/lib/db";
 import { portalItems, contentLibrary, media, portalMembers, posts, guides, reviews } from "@/drizzle/schema";
 import { eq, and, like, or, isNull, sql } from "drizzle-orm";
@@ -48,14 +48,16 @@ export async function GET(
   const admin = await getCurrentUser();
   const isAdmin = !!admin;
 
-  // Auth 2 — portal session (may be needed for portal docs)
-  let portalIdForSession: number | null = null;
+  // Auth 2 — portal sessions (may be needed for portal docs). A
+  // browser can hold one session per portal; any of them may be the
+  // one that owns the requested file.
+  const portalIdsForSession: number[] = [];
   if (!isAdmin) {
     const cookieStore = await cookies();
-    const sid = cookieStore.get("portal_session")?.value;
-    if (sid) {
-      const session = await validatePortalSession(sid);
-      if (session) portalIdForSession = session.portalId;
+    for (const cookie of cookieStore.getAll()) {
+      if (!isPortalSessionCookieName(cookie.name) || !cookie.value) continue;
+      const session = await validatePortalSession(cookie.value);
+      if (session) portalIdsForSession.push(session.portalId);
     }
   }
 
@@ -64,7 +66,7 @@ export async function GET(
   // header images) are public by definition: the pages that embed them are
   // served to anonymous visitors, so the files must be too. Everything else
   // (portal documents, unreferenced uploads) stays gated behind Auth 1/2.
-  if (!isAdmin && portalIdForSession === null) {
+  if (!isAdmin && portalIdsForSession.length === 0) {
     const needle = `/api/uploads/${rel}`;
     const referenced = (col: unknown) => sql`instr(${col}, ${needle}) > 0`;
     const [inPosts, inGuides, inReviews] = await Promise.all([
@@ -111,22 +113,26 @@ export async function GET(
     }
   }
 
-  // If portal session (not admin), verify this file is attached to their portal
-  if (!isAdmin && portalIdForSession !== null) {
-    // Does any portal_items row for this portal reference this file path?
-    // Stored file_path is relative (e.g. "posts/foo.pdf") — match flexibly.
-    const candidates = await db
-      .select({ id: portalItems.id })
-      .from(portalItems)
-      .where(
-        and(
-          eq(portalItems.portalId, portalIdForSession),
-          like(portalItems.filePath, `%${rel}`)
-        )
-      )
-      .limit(1);
+  // If portal session (not admin), verify this file is attached to
+  // one of the portals this browser is signed into.
+  if (!isAdmin && portalIdsForSession.length > 0) {
+    let attached = false;
 
-    if (candidates.length === 0) {
+    for (const portalId of portalIdsForSession) {
+      // Does any portal_items row for this portal reference this file path?
+      // Stored file_path is relative (e.g. "posts/foo.pdf") — match flexibly.
+      const candidates = await db
+        .select({ id: portalItems.id })
+        .from(portalItems)
+        .where(
+          and(
+            eq(portalItems.portalId, portalId),
+            like(portalItems.filePath, `%${rel}`)
+          )
+        )
+        .limit(1);
+      if (candidates.length > 0) { attached = true; break; }
+
       // Library documents live on the content_library row, not on
       // portal_items — a file Myah uploaded once and attached to this
       // portal must open for its clients too.
@@ -136,16 +142,20 @@ export async function GET(
         .innerJoin(contentLibrary, eq(portalItems.contentLibraryId, contentLibrary.id))
         .where(
           and(
-            eq(portalItems.portalId, portalIdForSession),
-            like(contentLibrary.filePath, `%${rel}`)
+            eq(portalItems.portalId, portalId),
+            like(contentLibrary.filePath, `%${rel}`),
+            // A deleted library document stops being served, even
+            // while it is still attached to the portal.
+            isNull(contentLibrary.deletedAt)
           )
         )
         .limit(1);
+      if (libraryCandidates.length > 0) { attached = true; break; }
+    }
 
-      if (libraryCandidates.length === 0) {
-        // Not a portal-attached file — deny
-        return new NextResponse("Forbidden", { status: 403 });
-      }
+    if (!attached) {
+      // Not a portal-attached file — deny
+      return new NextResponse("Forbidden", { status: 403 });
     }
   }
 
