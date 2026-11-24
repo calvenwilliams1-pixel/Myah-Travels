@@ -7,11 +7,14 @@ import {
   portalNotices,
   portalDocuments,
   portalFaqs,
+  settings,
 } from "@/drizzle/schema";
 import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import crypto from "crypto";
 import { queueEmail, queueBulkEmails, isEmailSuppressed } from "@/lib/email";
 import { magicLinkEmail, portalNoticeEmail, globalAnnouncementEmail } from "@/lib/email/templates";
+// (Settings are read straight from the table here — lib/settings
+// uses React's cache(), which only exists in the server runtime.)
 import { logActivity } from "@/lib/logging";
 import { upsertPersonByEmail, recordTrip } from "@/lib/clients/people";
 
@@ -377,10 +380,13 @@ export async function generateMagicLink(
 }
 
 export async function validateMagicLink(token: string) {
+  // Links are reusable until they expire or are revoked: a client
+  // must be able to re-open the email and click again (another
+  // browser, a mail-app handoff, months later for the promo portal).
+  // usedAt only records the first use — it does not invalidate.
   const result = await db.select().from(portalMagicLinks)
     .where(and(
       eq(portalMagicLinks.token, hashToken(token)),
-      isNull(portalMagicLinks.usedAt),
       isNull(portalMagicLinks.revokedAt)
     ))
     .limit(1);
@@ -475,7 +481,14 @@ export async function sendMagicLinkToMember(
         day: "numeric",
         year: "numeric",
       });
-  const email = magicLinkEmail(member.name, portal.name, linkUrl, expiresOnLabel);
+  // The email wears the site's current brand colour (Settings →
+  // primary_color), so it follows when Myah re-themes the site.
+  const brandRows = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.key, "primary_color"))
+    .limit(1);
+  const email = magicLinkEmail(member.name, portal.name, linkUrl, expiresOnLabel, brandRows[0]?.value ?? null);
   const id = await queueEmail({
     toEmail: member.email,
     subject: email.subject,

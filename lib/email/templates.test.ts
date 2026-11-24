@@ -12,6 +12,31 @@ describe("magicLinkEmail expiry line", () => {
     expect(html).toContain("This link expires on December 5, 2026.");
   });
 
+  it("wears the site's brand colour when one is passed", () => {
+    const { html } = magicLinkEmail(
+      "Sam",
+      "Trip",
+      "https://example.com/portal/access/abc",
+      "December 5, 2026",
+      "#0077B6"
+    );
+    expect(html).toContain("background-color: #0077B6");
+    expect(html).not.toContain("background-color: #4a7c59");
+  });
+
+  it("falls back to the default brand colour for a missing or invalid one", () => {
+    for (const bad of [undefined, null, "", "green", "#12345"]) {
+      const { html } = magicLinkEmail(
+        "Sam",
+        "Trip",
+        "https://example.com/portal/access/abc",
+        "December 5, 2026",
+        bad
+      );
+      expect(html).toContain("background-color: #4a7c59");
+    }
+  });
+
   it("says the link never expires when the label is null (promo portal)", () => {
     const { html, subject } = magicLinkEmail(
       null,
