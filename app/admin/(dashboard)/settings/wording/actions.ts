@@ -97,11 +97,6 @@ async function renderSampleInvite(values: Record<string, string>) {
   );
 }
 
-export async function previewInviteEmail(values: Record<string, string>) {
-  await requireAuth();
-  return renderSampleInvite(values);
-}
-
 export async function sendTestInviteEmail(
   values: Record<string, string>
 ): Promise<{ ok: true; to: string } | { error: string }> {

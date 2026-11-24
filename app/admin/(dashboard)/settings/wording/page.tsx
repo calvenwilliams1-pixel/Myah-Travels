@@ -1,22 +1,27 @@
 import React from "react";
 import Link from "next/link";
-import { loadWordingOverrides } from "@/lib/wording";
-import { WORDING_REGISTRY } from "@/lib/wording/registry";
-import WordingForm from "./WordingForm";
+import { loadWordingOverrides, loadEmailIdentity } from "@/lib/wording";
+import { WORDING_REGISTRY, resolveAllWording, formatExpiryLabel } from "@/lib/wording/registry";
+import WordingStudio from "./WordingStudio";
 
 export const dynamic = "force-dynamic";
 
 export default async function WordingPage() {
   const overrides = await loadWordingOverrides();
+  const identity = await loadEmailIdentity();
+  const resolved = resolveAllWording(overrides);
 
   const initial: Record<string, { value: string; hasOverride: boolean }> = {};
   for (const entry of WORDING_REGISTRY) {
     const stored = overrides[entry.settingsKey];
     initial[entry.key] = {
-      value: stored ?? "",
+      value: resolved[entry.key],
       hasOverride: stored !== undefined && stored.trim() !== "",
     };
   }
+
+  const sampleDate = new Date();
+  sampleDate.setDate(sampleDate.getDate() + 30);
 
   return (
     <div className="space-y-6">
@@ -31,12 +36,19 @@ export default async function WordingPage() {
         <p className="text-gray-600 mt-1 max-w-2xl">
           These are the words in the email clients get when you add them to a portal,
           on the page they land on, and in the messages they see if a link runs out.
-          Leave a field empty and the standard words are used, so nothing ever shows
-          up blank.
+          Pick one below and you will see it the way a client does. Change the words
+          right on it.
         </p>
       </div>
 
-      <WordingForm initial={initial} />
+      <WordingStudio
+        initial={initial}
+        siteName={identity.siteName ?? ""}
+        primaryColor={identity.primaryColor ?? ""}
+        instagramUrl={identity.instagramUrl ?? ""}
+        youtubeUrl={identity.youtubeUrl ?? ""}
+        sampleExpiryLabel={formatExpiryLabel(sampleDate)}
+      />
     </div>
   );
 }
