@@ -284,7 +284,7 @@ export function passwordResetEmail(
     </div>
     <p style="color: #999; font-size: 14px;">
       This link works for 1 hour and can only be used once. If you didn't
-      ask for it, you can ignore this email — your password won't change.
+      ask for it, you can ignore this email. Your password won't change.
     </p>
   `;
 
