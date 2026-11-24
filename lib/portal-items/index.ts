@@ -25,18 +25,36 @@ export async function getPortalItemsWithContent(portalId: number) {
     items.map(async (item) => {
       if (item.sourceType === "library" && item.contentLibraryId) {
         const libraryId = item.contentLibraryId;
+        // A soft-deleted library item is GONE: it must not keep
+        // rendering (or serving its file) on client walls just
+        // because it is still attached. isMissing lets the wall drop
+        // it for clients while admin preview can flag it.
         const libItem = await db.select().from(contentLibrary)
-          .where(eq(contentLibrary.id, libraryId))
+          .where(and(eq(contentLibrary.id, libraryId), isNull(contentLibrary.deletedAt)))
           .limit(1);
+
+        if (!libItem[0]) {
+          return {
+            ...item,
+            isMissing: true,
+            resolvedTitle: "Deleted item",
+            resolvedDescription: null,
+            resolvedType: "pdf",
+            resolvedCategory: null,
+            resolvedFilePath: null,
+            resolvedTextContent: null,
+          };
+        }
 
         return {
           ...item,
-          resolvedTitle: libItem[0]?.title ?? "Deleted item",
-          resolvedDescription: libItem[0]?.description ?? null,
-          resolvedType: libItem[0]?.type ?? "pdf",
-          resolvedCategory: libItem[0]?.category ?? null,
-          resolvedFilePath: libItem[0]?.filePath ?? null,
-          resolvedTextContent: libItem[0]?.textContent ?? null,
+          isMissing: false,
+          resolvedTitle: libItem[0].title,
+          resolvedDescription: libItem[0].description ?? null,
+          resolvedType: libItem[0].type,
+          resolvedCategory: libItem[0].category ?? null,
+          resolvedFilePath: libItem[0].filePath ?? null,
+          resolvedTextContent: libItem[0].textContent ?? null,
         };
       }
 
@@ -46,9 +64,23 @@ export async function getPortalItemsWithContent(portalId: number) {
           .where(and(eq(itineraries.id, itineraryId), isNull(itineraries.deletedAt)))
           .limit(1);
 
+        if (!itinerary[0]) {
+          return {
+            ...item,
+            isMissing: true,
+            resolvedTitle: "Deleted itinerary",
+            resolvedDescription: null,
+            resolvedType: "itinerary",
+            resolvedCategory: null,
+            resolvedFilePath: null,
+            resolvedTextContent: null,
+          };
+        }
+
         return {
           ...item,
-          resolvedTitle: itinerary[0]?.title ?? "Deleted itinerary",
+          isMissing: false,
+          resolvedTitle: itinerary[0].title,
           resolvedDescription: null,
           resolvedType: "itinerary",
           resolvedCategory: null,
@@ -72,6 +104,11 @@ export async function getPortalItemsWithContent(portalId: number) {
 
 export async function attachLibraryItemToPortal(portalId: number, libraryItemId: number) {
   const items = await getPortalItems(portalId);
+  // Attaching the same library item twice would put two identical
+  // cards on the wall — return the existing attachment instead.
+  const existing = items.find((i) => i.sourceType === "library" && i.contentLibraryId === libraryItemId);
+  if (existing) return [existing];
+
   const nextPosition = items.length > 0 ? Math.max(...items.map((i) => i.position ?? 0)) + 1 : 0;
 
   return db.insert(portalItems).values({

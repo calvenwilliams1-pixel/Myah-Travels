@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import AddContentModal from "@/components/admin/content-library/AddContentModal";
+import EditContentModal from "@/components/admin/content-library/EditContentModal";
 
 interface LibraryItem {
   id: number;
@@ -11,6 +12,8 @@ interface LibraryItem {
   description: string | null;
   type: string;
   category: string | null;
+  filePath: string | null;
+  textContent: string | null;
   createdAt: string;
 }
 
@@ -20,6 +23,7 @@ export default function ContentLibraryPage() {
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [category, setCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   async function fetchItems() {
@@ -36,7 +40,7 @@ export default function ContentLibraryPage() {
   }, [category]);
 
   async function handleDelete(id: number) {
-    if (!confirm("Delete this item?")) return;
+    if (!confirm("Delete this item? It will also disappear from any portal it's attached to.")) return;
     await fetch(`/api/content-library/${id}`, { method: "DELETE" });
     fetchItems();
   }
@@ -87,12 +91,20 @@ export default function ContentLibraryPage() {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="text-red-500 hover:text-red-700 text-sm"
-                >
-                  ✕
-                </button>
+                <div className="flex items-start gap-2">
+                  <button
+                    onClick={() => setEditingItem(item)}
+                    className="text-gray-500 hover:text-gray-800 text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             </Card>
           ))}
@@ -104,6 +116,17 @@ export default function ContentLibraryPage() {
           onClose={() => setShowAddModal(false)}
           onSaved={() => {
             setShowAddModal(false);
+            fetchItems();
+          }}
+        />
+      )}
+
+      {editingItem && (
+        <EditContentModal
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSaved={() => {
+            setEditingItem(null);
             fetchItems();
           }}
         />

@@ -12,7 +12,41 @@ import {
   portalFaqs,
   portalChecklistStates,
 } from "@/drizzle/schema";
-import { eq, and, isNull, isNotNull, lte, or } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, lte, or, like } from "drizzle-orm";
+import { contentLibrary } from "@/drizzle/schema";
+import fs from "fs/promises";
+import path from "path";
+
+const UPLOADS_DIR =
+  process.env.UPLOADS_DIR || path.join(process.cwd(), "data", "uploads");
+
+/**
+ * Delete a purged portal's own uploaded files. A file is only
+ * unlinked when nothing else references its path — library items
+ * are shared across portals and are never touched here.
+ */
+async function deleteOrphanedPortalFiles(filePaths: string[]): Promise<void> {
+  const root = path.resolve(UPLOADS_DIR);
+  for (const rel of filePaths) {
+    if (!rel) continue;
+    const stillInLibrary = await db
+      .select({ id: contentLibrary.id })
+      .from(contentLibrary)
+      .where(like(contentLibrary.filePath, `%${rel}`))
+      .limit(1);
+    if (stillInLibrary.length > 0) continue;
+    const stillAttached = await db
+      .select({ id: portalItems.id })
+      .from(portalItems)
+      .where(like(portalItems.filePath, `%${rel}`))
+      .limit(1);
+    if (stillAttached.length > 0) continue;
+
+    const abs = path.resolve(path.join(root, rel));
+    if (!abs.startsWith(root + path.sep)) continue;
+    await fs.unlink(abs).catch(() => {});
+  }
+}
 
 const DEFAULT_GRACE_DAYS = 90;
 
@@ -76,6 +110,15 @@ export async function runPortalPurge(): Promise<PurgeResult> {
   if (toPurge.length === 0) return result;
 
   for (const portalId of toPurge) {
+    // This portal's own uploaded files (portal-specific items only —
+    // library files are shared and stay). Collected before the rows
+    // go; unlinked after, if nothing else references them.
+    const ownItems = await db
+      .select({ filePath: portalItems.filePath })
+      .from(portalItems)
+      .where(and(eq(portalItems.portalId, portalId), eq(portalItems.sourceType, "portal_specific")));
+    const ownFiles = ownItems.map((i) => i.filePath).filter((p): p is string => !!p);
+
     // Everything in one transaction: delete, detach itineraries, keep people.
     db.transaction((tx) => {
       // 1. Detach + archive itineraries before deleting the portal
@@ -112,6 +155,8 @@ export async function runPortalPurge(): Promise<PurgeResult> {
 
       result.purged++;
     });
+
+    await deleteOrphanedPortalFiles(ownFiles);
   }
 
   return result;
@@ -128,6 +173,8 @@ export async function previewPurge(): Promise<
   const result: Array<{ id: number; name: string; returnDate: string | null; keepUntil: string | null; purgeDate: string }> = [];
 
   for (const p of all) {
+    // Match the real purge: the promo portal is never purged.
+    if (p.isPromo) continue;
     const purgeDate = computePurgeDate({ returnDate: p.returnDate, keepUntil: p.keepUntil ?? null });
     if (!purgeDate) continue;
     if (purgeDate <= now) {

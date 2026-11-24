@@ -1,7 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { validatePortalSession, getPortalBySlug } from "@/lib/portal";
+import { validatePortalSession, getPortalBySlug, portalSessionCookieName, LEGACY_PORTAL_SESSION_COOKIE } from "@/lib/portal";
 import { getFullItinerary } from "@/lib/itineraries";
 import { logActivity } from "@/lib/logging";
 import ItineraryView from "@/components/portal/itinerary/ItineraryView";
@@ -14,15 +14,19 @@ export default async function ClientItineraryPage({
 }: {
   params: { portalSlug: string; itineraryId: string };
 }) {
+  const portal = await getPortalBySlug(params.portalSlug);
+
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get("portal_session")?.value;
+  const sessionId = portal
+    ? cookieStore.get(portalSessionCookieName(portal.id))?.value ??
+      cookieStore.get(LEGACY_PORTAL_SESSION_COOKIE)?.value
+    : cookieStore.get(LEGACY_PORTAL_SESSION_COOKIE)?.value;
 
   if (!sessionId) return <SessionExpired />;
 
   const session = await validatePortalSession(sessionId);
   if (!session) return <SessionExpired />;
 
-  const portal = await getPortalBySlug(params.portalSlug);
   if (!portal || portal.id !== session.portalId || !portal.isActive) {
     return <AccessDenied />;
   }
