@@ -30,6 +30,8 @@ interface WordingStudioProps {
   youtubeUrl: string;
   /** The sample trip expiry, formatted the way a client's email shows it. */
   sampleExpiryLabel: string;
+  /** The address the test-send field starts with (the admin address on file). */
+  defaultTestEmail: string;
 }
 
 export default function WordingStudio({
@@ -39,6 +41,7 @@ export default function WordingStudio({
   instagramUrl,
   youtubeUrl,
   sampleExpiryLabel,
+  defaultTestEmail,
 }: WordingStudioProps) {
   const keys = useMemo(() => Object.keys(initial), [initial]);
   const [buffers, setBuffers] = useState<Record<string, string>>(() =>
@@ -54,6 +57,7 @@ export default function WordingStudio({
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [testEmail, setTestEmail] = useState(defaultTestEmail);
   const [testState, setTestState] = useState<
     | { kind: "idle" }
     | { kind: "sending" }
@@ -156,7 +160,7 @@ export default function WordingStudio({
 
   async function handleTestSend() {
     setTestState({ kind: "sending" });
-    const result = await sendTestInviteEmail(buffers);
+    const result = await sendTestInviteEmail(buffers, testEmail);
     if ("error" in result) {
       setTestState({ kind: "error", message: result.error });
     } else {
@@ -317,7 +321,15 @@ export default function WordingStudio({
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center gap-3 flex-wrap">
+              <div className="mt-4 flex items-center gap-2 flex-wrap">
+                <input
+                  type="email"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="Email address for the test"
+                  aria-label="Email address for the test"
+                  className="min-h-[44px] flex-1 min-w-[220px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                />
                 <button
                   type="button"
                   onClick={handleTestSend}
@@ -326,16 +338,16 @@ export default function WordingStudio({
                 >
                   {testState.kind === "sending" ? "Sending..." : "Send me a test email"}
                 </button>
-                {testState.kind === "sent" && (
-                  <span className="text-sm text-gray-600">
-                    Test sent to {testState.to}. It uses the words as they are now, saved or
-                    not.
-                  </span>
-                )}
-                {testState.kind === "error" && (
-                  <span className="text-sm text-red-600">{testState.message}</span>
-                )}
               </div>
+              {testState.kind === "sent" && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Test sent to {testState.to}. It uses the words as they are now, saved or
+                  not.
+                </p>
+              )}
+              {testState.kind === "error" && (
+                <p className="text-sm text-red-600 mt-2">{testState.message}</p>
+              )}
             </div>
           )}
 

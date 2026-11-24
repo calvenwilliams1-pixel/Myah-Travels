@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { loadWordingOverrides, loadEmailIdentity } from "@/lib/wording";
+import { getSetting } from "@/lib/settings";
 import { WORDING_REGISTRY, resolveAllWording, formatExpiryLabel } from "@/lib/wording/registry";
 import WordingStudio from "./WordingStudio";
 
@@ -22,6 +23,8 @@ export default async function WordingPage() {
 
   const sampleDate = new Date();
   sampleDate.setDate(sampleDate.getDate() + 30);
+  const defaultTestEmail =
+    (await getSetting("admin_email")) || process.env.EMAIL_ADMIN_TO || "";
 
   return (
     <div className="space-y-6">
@@ -48,6 +51,7 @@ export default async function WordingPage() {
         instagramUrl={identity.instagramUrl ?? ""}
         youtubeUrl={identity.youtubeUrl ?? ""}
         sampleExpiryLabel={formatExpiryLabel(sampleDate)}
+        defaultTestEmail={defaultTestEmail}
       />
     </div>
   );
