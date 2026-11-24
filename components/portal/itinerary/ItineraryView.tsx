@@ -433,7 +433,7 @@ function DayView({ day, stays }: { day: Day; stays: Stay[] }) {
             return day.title === "At Sea" ? (
               <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-4 text-center">
                 <p className="text-sm text-gray-600">
-                  🌊 Day at sea — nothing scheduled. Enjoy the ship.
+                  🌊 Day at sea: nothing scheduled. Enjoy the ship.
                 </p>
               </div>
             ) : (

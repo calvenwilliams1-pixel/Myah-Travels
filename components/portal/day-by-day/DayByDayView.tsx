@@ -60,7 +60,7 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
       <div className="day-by-day-banner bg-primary/5 border border-primary/20 rounded-lg p-6 text-center">
         <p className="text-2xl mb-2">🌴</p>
         <p className="text-lg font-semibold text-gray-900">Welcome home</p>
-        <p className="text-sm text-gray-600">Safe travels — see you on the next one.</p>
+        <p className="text-sm text-gray-600">Safe travels. See you on the next one.</p>
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function DayByDayView({ dayByDay, itineraryTitle }: DayByDayViewP
           {day.title === "At Sea"
             ? "Day at sea"
             : day.title
-              ? `Day ${day.dayNumber} — ${day.title.replace(/^(Embark|Disembark) — /, "")}`
+              ? `Day ${day.dayNumber}: ${day.title.replace(/^(Embark|Disembark) — /, "")}`
               : `Day ${day.dayNumber} · ${formatDate(day.date)}`}
         </p>
         <p className="text-xs text-gray-600">

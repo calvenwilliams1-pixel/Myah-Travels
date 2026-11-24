@@ -67,7 +67,7 @@ export default function WallItemRenderer({
         )}
         {!embeddable && fileUrl && (
           <p className="text-xs text-gray-500 mt-1">
-            {ext === "doc" || ext === "docx" ? "Word document" : "Office document"} — download to open.
+            {ext === "doc" || ext === "docx" ? "Word document" : "Office document"}: download to open.
           </p>
         )}
         {fileUrl && (
