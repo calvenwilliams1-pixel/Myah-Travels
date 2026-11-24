@@ -1,5 +1,6 @@
 import React from "react";
 import QuickActions from "./components/QuickActions";
+import DashboardNote from "./components/DashboardNote";
 import GettingStartedCard from "./components/GettingStartedCard";
 import RecentPosts from "./components/RecentPosts";
 import ClientInquiries from "./components/ClientInquiries";
@@ -33,6 +34,8 @@ export default async function DashboardPage() {
       )}
 
       <GettingStartedCard />
+
+      <DashboardNote />
 
       <QuickActions />
 
