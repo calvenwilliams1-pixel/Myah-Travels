@@ -135,12 +135,15 @@ export default function PortalWall({
             <p className="text-gray-600">No content yet. Check back soon!</p>
           </div>
         ) : (
-          <div className="lg:grid lg:grid-cols-[1fr,320px] lg:gap-6">
+          <div className="md:grid md:grid-cols-[1fr,320px] md:gap-6">
             {/* Grid column */}
             <div>
-              {/* Mobile: glance renders inline above grid */}
+              {/* Small screens: glance renders inline above grid. The
+                  two-column layout starts at md (768px), not lg, so a
+                  phone in desktop mode (~980px wide) gets the real
+                  desktop layout with the sidebar. */}
               {hasGlance && (
-                <div className={`lg:hidden md:max-h-[calc(100vh-2rem)] md:overflow-y-auto mb-6 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance" style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
+                <div className={`md:hidden mb-6 relative font-sans ${!isClient && glanceItem && glanceItem.isVisible === false ? "opacity-40" : ""}`} data-wall-item data-variant="glance" style={fontPairingOverrideVars(glanceItem?.itineraryFontPairing)}>
                   {!isClient && glanceItem && glanceItem.isVisible === false && (
                     <span className="absolute top-2 right-2 z-10 text-xs bg-gray-800 text-white px-2 py-0.5 rounded">
                       Hidden
@@ -162,7 +165,7 @@ export default function PortalWall({
                   <p className="text-gray-600">No tiles yet.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {gridItems.map((item) => {
                     if (
                       item.sourceType !== "itinerary" &&
@@ -204,7 +207,7 @@ export default function PortalWall({
             {/* Desktop: glance sidebar sticky right */}
             {hasGlance && (
               <aside
-                className="hidden lg:block"
+                className="hidden md:block"
                 data-wall-item
                 data-variant="glance"
               >
