@@ -3,6 +3,7 @@ import {
   deriveGlance,
   deriveDayByDay,
 } from "./derive";
+import { todayISOInTimezone } from "./dates";
 import type { GlanceData, DayByDayState } from "./derive";
 
 interface PortalItemLike {
@@ -53,7 +54,11 @@ export async function attachDerivedItems<T extends PortalItemLike>(
         }
 
         if (isGlance) {
-          const glance = deriveGlance(full);
+          // Condense against "today" in the itinerary's own timezone,
+          // so finished days drop out of the summary as the trip goes.
+          const glance = deriveGlance(full, {
+            todayISO: todayISOInTimezone((full as any).timezone ?? null),
+          });
           return { ...item, glance, itineraryFontPairing: full.fontPairing ?? null };
         }
 

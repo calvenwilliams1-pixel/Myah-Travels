@@ -66,7 +66,7 @@ export default function ItineraryGlanceView({ glance }: ItineraryGlanceViewProps
       </h2>
 
       {glance.days.length === 0 && (
-        <p className="text-gray-600 italic">No days in this itinerary yet.</p>
+        <p className="text-gray-600 italic">No upcoming days to show.</p>
       )}
 
       <div className="space-y-4">

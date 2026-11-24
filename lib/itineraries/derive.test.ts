@@ -374,4 +374,36 @@ describe("deriveGlance", () => {
       "transport",
     ]);
   });
+
+  it("condensing: finished days drop out, remaining days keep their numbers", () => {
+    const full = fixture({
+      sections: [
+        section({
+          days: [
+            day({ date: "2026-01-01" }),
+            day({ date: "2026-01-02" }),
+            day({ date: "2026-01-03" }),
+            day({ date: "2026-01-04" }),
+          ],
+        }),
+      ],
+    });
+    const result = deriveGlance(full, { todayISO: "2026-01-03" });
+    expect(result.days.map((d) => d.date)).toEqual(["2026-01-03", "2026-01-04"]);
+    expect(result.days.map((d) => d.dayNumber)).toEqual([3, 4]);
+  });
+
+  it("condensing: before the trip everything shows; after it, nothing", () => {
+    const full = fixture({
+      sections: [
+        section({
+          days: [day({ date: "2026-01-01" }), day({ date: "2026-01-02" })],
+        }),
+      ],
+    });
+    expect(deriveGlance(full, { todayISO: "2025-12-31" }).days).toHaveLength(2);
+    expect(deriveGlance(full, { todayISO: "2026-01-03" }).days).toHaveLength(0);
+    // No todayISO (admin tools, older callers): never condenses.
+    expect(deriveGlance(full).days).toHaveLength(2);
+  });
 });
