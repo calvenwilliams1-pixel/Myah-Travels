@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   await updateLibraryItem(id, updates as any);
 
   return NextResponse.json({ success: true });
- } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: error.status }); } throw e; } }
+ } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) { try {
   const user = await requireAuth();

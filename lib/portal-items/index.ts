@@ -91,6 +91,7 @@ export async function getPortalItemsWithContent(portalId: number) {
 
       return {
         ...item,
+        isMissing: false,
         resolvedTitle: item.title ?? "",
         resolvedDescription: item.description ?? null,
         resolvedType: item.type ?? "pdf",
