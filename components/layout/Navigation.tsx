@@ -8,7 +8,9 @@ export const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/videos", label: "Videos" },
   { href: "/about", label: "About" },
-  { href: "/faq", label: "FAQ" },
+  // No FAQ link: Myah decided against an FAQ page for now (2026-11-24),
+  // and the page has no content. The /faq route itself stays; if she
+  // ever wants one, the link comes back here and in the footer.
   { href: "/privacy", label: "Privacy" },
   { href: "/contact", label: "Contact" },
 ];
