@@ -41,12 +41,15 @@ interface PortalWallProps {
   portal: PortalWallPortal;
   items: PortalWallItem[];
   mode?: "client" | "admin-preview";
+  /** Site brand colours for the default hero treatment. */
+  brand?: { from: string; to: string };
 }
 
 export default function PortalWall({
   portal,
   items,
   mode = "client",
+  brand,
 }: PortalWallProps) {
   const isClient = mode === "client";
   const visibleItems = isClient ? items.filter((i) => i.isVisible !== false) : items;
@@ -91,7 +94,9 @@ export default function PortalWall({
           title={portal.heroTitle || portal.name}
           subtitle={subtitle}
           image={portal.heroImage}
-          preset={portal.heroPreset || "minimal"}
+          preset={portal.heroPreset || "brand"}
+          brandFrom={brand?.from}
+          brandTo={brand?.to}
         />
       </div>
 

@@ -5,6 +5,9 @@ interface HeroBannerProps {
   subtitle?: string;
   image?: string | null;
   preset: string;
+  /** Site brand colours for the "brand" preset (Settings palette). */
+  brandFrom?: string;
+  brandTo?: string;
 }
 
 // Preset stops are chosen so white text meets the contrast floor
@@ -21,7 +24,7 @@ const PRESETS: Record<string, string> = {
   sunset: "bg-gradient-to-r from-rose-600 to-orange-600 text-white",
 };
 
-export default function HeroBanner({ title, subtitle, image, preset }: HeroBannerProps) {
+export default function HeroBanner({ title, subtitle, image, preset, brandFrom, brandTo }: HeroBannerProps) {
   if (image) {
     return (
       <div className="relative w-full h-64 md:h-80 overflow-hidden">
@@ -38,6 +41,22 @@ export default function HeroBanner({ title, subtitle, image, preset }: HeroBanne
             {subtitle && <p className="text-lg mt-2 text-white/90">{subtitle}</p>}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // The default house style: a gradient in the site's own brand
+  // colours, so a portal looks styled before anyone picks anything.
+  if (preset === "brand") {
+    const from = brandFrom || "#4a7c59";
+    const to = brandTo || "#33573f";
+    return (
+      <div
+        className="w-full py-16 text-center text-white"
+        style={{ background: `linear-gradient(120deg, ${from} 0%, ${to} 100%)` }}
+      >
+        <h1 className="text-3xl md:text-4xl font-bold">{title}</h1>
+        {subtitle && <p className="text-lg mt-2 text-white/90">{subtitle}</p>}
       </div>
     );
   }
