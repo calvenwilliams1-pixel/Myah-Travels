@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import type { TagPersonLink } from "@/lib/notepad/resolve-tag-person-links";
 import NotepadEntryForm from "@/components/admin/notepad/NotepadEntryForm";
+import PortalTabs from "@/components/admin/portals/PortalTabs";
 
 interface NotepadEntry {
   id: number;
@@ -74,6 +75,7 @@ export default function NotepadPage() {
 
   return (
     <div className="space-y-6">
+      <PortalTabs portalId={portalId} />
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Admin Notepad</h2>

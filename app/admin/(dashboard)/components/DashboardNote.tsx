@@ -12,8 +12,8 @@ import { dismissDashboardNote } from "../note-actions";
  * component holds the current release's note and no other.
  */
 const CURRENT_NOTE = {
-  id: "r2",
-  text: "Your main jobs have big buttons now, at the top of this page.",
+  id: "r3",
+  text: "Inside a trip portal, tabs at the top now take you between Members, Wall, Itinerary and Notepad.",
 };
 
 export default async function DashboardNote() {

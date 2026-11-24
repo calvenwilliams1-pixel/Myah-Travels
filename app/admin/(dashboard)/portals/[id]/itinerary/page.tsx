@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/toast/ToastProvider";
+import PortalTabs from "@/components/admin/portals/PortalTabs";
 
 interface Itinerary {
   id: number;
@@ -85,6 +86,7 @@ export default function ItineraryListPage() {
 
   return (
     <div className="space-y-6">
+      <PortalTabs portalId={portalId} />
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Itineraries</h2>
         <div className="flex gap-3">
