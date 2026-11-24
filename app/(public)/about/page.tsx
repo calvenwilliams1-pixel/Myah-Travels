@@ -1,5 +1,6 @@
 import React from "react";
 import { getAllSettings } from "@/lib/settings";
+import { WORDING_BY_KEY } from "@/lib/wording/registry";
 import { Card } from "@/components/ui/Card";
 
 export const revalidate = 3600;
@@ -12,8 +13,10 @@ export const metadata = {
 export default async function AboutPage() {
   const settings = await getAllSettings();
 
-  const bio = settings.bio_text || 
-    "Black mom of three and wife to the mushroom king, I've always loved to travel almost as much as I love to create a new world through writing. I'm at this beautiful point in my life where I want to combine my love for both and share that with you all.";
+  // The fallback paragraph is the wording registry's bio_text
+  // default, so the About page and the Wording editor share one
+  // source for it.
+  const bio = settings.bio_text || WORDING_BY_KEY.bio_text.defaultValue;
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4">

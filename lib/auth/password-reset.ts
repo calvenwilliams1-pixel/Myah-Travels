@@ -5,6 +5,7 @@ import { users, passwordResetTokens } from "@/drizzle/schema";
 import { hashPassword, revokeTrustedDevices, lucia } from "@/lib/auth";
 import { queueEmail } from "@/lib/email";
 import { passwordResetEmail } from "@/lib/email/templates";
+import { loadEmailIdentity } from "@/lib/wording";
 
 // Forgot-password flow for admin accounts. Admin users have no email
 // address on their record, so reset links are sent to the site's admin
@@ -54,7 +55,8 @@ export async function requestPasswordReset(username: string): Promise<void> {
 
   const siteUrl = process.env.SITE_URL || "http://localhost:3000";
   const resetUrl = `${siteUrl}/admin/reset-password?token=${token}`;
-  const email = passwordResetEmail(user.username, resetUrl);
+  const identity = await loadEmailIdentity();
+  const email = passwordResetEmail(user.username, resetUrl, identity.siteName);
   await queueEmail({
     toEmail: adminEmail,
     subject: email.subject,

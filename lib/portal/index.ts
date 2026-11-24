@@ -7,12 +7,12 @@ import {
   portalNotices,
   portalDocuments,
   portalFaqs,
-  settings,
 } from "@/drizzle/schema";
 import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import crypto from "crypto";
 import { queueEmail, queueBulkEmails, isEmailSuppressed } from "@/lib/email";
 import { magicLinkEmail, portalNoticeEmail, globalAnnouncementEmail } from "@/lib/email/templates";
+import { getInviteCopy, loadEmailIdentity, formatExpiryLabel } from "@/lib/wording";
 // (Settings are read straight from the table here — lib/settings
 // uses React's cache(), which only exists in the server runtime.)
 import { logActivity } from "@/lib/logging";
@@ -506,22 +506,20 @@ export async function sendMagicLinkToMember(
 
   const linkUrl = `${process.env.SITE_URL || "http://localhost:3000"}/portal/access/${token}`;
   // Promo portal links never expire — the email says so instead of
-  // printing a date a century out.
+  // printing a date a century out. The date label's timezone is
+  // pinned to America/Toronto inside formatExpiryLabel.
   const expiresOnLabel = portal.isPromo
     ? null
-    : getMagicLinkExpiry(portal).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
-  // The email wears the site's current brand colour (Settings →
-  // primary_color), so it follows when Myah re-themes the site.
-  const brandRows = await db
-    .select()
-    .from(settings)
-    .where(eq(settings.key, "primary_color"))
-    .limit(1);
-  const email = magicLinkEmail(member.name, portal.name, linkUrl, expiresOnLabel, brandRows[0]?.value ?? null);
+    : formatExpiryLabel(getMagicLinkExpiry(portal));
+  // The email wears the site's current identity (Settings): brand
+  // colour, site name, social URLs, and Myah's editable wording.
+  const [copy, identity] = await Promise.all([getInviteCopy(), loadEmailIdentity()]);
+  const email = magicLinkEmail(member.name, portal.name, linkUrl, expiresOnLabel, identity.primaryColor, {
+    copy,
+    siteName: identity.siteName,
+    instagramUrl: identity.instagramUrl,
+    youtubeUrl: identity.youtubeUrl,
+  });
   const id = await queueEmail({
     toEmail: member.email,
     subject: email.subject,
@@ -562,6 +560,7 @@ export async function createPortalNotice(
   const portal = await getPortalById(portalId);
   const members = await getPortalMembers(portalId);
 
+  const identity = await loadEmailIdentity();
   if (data.isGlobalAnnouncement) {
     const allMembers = await db.select().from(portalMembers).where(isNull(portalMembers.deletedAt));
     const seenEmails = new Set<string>();
@@ -571,8 +570,8 @@ export async function createPortalNotice(
       const normalizedEmail = member.email.toLowerCase();
       if (seenEmails.has(normalizedEmail)) continue;
       seenEmails.add(normalizedEmail);
-      
-      const email = globalAnnouncementEmail(member.name, data.title, data.content);
+
+      const email = globalAnnouncementEmail(member.name, data.title, data.content, identity.siteName);
       emails.push({ toEmail: member.email, subject: email.subject, body: email.html });
     }
     await queueBulkEmails(emails);
@@ -580,7 +579,7 @@ export async function createPortalNotice(
     const emails = [];
     for (const member of members) {
       const portalUrl = `${process.env.SITE_URL || "http://localhost:3000"}/portal/${portal.slug}`;
-      const email = portalNoticeEmail(member.name, portal.name, data.title, data.content, portalUrl);
+      const email = portalNoticeEmail(member.name, portal.name, data.title, data.content, portalUrl, identity.siteName);
       emails.push({ toEmail: member.email, subject: email.subject, body: email.html });
     }
     await queueBulkEmails(emails);

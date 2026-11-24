@@ -6,6 +6,7 @@ import { getFullItinerary } from "@/lib/itineraries";
 import { logActivity } from "@/lib/logging";
 import ItineraryView from "@/components/portal/itinerary/ItineraryView";
 import { getAllSettings } from "@/lib/settings";
+import { getWording } from "@/lib/wording";
 
 export const dynamic = "force-dynamic";
 
@@ -58,12 +59,13 @@ export default async function ClientItineraryPage({
   );
 }
 
-function SessionExpired() {
+async function SessionExpired() {
+  const wording = await getWording();
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold mb-4">Session Expired</h1>
-        <p className="text-gray-600">Please use a new access link.</p>
+        <h1 className="text-2xl font-semibold mb-4">{wording.session_heading}</h1>
+        <p className="text-gray-600">{wording.session_body}</p>
       </div>
     </div>
   );

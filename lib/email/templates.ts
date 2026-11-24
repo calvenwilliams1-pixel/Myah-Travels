@@ -1,6 +1,17 @@
+import {
+  resolveInviteCopy,
+  substituteTokens,
+  type InviteCopy,
+} from "@/lib/wording/registry";
+
 const BRAND_COLOR = "#4a7c59";
 const SITE_NAME = "MyCalTravels";
 const SITE_URL = process.env.SITE_URL || "https://myahtravels.com";
+// Used only when a caller does not pass the Settings values (tests,
+// older call sites). Production sends pass the real settings, and an
+// empty setting hides the link instead of rendering a dead one.
+const DEFAULT_INSTAGRAM_URL = "https://www.instagram.com/mycaltravels";
+const DEFAULT_YOUTUBE_URL = "https://youtube.com/@mycaltravels";
 
 function escapeHtml(input: string): string {
   return input
@@ -11,7 +22,27 @@ function escapeHtml(input: string): string {
     .replace(/'/g, "&#x27;");
 }
 
-function baseTemplate(content: string): string {
+/**
+ * Escape a wording string for HTML without touching quotes, so the
+ * registry defaults (which contain apostrophes) render byte-for-byte
+ * as the old hardcoded strings did. Token substitution happens after
+ * this, with already-escaped values.
+ */
+function escapeText(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** The site name from Settings when given, else the built-in name. */
+function resolveSiteName(raw?: string | null): string {
+  const value = (raw ?? "").trim();
+  return value || SITE_NAME;
+}
+
+function baseTemplate(content: string, siteName?: string | null): string {
+  const name = resolveSiteName(siteName);
   return `
 <!DOCTYPE html>
 <html>
@@ -23,12 +54,12 @@ function baseTemplate(content: string): string {
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background-color: #ffffff; border-radius: 12px; padding: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: ${BRAND_COLOR}; font-size: 24px; margin: 0;">${SITE_NAME}</h1>
+        <h1 style="color: ${BRAND_COLOR}; font-size: 24px; margin: 0;">${name}</h1>
       </div>
       ${content}
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
         <p style="color: #999; font-size: 12px; margin: 0;">
-          © ${new Date().getFullYear()} ${SITE_NAME}. All rights reserved.
+          © ${new Date().getFullYear()} ${name}. All rights reserved.
         </p>
       </div>
     </div>
@@ -51,8 +82,43 @@ function resolveBrandColor(raw?: string | null): string {
   return /^#[0-9a-fA-F]{6}$/.test(value) ? value : BRAND_COLOR;
 }
 
-function magicLinkShell(content: string, brand: string): string {
+interface MagicLinkShellOptions {
+  siteName?: string | null;
+  instagramUrl?: string | null;
+  youtubeUrl?: string | null;
+  /** Already rendered (escaped, tokens filled) by magicLinkEmail. */
+  footerReason: string;
+}
+
+function magicLinkShell(
+  content: string,
+  brand: string,
+  options: MagicLinkShellOptions
+): string {
+  const name = resolveSiteName(options.siteName);
   const heroUrl = `${SITE_URL}/images/welcome-banner.jpg`;
+  // A social link renders only when its Settings URL is non-empty;
+  // an empty handle hides the link instead of pointing nowhere.
+  const socialLinks: string[] = [];
+  const instagramUrl = (options.instagramUrl ?? "").trim();
+  const youtubeUrl = (options.youtubeUrl ?? "").trim();
+  if (instagramUrl) {
+    socialLinks.push(
+      `<a href="${escapeHtml(instagramUrl)}" style="color: ${brand}; text-decoration: none; font-weight: 600;">Instagram</a>`
+    );
+  }
+  if (youtubeUrl) {
+    socialLinks.push(
+      `<a href="${escapeHtml(youtubeUrl)}" style="color: ${brand}; text-decoration: none; font-weight: 600;">YouTube</a>`
+    );
+  }
+  const socialParagraph = socialLinks.length
+    ? `
+              <p style="margin: 0 0 6px; color: #666666; font-size: 13px;">
+                Follow along:
+                ${socialLinks.join("\n                &nbsp;·&nbsp;\n                ")}
+              </p>`
+    : "";
   return `
 <!DOCTYPE html>
 <html>
@@ -67,25 +133,19 @@ function magicLinkShell(content: string, brand: string): string {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden;">
           <tr>
             <td style="background-color: ${brand}; padding: 18px 40px; text-align: center;">
-              <span style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; letter-spacing: 0.5px;">${SITE_NAME}</span>
+              <span style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; letter-spacing: 0.5px;">${name}</span>
             </td>
           </tr>
           <tr>
             <td style="padding: 0; line-height: 0;">
-              <img src="${heroUrl}" width="600" alt="Travel with ${SITE_NAME}" style="display: block; width: 100%; max-width: 600px; height: auto;">
+              <img src="${heroUrl}" width="600" alt="Travel with ${name}" style="display: block; width: 100%; max-width: 600px; height: auto;">
             </td>
           </tr>
           ${content}
           <tr>
-            <td style="padding: 22px 40px 30px; text-align: center; border-top: 1px solid #eeeeee;">
-              <p style="margin: 0 0 6px; color: #666666; font-size: 13px;">
-                Follow along:
-                <a href="https://www.instagram.com/mycaltravels" style="color: ${brand}; text-decoration: none; font-weight: 600;">Instagram</a>
-                &nbsp;·&nbsp;
-                <a href="https://youtube.com/@mycaltravels" style="color: ${brand}; text-decoration: none; font-weight: 600;">YouTube</a>
-              </p>
+            <td style="padding: 22px 40px 30px; text-align: center; border-top: 1px solid #eeeeee;">${socialParagraph}
               <p style="margin: 0; color: #aaaaaa; font-size: 12px;">
-                © ${new Date().getFullYear()} ${SITE_NAME}. You're receiving this because Myah added you to a client portal.
+                © ${new Date().getFullYear()} ${name}. ${options.footerReason}
               </p>
             </td>
           </tr>
@@ -98,6 +158,21 @@ function magicLinkShell(content: string, brand: string): string {
   `.trim();
 }
 
+export interface MagicLinkEmailOptions {
+  /**
+   * The invite wording (Settings overrides over registry defaults),
+   * resolved by the caller. Omit it and the registry defaults render,
+   * which is what the pre-R1 hardcoded email said, apart from the
+   * plan's five deliberate day-one line changes.
+   */
+  copy?: InviteCopy;
+  /** Settings site_name; the shell wears it instead of a constant. */
+  siteName?: string | null;
+  /** Settings social URLs; an empty one hides its footer link. */
+  instagramUrl?: string | null;
+  youtubeUrl?: string | null;
+}
+
 export function magicLinkEmail(
   memberName: string | null,
   portalName: string,
@@ -107,38 +182,53 @@ export function magicLinkEmail(
   expiresOnLabel: string | null,
   // The site's current primary colour (Settings), so the email
   // follows the site's theme. Falls back to the default brand green.
-  brandColor?: string | null
+  brandColor?: string | null,
+  options?: MagicLinkEmailOptions
 ): { subject: string; html: string } {
   const brand = resolveBrandColor(brandColor);
+  const copy = options?.copy ?? resolveInviteCopy({});
   const displayName = escapeHtml(memberName || "there");
   const safePortalName = escapeHtml(portalName);
-  const expiryParagraph =
-    expiresOnLabel === null
-      ? `<p style="color: #999999; font-size: 13px; line-height: 1.6; text-align: center; margin: 0;">
-      This link doesn't expire — save it and come back any time. If you lose it, contact Myah for a new one.
-    </p>`
-      : `<p style="color: #999999; font-size: 13px; line-height: 1.6; text-align: center; margin: 0;">
-      This link expires on ${escapeHtml(expiresOnLabel)}. If you need a new link, contact Myah.
+  const isPromo = expiresOnLabel === null;
+
+  // Wording renders the same way for the real send, the admin preview
+  // and the test send, because all three call this one function: the
+  // stored words are escaped as text, then the tokens are filled with
+  // escaped values. In the body, the portal name renders bold, as it
+  // did in the hardcoded email.
+  const subs = {
+    name: displayName,
+    portal: safePortalName,
+    date: expiresOnLabel ? escapeHtml(expiresOnLabel) : "",
+  };
+  const render = (text: string) => substituteTokens(escapeText(text), subs);
+  const renderBody = (text: string) =>
+    substituteTokens(escapeText(text), {
+      ...subs,
+      portal: `<strong>${safePortalName}</strong>`,
+    });
+
+  const expiryText = isPromo
+    ? render(copy.expiryPromo)
+    : render(copy.expiryTrip);
+  const expiryParagraph = `<p style="color: #999999; font-size: 13px; line-height: 1.6; text-align: center; margin: 0;">
+      ${expiryText}
     </p>`;
 
   const content = `
           <tr>
             <td style="padding: 36px 40px 30px;">
               <p style="color: ${brand}; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 10px;">
-                Your portal is ready
+                ${render(copy.eyebrow)}
               </p>
               <h1 style="font-family: Georgia, 'Times New Roman', serif; color: #222222; font-size: 27px; line-height: 1.25; margin: 0 0 16px;">
                 ${safePortalName}
               </h1>
               <p style="color: #555555; font-size: 16px; line-height: 1.6; margin: 0 0 8px;">
-                Hi ${displayName},
+                ${render(copy.greeting)}
               </p>
               <p style="color: #555555; font-size: 16px; line-height: 1.6; margin: 0;">
-                You've been added to the <strong>${safePortalName}</strong> portal — ${
-                  expiresOnLabel === null
-                    ? "that's where Myah shares sample itineraries, travel ideas and offers, just for you."
-                    : "that's where your trip information, documents and updates live."
-                } Click below to step inside.
+                ${renderBody(isPromo ? copy.bodyPromo : copy.bodyTrip)}
               </p>
               <div style="text-align: center; margin: 30px 0 22px;">
                 <a href="${magicLinkUrl}" style="display: inline-block; background-color: ${brand}; color: #ffffff; padding: 15px 42px; border-radius: 999px; text-decoration: none; font-size: 16px; font-weight: 600;">
@@ -146,22 +236,35 @@ export function magicLinkEmail(
                 </a>
               </div>
               <p style="color: #aaaaaa; font-size: 12px; line-height: 1.6; text-align: center; margin: 0 0 26px;">
-                Button not working? Copy this link into your browser:<br>
+                ${render(copy.fallbackHint)}<br>
                 <a href="${magicLinkUrl}" style="color: ${brand}; word-break: break-all;">${magicLinkUrl}</a>
               </p>
               ${expiryParagraph}
             </td>
           </tr>`;
 
+  // Subjects are plain text, not HTML: fill the tokens with the
+  // escaped values (as the old template did), then strip CR/LF so a
+  // portal name containing a newline can never inject a header.
+  const subject = substituteTokens(copy.subject, subs).replace(/[\r\n]+/g, " ");
+
   return {
-    subject: `Your ${safePortalName} Access Link`,
-    html: magicLinkShell(content, brand),
+    subject,
+    html: magicLinkShell(content, brand, {
+      siteName: options?.siteName,
+      instagramUrl:
+        options?.instagramUrl === undefined ? DEFAULT_INSTAGRAM_URL : options.instagramUrl,
+      youtubeUrl:
+        options?.youtubeUrl === undefined ? DEFAULT_YOUTUBE_URL : options.youtubeUrl,
+      footerReason: render(copy.footerReason),
+    }),
   };
 }
 
 export function passwordResetEmail(
   username: string,
-  resetUrl: string
+  resetUrl: string,
+  siteName?: string | null
 ): { subject: string; html: string } {
   const safeUsername = escapeHtml(username);
 
@@ -187,7 +290,7 @@ export function passwordResetEmail(
 
   return {
     subject: "Reset your MyCalTravels password",
-    html: baseTemplate(content),
+    html: baseTemplate(content, siteName),
   };
 }
 
@@ -195,7 +298,8 @@ export function inquiryNotificationEmail(
   clientName: string,
   destination: string | null,
   clientEmail: string | null,
-  clientPhone: string | null
+  clientPhone: string | null,
+  siteName?: string | null
 ): { subject: string; html: string } {
   const safeName = escapeHtml(clientName);
   const safeDest = escapeHtml(destination || "Not specified");
@@ -227,7 +331,7 @@ export function inquiryNotificationEmail(
 
   return {
     subject: `New Client Inquiry: ${safeName}`,
-    html: baseTemplate(content),
+    html: baseTemplate(content, siteName),
   };
 }
 
@@ -236,7 +340,8 @@ export function portalNoticeEmail(
   portalName: string,
   noticeTitle: string,
   noticeContent: string,
-  portalUrl: string
+  portalUrl: string,
+  siteName?: string | null
 ): { subject: string; html: string } {
   const safeName = escapeHtml(memberName || "there");
   const safePortalName = escapeHtml(portalName);
@@ -263,15 +368,17 @@ export function portalNoticeEmail(
 
   return {
     subject: `[${safePortalName}] ${safeTitle}`,
-    html: baseTemplate(content),
+    html: baseTemplate(content, siteName),
   };
 }
 
 export function globalAnnouncementEmail(
   memberName: string | null,
   announcementTitle: string,
-  announcementContent: string
+  announcementContent: string,
+  siteName?: string | null
 ): { subject: string; html: string } {
+  const name = resolveSiteName(siteName);
   const safeName = escapeHtml(memberName || "there");
   const safeTitle = escapeHtml(announcementTitle);
   const safeContent = escapeHtml(announcementContent);
@@ -285,14 +392,14 @@ export function globalAnnouncementEmail(
       ${safeContent}
     </p>
     <p style="color: #999; font-size: 12px; margin-top: 30px;">
-      You're receiving this because you're a member of a ${SITE_NAME} travel portal.
+      You're receiving this because you're a member of a ${name} travel portal.
       <br>
       <a href="${SITE_URL}/unsubscribe" style="color: #999;">Unsubscribe from global announcements</a>
     </p>
   `;
 
   return {
-    subject: `Important Update from ${SITE_NAME}`,
-    html: baseTemplate(content),
+    subject: `Important Update from ${name}`,
+    html: baseTemplate(content, siteName),
   };
 }

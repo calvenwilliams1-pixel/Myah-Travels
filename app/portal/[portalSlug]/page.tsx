@@ -6,6 +6,7 @@ import { attachDerivedItems } from "@/lib/itineraries/attach-derived-items";
 import { logActivity } from "@/lib/logging";
 import PortalWall from "@/components/portal/PortalWall";
 import { getAllSettings } from "@/lib/settings";
+import { getWording } from "@/lib/wording";
 import { darkenHex } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
@@ -60,12 +61,13 @@ export default async function PortalDashboardPage({ params }: { params: { portal
   return <PortalWall portal={portal} items={itemsWithDerived} brand={brand} />;
 }
 
-function SessionExpired() {
+async function SessionExpired() {
+  const wording = await getWording();
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold mb-4">Session Expired</h1>
-        <p className="text-gray-600">Your session has expired. Please use a new access link.</p>
+        <h1 className="text-2xl font-semibold mb-4">{wording.session_heading}</h1>
+        <p className="text-gray-600">{wording.session_body}</p>
       </div>
     </div>
   );
