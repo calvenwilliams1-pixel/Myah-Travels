@@ -127,8 +127,25 @@ export async function GET(
       .limit(1);
 
     if (candidates.length === 0) {
-      // Not a portal-attached file — deny
-      return new NextResponse("Forbidden", { status: 403 });
+      // Library documents live on the content_library row, not on
+      // portal_items — a file Myah uploaded once and attached to this
+      // portal must open for its clients too.
+      const libraryCandidates = await db
+        .select({ id: contentLibrary.id })
+        .from(portalItems)
+        .innerJoin(contentLibrary, eq(portalItems.contentLibraryId, contentLibrary.id))
+        .where(
+          and(
+            eq(portalItems.portalId, portalIdForSession),
+            like(contentLibrary.filePath, `%${rel}`)
+          )
+        )
+        .limit(1);
+
+      if (libraryCandidates.length === 0) {
+        // Not a portal-attached file — deny
+        return new NextResponse("Forbidden", { status: 403 });
+      }
     }
   }
 

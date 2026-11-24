@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import TipTapEditor from "@/components/editor/TipTapEditor";
 
 interface AddContentModalProps {
   onClose: () => void;
@@ -118,7 +119,7 @@ export default function AddContentModal({ onClose, onSaved }: AddContentModalPro
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {type === "text" ? "Write a notice or message" : "PDF or image - type detected automatically"}
+              {type === "text" ? "Write it right here, with formatting" : "PDF, Word or image - type detected automatically"}
             </p>
           </div>
 
@@ -144,7 +145,7 @@ export default function AddContentModal({ onClose, onSaved }: AddContentModalPro
               </label>
               <input
                 type="file"
-                accept=".pdf,image/*"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) {
@@ -160,13 +161,13 @@ export default function AddContentModal({ onClose, onSaved }: AddContentModalPro
           ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-              <textarea
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="Enter content..."
-              />
+              <div className="border border-gray-300 rounded-lg overflow-hidden [&_.ProseMirror]:min-h-[160px]">
+                <TipTapEditor
+                  initialContent=""
+                  onChange={(html) => setTextContent(html)}
+                  placeholder="Write the document or note..."
+                />
+              </div>
             </div>
           )}
 

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import TipTapEditor from "@/components/editor/TipTapEditor";
 
 interface PortalSpecificItemModalProps {
   portalId: number;
@@ -108,7 +109,7 @@ export default function PortalSpecificItemModal({ portalId, onClose, onSaved }: 
                     type === t ? "bg-primary text-white" : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {t.toUpperCase()}
+                  {t === "pdf" ? "FILE" : t.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -132,22 +133,22 @@ export default function PortalSpecificItemModal({ portalId, onClose, onSaved }: 
           {type === "text" ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-              <textarea
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="Enter content..."
-              />
+              <div className="border border-gray-300 rounded-lg overflow-hidden [&_.ProseMirror]:min-h-[160px]">
+                <TipTapEditor
+                  initialContent=""
+                  onChange={(html) => setTextContent(html)}
+                  placeholder="Write the note or document..."
+                />
+              </div>
             </div>
           ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Upload {type.toUpperCase()}
+                Upload {type === "pdf" ? "file (PDF or Word)" : type.toUpperCase()}
               </label>
               <input
                 type="file"
-                accept={type === "pdf" ? ".pdf" : "image/*"}
+                accept={type === "pdf" ? ".pdf,.doc,.docx,.xls,.xlsx" : "image/*"}
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                 className="w-full"
               />
