@@ -98,13 +98,25 @@ async function renderSampleInvite(values: Record<string, string>) {
 }
 
 export async function sendTestInviteEmail(
-  values: Record<string, string>
+  values: Record<string, string>,
+  toAddress?: string
 ): Promise<{ ok: true; to: string } | { error: string }> {
   await requireAuth();
-  const to =
-    (await getSetting("admin_email")) || process.env.EMAIL_ADMIN_TO || "";
-  if (!to) {
-    return { error: "There is no admin email address on file to send the test to." };
+  // The studio has a field for the test address, so she can send the
+  // test to her own inbox (or any address she types) instead of
+  // whatever admin address happens to be on file. No typed address
+  // falls back to the admin address, as before.
+  const typed = (toAddress ?? "").trim();
+  let to = typed;
+  if (to) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      return { error: "That email address doesn't look right. Check it and try again." };
+    }
+  } else {
+    to = (await getSetting("admin_email")) || process.env.EMAIL_ADMIN_TO || "";
+    if (!to) {
+      return { error: "Type the email address to send the test to." };
+    }
   }
   const email = await renderSampleInvite(values);
   const id = await queueEmail({ toEmail: to, subject: email.subject, body: email.html });
