@@ -9,6 +9,7 @@ import { Table } from "@/components/ui/Table";
 import { addMemberAction, removeMemberAction, sendMagicLinksAction, archivePortalAction, deletePortalAction, unbanMemberAction } from "../actions";
 import BanMemberButton from "../BanMemberButton";
 import AddMemberForm from "@/components/admin/portals/AddMemberForm";
+import PortalTabs from "@/components/admin/portals/PortalTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,8 @@ export default async function PortalDetailPage({ params }: { params: { id: strin
           </form>
         </div>
       </div>
+
+      <PortalTabs portalId={portal.id} />
 
       <Card>
         <h3 className="font-semibold mb-4">Members ({members.length})</h3>

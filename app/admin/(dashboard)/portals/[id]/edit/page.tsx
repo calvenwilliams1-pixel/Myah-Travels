@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import DateInput from "@/components/ui/DateInput";
 import HeroEditor from "@/components/admin/portals/HeroEditor";
+import PortalTabs from "@/components/admin/portals/PortalTabs";
 import PortalItemsList from "@/components/admin/portals/PortalItemsList";
 import AttachLibraryModal from "@/components/admin/portals/AttachLibraryModal";
 import PortalSpecificItemModal from "@/components/admin/portals/PortalSpecificItemModal";
@@ -80,6 +81,7 @@ export default function PortalEditPage() {
 
   return (
     <div className="space-y-6">
+      <PortalTabs portalId={portalId} />
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Edit Portal</h2>
         <div className="flex gap-3">
