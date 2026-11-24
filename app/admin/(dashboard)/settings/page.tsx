@@ -35,6 +35,20 @@ export default async function SettingsPage() {
         </div>
       </div>
 
+      <Card>
+        <h3 className="font-semibold mb-2">Words clients read</h3>
+        <p className="text-sm text-gray-600 mb-3">
+          The words in the invite email clients get, on the page they land on, and in
+          the messages they see if a link runs out. Edit them all in one place.
+        </p>
+        <a
+          href="/admin/settings/wording"
+          className="text-sm text-primary hover:text-primary-dark font-medium"
+        >
+          Edit client wording →
+        </a>
+      </Card>
+
       <form action={saveSettingsAction} className="space-y-6">
         <Card>
           <h3 className="font-semibold mb-4">Site Settings</h3>

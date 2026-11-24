@@ -6,6 +6,7 @@ import { validateClientInquiry, getClientIp, formRateLimit } from "@/lib/securit
 import { logActivity } from "@/lib/logging";
 import { queueEmail } from "@/lib/email";
 import { inquiryNotificationEmail } from "@/lib/email/templates";
+import { loadEmailIdentity } from "@/lib/wording";
 
 export async function submitInquiryAction(formData: FormData) {
   const headersList = await headers();
@@ -55,11 +56,13 @@ export async function submitInquiryAction(formData: FormData) {
 
   try {
     const adminEmail = process.env.EMAIL_ADMIN_TO || "myah@example.com";
+    const identity = await loadEmailIdentity();
     const notification = inquiryNotificationEmail(
       data.fullName,
       data.destination || null,
       data.email || null,
-      data.phone || null
+      data.phone || null,
+      identity.siteName
     );
 
     await queueEmail({

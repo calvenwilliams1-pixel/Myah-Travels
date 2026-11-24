@@ -1,10 +1,12 @@
 import React from "react";
 import { validateMagicLink, getPortalById } from "@/lib/portal";
+import { getWording, substituteTokens } from "@/lib/wording";
 import { Button } from "@/components/ui/Button";
 
 export default async function PortalAccessPage({ params }: { params: { token: string } }) {
   const link = await validateMagicLink(params.token);
   const portal = link ? await getPortalById(link.portalId) : null;
+  const wording = await getWording();
   const banner = portal?.heroImage || "/images/welcome-banner.jpg";
 
   const shell = (children: React.ReactNode) => (
@@ -20,10 +22,8 @@ export default async function PortalAccessPage({ params }: { params: { token: st
   if (!link || !portal) {
     return shell(
       <>
-        <h1 className="text-2xl font-semibold mb-4">Link Expired or Invalid</h1>
-        <p className="text-gray-600">
-          This access link is no longer valid. Please contact Myah for a new link.
-        </p>
+        <h1 className="text-2xl font-semibold mb-4">{wording.deadlink_heading}</h1>
+        <p className="text-gray-600">{wording.deadlink_body}</p>
       </>
     );
   }
@@ -31,7 +31,7 @@ export default async function PortalAccessPage({ params }: { params: { token: st
   return shell(
     <>
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-2">
-        Your portal is ready
+        {substituteTokens(wording.invite_eyebrow, { portal: portal.name })}
       </p>
       <h1 className="font-display text-3xl font-semibold mb-3">
         {portal.heroTitle || portal.name}
@@ -44,9 +44,7 @@ export default async function PortalAccessPage({ params }: { params: { token: st
           Continue to Portal
         </Button>
       </form>
-      <p className="text-gray-500 text-sm mt-5">
-        This link is yours — you can re-open it any time.
-      </p>
+      <p className="text-gray-500 text-sm mt-5">{wording.access_note}</p>
     </>
   );
 }
