@@ -17,10 +17,10 @@ export default async function EmailQueuePage({
   const errorMsg = searchParams.error ? decodeURIComponent(searchParams.error) : null;
 
   const cards = [
-    { label: "Pending", value: counts.pending, hint: "Waiting for the next send run" },
-    { label: "Processing", value: counts.processing, hint: "Being sent right now (stuck ones recover automatically after 15 minutes)" },
-    { label: "Sent", value: counts.sent, hint: "Delivered to the email provider" },
-    { label: "Failed", value: counts.failed, hint: "Gave up after 3 attempts — retry below" },
+    { label: "Pending", value: counts.pending, hint: "Waiting to be sent" },
+    { label: "Processing", value: counts.processing, hint: "Being sent right now" },
+    { label: "Sent", value: counts.sent, hint: "Sent on its way" },
+    { label: "Failed", value: counts.failed, hint: "Didn't go through after 3 tries. Send it again below" },
   ];
 
   return (
