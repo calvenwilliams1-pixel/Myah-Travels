@@ -107,6 +107,17 @@ export async function deleteTemplateFromDb(templateId: string): Promise<void> {
   );
 }
 
+/** Slugs of the post-template rows actually stored in the DB. The
+ * Template Manager uses this to tell which built-in starters the
+ * owner has saved her own version of (those can be reset). */
+export async function loadDbTemplateSlugs(): Promise<string[]> {
+  const rows = await db
+    .select({ slug: templates.slug })
+    .from(templates)
+    .where(eq(templates.contentType, "post"));
+  return rows.map((r) => r.slug);
+}
+
 /**
  * Returns the contentType of the row for this slug, or null if no row exists.
  * Used to detect collisions with non-post templates (e.g. canvas rows) that

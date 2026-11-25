@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Sample photo: a beach">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bfe3f2"/>
+      <stop offset="1" stop-color="#e8f6fb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#sky)"/>
+  <circle cx="985" cy="140" r="72" fill="#ffd971"/>
+  <circle cx="985" cy="140" r="96" fill="#ffd971" opacity="0.25"/>
+  <rect y="330" width="1200" height="230" fill="#3aa7a3"/>
+  <rect y="330" width="1200" height="16" fill="#7fcbc4"/>
+  <path d="M0 470 Q 200 440 420 468 T 860 466 T 1200 462 V800 H0 Z" fill="#f2dfba"/>
+  <path d="M0 470 Q 200 440 420 468 T 860 466 T 1200 462" fill="none" stroke="#ffffff" stroke-width="10" opacity="0.7"/>
+  <g>
+    <path d="M250 640 L356 470 L462 640 Z" fill="#e4572e"/>
+    <path d="M250 640 L356 470 L409 640 Z" fill="#f07b4f"/>
+    <rect x="350" y="470" width="12" height="210" fill="#8a5a3b"/>
+  </g>
+  <g fill="#2e7d5b">
+    <path d="M1010 690 C 1000 560 1030 470 1090 420 C 1040 540 1045 620 1058 690 Z"/>
+    <path d="M1090 420 C 1000 400 920 420 880 470 C 960 462 1030 452 1090 420 Z"/>
+    <path d="M1090 420 C 1130 380 1200 370 1240 390 L1200 430 C 1150 424 1118 424 1090 420 Z" transform="translate(-60 20)"/>
+    <path d="M1090 420 C 1060 360 1070 300 1110 260 C 1116 330 1110 380 1090 420 Z"/>
+  </g>
+  <rect x="1050" y="640" width="16" height="90" fill="#8a5a3b"/>
+  <g font-family="Georgia, serif">
+    <rect x="24" y="24" width="238" height="44" rx="22" fill="#000000" opacity="0.45"/>
+    <text x="143" y="53" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="3">SAMPLE PHOTO</text>
+  </g>
+</svg>
