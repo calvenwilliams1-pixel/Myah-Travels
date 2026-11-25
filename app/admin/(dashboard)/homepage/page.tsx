@@ -1,15 +1,7 @@
 import React from "react";
-import CanvasEditor from "@/components/editor/canvas/CanvasEditor";
 import { getSetting } from "@/lib/settings";
-import { saveHomepageCanvas } from "./actions";
 import WelcomeSettingsForm from "./WelcomeSettingsForm";
-import { parseCanvasDocument } from "@/lib/canvas/parse";
-import {
-  canvasMatchesStarterShape,
-  parseWelcomeTemplateId,
-  resolveWelcomeContent,
-  summarizeCanvasContent,
-} from "@/lib/welcome";
+import { parseWelcomeTemplateId, resolveWelcomeContent } from "@/lib/welcome";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -19,45 +11,30 @@ export const metadata: Metadata = {
 };
 
 export default async function HomepageEditorPage() {
-  const [homepageJson, modeRaw, templateRaw, storedContent] = await Promise.all([
+  const [homepageJson, templateRaw, storedContent] = await Promise.all([
     getSetting("homepage_canvas"),
-    getSetting("welcome_mode"),
     getSetting("welcome_template"),
     getSetting("welcome_content"),
   ]);
 
+  // The stored canvas document is still read for one thing: when no
+  // template content was ever saved, the welcome words carry over from
+  // the canvas so nothing she wrote is lost. The canvas editor itself
+  // no longer appears on this page (Cal, 2026-11-24: hide it, do not
+  // delete it). The CanvasEditor component, the saveHomepageCanvas
+  // action and the stored document all stay in place, and the public
+  // site still renders the canvas if the mode is ever set back.
   const { content, source } = resolveWelcomeContent(storedContent, homepageJson);
-  const canvasDoc = homepageJson ? parseCanvasDocument(homepageJson) : null;
-  const legacySummary =
-    source === "blank" && canvasDoc && !canvasMatchesStarterShape(canvasDoc)
-      ? summarizeCanvasContent(canvasDoc)
-      : "";
 
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Homepage Editor</h1>
 
       <WelcomeSettingsForm
-        initialMode={modeRaw === "template" ? "template" : "canvas"}
         initialTemplate={parseWelcomeTemplateId(templateRaw)}
         initialContent={content}
         contentSource={source}
-        legacySummary={legacySummary}
       />
-
-      <h2 className="text-lg font-semibold mb-1">Canvas editor</h2>
-      <p className="text-sm text-gray-500 mb-6">
-        The freeform designer. It&apos;s what visitors see while the welcome section above is set
-        to Canvas. Changes autosave.
-      </p>
-
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <CanvasEditor
-          initialDocument={homepageJson || undefined}
-          contentType="homepage"
-          onSave={saveHomepageCanvas}
-        />
-      </div>
     </div>
   );
 }
