@@ -1,4 +1,4 @@
-import type { BlockType, TemplateSection } from "@/types/blocks";
+import type { BlockType, Template, TemplateSection } from "@/types/blocks";
 
 /**
  * Saved-layout support for block templates (type overhaul, Nov 23,
@@ -14,6 +14,19 @@ export const LAYOUT_BLOCK_TYPES: BlockType[] = [
 ];
 
 export const MAX_LAYOUT_BLOCKS = 60;
+
+/**
+ * A template with a layout is an arrangement, not a rulebook (Cal,
+ * 2026-11-24): it says what a new post starts with, in what order,
+ * and after that the writer can add or remove any block. Templates
+ * without a layout (the built-in starters) keep the older rules
+ * behaviour in the post editor until they are saved from the builder.
+ */
+export function isLayoutTemplate(
+  template: Pick<Template, "layout"> | null | undefined
+): boolean {
+  return Array.isArray(template?.layout) && template.layout.length > 0;
+}
 
 export function isValidLayout(value: unknown): value is BlockType[] {
   return (

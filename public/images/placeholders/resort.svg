@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Sample photo: a resort pool">
+  <defs>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a8d8f0"/>
+      <stop offset="1" stop-color="#eaf7fd"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#sky2)"/>
+  <circle cx="150" cy="120" r="58" fill="#ffd971"/>
+  <g fill="#ffffff">
+    <rect x="330" y="120" width="240" height="330" rx="8"/>
+    <rect x="610" y="70" width="280" height="380" rx="8"/>
+  </g>
+  <g fill="#9fc6d8">
+    <rect x="356" y="150" width="34" height="44"/><rect x="410" y="150" width="34" height="44"/><rect x="464" y="150" width="34" height="44"/>
+    <rect x="356" y="220" width="34" height="44"/><rect x="410" y="220" width="34" height="44"/><rect x="464" y="220" width="34" height="44"/>
+    <rect x="356" y="290" width="34" height="44"/><rect x="410" y="290" width="34" height="44"/><rect x="464" y="290" width="34" height="44"/>
+    <rect x="640" y="105" width="40" height="50"/><rect x="700" y="105" width="40" height="50"/><rect x="760" y="105" width="40" height="50"/><rect x="820" y="105" width="40" height="50"/>
+    <rect x="640" y="180" width="40" height="50"/><rect x="700" y="180" width="40" height="50"/><rect x="760" y="180" width="40" height="50"/><rect x="820" y="180" width="40" height="50"/>
+    <rect x="640" y="255" width="40" height="50"/><rect x="700" y="255" width="40" height="50"/><rect x="760" y="255" width="40" height="50"/><rect x="820" y="255" width="40" height="50"/>
+    <rect x="640" y="330" width="40" height="50"/><rect x="700" y="330" width="40" height="50"/><rect x="760" y="330" width="40" height="50"/><rect x="820" y="330" width="40" height="50"/>
+  </g>
+  <rect y="450" width="1200" height="90" fill="#7fae7a"/>
+  <path d="M120 800 L240 540 H960 L1080 800 Z" fill="#39b7d6"/>
+  <path d="M240 540 H960 L985 610 H215 Z" fill="#7fd4ea" opacity="0.65"/>
+  <g>
+    <path d="M880 560 L950 460 L1020 560 Z" fill="#e4572e"/>
+    <rect x="946" y="460" width="9" height="120" fill="#8a5a3b"/>
+  </g>
+  <g>
+    <rect x="180" y="585" width="90" height="16" rx="8" fill="#ffffff"/>
+    <rect x="180" y="570" width="34" height="16" rx="8" fill="#ffffff"/>
+  </g>
+  <g font-family="Georgia, serif">
+    <rect x="24" y="24" width="238" height="44" rx="22" fill="#000000" opacity="0.45"/>
+    <text x="143" y="53" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="3">SAMPLE PHOTO</text>
+  </g>
+</svg>

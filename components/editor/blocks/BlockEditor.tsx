@@ -19,7 +19,7 @@ import VerdictBlockEditor from "./VerdictBlockEditor";
 import PreviewPopout from "../PreviewPopout";
 import { usePreviewPopup } from "@/lib/hooks/usePreviewPopup";
 import { useRouter } from "next/navigation";
-import { sectionsFromLayout } from "@/lib/blocks/layout";
+import { sectionsFromLayout, isLayoutTemplate } from "@/lib/blocks/layout";
 import type { Template } from "@/types/blocks";
 
 const IMPLEMENTED_BLOCKS: BlockType[] = [
@@ -198,6 +198,10 @@ export default function BlockEditor({
     const template = resolveTemplate(templateId);
     if (!template) return true;
 
+    // A layout template is a starting arrangement, not a rulebook:
+    // any block it placed can be removed again (Cal, 2026-11-24).
+    if (isLayoutTemplate(template)) return true;
+
     const section = template.sections.find((s) => s.type === block.type);
     return section?.state !== "required";
   };
@@ -205,6 +209,10 @@ export default function BlockEditor({
   const canAddBlock = (type: BlockType): boolean => {
     const template = resolveTemplate(templateId);
     if (!template) return true;
+
+    // Same rule as deleting: with a layout template, any block can
+    // be added after the starting arrangement is placed.
+    if (isLayoutTemplate(template)) return true;
 
     const section = template.sections.find((s) => s.type === type);
     if (!section) return false;
