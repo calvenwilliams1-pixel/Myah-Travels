@@ -1,37 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
-import { AuthError, requireAuth } from "@/lib/auth";
-import { getTemplateById, updateTemplate, deleteTemplate, duplicateTemplate } from "@/lib/canvas";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) { try {
-  const user = await requireAuth();
-  const userId = Number(user.id);
-  const template = await getTemplateById(Number(params.id), userId);
-  if (!template) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ template });
- } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
+/**
+ * Gone (Cal, 2026-11-24): the canvas system was dropped entirely,
+ * this API with it. The route file stays as a tombstone returning
+ * 410 because the GitHub snapshot push cannot delete files.
+ */
+function gone() {
+  return NextResponse.json({ error: "The canvas system has been removed." }, { status: 410 });
+}
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) { try {
-  const user = await requireAuth();
-  const userId = Number(user.id);
-  const body = await req.json();
-  const result = await updateTemplate(Number(params.id), userId, body);
-  if (!result) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
-  return NextResponse.json({ result });
- } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
+export async function GET() {
+  return gone();
+}
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) { try {
-  const user = await requireAuth();
-  const userId = Number(user.id);
-  const result = await deleteTemplate(Number(params.id), userId);
-  if (result.error) return NextResponse.json({ error: result.error }, { status: 403 });
-  return NextResponse.json({ success: true });
- } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
+export async function POST() {
+  return gone();
+}
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) { try {
-  const user = await requireAuth();
-  const userId = Number(user.id);
-  const body = await req.json();
-  const result = await duplicateTemplate(Number(params.id), userId, body?.name);
-  if (!result) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
-  return NextResponse.json({ result });
- } catch (e) { if (e instanceof AuthError) { return NextResponse.json({ error: e.message }, { status: e.status }); } throw e; } }
+export async function PUT() {
+  return gone();
+}
+
+export async function PATCH() {
+  return gone();
+}
+
+export async function DELETE() {
+  return gone();
+}

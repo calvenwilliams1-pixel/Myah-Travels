@@ -7,15 +7,14 @@ import React from "react";
 // being tested here.
 vi.mock("@/app/admin/(dashboard)/homepage/actions", () => ({
   saveWelcomeSettings: vi.fn(),
-  saveHomepageCanvas: vi.fn(),
 }));
 
 import WelcomeSettingsForm from "@/app/admin/(dashboard)/homepage/WelcomeSettingsForm";
 import { WELCOME_TEMPLATES, type WelcomeContent } from "@/lib/welcome";
 
-// Cal, 2026-11-24: the canvas editor is hidden from the Homepage
-// Editor (not deleted), and the welcome photo is a real upload
-// instead of a pasted address. These tests pin both.
+// Cal, 2026-11-24: the canvas editor was dropped from the Homepage
+// Editor entirely, and the welcome photo is a real upload instead
+// of a pasted address. These tests pin both.
 const CONTENT: WelcomeContent = {
   photo: "/images/welcome-banner.jpg",
   heading: "Welcome to MyCalTravels",
@@ -30,7 +29,6 @@ describe("WelcomeSettingsForm (canvas hidden, photo upload)", () => {
       <WelcomeSettingsForm
         initialTemplate="banner"
         initialContent={CONTENT}
-        contentSource="stored"
       />
     );
     expect(screen.queryByText(/Canvas editor/)).toBeNull();
@@ -43,7 +41,6 @@ describe("WelcomeSettingsForm (canvas hidden, photo upload)", () => {
       <WelcomeSettingsForm
         initialTemplate="banner"
         initialContent={CONTENT}
-        contentSource="stored"
       />
     );
     for (const t of WELCOME_TEMPLATES) {
@@ -56,7 +53,6 @@ describe("WelcomeSettingsForm (canvas hidden, photo upload)", () => {
       <WelcomeSettingsForm
         initialTemplate="banner"
         initialContent={CONTENT}
-        contentSource="stored"
       />
     );
     const fileInput = container.querySelector('input[type="file"]');
@@ -72,7 +68,6 @@ describe("WelcomeSettingsForm (canvas hidden, photo upload)", () => {
       <WelcomeSettingsForm
         initialTemplate="banner"
         initialContent={{ ...CONTENT, photo: "" }}
-        contentSource="stored"
       />
     );
     expect(screen.getByText("Upload a photo")).toBeTruthy();

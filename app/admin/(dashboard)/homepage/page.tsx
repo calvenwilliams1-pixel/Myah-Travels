@@ -11,20 +11,12 @@ export const metadata: Metadata = {
 };
 
 export default async function HomepageEditorPage() {
-  const [homepageJson, templateRaw, storedContent] = await Promise.all([
-    getSetting("homepage_canvas"),
+  const [templateRaw, storedContent] = await Promise.all([
     getSetting("welcome_template"),
     getSetting("welcome_content"),
   ]);
 
-  // The stored canvas document is still read for one thing: when no
-  // template content was ever saved, the welcome words carry over from
-  // the canvas so nothing she wrote is lost. The canvas editor itself
-  // no longer appears on this page (Cal, 2026-11-24: hide it, do not
-  // delete it). The CanvasEditor component, the saveHomepageCanvas
-  // action and the stored document all stay in place, and the public
-  // site still renders the canvas if the mode is ever set back.
-  const { content, source } = resolveWelcomeContent(storedContent, homepageJson);
+  const content = resolveWelcomeContent(storedContent);
 
   return (
     <div>
@@ -33,7 +25,6 @@ export default async function HomepageEditorPage() {
       <WelcomeSettingsForm
         initialTemplate={parseWelcomeTemplateId(templateRaw)}
         initialContent={content}
-        contentSource={source}
       />
     </div>
   );
