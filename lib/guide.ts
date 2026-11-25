@@ -24,7 +24,7 @@ export interface GuideStep {
  * guide ticks itself off as the owner actually does the work.
  */
 export async function getGuideSteps(): Promise<GuideStep[]> {
-  const [portalRows, memberRows, itineraryRows, wallRows, postRows, homepageCanvas, welcomeContent, firstPortal] =
+  const [portalRows, memberRows, itineraryRows, wallRows, postRows, welcomeContent, firstPortal] =
     await Promise.all([
       db.select({ c: count() }).from(portals).where(isNull(portals.deletedAt)),
       db.select({ c: count() }).from(portalMembers),
@@ -37,7 +37,6 @@ export async function getGuideSteps(): Promise<GuideStep[]> {
         .select({ c: count() })
         .from(posts)
         .where(eq(posts.status, "published")),
-      getSetting("homepage_canvas"),
       getSetting("welcome_content"),
       db
         .select({ id: portals.id })
@@ -90,7 +89,7 @@ export async function getGuideSteps(): Promise<GuideStep[]> {
       line: "Your welcome photo and your words at the top of your site. Pick a layout you like — it always looks right, on phones too.",
       actionLabel: "Open the Homepage editor",
       href: "/admin/homepage",
-      done: !!homepageCanvas || !!welcomeContent,
+      done: !!welcomeContent,
     },
     {
       id: "post",

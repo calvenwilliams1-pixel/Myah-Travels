@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import {
   WELCOME_TEMPLATES,
   type WelcomeContent,
-  type WelcomeContentSource,
   type WelcomeTemplateId,
 } from "@/lib/welcome";
 import { saveWelcomeSettings } from "./actions";
@@ -12,7 +11,6 @@ import { saveWelcomeSettings } from "./actions";
 interface Props {
   initialTemplate: WelcomeTemplateId;
   initialContent: WelcomeContent;
-  contentSource: WelcomeContentSource;
 }
 
 const inputCls =
@@ -21,12 +19,11 @@ const labelCls = "block text-sm font-medium text-gray-700 mb-1";
 
 /**
  * The welcome editor (Cal, 2026-11-24): designed templates only. The
- * freeform canvas editor used to sit below this form with a mode
- * switch; it rendered the welcome too small on phones and it is one
- * more thing for Myah to land on, so it is hidden — not deleted. The
- * canvas component, its save action and the stored canvas document
- * all stay in place, and her canvas words still carry into these
- * fields (see the note below) so nothing she wrote is lost.
+ * freeform canvas editor that used to sit below this form rendered
+ * the welcome too small on phones, and Cal had it dropped entirely
+ * later the same day, code and all. Her welcome words and photo live
+ * in these fields now; they were carried over from the canvas before
+ * it went, so nothing she wrote was lost.
  *
  * The photo is a real upload now, the same /api/upload the portal
  * hero editor uses: pick a picture and its address fills in on its
@@ -35,7 +32,6 @@ const labelCls = "block text-sm font-medium text-gray-700 mb-1";
 export default function WelcomeSettingsForm({
   initialTemplate,
   initialContent,
-  contentSource,
 }: Props) {
   const [template, setTemplate] = useState(initialTemplate);
   const [content, setContent] = useState(initialContent);
@@ -93,14 +89,6 @@ export default function WelcomeSettingsForm({
         This is the first thing visitors see. Pick a designed layout, add your photo and
         words. It always looks right, on phones too.
       </p>
-
-      {contentSource === "canvas" && (
-        <p className="mb-4 rounded-lg bg-primary/10 px-4 py-3 text-sm text-gray-700">
-          Good news: your current welcome photo and words fit the templates, so
-          they&apos;ve been carried into the fields below. Check them, pick a layout, and
-          save.
-        </p>
-      )}
 
       <div className="space-y-5">
         <div>

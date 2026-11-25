@@ -2,7 +2,6 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getSetting } from "@/lib/settings";
-import CanvasHomepage from "./CanvasHomepage";
 import {
   resolveWelcomeContent,
   parseWelcomeTemplateId,
@@ -12,32 +11,19 @@ import {
 /**
  * The homepage welcome section (UI style plan, Pass 1b).
  *
- * Renders the canvas welcome unless the owner has switched
- * `welcome_mode` to "template" — the switch is hers, reversible, and
- * nothing is deleted either way. Templates render natively, so text
- * is full-size on phones (the canvas scales down whole; that's the
- * defect this replaces). All three templates share one content set
- * and the Pass 1a hero rules: scrim over photos, brand fallback when
- * no photo is set, next/image sizing.
+ * One of three designed templates filled with the owner's photo and
+ * words. Templates render natively, so text is full-size on phones.
+ * All three share one content set and the Pass 1a hero rules: scrim
+ * over photos, brand fallback when no photo is set, next/image
+ * sizing. The freeform canvas welcome that predates the templates
+ * was dropped entirely (Cal, 2026-11-24).
  */
 export default async function WelcomeSection() {
-  const mode = await getSetting("welcome_mode");
-  if (mode !== "template") {
-    // Canvas mode keeps the exact wrapper the homepage has always
-    // used, so nothing shifts until the owner flips the switch.
-    return (
-      <div className="mx-auto max-w-5xl px-4 pt-8">
-        <CanvasHomepage />
-      </div>
-    );
-  }
-
-  const [stored, canvasJson, templateRaw] = await Promise.all([
+  const [stored, templateRaw] = await Promise.all([
     getSetting("welcome_content"),
-    getSetting("homepage_canvas"),
     getSetting("welcome_template"),
   ]);
-  const { content } = resolveWelcomeContent(stored, canvasJson);
+  const content = resolveWelcomeContent(stored);
   const template = parseWelcomeTemplateId(templateRaw);
 
   if (template === "overlay") return <OverlayWelcome content={content} />;
